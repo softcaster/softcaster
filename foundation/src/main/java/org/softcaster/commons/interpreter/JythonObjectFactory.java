@@ -20,6 +20,12 @@ public class JythonObjectFactory {
     // Constructor obtains a reference to the importer, module, and the class name
     public JythonObjectFactory(org.python.core.PySystemState state, Class interfaceType, String moduleName, String className) {
         this.interfaceType = interfaceType;
+
+        // AGGANCIO STREAM: Fondamentale per vedere i print e usare pdb
+        state.stdin = Py.java2py(System.in);
+        state.stdout = Py.java2py(System.out);
+        state.stderr = Py.java2py(System.err);
+        
         PyObject importer = state.getBuiltins().__getitem__(Py.newString("__import__"));
         //PyObject importer = null;
         PyObject module = importer.__call__(Py.newString(moduleName));
@@ -29,7 +35,8 @@ public class JythonObjectFactory {
 
     // This constructor passes through to the other constructor
     public JythonObjectFactory(Class interfaceType, String moduleName, String className) {
-        this(new PySystemState(), interfaceType, moduleName, className);
+        // Uso Py.getSystemState() invece di crearne uno vuoto ogni volta
+        this(Py.getSystemState(), interfaceType, moduleName, className);
     }
 
     // All of the followng methods return

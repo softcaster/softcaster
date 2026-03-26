@@ -50,9 +50,9 @@
         <!-- Source: https://mvnrepository.com/artifact/org.python/jython -->
         <dependency>
             <groupId>org.python</groupId>
-            <artifactId>jython</artifactId>
+            <artifactId>jython-standalone</artifactId> <!-- Aggiungi -standalone -->
             <version>2.7.4</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency>    
     </dependencies>
 </project>

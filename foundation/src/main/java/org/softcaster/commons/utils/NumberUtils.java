@@ -16,4 +16,10 @@ public class NumberUtils {
         BigDecimal _value = BigDecimal.valueOf(value);
         return _value.signum() == 0;
     }
+    
+    public static <T extends Number> boolean isOdd(T number) {
+        // L'operatore modulo (%) restituisce il resto della divisione
+        // Usiamo longValue() per rendere il calcolo compatibile con tutti i Number
+        return number.longValue() % 2 != 0;
+    }
 }

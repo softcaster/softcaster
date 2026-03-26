@@ -25,11 +25,11 @@ public class Date implements Serializable, Cloneable, Comparable {
     public Date() {
         super();
         LocalDate currentDate = LocalDate.now();
-        
+
         year_ = currentDate.getYear();
         month_ = currentDate.getMonthValue();
         day_ = currentDate.getDayOfMonth();
-        
+
         calcJulianDaysNumber();
     }
 
@@ -39,6 +39,16 @@ public class Date implements Serializable, Cloneable, Comparable {
         month_ = dt.month_;
         day_ = dt.day_;
 
+        calcJulianDaysNumber();
+    }
+
+    public Date(java.util.Date utilDate) {
+        super();
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.setTimeInMillis(utilDate.getTime());
+        year_ = gc.get(GregorianCalendar.YEAR);
+        month_ = gc.get(GregorianCalendar.MONTH) + 1;
+        day_ = gc.get(GregorianCalendar.DATE);
         calcJulianDaysNumber();
     }
 
@@ -305,7 +315,7 @@ public class Date implements Serializable, Cloneable, Comparable {
 
     public java.util.Date utilDate() {
         GregorianCalendar gc = new GregorianCalendar();
-        gc.set(year_, month_ -1, day_);
+        gc.set(year_, month_ - 1, day_);
         return new java.util.Date(gc.getTimeInMillis());
     }
 
