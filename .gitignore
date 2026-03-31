@@ -1,4 +1,6 @@
 /easy_pricer_core/target/
 /easy_pricer_core_test/target/
-/foundation/target/
 /easy_pricer_provider/target/
+/easy_pricer_engine/target/
+/foundation/target/
+*.class
