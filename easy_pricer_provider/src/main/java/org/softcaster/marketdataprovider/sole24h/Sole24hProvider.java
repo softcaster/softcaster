@@ -70,7 +70,7 @@ public class Sole24hProvider extends AbstractProvider {
                 int cnt = 0;
                 String valueStr = "";
                 for (YieldNode node : nodes) {
-                    valueStr = base[start + offset * cnt].substring(0, 4).trim();
+                    valueStr = base[start + offset * cnt].trim();
                     double value = 0.;
                     try {
                         value = Converter.toDouble(valueStr, false);
