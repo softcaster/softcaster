@@ -13,7 +13,7 @@ spring:
       port: -1                         
   # Configurazione Database PostgreSQL
   datasource:
-    url: jdbc:postgresql://localhost:5432/easypricer2 # Il nome del tuo DB
+    url: jdbc:postgresql://localhost:5432/easypricer # Il nome del tuo DB
     username: easypricer                                  # Il tuo utente Postgres
     password: easypricer                           # La tua password
     driver-class-name: org.postgresql.Driver
