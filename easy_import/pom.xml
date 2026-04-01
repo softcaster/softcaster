@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.3</version> <!-- Versione stabile corrente -->
+        <relativePath/> 
+    </parent>
+
     <groupId>org.softcaster.easy_import</groupId>
     <artifactId>easy_import</artifactId>
     <version>1.0</version>
@@ -9,21 +17,29 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <exec.mainClass>rg.softcaster.easy_import.ImportMgr</exec.mainClass>
+        <exec.mainClass>rg.softcaster.easy_import.EasyImport</exec.mainClass>
     </properties>
 
     <dependencies>
+        <!-- Core Spring Boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- Database Relazionale (PostgreSQL) per Transazioni e Anagrafica -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.4</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
         <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>3.0.3</version>
-        </dependency>
+            <groupId>org.softcaster</groupId>
+            <artifactId>easy_pricer_core</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>        
        
         <dependency>
             <groupId>org.softcaster.commons</groupId>
@@ -59,14 +75,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.20.1</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
     <build>
         <resources>
             <resource>
-                <directory>src/main/resources/images</directory>
+                <directory>src/main/resources</directory>
                 <includes>
                     <include>*</include>
                 </includes>

@@ -4,14 +4,14 @@
  */
 package org.softcaster.easy_import;
 
+import jakarta.annotation.PostConstruct;
 import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -21,25 +21,20 @@ import javax.swing.JOptionPane;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.python.util.PythonInterpreter;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author ep
  */
-public class ImportMgr extends javax.swing.JFrame implements IProgressInfo {
+@Component
+public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo {
 
+    @Autowired
+    private CurrencyImportMgr currencyImportMgr;
+    
     static final private String imageLocation = System.getProperty("user.dir") + "//img//";
-
-    static public void addPath(String s) throws Exception {
-        File f = new File(s);
-        URI uri = f.toURI();
-        URL url = uri.toURL();
-        URLClassLoader ucl = new URLClassLoader(new URL[]{url});
-        Class urlClass = URLClassLoader.class;
-        Method method = urlClass.getDeclaredMethod("addURL", new Class[]{URL.class});
-        method.setAccessible(true);
-        method.invoke(ucl, new Object[]{url});
-    }
 
     private ImageIcon getIconImage(int icon) {
         ImageIcon image = null;
@@ -60,8 +55,18 @@ public class ImportMgr extends javax.swing.JFrame implements IProgressInfo {
      * Creates new form ImportMgr
      */
     public ImportMgr() {
-        initComponents();
+        try {
+            // Imposta il tema Windows
+            javax.swing.UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+            initComponents();
+            init();
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(ImportMgr.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
+    @PostConstruct
+    public void init() {
         // Titolo
         this.setTitle("Import Manager");
 
@@ -92,6 +97,9 @@ public class ImportMgr extends javax.swing.JFrame implements IProgressInfo {
             importers.add("Currency Pairs");
             cmbImportMgr.setModel(new DefaultComboBoxModel<>(importers));
             cmbImportMgr.setSelectedIndex(-1);
+            // Chiamo clear perche`spring chiama 2 volte il metodo
+            // in fase di inizializzazione
+            model.clear();
             model.addElement("Select Importer");
         }
     }
@@ -287,12 +295,12 @@ public class ImportMgr extends javax.swing.JFrame implements IProgressInfo {
         exitAction();
     }//GEN-LAST:event_mnuExitActionPerformed
 
-    private static IImportMgr getImportMgr(String importMgrName) {
+    private IImportMgr getImportMgr(String importMgrName) {
         IImportMgr importMgr = null;
         if (importMgrName != null) {
             switch (importMgrName) {
                 case "Currencies" ->
-                    importMgr = CurrencyImportMgr.getInstance();
+                    importMgr = currencyImportMgr;
                 case "Countries" ->
                     importMgr = CountryImportMgr.getInstance();
                 case "Bonds" ->
@@ -308,7 +316,7 @@ public class ImportMgr extends javax.swing.JFrame implements IProgressInfo {
                 case "Instrument quotes" ->
                     importMgr = InstrumentQuoteImportMgr.getInstance();
                 case "Currency Pairs" ->
-                    importMgr = ForexImportMgr.getInstance();               
+                    importMgr = ForexImportMgr.getInstance();
                 default -> {
                 }
             }
@@ -364,7 +372,6 @@ public class ImportMgr extends javax.swing.JFrame implements IProgressInfo {
         //</editor-fold>
 
         //</editor-fold>
-
         File conf = new File(System.getProperty("user.dir")
                 + "//conf//log4j.conf");
         System.setProperty("log4j.configuration", "file:" + conf);

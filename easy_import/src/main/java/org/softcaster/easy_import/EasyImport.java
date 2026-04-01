@@ -4,54 +4,64 @@
  */
 package org.softcaster.easy_import;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-import org.python.util.PythonInterpreter;
-import org.softcaster.easy_import.beans.Master_data;
-import org.softcaster.easy_import.beans.Master_dataDAO;
+import javax.swing.JFrame;
+import javax.swing.UnsupportedLookAndFeelException;
+import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.marketdataprovider.MarketDataProviderHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  *
  * @author ep
  */
-public class EasyImport {
-    
-    private static IImportMgr getImportMgr(String importMgrName) {
-        IImportMgr importMgr = null;
-        switch (importMgrName) {
-            case "currencies" -> importMgr = CurrencyImportMgr.getInstance();
-            case "countries" -> importMgr = CountryImportMgr.getInstance();
-            case "bonds" -> importMgr = BondImportMgr.getInstance();
-            default -> {
-            }
-        }
-        
-        return importMgr;
-    }
-    
-    public static void main(String[] args) throws IOException {
+@SpringBootApplication
+// Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
+@ComponentScan(basePackages = {
+    "org.softcaster.easy_import", // Il pacchetto dell'app
+    "org.softcaster.easy_pricer_core" // Il pacchetto della LIBRERIA
+})
+@EntityScan("org.softcaster.easy_pricer_core.data")
+@EnableJpaRepositories("org.softcaster.easy_pricer_core.data")
+public class EasyImport implements CommandLineRunner {
 
-        File conf = new File(System.getProperty("user.dir") + "//conf//log4j.conf");
-        System.setProperty("log4j.configuration", "file:" + conf);
-        
+    @Autowired
+    private ImportMgr importMgr;
+
+    public static void main(String[] args) {
+
+        // Inizializzazione Logger
+        MarketDataProviderHelper.initializeLogger();
+
         // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
-        String pythonPath = System.getProperty("user.dir") + "\\scripts";
-        Properties props = new Properties();
-        props.setProperty("python.path", pythonPath);
-        PythonInterpreter.initialize(System.getProperties(), props, new String[]{""});
+        MarketDataProviderHelper.initializePython();
 
-        //BotImportMgr bim = new BotImportMgr();
-        //bim.dumpBotXml();
-        //UsaYcImportMgr importMgr = UsaYcImportMgr.getInstance();
-        //importMgr.start(null);
+        // Modo corretto per applicazioni Swing + Spring Boot
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(EasyImport.class);
         
-        Master_dataDAO dao = new Master_dataDAO();
-        List<Master_data> records = dao.loadRecordList("",null);
-        for(Master_data record: records) {
-            System.out.println(record.getCode() + "\t" + record.getAsset_class());
-        }
-        
+        builder.headless(false) 
+               .run(args);    
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        // Spostiamo tutto nel thread di Swing (EDT)
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                
+                // Uso bean iniettato da Spring
+                importMgr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                importMgr.setVisible(true);
+
+            } catch (Exception e) {
+                LoggerMgr.logError(e.getLocalizedMessage());
+            }
+        });
     }
 }

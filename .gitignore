@@ -4,3 +4,5 @@
 /easy_pricer_engine/target/
 /foundation/target/
 *.class
+/easy_import/target/
+*.log

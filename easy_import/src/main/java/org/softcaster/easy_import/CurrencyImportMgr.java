@@ -10,18 +10,22 @@ import java.nio.file.Paths;
 import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_import.beans.Currency;
-import org.softcaster.easy_import.beans.CurrencyDAO;
+import org.softcaster.easy_pricer_core.data.Currency;
+import org.softcaster.easy_pricer_core.data.CurrencyDAO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author ep
  */
+@Component 
 public class CurrencyImportMgr implements IImportMgr {
 
-    private static CurrencyImportMgr _instance = null;
-
-    private CurrencyImportMgr() {
+    @Autowired
+    private CurrencyDAO dao; 
+    
+    public  CurrencyImportMgr() {
     }
 
     @Override
@@ -35,38 +39,33 @@ public class CurrencyImportMgr implements IImportMgr {
         config.setStartData(0);
         config.setCharset(StandardCharsets.UTF_8);
 
-        Currency currency = new Currency();
-        CurrencyDAO currencyDAO = new CurrencyDAO();
+        Currency currency = null;
         try {
             csvImport.startImport(config);
+            String isoCode="";
             for (String[] s : csvImport.getBuffer()) {
+                isoCode = s[1].trim();
+                currency = dao.findByIsoCode(isoCode);
+                if(currency == null)
+                    currency = new Currency();
                 currency.setDescription(s[0].trim());
-                currency.setIso_code(s[1].trim());
-                currency.setCurrency_numeric_code(Integer.valueOf(s[2].trim()));
-                currency.setMinor_unit(Integer.valueOf(s[3].trim()));
-                currency.setPhysical_curr(1);
-                currency.setSystem_curr(0);
+                currency.setIsoCode(s[1].trim());
+                currency.setCurrencyNumericCode(Integer.valueOf(s[2].trim()).shortValue());
+                currency.setMinorUnit(Integer.valueOf(s[3].trim()).shortValue());
+                currency.setPhysicalCurr(Short.valueOf("1"));
+                currency.setSystemCurr(Short.valueOf("0"));
 
-                currencyDAO.insertOrUpdate(currency);
+                dao.saveOrUpdate(currency);
             }
 
         } catch (Exception ex) {
-            String error = "Error importing Currency: " + currency.getIso_code() + " [" + ex.getLocalizedMessage() + "]";
+            String error = "Error importing Currency: " + currency.getIsoCode() + " [" + ex.getLocalizedMessage() + "]";
             LoggerMgr.logError(error);
-        } finally {
-            currencyDAO.closeStatements();
         }
     }
 
     @Override
     public void terminate() {
         LoggerMgr.logInfo("Import terminated");
-    }
-
-    public static CurrencyImportMgr getInstance() {
-        if (_instance == null) {
-            _instance = new CurrencyImportMgr();
-        }
-        return _instance;
     }
 }
