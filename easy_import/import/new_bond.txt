@@ -1,0 +1,5 @@
+1844122.xml
+3940.xml
+3947.xml
+    private final String URL_BI = "https://nna.bancaditalia.it/nna/dettaglioTitolo.do?evento=dettaglio&codTit=";
+    private final String URL_STI = "https://www.simpletoolsforinvestors.eu/data/definitions/3947.xml";

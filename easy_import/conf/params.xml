@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<params>
+    <param>
+        <name>DB_DRIVER</name>
+        <value>org.postgresql.Driver</value>
+    </param>
+    <param>
+        <name>DB_CONNECTION</name>
+        <value>jdbc:postgresql://localhost/easypricer</value>
+    </param>
+    <param>
+        <name>DB_USER</name>
+        <value>easypricer</value>
+    </param>
+    <param>
+        <name>DB_PASSWORD</name>
+        <value>easypricer</value>
+    </param>
+    <param>
+        <name>XML_FILENAME</name>
+        <value>new_bond.xml</value>
+    </param>
+</params>

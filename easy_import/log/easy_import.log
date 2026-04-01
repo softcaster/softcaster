@@ -1,0 +1,12 @@
+ INFO	[2026-03-29 16:20:10,972] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+
+ERROR	[2026-03-29 16:23:36,219] [SwingWorker-pool-1-thread-1] (LoggerMgr.java:31)
+     	Server returned HTTP response code: 504 for URL: https://mercatiwdg.ilsole24ore.com/FinanzaMercati/WidgetSelector/listino?widgetConfiguration=FMEURIBOR
+
+ INFO	[2026-03-29 16:24:03,592] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+
+ INFO	[2026-03-29 16:29:47,099] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+

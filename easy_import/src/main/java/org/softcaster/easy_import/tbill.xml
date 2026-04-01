@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this template
+-->
+
+<bonds>
+    <bond>
+        <isincode>IT0005640666</isincode>
+        <description>BOT 13/03/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9000</amount>
+        <issuedate>2025-03-14</issuedate>
+        <issueprice>97.692</issueprice>
+        <redemptiondate>2026-03-13</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005640666" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005689887</isincode>
+        <description>BOT 14/01/2027 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8800</amount>
+        <issuedate>2026-01-14</issuedate>
+        <issueprice>97.904</issueprice>
+        <redemptiondate>2027-01-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005689887" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005670895</isincode>
+        <description>BOT 31/03/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>6500</amount>
+        <issuedate>2025-09-30</issuedate>
+        <issueprice>98.977</issueprice>
+        <redemptiondate>2026-03-31</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005670895" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005695256</isincode>
+        <description>BOT 12/02/2027 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9350</amount>
+        <issuedate>2026-02-13</issuedate>
+        <issueprice>97.952</issueprice>
+        <redemptiondate>2027-02-12</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005695256" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005684888</isincode>
+        <description>BOT 14/12/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9900</amount>
+        <issuedate>2025-12-12</issuedate>
+        <issueprice>97.825</issueprice>
+        <redemptiondate>2026-12-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005684888" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005678492</isincode>
+        <description>BOT 13/11/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8500</amount>
+        <issuedate>2025-11-14</issuedate>
+        <issueprice>97.957</issueprice>
+        <redemptiondate>2026-11-13</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005678492" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005692485</isincode>
+        <description>BOT 31/07/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8250</amount>
+        <issuedate>2026-01-30</issuedate>
+        <issueprice>98.979</issueprice>
+        <redemptiondate>2026-07-31</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005692485" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005674335</isincode>
+        <description>BOT 14/10/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9900</amount>
+        <issuedate>2025-10-14</issuedate>
+        <issueprice>97.964</issueprice>
+        <redemptiondate>2026-10-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005674335" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005669269</isincode>
+        <description>BOT 14/09/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9000</amount>
+        <issuedate>2025-09-12</issuedate>
+        <issueprice>97.972</issueprice>
+        <redemptiondate>2026-09-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005669269" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005680639</isincode>
+        <description>BOT 29/05/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>7520</amount>
+        <issuedate>2025-11-28</issuedate>
+        <issueprice>98.981</issueprice>
+        <redemptiondate>2026-05-29</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005680639" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005666851</isincode>
+        <description>BOT 14/08/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8000</amount>
+        <issuedate>2025-08-14</issuedate>
+        <issueprice>98.001</issueprice>
+        <redemptiondate>2026-08-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005666851" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005650574</isincode>
+        <description>BOT 14/05/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8500</amount>
+        <issuedate>2025-05-14</issuedate>
+        <issueprice>98.052</issueprice>
+        <redemptiondate>2026-05-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005650574" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005655037</isincode>
+        <description>BOT 12/06/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9350</amount>
+        <issuedate>2025-06-13</issuedate>
+        <issueprice>98.034</issueprice>
+        <redemptiondate>2026-06-12</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005655037" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005660029</isincode>
+        <description>BOT 14/07/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>7500</amount>
+        <issuedate>2025-07-14</issuedate>
+        <issueprice>98.051</issueprice>
+        <redemptiondate>2026-07-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005660029" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005645509</isincode>
+        <description>BOT 14/04/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>7700</amount>
+        <issuedate>2025-04-14</issuedate>
+        <issueprice>97.894</issueprice>
+        <redemptiondate>2026-04-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005645509" segmentcode="BOT" />
+        </markets>
+    </bond>
+</bonds>
+

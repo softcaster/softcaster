@@ -1,0 +1,1223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this template
+-->
+<bonds>
+    <bond>
+        <isincode>IT0005640666</isincode>
+        <description>BOT 13/03/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9000</amount>
+        <issuedate>2025-03-14</issuedate>
+        <issueprice>97.692</issueprice>
+        <redemptiondate>2026-03-13</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005640666" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005689887</isincode>
+        <description>BOT 14/01/2027 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8800</amount>
+        <issuedate>2026-01-14</issuedate>
+        <issueprice>97.904</issueprice>
+        <redemptiondate>2027-01-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005689887" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005670895</isincode>
+        <description>BOT 31/03/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>6500</amount>
+        <issuedate>2025-09-30</issuedate>
+        <issueprice>98.977</issueprice>
+        <redemptiondate>2026-03-31</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005670895" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005695256</isincode>
+        <description>BOT 12/02/2027 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9350</amount>
+        <issuedate>2026-02-13</issuedate>
+        <issueprice>97.952</issueprice>
+        <redemptiondate>2027-02-12</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005695256" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005684888</isincode>
+        <description>BOT 14/12/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9900</amount>
+        <issuedate>2025-12-12</issuedate>
+        <issueprice>97.825</issueprice>
+        <redemptiondate>2026-12-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005684888" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005678492</isincode>
+        <description>BOT 13/11/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8500</amount>
+        <issuedate>2025-11-14</issuedate>
+        <issueprice>97.957</issueprice>
+        <redemptiondate>2026-11-13</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005678492" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005692485</isincode>
+        <description>BOT 31/07/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8250</amount>
+        <issuedate>2026-01-30</issuedate>
+        <issueprice>98.979</issueprice>
+        <redemptiondate>2026-07-31</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005692485" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005674335</isincode>
+        <description>BOT 14/10/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9900</amount>
+        <issuedate>2025-10-14</issuedate>
+        <issueprice>97.964</issueprice>
+        <redemptiondate>2026-10-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005674335" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005669269</isincode>
+        <description>BOT 14/09/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9000</amount>
+        <issuedate>2025-09-12</issuedate>
+        <issueprice>97.972</issueprice>
+        <redemptiondate>2026-09-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005669269" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005680639</isincode>
+        <description>BOT 29/05/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>7520</amount>
+        <issuedate>2025-11-28</issuedate>
+        <issueprice>98.981</issueprice>
+        <redemptiondate>2026-05-29</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005680639" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005666851</isincode>
+        <description>BOT 14/08/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8000</amount>
+        <issuedate>2025-08-14</issuedate>
+        <issueprice>98.001</issueprice>
+        <redemptiondate>2026-08-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005666851" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005650574</isincode>
+        <description>BOT 14/05/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8500</amount>
+        <issuedate>2025-05-14</issuedate>
+        <issueprice>98.052</issueprice>
+        <redemptiondate>2026-05-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005650574" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005655037</isincode>
+        <description>BOT 12/06/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9350</amount>
+        <issuedate>2025-06-13</issuedate>
+        <issueprice>98.034</issueprice>
+        <redemptiondate>2026-06-12</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005655037" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005660029</isincode>
+        <description>BOT 14/07/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>7500</amount>
+        <issuedate>2025-07-14</issuedate>
+        <issueprice>98.051</issueprice>
+        <redemptiondate>2026-07-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005660029" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005645509</isincode>
+        <description>BOT 14/04/2026 ZC</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>7700</amount>
+        <issuedate>2025-04-14</issuedate>
+        <issueprice>97.894</issueprice>
+        <redemptiondate>2026-04-14</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <ccissuedelta>1</ccissuedelta>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005645509" segmentcode="BOT" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005668238</isincode>
+        <description>BTP 01/10/2055 4,65%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>5000</amount>
+        <issuedate>2025-09-09</issuedate>
+        <issueprice>99.56</issueprice>
+        <redemptiondate>2055-10-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.65</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005668238" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005611741</isincode>
+        <description>BTP 01/10/2054 4,3% </description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8000</amount>
+        <issuedate>2024-09-17</issuedate>
+        <issueprice>99.789</issueprice>
+        <redemptiondate>2054-10-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.3</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005611741" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005534141</isincode>
+        <description>BTP 01/10/2053 4,5%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>5000</amount>
+        <issuedate>2023-02-23</issuedate>
+        <issueprice>99.559</issueprice>
+        <redemptiondate>2053-10-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.5</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005534141" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005217390</isincode>
+        <description>BTP 01/03/2067 2,8%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>5000000000</amount>
+        <issuedate>2016-09-01</issuedate>
+        <issueprice>99.19</issueprice>
+        <redemptiondate>2067-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>2.8</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005217390" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005480980</isincode>
+        <description>BTP 01/09/2052 2,15%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>7000</amount>
+        <issuedate>2022-01-12</issuedate>
+        <issueprice>99.987</issueprice>
+        <redemptiondate>2052-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>2.15</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005480980" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005425233</isincode>
+        <description>BTP 01/09/2051 1,7%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8000</amount>
+        <issuedate>2020-09-01</issuedate>
+        <issueprice>98.686</issueprice>
+        <redemptiondate>2051-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>1.7</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005425233" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005398406</isincode>
+        <description>BTP 01/09/2050 2,45%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>15835</amount>
+        <issuedate>2022-01-22</issuedate>
+        <issueprice>99.28</issueprice>
+        <redemptiondate>2050-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>2.45</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005398406" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005363111</isincode>
+        <description>BTP 01/09/2049 3,85%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>13342</amount>
+        <issuedate>2019-02-13</issuedate>
+        <issueprice>99.594</issueprice>
+        <redemptiondate>2049-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.85</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005363111" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005273013</isincode>
+        <description>BTP 01/03/2048 3,45%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <amount>500000000</amount>
+        <issuedate>2017-03-01</issuedate>
+        <issueprice>98.956</issueprice>
+        <redemptiondate>2048-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.45</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005273013" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005162828</isincode>
+        <description>BTP 01/03/2047 2,7%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9000000000</amount>
+        <issuedate>2016-02-09</issuedate>
+        <issueprice>99.18</issueprice>
+        <redemptiondate>2047-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>2.7</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005162828" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005441883</isincode>
+        <description>BTP 01/03/2072 2,15%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>5000</amount>
+        <issuedate>2021-03-01</issuedate>
+        <issueprice>99.467</issueprice>
+        <redemptiondate>2072-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>2.15</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005441883" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005083057</isincode>
+        <description>BTP 01/09/2046 3,25%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>13240700000</amount>
+        <issuedate>2015-01-22</issuedate>
+        <issueprice>99.71</issueprice>
+        <redemptiondate>2046-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.25</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005083057" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005631608</isincode>
+        <description>BTP GREEN BOND 30/04/2046 4,1% </description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>5000</amount>
+        <issuedate>2025-01-15</issuedate>
+        <issueprice>99.465</issueprice>
+        <redemptiondate>2046-04-30</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.1</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005631608" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005438004</isincode>
+        <description>BTP Green 30/04/2045 1,5%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8500</amount>
+        <issuedate>2020-10-30</issuedate>
+        <issueprice>99.168</issueprice>
+        <redemptiondate>2045-04-30</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>1.5</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005438004" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0004923998</isincode>
+        <description>BTP 01/09/2044 4,75%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <amount>6000000000</amount>
+        <issuedate>2013-03-01</issuedate>
+        <issueprice>97.221</issueprice>
+        <redemptiondate>2044-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.75</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0004923998" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005530032</isincode>
+        <description>BTP 01/09/2043 4,45%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>7000</amount>
+        <issuedate>2022-09-01</issuedate>
+        <issueprice>99.606</issueprice>
+        <redemptiondate>2043-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.45</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005530032" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005421703</isincode>
+        <description>BTP 01/03/2041 1,8%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>10000</amount>
+        <issuedate>2020-09-11</issuedate>
+        <issueprice>99.765</issueprice>
+        <redemptiondate>2041-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>1.8</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005421703" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005635583</isincode>
+        <description>BTP 01/10/2040 3,85%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>13000</amount>
+        <issuedate>2025-02-18</issuedate>
+        <issueprice>99.375</issueprice>
+        <redemptiondate>2040-10-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.85</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005635583" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0004532559</isincode>
+        <description>BTP 01/09/2040 5%(No CACs)</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <issuedate>2009-09-01</issuedate>
+        <issueprice>98.186</issueprice>
+        <redemptiondate>2040-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>5</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0004532559" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005377152</isincode>
+        <description>BTP 01/03/2040 3,1%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>69699</amount>
+        <issuedate>2019-06-19</issuedate>
+        <issueprice>99.623</issueprice>
+        <redemptiondate>2040-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.1</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005377152" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005582421</isincode>
+        <description>BTP 01/10/2039 4,15%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>10000</amount>
+        <issuedate>2023-10-01</issuedate>
+        <issueprice>99.68</issueprice>
+        <redemptiondate>2039-10-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.15</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005582421" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005442097</isincode>
+        <description>BTP FUTURA 27/04/2037 STEP UP 0,75% - 2%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <issuedate>2021-04-27</issuedate>
+        <issueprice>100</issueprice>
+        <redemptiondate>2037-04-27</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <coupons>
+            <coupon date="2021-10-27" value="0.375"/>
+            <coupon date="2022-04-27" value="0.375" />
+            <coupon date="2022-10-27" value="0.375" />
+            <coupon date="2023-04-27" value="0.375" />
+            <coupon date="2023-10-27" value="0.375" />
+            <coupon date="2024-04-27" value="0.375" />
+            <coupon date="2024-10-27" value="0.375" />
+            <coupon date="2025-04-27" value="0.375" />
+            <coupon date="2025-10-27" value="0.6" />
+            <coupon date="2026-04-27" value="0.6" />
+            <coupon date="2026-10-27" value="0.6" />
+            <coupon date="2027-04-27" value="0.6" />
+            <coupon date="2027-10-27" value="0.6" />
+            <coupon date="2028-04-27" value="0.6" />
+            <coupon date="2028-10-27" value="0.6" />
+            <coupon date="2029-04-27" value="0.6" />
+            <coupon date="2029-10-27" value="0.825" />
+            <coupon date="2030-04-27" value="0.825" />
+            <coupon date="2030-10-27" value="0.825" />
+            <coupon date="2031-04-27" value="0.825" />
+            <coupon date="2031-10-27" value="0.825" />
+            <coupon date="2032-04-27" value="0.825" />
+            <coupon date="2032-10-27" value="0.825" />
+            <coupon date="2033-04-27" value="0.825" />
+            <coupon date="2033-10-27" value="1" />
+            <coupon date="2034-04-27" value="1" />
+            <coupon date="2034-10-27" value="1" />
+            <coupon date="2035-04-27" value="1" />
+            <coupon date="2035-10-27" value="1" />
+            <coupon date="2036-04-27" value="1" />
+            <coupon date="2036-10-27" value="1" />
+            <coupon date="2037-04-27" value="1" />
+        </coupons>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005442097" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0004286966</isincode>
+        <description>BTP 01/08/2039 5%(No CACs)</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <issuedate>2007-08-01</issuedate>
+        <issueprice>99.98</issueprice>
+        <redemptiondate>2039-08-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>5</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0004286966" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005321325</isincode>
+        <description>BTP 01/09/2038 2,95%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <amount>0</amount>
+        <issuedate>2017-09-01</issuedate>
+        <issueprice>99.766</issueprice>
+        <redemptiondate>2038-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>2.95</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005321325" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005496770</isincode>
+        <description>BTP 01/03/2038 3,25%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>5000</amount>
+        <issuedate>2022-03-01</issuedate>
+        <issueprice>99.651</issueprice>
+        <redemptiondate>2038-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.25</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005496770" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005596470</isincode>
+        <description>BTP 30/10/2037 4,05% GREEN BOND</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>9000</amount>
+        <issuedate>2024-04-30</issuedate>
+        <issueprice>99.865</issueprice>
+        <redemptiondate>2037-10-30</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.05</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005596470" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005433195</isincode>
+        <description>BTP 01/03/2037 0,95%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>10000000000</amount>
+        <issuedate>2021-01-12</issuedate>
+        <issueprice>99.409</issueprice>
+        <redemptiondate>2037-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>0.95</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005433195" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0003934657</isincode>
+        <description>BTP 01/02/2037 4%(No CACs)</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <issuedate>2005-08-01</issuedate>
+        <issueprice>101.289</issueprice>
+        <redemptiondate>2037-02-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0003934657" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005177909</isincode>
+        <description>BTP 01/09/2036 2,25%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <amount>500000000</amount>
+        <issuedate>2016-03-01</issuedate>
+        <issueprice>99.368</issueprice>
+        <redemptiondate>2036-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>2.25</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005177909" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005402117</isincode>
+        <description>BTP 01/03/2036 1,45%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>14400</amount>
+        <issuedate>2020-02-18</issuedate>
+        <issueprice>100</issueprice>
+        <redemptiondate>2036-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>1.45</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005402117" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005676504</isincode>
+        <description>BTP 01/02/2036 3,45%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>4500</amount>
+        <issuedate>2025-11-03</issuedate>
+        <issueprice>100.19</issueprice>
+        <redemptiondate>2036-02-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <coupons>
+            <coupon date="2026-02-01" value="0.84375" />
+            <coupon date="2026-08-01" value="1.725" />
+            <coupon date="2027-02-01" value="1.725" />
+            <coupon date="2027-08-01" value="1.725" />
+            <coupon date="2028-02-01" value="1.725" />
+            <coupon date="2028-08-01" value="1.725" />
+            <coupon date="2029-02-01" value="1.725" />
+            <coupon date="2029-08-01" value="1.725" />
+            <coupon date="2030-02-01" value="1.725" />
+            <coupon date="2030-08-01" value="1.725" />
+            <coupon date="2031-02-01" value="1.725" />
+            <coupon date="2031-08-01" value="1.725" />
+            <coupon date="2032-02-01" value="1.725" />
+            <coupon date="2032-08-01" value="1.725" />
+            <coupon date="2033-02-01" value="1.725" />
+            <coupon date="2033-08-01" value="1.725" />
+            <coupon date="2034-02-01" value="1.725" />
+            <coupon date="2034-08-01" value="1.725" />
+            <coupon date="2035-02-01" value="1.725" />
+            <coupon date="2035-08-01" value="1.725" />
+            <coupon date="2036-02-01" value="1.725" />
+        </coupons>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005676504" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005648149</isincode>
+        <description>BTP 01/10/2035 3,6%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>4000</amount>
+        <issuedate>2025-05-02</issuedate>
+        <issueprice>100.09</issueprice>
+        <redemptiondate>2035-10-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.6</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005648149" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005631590</isincode>
+        <description>BTP 01/08/2035 3,65% </description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>13000</amount>
+        <issuedate>2025-01-15</issuedate>
+        <issueprice>99.577</issueprice>
+        <redemptiondate>2035-08-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.65</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005631590" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005607970</isincode>
+        <description>BTP 01/02/2035 3,85% </description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>4500</amount>
+        <issuedate>2024-08-01</issuedate>
+        <issueprice>101.04</issueprice>
+        <redemptiondate>2035-02-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.85</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005607970" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005508590</isincode>
+        <description>BTP GREEN 30/04/2035 4%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>8000</amount>
+        <issuedate>2022-09-13</issuedate>
+        <issueprice>99.734</issueprice>
+        <redemptiondate>2035-04-30</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005508590" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005358806</isincode>
+        <description>BTP 01/03/2035 3,35%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>14800</amount>
+        <issuedate>2019-01-22</issuedate>
+        <issueprice>99.609</issueprice>
+        <redemptiondate>2035-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.35</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005358806" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005466351</isincode>
+        <description>BTP FUTURA 16/11/2033 STEP UP 0,75% - 1,7%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>3268.24</amount>
+        <issuedate>2021-11-16</issuedate>
+        <issueprice>100</issueprice>
+        <redemptiondate>2033-11-16</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <coupons>
+            <coupon date="2022-05-16" value="0.375" />
+            <coupon date="2022-11-16" value="0.375" />
+            <coupon date="2023-05-16" value="0.375" />
+            <coupon date="2023-11-16" value="0.375" />
+            <coupon date="2024-05-16" value="0.375" />
+            <coupon date="2024-11-16" value="0.375" />
+            <coupon date="2025-05-16" value="0.375" />
+            <coupon date="2025-11-16" value="0.375" />
+            <coupon date="2026-05-16" value="0.675" />
+            <coupon date="2026-11-16" value="0.675" />
+            <coupon date="2027-05-16" value="0.675" />
+            <coupon date="2027-11-16" value="0.675" />
+            <coupon date="2028-05-16" value="0.675" />
+            <coupon date="2028-11-16" value="0.675" />
+            <coupon date="2029-05-16" value="0.675" />
+            <coupon date="2029-11-16" value="0.675" />
+            <coupon date="2030-05-16" value="0.85" />
+            <coupon date="2030-11-16" value="0.85" />
+            <coupon date="2031-05-16" value="0.85" />
+            <coupon date="2031-11-16" value="0.85" />
+            <coupon date="2032-05-16" value="0.85" />
+            <coupon date="2032-11-16" value="0.85" />
+            <coupon date="2033-05-16" value="0.85" />
+            <coupon date="2033-11-16" value="0.85" />
+        </coupons>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005466351" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005584856</isincode>
+        <description>BTP 01/07/2034 3,85%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>4500</amount>
+        <issuedate>2024-03-01</issuedate>
+        <issueprice>99.8</issueprice>
+        <redemptiondate>2034-07-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>3.85</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005584856" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0003535157</isincode>
+        <description>BTP 01/08/2034 5%(No CACs)</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <issuedate>2003-08-01</issuedate>
+        <issueprice>98.106</issueprice>
+        <redemptiondate>2034-08-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>5</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0003535157" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005634800</isincode>
+        <description>BTP PIU' 25/02/2033 STEP UP 2,85% - 3,7%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>0</amount>
+        <issuedate>2025-02-25</issuedate>
+        <issueprice>100</issueprice>
+        <redemptiondate>2033-02-25</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <coupons>
+            <coupon date="2025-05-25" value="0.7125" />
+            <coupon date="2025-08-25" value="0.7125" />
+            <coupon date="2025-11-25" value="0.7125" />
+            <coupon date="2026-02-25" value="0.7125" />
+            <coupon date="2026-05-25" value="0.7125" />
+            <coupon date="2026-08-25" value="0.7125" />
+            <coupon date="2026-11-25" value="0.7125" />
+            <coupon date="2027-02-25" value="0.7125" />
+            <coupon date="2027-05-25" value="0.7125" />
+            <coupon date="2027-08-25" value="0.7125" />
+            <coupon date="2027-11-25" value="0.7125" />
+            <coupon date="2028-02-25" value="0.7125" />
+            <coupon date="2028-05-25" value="0.7125" />
+            <coupon date="2028-08-25" value="0.7125" />
+            <coupon date="2028-11-25" value="0.7125" />
+            <coupon date="2029-02-25" value="0.7125" />
+            <coupon date="2029-05-25" value="0.925" />
+            <coupon date="2029-08-25" value="0.925" />
+            <coupon date="2029-11-25" value="0.925" />
+            <coupon date="2030-02-25" value="0.925" />
+            <coupon date="2030-05-25" value="0.925" />
+            <coupon date="2030-08-25" value="0.925" />
+            <coupon date="2030-11-25" value="0.925" />
+            <coupon date="2031-02-25" value="0.925" />
+            <coupon date="2031-05-25" value="0.925" />
+            <coupon date="2031-08-25" value="0.925" />
+            <coupon date="2031-11-25" value="0.925" />
+            <coupon date="2032-02-25" value="0.925" />
+            <coupon date="2032-05-25" value="0.925" />
+            <coupon date="2032-08-25" value="0.925" />
+            <coupon date="2032-11-25" value="0.925" />
+            <coupon date="2033-02-25" value="0.925" />
+        </coupons>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005634800" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005560948</isincode>
+        <description>BTP 01/03/2034 4,2%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>4875</amount>
+        <issuedate>2023-09-01</issuedate>
+        <issueprice>100</issueprice>
+        <redemptiondate>2034-03-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.2</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005560948" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005544082</isincode>
+        <description>BTP 01/11/2033 4,35%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>5000</amount>
+        <issuedate>2023-05-02</issuedate>
+        <issueprice>99.85</issueprice>
+        <redemptiondate>2033-11-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>4.35</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005544082" segmentcode="BTP" />
+        </markets>
+    </bond>
+    <bond>
+        <isincode>IT0005240350</isincode>
+        <description>BTP 01/09/2033 2,45%</description>
+        <currency>EUR</currency>
+        <minimumlot>1000</minimumlot>
+        <status>Senior</status>
+        <amount>6000000000</amount>
+        <issuedate>2017-01-25</issuedate>
+        <issueprice>99.13</issueprice>
+        <redemptiondate>2033-09-01</redemptiondate>
+        <redemptionprice>100</redemptionprice>
+        <couponrate>2.45</couponrate>
+        <couponperiodicity>2</couponperiodicity>
+        <ccissuedelta>1</ccissuedelta>
+        <cccoupon>1</cccoupon>
+        <taxrate>0.125</taxrate>
+        <markets>
+            <market marketname="MOT" marketcode="IT0005240350" segmentcode="BTP" />
+        </markets>
+    </bond>
+</bonds>
+
