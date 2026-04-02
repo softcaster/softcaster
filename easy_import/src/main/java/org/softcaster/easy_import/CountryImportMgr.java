@@ -7,18 +7,20 @@ package org.softcaster.easy_import;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_core.data.Country;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 /**
  *
  * @author ep
  */
-@Service("Countries") 
+@Service("Countries")
 public class CountryImportMgr implements IImportMgr {
 
     @Autowired
@@ -32,6 +34,7 @@ public class CountryImportMgr implements IImportMgr {
     }
 
     @Override
+    @Async("importTaskExecutor")
     public void start(IProgressInfo progressInfo) {
         CsvImport csvImport = new CsvImport();
         Path path = Paths.get(IMPORT_PATH + "/countries.csv");
@@ -48,13 +51,15 @@ public class CountryImportMgr implements IImportMgr {
         Country country = null;
         try {
             csvImport.startImport(config);
-            String alfa3Code = "";
-            for (String[] s : csvImport.getBuffer()) {
+            List<String[]> rows = csvImport.getBuffer();
+            int total = rows.size();
+            int current = 0;
+            for (String[] s : rows) {
                 if (s[0].isEmpty()) {
                     System.out.println("Error: " + s[0].trim());
                     continue;
                 }
-                alfa3Code = s[4].trim();
+                String alfa3Code = s[4].trim();
                 country = dao.findByAlfa3Code(alfa3Code);
                 if (country == null) {
                     country = new org.softcaster.easy_pricer_core.data.Country();
@@ -70,11 +75,20 @@ public class CountryImportMgr implements IImportMgr {
                 country.setCurrency(currency);
                 country.setCalendar(calendar);
                 dao.saveOrUpdate(country);
+
+                // 2. Aggiorna il progresso ogni X righe o calcola la percentuale
+                int percent = (int) ((current / (double) total) * 100);
+                progressInfo.updateProgress("Importing " + alfa3Code + " (" + current + "/" + total + ")", percent);
+                current++;
             }
 
         } catch (Exception ex) {
-            String error = "Error importing Country: " + country.getAlfa3Code() + " [" + ex.getLocalizedMessage() + "]";
+            String error = "Error during import: " + ex.getLocalizedMessage();;
             LoggerMgr.logError(error);
+            progressInfo.showError(error);
+        } finally {
+            progressInfo.updateProgress("Import terminated successfully", 100);
+            terminate();
         }
     }
 
