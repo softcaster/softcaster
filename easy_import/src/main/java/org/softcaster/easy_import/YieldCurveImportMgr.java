@@ -5,22 +5,19 @@
 package org.softcaster.easy_import;
 
 import org.softcaster.commons.utils.LoggerMgr;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author ep
  */
+@Component
 public class YieldCurveImportMgr implements IImportMgr {
 
-    private static YieldCurveImportMgr _instance = null;
-
-    public static YieldCurveImportMgr getInstance() {
-        if (_instance == null) {
-            _instance = new YieldCurveImportMgr();
-        }
-        return _instance;
+    public YieldCurveImportMgr() {
+        
     }
-
+    
     @Override
     public void start(IProgressInfo progressInfo) {
         try {

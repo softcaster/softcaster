@@ -37,3 +37,14 @@ ERROR	[2026-03-29 16:23:36,219] [SwingWorker-pool-1-thread-1] (LoggerMgr.java:31
  INFO	[2026-04-01 15:03:32,865] [AWT-EventQueue-0] (LoggerMgr.java:36)
      	Bye bye!
 
+ERROR	[2026-04-02 09:04:37,543] [SwingWorker-pool-3-thread-1] (LoggerMgr.java:31)
+     	Error importing Country: CSK [could not execute statement [ERROR: duplicate key value violates unique constraint "alfa_2_code"
+  Detail: Key (alfa_2_code)=(CS) already exists.] [insert into country (alfa_2_code,alfa_3_code,calendar,country_name,country_numeric_code,currency,internet_cc_tld,official_state_name,sovereign,subdivision_code_links,id_country) values (?,?,?,?,?,?,?,?,?,?,?)]; SQL [insert into country (alfa_2_code,alfa_3_code,calendar,country_name,country_numeric_code,currency,internet_cc_tld,official_state_name,sovereign,subdivision_code_links,id_country) values (?,?,?,?,?,?,?,?,?,?,?)]; constraint [alfa_2_code]]
+
+ERROR	[2026-04-02 09:05:23,484] [SwingWorker-pool-3-thread-2] (LoggerMgr.java:31)
+     	Error importing Country: CSK [could not execute statement [ERROR: duplicate key value violates unique constraint "alfa_2_code"
+  Detail: Key (alfa_2_code)=(CS) already exists.] [insert into country (alfa_2_code,alfa_3_code,calendar,country_name,country_numeric_code,currency,internet_cc_tld,official_state_name,sovereign,subdivision_code_links,id_country) values (?,?,?,?,?,?,?,?,?,?,?)]; SQL [insert into country (alfa_2_code,alfa_3_code,calendar,country_name,country_numeric_code,currency,internet_cc_tld,official_state_name,sovereign,subdivision_code_links,id_country) values (?,?,?,?,?,?,?,?,?,?,?)]; constraint [alfa_2_code]]
+
+ INFO	[2026-04-02 09:05:29,985] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+

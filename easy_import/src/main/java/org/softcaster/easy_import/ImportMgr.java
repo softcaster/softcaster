@@ -33,6 +33,10 @@ public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo
 
     @Autowired
     private CurrencyImportMgr currencyImportMgr;
+    @Autowired
+    private CountryImportMgr countryImportMgr;
+    @Autowired
+    private YieldCurveImportMgr yieldCurveImportMgr;
     
     static final private String imageLocation = System.getProperty("user.dir") + "//img//";
 
@@ -302,13 +306,13 @@ public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo
                 case "Currencies" ->
                     importMgr = currencyImportMgr;
                 case "Countries" ->
-                    importMgr = CountryImportMgr.getInstance();
+                    importMgr = countryImportMgr;
                 case "Bonds" ->
                     importMgr = SecurityImportMgr.getInstance();
                 case "Cash Flows" ->
                     importMgr = CashFlowImportMgr.getInstance();
                 case "Yield Curves" ->
-                    importMgr = YieldCurveImportMgr.getInstance();
+                    importMgr = yieldCurveImportMgr;
                 case "Btp Mini Futures" ->
                     importMgr = BondFutImportMgr.getInstance();
                 case "Deliverable Bonds" ->
