@@ -398,7 +398,6 @@ public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo
             // Se il progresso è 100, riabilitiamo il tasto
             if (value >= 100) {
                 btnImport.setEnabled(true);
-                ((DefaultListModel<String>) output.getModel()).addElement("Import terminated!");
             }
         });
     }

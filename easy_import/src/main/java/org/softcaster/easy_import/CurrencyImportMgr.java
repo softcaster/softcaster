@@ -63,8 +63,9 @@ public class CurrencyImportMgr implements IImportMgr {
                 
                 // 2. Aggiorna il progresso ogni X righe o calcola la percentuale
                 int percent = (int) ((current / (double) total) * 100);
-                progressInfo.updateProgress("Importing " + isoCode + " (" + current + "/" + total + ")", percent);            }
-
+                progressInfo.updateProgress("Importing " + isoCode + " (" + current + "/" + total + ")", percent);            
+                current++;
+            }
         } catch (Exception ex) {
             String error = "Error during import: " + ex.getLocalizedMessage();;
             LoggerMgr.logError(error);
