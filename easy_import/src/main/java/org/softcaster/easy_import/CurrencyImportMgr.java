@@ -7,19 +7,21 @@ package org.softcaster.easy_import;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_core.data.Currency;
 import org.softcaster.easy_pricer_core.data.CurrencyDAO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author ep
  */
-@Component 
+@Service("Currencies") 
 public class CurrencyImportMgr implements IImportMgr {
 
     @Autowired
@@ -29,6 +31,7 @@ public class CurrencyImportMgr implements IImportMgr {
     }
 
     @Override
+    @Async("importTaskExecutor") 
     public void start(IProgressInfo progressInfo) {
         CsvImport csvImport = new CsvImport();
         Path path = Paths.get(IMPORT_PATH + "/currencies.csv");
@@ -42,9 +45,11 @@ public class CurrencyImportMgr implements IImportMgr {
         Currency currency = null;
         try {
             csvImport.startImport(config);
-            String isoCode="";
-            for (String[] s : csvImport.getBuffer()) {
-                isoCode = s[1].trim();
+            List<String[]> rows = csvImport.getBuffer();
+            int total = rows.size();
+            int current = 0;
+            for (String[] s : rows) {
+                String isoCode = s[1].trim();
                 currency = dao.findByIsoCode(isoCode);
                 if(currency == null)
                     currency = new Currency();
@@ -54,18 +59,24 @@ public class CurrencyImportMgr implements IImportMgr {
                 currency.setMinorUnit(Integer.valueOf(s[3].trim()).shortValue());
                 currency.setPhysicalCurr(Short.valueOf("1"));
                 currency.setSystemCurr(Short.valueOf("0"));
-
                 dao.saveOrUpdate(currency);
-            }
+                
+                // 2. Aggiorna il progresso ogni X righe o calcola la percentuale
+                int percent = (int) ((current / (double) total) * 100);
+                progressInfo.updateProgress("Importing " + isoCode + " (" + current + "/" + total + ")", percent);            }
 
         } catch (Exception ex) {
-            String error = "Error importing Currency: " + currency.getIsoCode() + " [" + ex.getLocalizedMessage() + "]";
+            String error = "Error during import: " + ex.getLocalizedMessage();;
             LoggerMgr.logError(error);
+            progressInfo.showError(error);
+        } finally {
+            progressInfo.updateProgress("Import terminated successfully", 100);
+            terminate();
         }
     }
 
     @Override
     public void terminate() {
-        LoggerMgr.logInfo("Import terminated");
+        LoggerMgr.logInfo("Import terminated successfully");
     }
 }

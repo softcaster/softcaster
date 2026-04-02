@@ -12,13 +12,13 @@ import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_core.data.Country;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author ep
  */
-@Component
+@Service("Countries") 
 public class CountryImportMgr implements IImportMgr {
 
     @Autowired
