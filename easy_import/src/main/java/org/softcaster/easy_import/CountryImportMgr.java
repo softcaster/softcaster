@@ -10,22 +10,25 @@ import java.nio.file.Paths;
 import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_import.beans.Calendar;
-import org.softcaster.easy_import.beans.CalendarDAO;
-import org.softcaster.easy_import.beans.Country;
-import org.softcaster.easy_import.beans.CountryDAO;
-import org.softcaster.easy_import.beans.Currency;
-import org.softcaster.easy_import.beans.CurrencyDAO;
+import org.softcaster.easy_pricer_core.data.Country;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author ep
  */
+@Component
 public class CountryImportMgr implements IImportMgr {
 
-    private static CountryImportMgr _instance = null;
+    @Autowired
+    private org.softcaster.easy_pricer_core.data.CountryDAO dao;
+    @Autowired
+    private org.softcaster.easy_pricer_core.data.CurrencyDAO currencyDAO;
+    @Autowired
+    private org.softcaster.easy_pricer_core.data.CalendarDAO calendarDAO;
 
-    private CountryImportMgr() {
+    public CountryImportMgr() {
     }
 
     @Override
@@ -39,44 +42,39 @@ public class CountryImportMgr implements IImportMgr {
         config.setStartData(0);
         config.setCharset(StandardCharsets.UTF_8); // utf-8
 
-        Currency currency = new Currency();
-        currency.setCurrency_numeric_code(978);
-        CurrencyDAO currencyDAO = new CurrencyDAO();
-        currencyDAO.loadByIdx(currency);
-        currencyDAO.closeStatements();
+        org.softcaster.easy_pricer_core.data.Currency currency = currencyDAO.findByIsoCode("EUR");
+        org.softcaster.easy_pricer_core.data.Calendar calendar = calendarDAO.findByCode("EUR");
 
-        Calendar calendar = new Calendar();
-        calendar.setCode("EUR");
-        CalendarDAO calendarDAO = new CalendarDAO();
-        calendarDAO.loadByIdx(calendar);
-        calendarDAO.closeStatements();
-
-        Country country = new Country();
-        CountryDAO countryDAO = new CountryDAO();
+        Country country = null;
         try {
             csvImport.startImport(config);
+            String alfa3Code = "";
             for (String[] s : csvImport.getBuffer()) {
                 if (s[0].isEmpty()) {
                     System.out.println("Error: " + s[0].trim());
                     continue;
                 }
-                country.setCountry_numeric_code(Integer.valueOf(s[0].trim()));
-                country.setCountry_name(s[1].trim());
-                country.setOfficial_state_name(s[2].trim());
-                country.setAlfa_2_code(s[3].trim());
-                country.setAlfa_3_code(s[4].trim());
-                country.setSubdivision_code_links("");
-                country.setInternet_cc_tld("");
-                country.setCurrency(currency.getId_currency());
-                country.setCalendar(calendar.getId_calendar());
-                countryDAO.insertOrUpdate(country);
+                alfa3Code = s[4].trim();
+                country = dao.findByAlfa3Code(alfa3Code);
+                if (country == null) {
+                    country = new org.softcaster.easy_pricer_core.data.Country();
+                }
+
+                country.setCountryNumericCode(Integer.valueOf(s[0].trim()).shortValue());
+                country.setCountryName(s[1].trim());
+                country.setOfficialStateName(s[2].trim());
+                country.setAlfa2Code(s[3].trim());
+                country.setAlfa3Code(alfa3Code);
+                country.setSubdivisionCodeLinks("");
+                country.setInternetCcTld("");
+                country.setCurrency(currency);
+                country.setCalendar(calendar);
+                dao.saveOrUpdate(country);
             }
 
         } catch (Exception ex) {
-            String error = "Error importing Country: " + country.getAlfa_3_code() + " [" + ex.getLocalizedMessage() + "]";
+            String error = "Error importing Country: " + country.getAlfa3Code() + " [" + ex.getLocalizedMessage() + "]";
             LoggerMgr.logError(error);
-        } finally {
-            countryDAO.closeStatements();
         }
     }
 
@@ -85,10 +83,4 @@ public class CountryImportMgr implements IImportMgr {
         LoggerMgr.logInfo("Import terminated");
     }
 
-    public static CountryImportMgr getInstance() {
-        if (_instance == null) {
-            _instance = new CountryImportMgr();
-        }
-        return _instance;
-    }
 }
