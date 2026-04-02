@@ -36,14 +36,14 @@ public class YieldCurveImportMgr implements IImportMgr {
             );
 
             int total = managers.size();
-            int current = 0;
+            int current = 1;
 
             for (int i = 0; i < managers.size(); i++) {
                 try {
                     managers.get(i).start(progressInfo);
                     if (progressInfo != null) {
                         int percent = (int) ((current / (double) total) * 100);
-                        progressInfo.updateProgress("Importing Yield Curve" + " (" + current + "/" + total + ")", percent);
+                        progressInfo.updateProgress("Importing Yield Curve: " + managers.get(i).getImportInfo() + " (" + current + "/" + total + ")", percent);
                         current++;
                     }
                 } catch (Exception ex) {

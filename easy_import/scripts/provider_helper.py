@@ -259,6 +259,123 @@ class PyProviderHelper(IProviderHelper):
         return nodeList;
                 
     #
+    # Tassi Eurirs
+    #
+    def getNodeListEurirs(self):
+
+        nodeList = list()
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(1);
+        node.setRic("EUR 01A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(2);
+        node.setRic("EUR 02A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(3);
+        node.setRic("EUR 03A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(4);
+        node.setRic("EUR 04A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(5);
+        node.setRic("EUR 05A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(6);
+        node.setRic("EUR 06A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(7);
+        node.setRic("EUR 07A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(8);
+        node.setRic("EUR 08A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(9);
+        node.setRic("EUR 09A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(10);
+        node.setRic("EUR 10A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(11);
+        node.setRic("EUR 11A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(12);
+        node.setRic("EUR 12A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(15);
+        node.setRic("EUR 15A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(20);
+        node.setRic("EUR 20A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(25);
+        node.setRic("EUR 25A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(30);
+        node.setRic("EUR 30A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(40);
+        node.setRic("EUR 40A Irs");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(50);
+        node.setRic("EUR 50A Irs");
+        nodeList.append(node);
+
+        return nodeList;
+
+    #
     # Tassi Sofr
     #
     def getNodeListSofr(self):
@@ -302,12 +419,14 @@ class PyProviderHelper(IProviderHelper):
             py_in = FileUtil.wrap(sys.stdin, 'r', 0)
             pdb.Pdb(stdin=py_in, stdout=sys.stdout).set_trace()        
         
-        if curveId=='ITA':
+        if curveId=='ITAYC':
             return self.getNodeListITA()
-        elif curveId=='USD':    
+        elif curveId=='USAYC':    
             return self.getNodeListUSD()
         elif curveId=='EURIBOR':    
             return self.getNodeListEuribor()
+        elif curveId=='EURIRS':    
+            return self.getNodeListEurirs()
         elif curveId=='SOFR':    
             return self.getNodeListSofr()
         else:

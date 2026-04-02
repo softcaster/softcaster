@@ -50,15 +50,19 @@ public class EuriborImportMgr implements IImportMgr {
 
     @Override
     public void start(IProgressInfo progressInfo) {
+
+        EuriborRatesProvider provider = EuriborRatesProvider.getInstance();
+        ConnectionParam param = new ConnectionParam();
+        param.baseUrl = "https://www.euribor-rates.eu/it/";
+        param.url = "https://www.euribor-rates.eu/it/tassi-euribor-aggiornati/";
+        param.extraParams.add("EURIBOR");
+        param.today = new org.softcaster.commons.types.Date();
+        param.market = MARKETS.YIELDS;
+
         try {
-            EuriborRatesProvider provider = EuriborRatesProvider.getInstance();
-            ConnectionParam param = new ConnectionParam();
-            param.baseUrl = "https://www.euribor-rates.eu/it/";
-            param.url = "https://www.euribor-rates.eu/it/tassi-euribor-aggiornati/";
-            param.extraParams.add("EURIBOR");
-            param.market = MARKETS.YIELDS;
             provider.refresh(param);
-            saveNodes(provider.quotes(MARKETS.YIELDS));
+            List<DataNode> rates = provider.quotes(MARKETS.YIELDS);
+            saveNodes(rates);
         } catch (MarketDataProviderException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
         } finally {
@@ -79,4 +83,8 @@ public class EuriborImportMgr implements IImportMgr {
         return _instance;
     }
 
+    @Override
+    public String getImportInfo() {
+        return "EURIBOR";
+    }
 }

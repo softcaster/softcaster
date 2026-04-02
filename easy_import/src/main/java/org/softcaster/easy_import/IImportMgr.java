@@ -16,4 +16,8 @@ public interface IImportMgr {
     public void terminate();
 
     public static IImportMgr getInstance(){return null;};
+    
+    default String getImportInfo() {
+        return "";
+    } 
 }

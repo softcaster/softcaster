@@ -50,15 +50,19 @@ public class UsaYcImportMgr implements IImportMgr {
 
     @Override
     public void start(IProgressInfo progressInfo) {
+
+        InvestingComProvider provider = InvestingComProvider.getInstance();
+        ConnectionParam param = new ConnectionParam();
+        param.baseUrl = "https://www.investing.com";
+        param.url = "https://www.investing.com/rates-bonds/usa-government-bonds";
+        param.extraParams.add("USAYC");
+        param.today = new org.softcaster.commons.types.Date();
+        param.market = MARKETS.YIELDS;
+
         try {
-            InvestingComProvider provider = InvestingComProvider.getInstance();
-            ConnectionParam param = new ConnectionParam();
-            param.baseUrl = "https://www.investing.com";
-            param.url = "https://www.investing.com/rates-bonds/usa-government-bonds";
-            param.extraParams.add("USD");
-            param.market = MARKETS.YIELDS;
             provider.refresh(param);
-            saveNodes(provider.quotes(MARKETS.YIELDS));
+            List<DataNode> rates = provider.quotes(MARKETS.YIELDS);
+            saveNodes(rates);
         } catch (MarketDataProviderException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
         } finally {
@@ -78,5 +82,9 @@ public class UsaYcImportMgr implements IImportMgr {
         }
         return _instance;
     }
-
+    
+    @Override
+    public String getImportInfo() {
+        return "USAYC";
+    }
 }

@@ -78,5 +78,9 @@ public class SofrImportMgr implements IImportMgr {
         }
         return _instance;
     }
-
+    
+    @Override
+    public String getImportInfo() {
+        return "SOFR";
+    }
 }

@@ -142,5 +142,9 @@ public class EcbYcImportMgr implements IImportMgr {
         }
         return _instance;
     }
-
+    
+    @Override
+    public String getImportInfo() {
+        return "ECBYC";
+    }
 }
