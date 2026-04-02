@@ -11,4 +11,8 @@ package org.softcaster.easy_import;
 public interface IProgressInfo {
 
     public void setProgress(int progress);
+
+    public void updateProgress(String message, int value);
+
+    public void showError(String error);
 }

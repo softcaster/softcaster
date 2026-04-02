@@ -5,21 +5,16 @@
 package org.softcaster.easy_import;
 
 import jakarta.annotation.PostConstruct;
-import java.io.File;
 import java.net.URL;
-import java.util.Properties;
-import java.util.Vector;
-import java.util.concurrent.ExecutionException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.SwingWorker;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.UnsupportedLookAndFeelException;
-import org.python.util.PythonInterpreter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,14 +26,11 @@ import org.springframework.stereotype.Component;
 @Component
 public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo {
 
-    @Autowired
-    private CurrencyImportMgr currencyImportMgr;
-    @Autowired
-    private CountryImportMgr countryImportMgr;
-    @Autowired
-    private YieldCurveImportMgr yieldCurveImportMgr;
-    
     static final private String imageLocation = System.getProperty("user.dir") + "//img//";
+
+    // Spring riempie questa mappa usando il nome del @Service come chiave
+    @Autowired
+    private Map<String, IImportMgr> importers;
 
     private ImageIcon getIconImage(int icon) {
         ImageIcon image = null;
@@ -63,7 +55,6 @@ public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo
             // Imposta il tema Windows
             javax.swing.UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
             initComponents();
-            init();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.getLogger(ImportMgr.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -89,21 +80,15 @@ public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo
 
         DefaultListModel<String> model = (DefaultListModel<String>) output.getModel();
         if (model != null) {
-            Vector<String> importers = new Vector<>();
-            importers.add("Currencies");
-            importers.add("Countries");
-            importers.add("Bonds");
-            importers.add("Cash Flows");
-            importers.add("Yield Curves");
-            importers.add("Btp Mini Futures");
-            importers.add("Deliverable Bonds");
-            importers.add("Instrument quotes");
-            importers.add("Currency Pairs");
-            cmbImportMgr.setModel(new DefaultComboBoxModel<>(importers));
+
+            // Popola la JComboBox automaticamente con i nomi degli importatori
+            DefaultComboBoxModel<String> cbmodel = new DefaultComboBoxModel<>();
+            for (String name : importers.keySet()) {
+                cbmodel.addElement(name);
+            }
+            cmbImportMgr.setModel(cbmodel);
             cmbImportMgr.setSelectedIndex(-1);
-            // Chiamo clear perche`spring chiama 2 volte il metodo
-            // in fase di inizializzazione
-            model.clear();
+
             model.addElement("Select Importer");
         }
     }
@@ -300,33 +285,7 @@ public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo
     }//GEN-LAST:event_mnuExitActionPerformed
 
     private IImportMgr getImportMgr(String importMgrName) {
-        IImportMgr importMgr = null;
-        if (importMgrName != null) {
-            switch (importMgrName) {
-                case "Currencies" ->
-                    importMgr = currencyImportMgr;
-                case "Countries" ->
-                    importMgr = countryImportMgr;
-                case "Bonds" ->
-                    importMgr = SecurityImportMgr.getInstance();
-                case "Cash Flows" ->
-                    importMgr = CashFlowImportMgr.getInstance();
-                case "Yield Curves" ->
-                    importMgr = yieldCurveImportMgr;
-                case "Btp Mini Futures" ->
-                    importMgr = BondFutImportMgr.getInstance();
-                case "Deliverable Bonds" ->
-                    importMgr = DeliverableBondsImportMgr.getInstance();
-                case "Instrument quotes" ->
-                    importMgr = InstrumentQuoteImportMgr.getInstance();
-                case "Currency Pairs" ->
-                    importMgr = ForexImportMgr.getInstance();
-                default -> {
-                }
-            }
-        }
-
-        return importMgr;
+        return importers.get(importMgrName);
     }
 
     private void btnImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnImportActionPerformed
@@ -357,44 +316,6 @@ public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo
      * @throws java.lang.IllegalAccessException
      * @throws javax.swing.UnsupportedLookAndFeelException
      */
-    public static void main(String args[]) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, Exception {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ImportMgr.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        //</editor-fold>
-        File conf = new File(System.getProperty("user.dir")
-                + "//conf//log4j.conf");
-        System.setProperty("log4j.configuration", "file:" + conf);
-
-        // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
-        String pythonPath = System.getProperty("user.dir") + "\\scripts";
-        Properties props = new Properties();
-        props.setProperty("python.path", pythonPath);
-        PythonInterpreter.initialize(System.getProperties(), props, new String[]{""});
-
-        /* Create and display the form */
-        //addPath(imageLocation);
-        javax.swing.UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> {
-            new ImportMgr().setVisible(true);
-
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClear;
@@ -432,41 +353,23 @@ public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo
     }
 
     private void importAction() {
-        IProgressInfo progressInfo = this;
-        // All code inside SwingWorker runs on a seperate thread
-        SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
-            DefaultListModel<String> model = (DefaultListModel<String>) output.getModel();
+        String selectedName = (String) cmbImportMgr.getSelectedItem();
+        IImportMgr importMgr = getImportMgr(selectedName);
 
-            @Override
-            public Boolean doInBackground() {
-                IImportMgr importMgr = getImportMgr((String) cmbImportMgr.getSelectedItem());
-                if (importMgr != null) {
-                    model.addElement("Import start!");
-                    progressBar.setValue(0);
-                    importMgr.start(progressInfo);
-                } else {
-                    model.addElement("No Importer selected!");
-                }
-                return true;
-            }
+        if (importMgr != null) {
+            // 1. Preparazione UI (Thread sicuro perché siamo nell'evento del tasto)
+            btnImport.setEnabled(false);
+            progressBar.setValue(0);
+            ((DefaultListModel<String>) output.getModel()).addElement("Import start: " + selectedName);
 
-            @Override
-            public void done() {
-                boolean status;
-                try {
-                    progressBar.setValue(100);
-                    status = get();
-                    if (status) {
-                        model.addElement("Import terminated!");
-                    }
-                } catch (InterruptedException | ExecutionException ex) {
-                    LoggerMgr.logInfo(ex.getLocalizedMessage());
-                }
-            }
-        };
+            // 2. Chiamata Asincrona (Spring sposta l'esecuzione nel pool di thread)
+            // Passiamo 'this' perché il JFrame implementa IProgressInfo
+            importMgr.start(this);
 
-        // Call the SwingWorker from within the Swing thread
-        worker.execute();
+            // NOTA: La funzione finisce qui subito. Il lavoro continua "altrove".
+        } else {
+            ((DefaultListModel<String>) output.getModel()).addElement("No Importer selected!");
+        }
     }
 
     private void clearAction() {
@@ -483,5 +386,28 @@ public final class ImportMgr extends javax.swing.JFrame implements IProgressInfo
     @Override
     public void setProgress(int progress) {
         progressBar.setValue(progress);
+    }
+
+    @Override
+    public void updateProgress(String message, int value) {
+        // Cruciale: torniamo nel thread di Swing per aggiornare la grafica
+        java.awt.EventQueue.invokeLater(() -> {
+            progressBar.setValue(value);
+            ((DefaultListModel<String>) output.getModel()).addElement(message);
+
+            // Se il progresso è 100, riabilitiamo il tasto
+            if (value >= 100) {
+                btnImport.setEnabled(true);
+                ((DefaultListModel<String>) output.getModel()).addElement("Import terminated!");
+            }
+        });
+    }
+
+    @Override
+    public void showError(String error) {
+        java.awt.EventQueue.invokeLater(() -> {
+            javax.swing.JOptionPane.showMessageDialog(this, error, "Errore", javax.swing.JOptionPane.ERROR_MESSAGE);
+            btnImport.setEnabled(true); // Riabilita il tasto anche in caso di errore
+        });
     }
 }
