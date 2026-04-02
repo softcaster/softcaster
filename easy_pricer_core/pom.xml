@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://apache.org" 
          xmlns:xsi="http://w3.org"
-         xsi:schemaLocation="http://apache.org https://apache.org">
+         xsi:schemaLocation="http://apache.org http://apache.org">
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version> <!-- Versione stabile corrente -->
+        <version>3.2.3</version>
         <relativePath/> 
     </parent>
 
@@ -17,16 +17,17 @@
     <name>easy_pricer_core</name>
 
     <properties>
-        <java.version>17</java.version> 
+        <java.version>17</java.version>
+        <lombok.version>1.18.30</lombok.version>
+        <protobuf.version>3.25.1</protobuf.version>
+        <grpc.version>1.62.2</grpc.version>
     </properties>
 
     <dependencies>
-        <!-- Core Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- Database Relazionale (PostgreSQL) per Transazioni e Anagrafica -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -39,7 +40,7 @@
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
             <version>5.0.0</version>
-            <classifier>jakarta</classifier> <!-- FONDAMENTALE per Spring Boot 3 -->
+            <classifier>jakarta</classifier>
         </dependency>
         <dependency>
             <groupId>com.querydsl</groupId>
@@ -48,18 +49,16 @@
             <classifier>jakarta</classifier>
             <scope>provided</scope>
         </dependency>
-        <!-- gRPC e Protobuf: Per comunicazioni ad alta velocità tra microservizi -->
         <dependency>
             <groupId>net.devh</groupId>
             <artifactId>grpc-server-spring-boot-starter</artifactId>
-            <version>2.15.0.RELEASE</version>
+            <version>3.1.0.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>       
-        <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -69,59 +68,43 @@
 
     <build>
         <plugins>
-            <!-- Plugin per Spring Boot -->
-            <!-- E`solo una libreria, non mi interessa questo plugin
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
                     <annotationProcessorPaths>
-                        <!-- Processore QueryDSL per Jakarta -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
                         <path>
                             <groupId>com.querydsl</groupId>
                             <artifactId>querydsl-apt</artifactId>
                             <version>5.0.0</version>
                             <classifier>jakarta</classifier>
                         </path>
-                        <!-- Processore Lombok -->
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                        <!-- Processore JPA Jakarta -->
                         <path>
                             <groupId>jakarta.persistence</groupId>
                             <artifactId>jakarta.persistence-api</artifactId>
                             <version>3.1.0</version>
                         </path>
+                        <path>
+                            <groupId>jakarta.annotation</groupId>
+                            <artifactId>jakarta.annotation-api</artifactId>
+                            <version>2.1.1</version>
+                        </path>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>            
-            <!-- Plugin per generare classi Java dai file .proto (gRPC) -->
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
                 <configuration>
-                    <!-- Specifichiamo dove trovare il compilatore protoc -->
                     <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
-                    <!-- Specifichiamo il plugin per generare il codice gRPC Java -->
                     <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
                 </configuration>                
                 <executions>
@@ -135,4 +118,5 @@
             </plugin>
         </plugins>
     </build>
+    <!-- commento fittizio -->
 </project>
