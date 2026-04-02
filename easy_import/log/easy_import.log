@@ -48,3 +48,21 @@ ERROR	[2026-04-02 09:05:23,484] [SwingWorker-pool-3-thread-2] (LoggerMgr.java:31
  INFO	[2026-04-02 09:05:29,985] [AWT-EventQueue-0] (LoggerMgr.java:36)
      	Bye bye!
 
+ INFO	[2026-04-02 10:39:05,352] [ImportWorker-1] (LoggerMgr.java:36)
+     	Import terminated successfully
+
+ INFO	[2026-04-02 10:39:28,703] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+
+ INFO	[2026-04-02 10:41:19,009] [ImportWorker-1] (LoggerMgr.java:36)
+     	Import terminated successfully
+
+ INFO	[2026-04-02 10:41:38,638] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+
+ INFO	[2026-04-02 10:57:16,071] [ImportWorker-1] (LoggerMgr.java:36)
+     	Import terminated successfully
+
+ INFO	[2026-04-02 10:57:20,902] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+
