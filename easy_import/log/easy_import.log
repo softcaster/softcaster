@@ -90,3 +90,12 @@ ERROR	[2026-04-02 09:05:23,484] [SwingWorker-pool-3-thread-2] (LoggerMgr.java:31
  INFO	[2026-04-02 14:31:56,720] [AWT-EventQueue-0] (LoggerMgr.java:36)
      	Bye bye!
 
+ INFO	[2026-04-02 14:50:21,555] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+
+ INFO	[2026-04-02 14:53:07,488] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+
+ INFO	[2026-04-02 14:54:33,914] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+
