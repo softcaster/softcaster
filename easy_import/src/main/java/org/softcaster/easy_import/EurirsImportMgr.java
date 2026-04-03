@@ -6,16 +6,12 @@ package org.softcaster.easy_import;
 
 import java.util.List;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_import.beans.Yield_curve;
-import org.softcaster.easy_import.beans.Yield_curveDAO;
-import org.softcaster.easy_import.beans.Yield_curve_item;
-import org.softcaster.easy_import.beans.Yield_curve_itemDAO;
+import org.softcaster.easy_pricer_core.data.YieldCurveDAO;
 import org.softcaster.marketdataprovider.ConnectionParam;
 import org.softcaster.marketdataprovider.DataNode;
 import org.softcaster.marketdataprovider.MARKETS;
 import org.softcaster.marketdataprovider.MarketDataProviderException;
 import org.softcaster.marketdataprovider.sole24h.Sole24hProvider;
-import org.softcaster.marketdataprovider.YieldNode;
 
 /**
  *
@@ -24,29 +20,9 @@ import org.softcaster.marketdataprovider.YieldNode;
 public class EurirsImportMgr implements IImportMgr {
 
     private static EurirsImportMgr _instance = null;
-    private final Yield_curveDAO ycDAO = new Yield_curveDAO();
-    private final Yield_curve_itemDAO ycItemDAO = new Yield_curve_itemDAO();
 
-    private void saveNodes(List<DataNode> rates) {
-        Yield_curve yc = new Yield_curve();
-        yc.setCode("EURIRS");
-        ycDAO.loadByIdx(yc);
-        if (yc != null) {
-            Yield_curve_item ycItem = null;
-            for (DataNode node : rates) {
-                if (node instanceof YieldNode yieldNode) {
-                    ycItem = new Yield_curve_item();
-                    ycItem.setRic(yieldNode.getRic());
-                    ycItem.setAsk(yieldNode.getAsk() / 100.);
-                    ycItem.setBid(yieldNode.getBid() / 100.);
-                    ycItem.setOffset_type(yieldNode.getOffsetType().ordinal());
-                    ycItem.setOffset_value(yieldNode.getOffset());
-                    ycItem.setYield_curve(yc.getId_yield_curve());
-                    ycItemDAO.insertOrUpdate(ycItem);
-                }
-            }
-        }
-    }
+    // Statico per essere usato dal Singleton
+    private static YieldCurveDAO yieldCurveDAO;
 
     @Override
     public void start(IProgressInfo progressInfo) {
@@ -61,7 +37,7 @@ public class EurirsImportMgr implements IImportMgr {
         try {
             provider.refresh(param);
             List<DataNode> rates = provider.quotes(MARKETS.YIELDS);
-            saveNodes(rates);
+            YieldCurveImportMgr.saveNodes(rates,"EURIRS",yieldCurveDAO);
         } catch (MarketDataProviderException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
         } finally {
@@ -71,13 +47,12 @@ public class EurirsImportMgr implements IImportMgr {
 
     @Override
     public void terminate() {
-        ycDAO.closeStatements();
-        ycItemDAO.closeStatements();
     }
 
-    public static EurirsImportMgr getInstance() {
+    public static EurirsImportMgr getInstance(YieldCurveDAO dao) {
         if (_instance == null) {
             _instance = new EurirsImportMgr();
+            yieldCurveDAO = dao;
         }
         return _instance;
     }

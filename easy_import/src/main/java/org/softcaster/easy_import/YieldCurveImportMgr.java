@@ -7,6 +7,12 @@ package org.softcaster.easy_import;
 import java.util.Arrays;
 import java.util.List;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.easy_pricer_core.data.YieldCurve;
+import org.softcaster.easy_pricer_core.data.YieldCurveDAO;
+import org.softcaster.easy_pricer_core.data.YieldCurveItem;
+import org.softcaster.marketdataprovider.DataNode;
+import org.softcaster.marketdataprovider.YieldNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +23,10 @@ import org.springframework.stereotype.Service;
 @Service("Yield Curves")
 public class YieldCurveImportMgr implements IImportMgr {
 
-    public YieldCurveImportMgr() {
+    @Autowired
+    private YieldCurveDAO dao;
 
+    public YieldCurveImportMgr() {
     }
 
     @Override
@@ -27,12 +35,12 @@ public class YieldCurveImportMgr implements IImportMgr {
         try {
             // Lista dei manager da eseguire in ordine
             List<IImportMgr> managers = Arrays.asList(
-                    EcbYcImportMgr.getInstance(),
-                    ItaYcImportMgr.getInstance(),
-                    UsaYcImportMgr.getInstance(),
-                    EuriborImportMgr.getInstance(),
-                    EurirsImportMgr.getInstance(),
-                    SofrImportMgr.getInstance()
+                    EcbYcImportMgr.getInstance(dao),
+                    ItaYcImportMgr.getInstance(dao),
+                    UsaYcImportMgr.getInstance(dao),
+                    EuriborImportMgr.getInstance(dao),
+                    EurirsImportMgr.getInstance(dao),
+                    SofrImportMgr.getInstance(dao)
             );
 
             int total = managers.size();
@@ -65,4 +73,37 @@ public class YieldCurveImportMgr implements IImportMgr {
     public void terminate() {
     }
 
+    // Accetta una lista di DataNode o di qualsiasi sua sottoclasse
+    public static void saveNodes(List<? extends DataNode> rates, String curveId, YieldCurveDAO yieldCurveDAO) {
+        if (yieldCurveDAO != null) {
+            YieldCurve yieldCurve = yieldCurveDAO.findByCode(curveId);
+            if (yieldCurve != null) {
+                YieldCurveItem yieldCurveItem = null;
+                for (DataNode node : rates) {
+                    if (node instanceof YieldNode yieldNode) {
+                        yieldCurveItem = yieldCurve.getItems().stream()
+                                .filter(item -> item.getRic() != null && item.getRic().equals(yieldNode.getRic()))
+                                .findFirst()
+                                .orElse(null);
+
+                        if (yieldCurveItem != null) {
+                            // AGGIORNA i dati di mercato
+                            yieldCurveItem.setBid(yieldNode.getBid());
+                            yieldCurveItem.setAsk(yieldNode.getAsk());
+                        } else {
+                            yieldCurveItem = new YieldCurveItem();
+                            yieldCurveItem.setRic(yieldNode.getRic());
+                            yieldCurveItem.setBid(yieldNode.getBid() / 100.);
+                            yieldCurveItem.setAsk(yieldNode.getAsk() / 100.);
+                            yieldCurveItem.setOffsetType((short) yieldNode.getOffsetType().ordinal());
+                            yieldCurveItem.setOffsetValue((short) yieldNode.getOffset());
+                            yieldCurveItem.setYieldCurve(yieldCurve.getIdYieldCurve());
+                            yieldCurve.getItems().add(yieldCurveItem);
+                        }
+                    }
+                }
+                yieldCurveDAO.saveOrUpdate(yieldCurve);
+            }
+        }
+    }
 }
