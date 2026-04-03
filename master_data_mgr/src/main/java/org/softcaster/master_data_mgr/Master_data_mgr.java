@@ -1,10 +1,9 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.easy_import;
 
-import javax.swing.JFrame;
+package org.softcaster.master_data_mgr;
+
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.marketdataprovider.MarketDataProviderHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,18 +21,17 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
 @ComponentScan(basePackages = {
-    "org.softcaster.easy_import", // Il pacchetto dell'app
+    "org.softcaster.master_data_mgr", // Il pacchetto dell'app
     "org.softcaster.easy_pricer_core" // Il pacchetto della LIBRERIA
 })
 @EntityScan("org.softcaster.easy_pricer_core.data")
 @EnableJpaRepositories("org.softcaster.easy_pricer_core.data")
-public class EasyImport implements CommandLineRunner {
+public class Master_data_mgr  implements CommandLineRunner {
 
     @Autowired
-    private ImportMgr importMgr;
+    private JMasterDataMgr masterDataMgr;
 
     public static void main(String[] args) {
-
         // Inizializzazione Logger
         MarketDataProviderHelper.initializeLogger();
 
@@ -41,7 +39,7 @@ public class EasyImport implements CommandLineRunner {
         MarketDataProviderHelper.initializePython();
 
         // Modo corretto per applicazioni Swing + Spring Boot
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(EasyImport.class);
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(Master_data_mgr.class);
         
         builder.headless(false) 
                .run(args);    
@@ -54,8 +52,7 @@ public class EasyImport implements CommandLineRunner {
             try {
                 
                 // Uso bean iniettato da Spring
-                importMgr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                importMgr.setVisible(true);
+                masterDataMgr.setVisible(true);
 
             } catch (Exception e) {
                 LoggerMgr.logError(e.getLocalizedMessage());

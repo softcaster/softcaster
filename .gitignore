@@ -7,3 +7,4 @@
 /easy_import/target/
 *.log
 /market_data_service/target/
+/master_data_mgr/target/
