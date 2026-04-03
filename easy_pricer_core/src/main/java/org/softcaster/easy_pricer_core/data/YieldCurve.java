@@ -1,5 +1,6 @@
 package org.softcaster.easy_pricer_core.data;
 
+import jakarta.persistence.CascadeType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,14 +44,14 @@ public class YieldCurve implements Serializable {
     @JoinColumn(name = "calendar", nullable = true)
     private Calendar calendar;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "yield_curve") // FK in child table yield_curve_item
-    private List<YieldCurveItem> items = new ArrayList<>();    
-    
+    private List<YieldCurveItem> items = new ArrayList<>();
+
     @Column(name = "compounding")
     private Short compounding;
-    
+
     public Integer getIdYieldCurve() {
         return idYieldCurve;
     }
@@ -147,5 +148,5 @@ public class YieldCurve implements Serializable {
     public void setCompounding(Short compounding) {
         this.compounding = compounding;
     }
-    
+
 }

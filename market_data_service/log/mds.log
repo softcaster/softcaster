@@ -1734,3 +1734,6 @@ ERROR	[2026-03-31 08:46:08,088] [main] (LoggerMgr.java:31)
  INFO	[2026-03-31 08:47:30,776] [AWT-EventQueue-0] (LoggerMgr.java:36)
      	Bye bye!
 
+ INFO	[2026-04-02 20:41:58,225] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+

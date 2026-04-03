@@ -4,15 +4,14 @@
  */
 package org.softcaster.easy_import;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_import.beans.Yield_curve;
-import org.softcaster.easy_import.beans.Yield_curveDAO;
-import org.softcaster.easy_import.beans.Yield_curve_item;
-import org.softcaster.easy_import.beans.Yield_curve_itemDAO;
+import org.softcaster.easy_pricer_core.data.YieldCurveDAO;
+import org.softcaster.marketdataprovider.ConnectionParam;
+import org.softcaster.marketdataprovider.DataNode;
+import org.softcaster.marketdataprovider.MARKETS;
+import org.softcaster.marketdataprovider.MarketDataProviderException;
 import org.softcaster.marketdataprovider.sole24h.Sole24hProvider;
-import org.softcaster.marketdataprovider.YieldNode;
 
 /**
  *
@@ -21,36 +20,25 @@ import org.softcaster.marketdataprovider.YieldNode;
 public class EurirsImportMgr implements IImportMgr {
 
     private static EurirsImportMgr _instance = null;
-    private List<YieldNode> nodes = new ArrayList<>();
-    private final Yield_curveDAO ycDAO = new Yield_curveDAO();
-    private final Yield_curve_itemDAO ycItemDAO = new Yield_curve_itemDAO();
 
-    private void saveNodes() {
-        Yield_curve yc = new Yield_curve();
-        yc.setCode("EURIRS");
-        ycDAO.loadByIdx(yc);
-        if (yc != null) {
-            Yield_curve_item ycItem = null;
-            for (YieldNode node : nodes) {
-                ycItem = new Yield_curve_item();
-                ycItem.setRic(node.getRic());
-                ycItem.setAsk(node.getAsk() / 100.);
-                ycItem.setBid(node.getBid() / 100.);
-                ycItem.setOffset_type(node.getOffsetType().ordinal());
-                ycItem.setOffset_value(node.getOffset());
-                ycItem.setYield_curve(yc.getId_yield_curve());
-                ycItemDAO.insertOrUpdate(ycItem);
-            }
-        }
-    }
+    // Statico per essere usato dal Singleton
+    private static YieldCurveDAO yieldCurveDAO;
 
     @Override
     public void start(IProgressInfo progressInfo) {
+
+        Sole24hProvider provider = Sole24hProvider.getInstance();
+        ConnectionParam param = new ConnectionParam();
+        param.baseUrl = "https://www.ilsole24ore.com/";
+        param.url = "https://mercatiwdg.ilsole24ore.com/FinanzaMercati/WidgetSelector/listino?widgetConfiguration=FMIRS";
+        param.extraParams.add("EURIRS");
+        param.market = MARKETS.YIELDS;
+
         try {
-            Sole24hProvider.getInstance().refresh(new org.softcaster.commons.types.Date().sqlDate(), "");
-            nodes = Sole24hProvider.getInstance().getIrsRates();
-            saveNodes();
-        } catch (Exception ex) {
+            provider.refresh(param);
+            List<DataNode> rates = provider.quotes(MARKETS.YIELDS);
+            YieldCurveImportMgr.saveNodes(rates,"EURIRS",yieldCurveDAO);
+        } catch (MarketDataProviderException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
         } finally {
             terminate();
@@ -59,14 +47,18 @@ public class EurirsImportMgr implements IImportMgr {
 
     @Override
     public void terminate() {
-        ycDAO.closeStatements();
-        ycItemDAO.closeStatements();
     }
 
-    public static EurirsImportMgr getInstance() {
+    public static EurirsImportMgr getInstance(YieldCurveDAO dao) {
         if (_instance == null) {
             _instance = new EurirsImportMgr();
+            yieldCurveDAO = dao;
         }
         return _instance;
+    }
+
+    @Override
+    public String getImportInfo() {
+        return "EURIRS";
     }
 }

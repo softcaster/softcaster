@@ -6,3 +6,4 @@
 *.class
 /easy_import/target/
 *.log
+/market_data_service/target/
