@@ -15,6 +15,7 @@ import org.softcaster.easy_import.beans.Instrument_quoteDAO;
 import org.softcaster.easy_import.beans.Master_data;
 import org.softcaster.easy_import.beans.Master_dataDAO;
 import org.softcaster.easy_pricer.Currency_pair;
+import org.softcaster.marketdataprovider.REQUEST_TYPE;
 import org.softcaster.marketdataprovider.euronext.EuroNextProvider;
 
 /**
@@ -57,6 +58,13 @@ public class InstrumentQuoteImportMgr implements IImportMgr {
         currency_pair = new Currency_pair();
     }
 
+    private double getBondQuote(String ric, REQUEST_TYPE type) {
+        return 0;
+    }
+    private double getBondFutureQuote(String ric, REQUEST_TYPE type) {
+        return 0;
+    }
+    
     private void saveRecord(Master_data record) {
         if (record != null) {
             asset_class.setId_asset_class(record.getAsset_class());
@@ -64,10 +72,10 @@ public class InstrumentQuoteImportMgr implements IImportMgr {
             double quotation = 0;
             switch (asset_class.getCode()) {
                 case "FRN", "XRN", "FRB", "XRB", "BLL" -> {
-                    quotation = 0.; //provider.getBondQuote(record.getCode(), REQUEST_TYPE.MIDDLE);
+                    quotation = getBondQuote(record.getCode(), REQUEST_TYPE.MIDDLE);
                 }
                 case "BFU" -> {
-                    quotation = 0.; //provider.getFutureQuote(record.getCode(), REQUEST_TYPE.MIDDLE);
+                    quotation = getBondFutureQuote(record.getCode(), REQUEST_TYPE.MIDDLE);
                 }
                 default -> {
                 }
