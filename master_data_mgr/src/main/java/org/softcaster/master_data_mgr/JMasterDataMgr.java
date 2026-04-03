@@ -13,6 +13,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.master_data_mgr.models.TreeModel;
 import org.springframework.stereotype.Component;
 
 /**
@@ -43,19 +44,20 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         // Forza l'esecuzione sul thread di Swing per evitare race conditions
         java.awt.EventQueue.invokeLater(() -> {
 
-        // Titolo
-        this.setTitle(TITLE);
+            // Titolo
+            this.setTitle(TITLE);
 
-        // Icona
-        ImageIcon img = new ImageIcon(getClass().getResource("/images/favicon.png"));
-        setIconImage(img.getImage());
+            // Icona
+            ImageIcon img = new ImageIcon(getClass().getResource("/images/favicon.png"));
+            setIconImage(img.getImage());
 
-        // Set the initial size of the window
-        setSize(800, 600);
+            // Set the initial size of the window
+            setSize(800, 600);
 
-        // Finestra centrata nello schermo
-        setLocationRelativeTo(null);
+            // Finestra centrata nello schermo
+            setLocationRelativeTo(null);
 
+            navigator.setModel(TreeModel.buildTree());
             // Sovrascrive qualsiasi impostazione precedente
             this.setDefaultCloseOperation(javax.swing.JFrame.DO_NOTHING_ON_CLOSE);
 
@@ -82,6 +84,11 @@ public class JMasterDataMgr extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        splitPane = new javax.swing.JSplitPane();
+        sideNav = new javax.swing.JPanel();
+        sideNavScrollPane = new javax.swing.JScrollPane();
+        navigator = new javax.swing.JTree();
+        mainPanel = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         itemExit = new javax.swing.JMenuItem();
@@ -89,10 +96,27 @@ public class JMasterDataMgr extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
+        splitPane.setDividerLocation(200);
+
+        sideNav.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        sideNav.setLayout(new java.awt.BorderLayout());
+
+        sideNavScrollPane.setViewportView(navigator);
+
+        sideNav.add(sideNavScrollPane, java.awt.BorderLayout.CENTER);
+
+        splitPane.setLeftComponent(sideNav);
+
+        mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 15, 5, 5));
+        mainPanel.setLayout(new java.awt.CardLayout());
+        splitPane.setRightComponent(mainPanel);
+
+        getContentPane().add(splitPane, java.awt.BorderLayout.CENTER);
+
         fileMenu.setText("File");
 
         itemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.ALT_DOWN_MASK));
-        itemExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/x-mark-2-16.png"))); // NOI18N
+        itemExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/close16dp.png"))); // NOI18N
         itemExit.setText("Exit");
         itemExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -108,17 +132,6 @@ public class JMasterDataMgr extends javax.swing.JFrame {
 
         setJMenuBar(menuBar);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 277, Short.MAX_VALUE)
-        );
-
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -131,7 +144,12 @@ public class JMasterDataMgr extends javax.swing.JFrame {
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem itemExit;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JTree navigator;
+    private javax.swing.JPanel sideNav;
+    private javax.swing.JScrollPane sideNavScrollPane;
+    private javax.swing.JSplitPane splitPane;
     // End of variables declaration//GEN-END:variables
 
     private void exitAction() {
