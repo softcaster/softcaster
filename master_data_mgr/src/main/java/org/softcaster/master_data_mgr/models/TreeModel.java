@@ -19,28 +19,33 @@ public class TreeModel {
         // Instrument
         DefaultMutableTreeNode instruments = new DefaultMutableTreeNode("Instruments");
         DefaultMutableTreeNode securities = new DefaultMutableTreeNode("Securities");
-        securities.add(new DefaultMutableTreeNode("Bonds"));
-        securities.add(new DefaultMutableTreeNode("Equities"));
-        securities.add(new DefaultMutableTreeNode("Curr.Pairs"));        
+        // Foglie
+        securities.add(new DefaultMutableTreeNode(new MasterDataNode("Bonds", "BOND")));
+        securities.add(new DefaultMutableTreeNode(new MasterDataNode("Equities", "EQUITY")));
         instruments.add(securities);
-        
-        DefaultMutableTreeNode derivatives = new DefaultMutableTreeNode("Derivatives");        
+
+        DefaultMutableTreeNode forex = new DefaultMutableTreeNode("Forex");
+        forex.add(new DefaultMutableTreeNode(new MasterDataNode("Currencies", "CURRENCIES")));
+        forex.add(new DefaultMutableTreeNode(new MasterDataNode("Curr.Pairs", "CURR_PAIR")));
+        instruments.add(forex);
+
+        DefaultMutableTreeNode derivatives = new DefaultMutableTreeNode("Derivatives");
         DefaultMutableTreeNode futures = new DefaultMutableTreeNode("Futures");
-        futures.add(new DefaultMutableTreeNode("Bond Futures"));
-        futures.add(new DefaultMutableTreeNode("MM Futures"));
-        futures.add(new DefaultMutableTreeNode("Fx Futures"));
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Futures", "BOND_FUTURE")));
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("MM Futures", "MM_FUTURE")));
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Futures", "FX_FUTURE")));
         derivatives.add(futures);
-        
+
         DefaultMutableTreeNode options = new DefaultMutableTreeNode("Options");
-        options.add(new DefaultMutableTreeNode("Bond Options"));
-        options.add(new DefaultMutableTreeNode("MM Options"));
-        options.add(new DefaultMutableTreeNode("Fx Options"));
+        options.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Options", "BOND_OPTION")));
+        options.add(new DefaultMutableTreeNode(new MasterDataNode("MM Options", "MM_OPTION")));
+        options.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Options", "FX_OPTION")));
         derivatives.add(options);
-        
+
         instruments.add(derivatives);
-        
+
         root.add(instruments);
-        
+
         // References
         DefaultMutableTreeNode references = new DefaultMutableTreeNode("References");
         references.add(new DefaultMutableTreeNode("Counterparts"));

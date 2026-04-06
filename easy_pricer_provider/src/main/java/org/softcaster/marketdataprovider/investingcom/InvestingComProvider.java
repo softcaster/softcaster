@@ -73,6 +73,8 @@ public class InvestingComProvider extends AbstractProvider {
         if (helper != null) {
             List<YieldNode> nodes = helper.getNodeList(idCurve);
             if (nodes != null) {
+                // Cancello eventuali elementi presenti
+                rateQuotes.clear();
                 for (YieldNode node : nodes) {
                     String[] base = response.split(node.getRic());
                     // Base deve essere un array di 2 elementi, se superiore
@@ -188,10 +190,8 @@ public class InvestingComProvider extends AbstractProvider {
     @Override
     public void refresh(ConnectionParam param) throws MarketDataProviderException {
         try {
-            if (isTimeElapsed()) {
-                connect(param);
-                build(param.today);
-            }
+            connect(param);
+            build(param.today);
         } catch (IOException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new MarketDataProviderException(ex.getLocalizedMessage());

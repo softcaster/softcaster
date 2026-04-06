@@ -5,15 +5,24 @@
 package org.softcaster.master_data_mgr;
 
 import jakarta.annotation.PostConstruct;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.CardLayout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.easy_pricer_core.data.CurrencyDAO;
+import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
+import org.softcaster.master_data_mgr.models.MasterDataNode;
 import org.softcaster.master_data_mgr.models.TreeModel;
+import org.softcaster.master_data_mgr.ui.MasterDataTreeCellRenderer;
+import org.softcaster.master_data_mgr.views.BondPanel;
+import org.softcaster.master_data_mgr.views.ForexPanel;
+import org.softcaster.master_data_mgr.views.HomePanel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,6 +32,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class JMasterDataMgr extends javax.swing.JFrame {
 
+    @Autowired
+    private SecurityMasterDataDAO securityMasterDataDAO;
+    @Autowired
+    private CurrencyDAO currencyDAO;
+    
     private static final String TITLE = "Master Data";
 
     /**
@@ -58,6 +72,35 @@ public class JMasterDataMgr extends javax.swing.JFrame {
             setLocationRelativeTo(null);
 
             navigator.setModel(TreeModel.buildTree());
+            navigator.setCellRenderer(new MasterDataTreeCellRenderer());
+            navigator.addTreeSelectionListener(e -> {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) navigator.getLastSelectedPathComponent();
+
+                if (node == null) {
+                    return; // Nessuna selezione
+                }
+                Object userObject = node.getUserObject();
+                if (node.isLeaf() && userObject instanceof MasterDataNode data) {
+
+                    // Recupera il CardLayout dal mainPanel
+                    CardLayout cl = (CardLayout) (mainPanel.getLayout());
+
+                    // Logica per decidere quale pannello mostrare in base al tipo
+                    switch (data.getType()) {
+                        case "BOND" ->
+                            cl.show(mainPanel, "BOND_CARD");
+                        case "CURRENCIES" ->
+                            cl.show(mainPanel, "CURRENCY_CARD");
+                        default ->
+                            cl.show(mainPanel, "DEFAULT");
+                    }
+
+                    // Opzionale: Carica i dati specifici nel pannello appena mostrato
+                    // bondPanel.loadData(data.getId()); 
+                }
+            });
+
+            addPanels();
             // Sovrascrive qualsiasi impostazione precedente
             this.setDefaultCloseOperation(javax.swing.JFrame.DO_NOTHING_ON_CLOSE);
 
@@ -89,6 +132,11 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         sideNavScrollPane = new javax.swing.JScrollPane();
         navigator = new javax.swing.JTree();
         mainPanel = new javax.swing.JPanel();
+        toolBar = new javax.swing.JToolBar();
+        btnExit = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        btnFilter = new javax.swing.JButton();
+        btnDown = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         itemExit = new javax.swing.JMenuItem();
@@ -112,6 +160,37 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         splitPane.setRightComponent(mainPanel);
 
         getContentPane().add(splitPane, java.awt.BorderLayout.CENTER);
+
+        toolBar.setRollover(true);
+
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/close16dp.png"))); // NOI18N
+        btnExit.setToolTipText("Exit App");
+        btnExit.setFocusable(false);
+        btnExit.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnExit.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
+        toolBar.add(btnExit);
+        toolBar.add(jSeparator1);
+
+        btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/filter_alt_16dp.png"))); // NOI18N
+        btnFilter.setToolTipText("Add new Item");
+        btnFilter.setFocusable(false);
+        btnFilter.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnFilter.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBar.add(btnFilter);
+
+        btnDown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/download_16dp.png"))); // NOI18N
+        btnDown.setToolTipText("Edit selected Item");
+        btnDown.setFocusable(false);
+        btnDown.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnDown.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBar.add(btnDown);
+
+        getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
 
         fileMenu.setText("File");
 
@@ -140,16 +219,26 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         exitAction();
     }//GEN-LAST:event_itemExitActionPerformed
 
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        // TODO add your handling code here:
+        exitAction();
+    }//GEN-LAST:event_btnExitActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnDown;
+    private javax.swing.JButton btnExit;
+    private javax.swing.JButton btnFilter;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem itemExit;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JTree navigator;
     private javax.swing.JPanel sideNav;
     private javax.swing.JScrollPane sideNavScrollPane;
     private javax.swing.JSplitPane splitPane;
+    private javax.swing.JToolBar toolBar;
     // End of variables declaration//GEN-END:variables
 
     private void exitAction() {
@@ -160,6 +249,22 @@ public class JMasterDataMgr extends javax.swing.JFrame {
             LoggerMgr.logInfo("Bye bye!");
             System.exit(0);
         }
+    }
+
+    private void addPanels() {
+        // 1. Istanzia i pannelli
+        JPanel bondPanel = new BondPanel(securityMasterDataDAO);
+        JPanel fxPanel = new ForexPanel(currencyDAO);
+        JPanel defaultPanel = new HomePanel();
+
+        // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
+        mainPanel.add(defaultPanel, "DEFAULT");
+        mainPanel.add(bondPanel, "BOND_CARD");
+        mainPanel.add(fxPanel, "CURRENCY_CARD");
+
+        // 3. Mostra la card iniziale
+        CardLayout cl = (CardLayout) mainPanel.getLayout();
+        cl.show(mainPanel, "DEFAULT");
     }
 
 }
