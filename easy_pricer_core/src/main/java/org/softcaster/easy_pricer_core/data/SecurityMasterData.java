@@ -1,5 +1,6 @@
 package org.softcaster.easy_pricer_core.data;
 
+import jakarta.persistence.CascadeType;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.Column;
@@ -48,9 +49,9 @@ public class SecurityMasterData extends MasterData {
     @Column(name = "first_coupon_payment_date")
     private java.sql.Date firstCouponPaymentDate;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
-    @JoinColumn(name = "master_data") // FK in child table cash_flow_item
+    @JoinColumn(name = "master_data", nullable = false) // FK in child table cash_flow_item
     private List<CashFlowItem> cashFlows = new ArrayList<>();    
 
     public String getIsin() {

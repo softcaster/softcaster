@@ -23,7 +23,7 @@ public class YieldCurveItem implements Serializable {
     @Column(name = "id_yield_curve_item", columnDefinition = "INTEGER")
     private Integer idYieldCurveItem;
 
-    @Column(name = "yield_curve")
+    @Column(name = "yield_curve", insertable = false, updatable = false)
     private Integer yieldCurve;
 
     @Column(name = "ric")

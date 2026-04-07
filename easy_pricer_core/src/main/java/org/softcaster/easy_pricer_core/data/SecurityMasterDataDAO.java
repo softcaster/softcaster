@@ -11,6 +11,8 @@ public class SecurityMasterDataDAO {
 
     @Resource
     private SecurityMasterDataRepository repository;
+    @Resource
+    private InstrumentQuoteRepository quoteRepository;
 
     private final Sort sortByMaturity = Sort.by(Sort.Direction.ASC, "maturityDate");
 
@@ -26,7 +28,11 @@ public class SecurityMasterDataDAO {
 
     @Transactional
     public void delete(SecurityMasterData securityMasterData) {
-        repository.delete(securityMasterData);
+        if (securityMasterData != null && securityMasterData.getIdMasterData() != null) {
+            quoteRepository.deleteInstrumentQuotes(securityMasterData.getIdMasterData());
+            quoteRepository.deleteInstrumentQuoteHist(securityMasterData.getIdMasterData());
+            repository.delete(securityMasterData);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -34,10 +40,12 @@ public class SecurityMasterDataDAO {
         return repository.findAll(sortByMaturity);
     }
 
+    @Transactional(readOnly = true)
     public SecurityMasterData findByIsin(String isin) {
         return repository.findByIsin(isin);
     }
 
+    @Transactional(readOnly = true)
     public List<SecurityMasterData> findByCurrency(String currencyCode) {
         return repository.findByCurrencyIsoCode(currencyCode);
     }

@@ -21,7 +21,7 @@ public class Holiday implements Serializable {
     @Column(name = "id_holiday", columnDefinition = "INTEGER")
     private Integer idHoliday;
 
-    @Column(name = "calendar")
+    @Column(name = "calendar", insertable = false, updatable = false)
     private Integer calendar;
 
     @Column(name = "holiday_day")
@@ -31,7 +31,7 @@ public class Holiday implements Serializable {
     private Short holidayMonth;
 
     @Column(name = "description")
-    private String  description;
+    private String description;
 
     public Integer getIdHoliday() {
         return idHoliday;
@@ -101,6 +101,5 @@ public class Holiday implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    
+
 }

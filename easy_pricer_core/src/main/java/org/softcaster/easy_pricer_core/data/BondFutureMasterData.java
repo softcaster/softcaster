@@ -1,5 +1,6 @@
 package org.softcaster.easy_pricer_core.data;
 
+import jakarta.persistence.CascadeType;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.Column;
@@ -31,9 +32,9 @@ public class BondFutureMasterData extends FutureMasterData {
     @Column(name = "initial_margin")
     private Double initialMargin;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
-    @JoinColumn(name = "master_data") // FK in child table deliverable_bonds
+    @JoinColumn(name = "master_data", nullable = false) // FK in child table deliverable_bonds
     private List<DeliverableBonds> deliverables = new ArrayList<>();
 
     public Double getContractValue() {

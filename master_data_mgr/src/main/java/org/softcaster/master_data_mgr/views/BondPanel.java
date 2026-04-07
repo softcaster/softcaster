@@ -87,15 +87,7 @@ public class BondPanel extends AbstactMDPanel {
         bondTable.setModel(model);
 
         // Popola il model
-        List<SecurityMasterData> bonds = dao.findAll();
-
-        List<SecurityBean> securityBeanList = new ArrayList<>();
-        SecurityBean bean = null;
-        for (SecurityMasterData item : bonds) {
-            bean = new SecurityBean(item);
-            securityBeanList.add(bean);
-        }
-        model.setData(securityBeanList);
+        refreshModel(model);
     }
 
     @Override
@@ -118,5 +110,17 @@ public class BondPanel extends AbstactMDPanel {
     @Override
     protected void acDelActionPerformed(ActionEvent evt) {
         System.out.println("acDelActionPerformed");
+    }
+
+    @Override
+    protected void refreshModel(MasterDataTableModel model) {
+        List<SecurityMasterData> bonds = dao.findAll();
+        List<SecurityBean> securityBeanList = new ArrayList<>();
+        SecurityBean bean = null;
+        for (SecurityMasterData item : bonds) {
+            bean = new SecurityBean(item);
+            securityBeanList.add(bean);
+        }
+        model.setData(securityBeanList);
     }
 }

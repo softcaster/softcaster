@@ -107,14 +107,7 @@ public class ForexPanel extends AbstactMDPanel {
         fxTable.setModel(model);
 
         // Popola il model
-        List<Currency> currencies = dao.findAll();
-        List<CurrencyBean> currencyBeanList = new ArrayList<>();
-        CurrencyBean bean = null;
-        for (Currency item : currencies) {
-            bean = new CurrencyBean(item);
-            currencyBeanList.add(bean);
-        }
-        model.setData(currencyBeanList);
+        refreshModel(model);
     }
 
     @Override
@@ -137,5 +130,17 @@ public class ForexPanel extends AbstactMDPanel {
     @Override
     protected void acDelActionPerformed(ActionEvent evt) {
         System.out.println("acDelActionPerformed");
+    }
+
+    @Override
+    protected void refreshModel(MasterDataTableModel model) {
+        List<Currency> currencies = dao.findAll();
+        List<CurrencyBean> currencyBeanList = new ArrayList<>();
+        CurrencyBean bean = null;
+        for (Currency item : currencies) {
+            bean = new CurrencyBean(item);
+            currencyBeanList.add(bean);
+        }
+        model.setData(currencyBeanList);
     }
 }

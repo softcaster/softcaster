@@ -13,6 +13,8 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.softcaster.master_data_mgr.models.IMasterDataModel;
+import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.ui.DecimalRenderer;
 import org.softcaster.master_data_mgr.ui.PopupListener;
 
@@ -29,6 +31,8 @@ public abstract class AbstactMDPanel extends javax.swing.JPanel {
 
     protected abstract void fillModelList();
 
+    protected abstract void refreshModel(MasterDataTableModel model);
+    
     protected abstract void acNewActionPerformed(java.awt.event.ActionEvent evt);
 
     protected abstract void acModActionPerformed(java.awt.event.ActionEvent evt);

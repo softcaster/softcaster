@@ -23,7 +23,7 @@ public class DeliverableBonds implements Serializable {
     @Column(name = "id_deliverable_bonds", columnDefinition = "INTEGER")
     private Integer idDeliverableBonds;
 
-    @Column(name = "master_data")
+    @Column(name = "master_data", insertable = false, updatable = false)
     private Integer masterData;
 
     @Column(name = "expiration_date")

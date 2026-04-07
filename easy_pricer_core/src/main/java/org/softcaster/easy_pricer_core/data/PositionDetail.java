@@ -23,7 +23,7 @@ public class PositionDetail implements Serializable {
     @Column(name = "id_position_detail", columnDefinition = "INTEGER")
     private Integer idPositionDetail;
 
-    @Column(name = "position_md")
+    @Column(name = "position_md", insertable = false, updatable = false)
     private Integer positionMd;
 
     @Column(name = "master_data")

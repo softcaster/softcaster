@@ -10,6 +10,8 @@ public class BondFutureMasterDataDAO {
 
     @Resource
     private BondFutureMasterDataRepository repository;
+    @Resource
+    private InstrumentQuoteRepository quoteRepository;
 
     @Transactional(readOnly = true)
     public BondFutureMasterData findByIdMasterData(Integer idMasterData) {
@@ -23,7 +25,11 @@ public class BondFutureMasterDataDAO {
 
     @Transactional
     public void delete(BondFutureMasterData bondFutureMasterData) {
-        repository.delete(bondFutureMasterData);
+        if (bondFutureMasterData != null && bondFutureMasterData.getIdMasterData() != null) {
+            quoteRepository.deleteInstrumentQuotes(bondFutureMasterData.getIdMasterData());
+            quoteRepository.deleteInstrumentQuoteHist(bondFutureMasterData.getIdMasterData());
+            repository.delete(bondFutureMasterData);
+        }
     }
 
     @Transactional(readOnly = true)

@@ -14,11 +14,13 @@ import javax.swing.JPanel;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.easy_pricer_core.data.BondFutureMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.CurrencyDAO;
 import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
 import org.softcaster.master_data_mgr.models.MasterDataNode;
 import org.softcaster.master_data_mgr.models.TreeModel;
 import org.softcaster.master_data_mgr.ui.MasterDataTreeCellRenderer;
+import org.softcaster.master_data_mgr.views.BondFuturePanel;
 import org.softcaster.master_data_mgr.views.BondPanel;
 import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.HomePanel;
@@ -36,8 +38,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
     private SecurityMasterDataDAO securityMasterDataDAO;
     @Autowired
     private CurrencyDAO currencyDAO;
-    
-    private static final String TITLE = "Master Data";
+    @Autowired
+    private BondFutureMasterDataDAO bondFutureMasterDataDAO;
+
+    public static final String TITLE = "Master Data Versione 1.0";
 
     /**
      * Creates new form JMasterDataMgr
@@ -66,7 +70,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
             setIconImage(img.getImage());
 
             // Set the initial size of the window
-            setSize(800, 600);
+            setSize(1200, 800);
 
             // Finestra centrata nello schermo
             setLocationRelativeTo(null);
@@ -91,6 +95,8 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                             cl.show(mainPanel, "BOND_CARD");
                         case "CURRENCIES" ->
                             cl.show(mainPanel, "CURRENCY_CARD");
+                        case "BOND_FUTURE" ->
+                            cl.show(mainPanel, "BOND_FUTURE_CARD");
                         default ->
                             cl.show(mainPanel, "DEFAULT");
                     }
@@ -255,12 +261,14 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         // 1. Istanzia i pannelli
         JPanel bondPanel = new BondPanel(securityMasterDataDAO);
         JPanel fxPanel = new ForexPanel(currencyDAO);
+        JPanel futBondPanel = new BondFuturePanel(bondFutureMasterDataDAO);
         JPanel defaultPanel = new HomePanel();
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, "DEFAULT");
         mainPanel.add(bondPanel, "BOND_CARD");
         mainPanel.add(fxPanel, "CURRENCY_CARD");
+        mainPanel.add(futBondPanel, "BOND_FUTURE_CARD");
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

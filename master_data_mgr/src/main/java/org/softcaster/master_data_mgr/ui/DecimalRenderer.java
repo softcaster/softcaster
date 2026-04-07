@@ -9,12 +9,12 @@ package org.softcaster.master_data_mgr.ui;
  * @author softc
  */
 import java.text.DecimalFormat;
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 public class DecimalRenderer extends DefaultTableCellRenderer {
-    private final DecimalFormat formatter = new DecimalFormat("#,##0.0000");
+    // Stesso pattern di org.softcaster.commons.utils.Converter
+    private final DecimalFormat formatter = new DecimalFormat("###,##0.00000");
 
     public DecimalRenderer() {
         // Allineamento a destra

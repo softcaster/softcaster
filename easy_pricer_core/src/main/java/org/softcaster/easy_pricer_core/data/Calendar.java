@@ -1,5 +1,6 @@
 package org.softcaster.easy_pricer_core.data;
 
+import jakarta.persistence.CascadeType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +34,9 @@ public class Calendar implements Serializable {
     @Column(name = "description")
     private String description;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
-    @JoinColumn(name = "calendar") // FK in child table holiday
+    @JoinColumn(name = "calendar", nullable = false) // FK in child table holiday
     private List<Holiday> holidays = new ArrayList<>();    
     
     public Integer getIdCalendar() {

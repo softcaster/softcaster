@@ -23,7 +23,7 @@ public class CashFlowItem implements Serializable {
     @Column(name = "id_cash_flow_item", columnDefinition = "INTEGER")
     private Integer idCashFlowItem;
 
-    @Column(name = "master_data")
+    @Column(name = "master_data", insertable = false, updatable = false)
     private Integer masterData;
 
     @Column(name = "start_date")
@@ -110,6 +110,5 @@ public class CashFlowItem implements Serializable {
     public void setMasterData(Integer masterData) {
         this.masterData = masterData;
     }
-    
-    
+
 }
