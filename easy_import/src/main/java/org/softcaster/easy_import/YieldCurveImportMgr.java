@@ -88,8 +88,8 @@ public class YieldCurveImportMgr implements IImportMgr {
 
                         if (yieldCurveItem != null) {
                             // AGGIORNA i dati di mercato
-                            yieldCurveItem.setBid(yieldNode.getBid());
-                            yieldCurveItem.setAsk(yieldNode.getAsk());
+                            yieldCurveItem.setBid(yieldNode.getBid() / 100.);
+                            yieldCurveItem.setAsk(yieldNode.getAsk() / 100.);
                         } else {
                             yieldCurveItem = new YieldCurveItem();
                             yieldCurveItem.setRic(yieldNode.getRic());

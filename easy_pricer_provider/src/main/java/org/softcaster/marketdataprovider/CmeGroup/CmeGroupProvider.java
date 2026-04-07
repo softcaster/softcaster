@@ -60,10 +60,16 @@ public class CmeGroupProvider extends AbstractProvider {
     private void parseResponseYieldCurve(String idCurve) {
         if (response != null && !response.isEmpty()) {
 
+            // Sostituisce tutte le chiavi "average..." che hanno valore "-" con "0"
+            String cleanResponse = response.replaceAll("(\"average\\w+\"\\s*:\\s*)\"-\"", "$1\"0\"");
+
+            // Includere anche "index" e "overnight" nella sostituzione:
+            cleanResponse = cleanResponse.replaceAll("(\"(index|overnight)\"\\s*:\\s*)\"-\"", "$1\"0\"");
+
             List<SofrRatesFixing> sofrRates = null;
             try {
                 ObjectMapper om = new ObjectMapper();
-                SofrRoot root = om.readValue(response, SofrRoot.class);
+                SofrRoot root = om.readValue(cleanResponse, SofrRoot.class);
                 sofrRates = root.resultsStrip.get(0).rates.sofrRatesFixing;
             } catch (JsonProcessingException ex) {
                 LoggerMgr.logError(ex.getLocalizedMessage());

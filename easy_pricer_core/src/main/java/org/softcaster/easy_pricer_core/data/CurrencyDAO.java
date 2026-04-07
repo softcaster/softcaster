@@ -2,6 +2,7 @@ package org.softcaster.easy_pricer_core.data;
 
 import java.util.List;
 import jakarta.annotation.Resource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +11,8 @@ public class CurrencyDAO {
 
     @Resource
     private CurrencyRepository repository;
+    
+    private final Sort sortByIsoCode = Sort.by(Sort.Direction.ASC, "isoCode");
 
     @Transactional(readOnly = true)
     public Currency findByIdCurrency(Integer idCurrency) {
@@ -32,6 +35,6 @@ public class CurrencyDAO {
 
     @Transactional(readOnly = true)
     public List<Currency> findAll() {
-        return repository.findAll();
+        return repository.findAll(sortByIsoCode);
     }
 }
