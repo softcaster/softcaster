@@ -101,8 +101,8 @@ public class BondFuturePanel extends AbstactMDPanel {
             parentFrame = frame;
         }
 
-        BondFutureDlg dialog = new BondFutureDlg(parentFrame, true);
-        dialog.setSize(600, 400);
+        BondFutureDlg dialog = new BondFutureDlg(parentFrame, true, null);
+        dialog.setSize(450, 200);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
@@ -110,6 +110,29 @@ public class BondFuturePanel extends AbstactMDPanel {
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
+        int rowIndex = futBondTable.getSelectedRow();
+        if (rowIndex != -1) {
+            java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+            java.awt.Frame parentFrame = null;
+
+            if (parentWindow instanceof java.awt.Frame frame) {
+                parentFrame = frame;
+            }
+
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = futBondTable.convertRowIndexToModel(rowIndex);
+            MasterDataTableModel<FutBondBean> model = (MasterDataTableModel<FutBondBean>) futBondTable.getModel();
+            FutBondBean bean = model.getElementAt(modelRow);
+
+            BondFutureDlg dialog = new BondFutureDlg(parentFrame, true, bean);
+            dialog.setSize(450, 200);
+            // Centra la dialog rispetto al pannello
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+            // Post chiusura dialog
+            System.out.println(bean.getBondFutureMasterData().getCode());
+        }
     }
 
     @Override

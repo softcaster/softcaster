@@ -4,20 +4,26 @@
  */
 package org.softcaster.master_data_mgr.dialogs;
 
+import org.softcaster.commons.utils.Converter;
+import org.softcaster.master_data_mgr.models.beans.FutBondBean;
+
 /**
  *
  * @author ep
  */
 public class BondFutureDlg extends javax.swing.JDialog {
 
+    private FutBondBean bean = null;
     /**
      * Creates new form BondFutureDlg
      * @param parent
      * @param modal
      */
-    public BondFutureDlg(java.awt.Frame parent, boolean modal) {
+    public BondFutureDlg(java.awt.Frame parent, boolean modal, FutBondBean bean) {
         super(parent, modal);
+        this.bean = bean;
         initComponents();
+        postInit();
     }
 
     /**
@@ -42,9 +48,11 @@ public class BondFutureDlg extends javax.swing.JDialog {
         txtTickSize = new javax.swing.JTextField();
         txtInitMargin = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         btnPanel = new javax.swing.JPanel();
         btnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Bond Future");
@@ -150,6 +158,14 @@ public class BondFutureDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(jLabel5, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        fieldPanel.add(filler1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -163,8 +179,13 @@ public class BondFutureDlg extends javax.swing.JDialog {
         btnPanel.setLayout(new java.awt.GridBagLayout());
 
         btnSave.setText("Save");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
@@ -176,7 +197,17 @@ public class BondFutureDlg extends javax.swing.JDialog {
                 btnCancelActionPerformed(evt);
             }
         });
-        btnPanel.add(btnCancel, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        btnPanel.add(btnCancel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        btnPanel.add(filler2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -195,12 +226,19 @@ public class BondFutureDlg extends javax.swing.JDialog {
         // TODO add your handling code here:
         this.dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        bean.getBondFutureMasterData().setCode(txtDescription.getText());
+        this.dispose();
+    }//GEN-LAST:event_btnSaveActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSave;
     private javax.swing.JPanel fieldPanel;
+    private javax.swing.Box.Filler filler1;
+    private javax.swing.Box.Filler filler2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -213,4 +251,15 @@ public class BondFutureDlg extends javax.swing.JDialog {
     private javax.swing.JTextField txtIsin;
     private javax.swing.JTextField txtTickSize;
     // End of variables declaration//GEN-END:variables
+
+    private void postInit() {
+        if(bean != null) {
+            txtIsin.setText(bean.getBondFutureMasterData().getIsin());
+            txtIsin.setEditable(false);
+            txtDescription.setText(bean.getBondFutureMasterData().getCode());
+            txtContractValue.setText(Converter.fromDouble(bean.getBondFutureMasterData().getContractValue()));
+            txtTickSize.setText(Converter.fromDouble(bean.getBondFutureMasterData().getTickSize()));
+            txtInitMargin.setText(Converter.fromDouble(bean.getBondFutureMasterData().getInitialMargin()));
+        }
+    }
 }
