@@ -4,20 +4,20 @@
  */
 package org.softcaster.master_data_mgr.views;
 
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.easy_pricer_core.data.Currency;
 import org.softcaster.easy_pricer_core.data.CurrencyDAO;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.CurrencyBean;
-import org.softcaster.master_data_mgr.ui.PopupListener;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
 
 /**
  *
  * @author softc
  */
-public class ForexPanel extends javax.swing.JPanel implements IPanelHelper {
+public class ForexPanel extends AbstactMDPanel {
 
     private final CurrencyDAO dao;
 
@@ -29,7 +29,7 @@ public class ForexPanel extends javax.swing.JPanel implements IPanelHelper {
     public ForexPanel(CurrencyDAO dao) {
         this.dao = dao;
         initComponents();
-        initTable();
+        postInitComponents(fxTable);
     }
 
     /**
@@ -51,12 +51,10 @@ public class ForexPanel extends javax.swing.JPanel implements IPanelHelper {
 
         acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
         acNew.setText("New");
-        acNew.addActionListener(this::acNewActionPerformed);
         popUp.add(acNew);
 
         acMod.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/edit_16dp.png"))); // NOI18N
         acMod.setText("Edit");
-        acMod.addActionListener(this::acModActionPerformed);
         popUp.add(acMod);
 
         acDel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/delete_16dp.png"))); // NOI18N
@@ -90,23 +88,6 @@ public class ForexPanel extends javax.swing.JPanel implements IPanelHelper {
         add(fxScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void acNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acNewActionPerformed
-        // TODO add your handling code here:
-        System.out.println("acNewActionPerformed");
-    }//GEN-LAST:event_acNewActionPerformed
-
-    private void acModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acModActionPerformed
-        // TODO add your handling code here:
-        int rowIndex = fxTable.getSelectedRow();
-        if (rowIndex != -1) {
-            // 1. CONVERSIONE FONDAMENTALE
-            int modelRow = fxTable.convertRowIndexToModel(rowIndex);
-            MasterDataTableModel<CurrencyBean> model = (MasterDataTableModel<CurrencyBean>) fxTable.getModel();
-            CurrencyBean currency = model.getElementAt(modelRow);
-            System.out.println(currency.getValueAt(0));
-        }
-    }//GEN-LAST:event_acModActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem acDel;
@@ -118,13 +99,8 @@ public class ForexPanel extends javax.swing.JPanel implements IPanelHelper {
     private javax.swing.JPopupMenu popUp;
     // End of variables declaration//GEN-END:variables
 
-    private void initTable() {
-        initTable(fxTable);
-        fxTable.addMouseListener(new PopupListener(popUp));
-    }
-
     @Override
-    public void fillModelList() {
+    protected void fillModelList() {
         // Crea e setta il model
         CurrencyBean prototype = new CurrencyBean(null);
         MasterDataTableModel<CurrencyBean> model = new MasterDataTableModel<>(prototype);
@@ -139,5 +115,27 @@ public class ForexPanel extends javax.swing.JPanel implements IPanelHelper {
             currencyBeanList.add(bean);
         }
         model.setData(currencyBeanList);
+    }
+
+    @Override
+    protected void acNewActionPerformed(ActionEvent evt) {
+        System.out.println("acNewActionPerformed");
+    }
+
+    @Override
+    protected void acModActionPerformed(ActionEvent evt) {
+        int rowIndex = fxTable.getSelectedRow();
+        if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = fxTable.convertRowIndexToModel(rowIndex);
+            MasterDataTableModel<CurrencyBean> model = (MasterDataTableModel<CurrencyBean>) fxTable.getModel();
+            CurrencyBean currency = model.getElementAt(modelRow);
+            System.out.println(currency.getValueAt(0));
+        }
+    }
+
+    @Override
+    protected void acDelActionPerformed(ActionEvent evt) {
+        System.out.println("acDelActionPerformed");
     }
 }

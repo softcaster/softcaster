@@ -14,14 +14,57 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.softcaster.master_data_mgr.ui.DecimalRenderer;
+import org.softcaster.master_data_mgr.ui.PopupListener;
 
 /**
  *
- * @author softc
+ * @author ep
  */
-public interface IPanelHelper {
-  
-    default void initTable(JTable table) {
+public abstract class AbstactMDPanel extends javax.swing.JPanel {
+
+    private javax.swing.JPopupMenu popUp;
+    private javax.swing.JMenuItem acDel;
+    private javax.swing.JMenuItem acMod;
+    private javax.swing.JMenuItem acNew;
+
+    protected abstract void fillModelList();
+
+    protected abstract void acNewActionPerformed(java.awt.event.ActionEvent evt);
+
+    protected abstract void acModActionPerformed(java.awt.event.ActionEvent evt);
+
+    protected abstract void acDelActionPerformed(java.awt.event.ActionEvent evt);
+
+    protected void postInitComponents(JTable table) {
+        initTable(table);
+        initPopUp(table);
+    }
+    
+    protected void initPopUp(JTable table) {
+        popUp = new javax.swing.JPopupMenu();
+        acNew = new javax.swing.JMenuItem();
+        acMod = new javax.swing.JMenuItem();
+        acDel = new javax.swing.JMenuItem();
+
+        acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
+        acNew.setText("New");
+        acNew.addActionListener(this::acNewActionPerformed);
+        popUp.add(acNew);
+
+        acMod.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/edit_16dp.png"))); // NOI18N
+        acMod.setText("Edit");
+        acMod.addActionListener(this::acModActionPerformed);
+        popUp.add(acMod);
+
+        acDel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/delete_16dp.png"))); // NOI18N
+        acDel.setText("Delete");
+        acDel.addActionListener(this::acDelActionPerformed);
+        popUp.add(acDel);
+        
+        table.addMouseListener(new PopupListener(popUp));
+    }
+
+    protected void initTable(JTable table) {
         table.setFillsViewportHeight(true);
         table.setRowHeight(25);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -49,22 +92,20 @@ public interface IPanelHelper {
 
         // Valido per tutti i campi double
         table.setDefaultRenderer(Double.class, new DecimalRenderer());
-        
+
         // Rendo la tabella sortabile
         table.setAutoCreateRowSorter(true);
 
         // Setta il model e popola la tabella
         fillModelList();
-        
+
         // 2. Forza il ricalcolo delle larghezze (IMPORTANTE: farlo dopo che la tabella ha i dati)
         java.awt.EventQueue.invokeLater(() -> {
             autoResizeColumns(table);
         });
     }
 
-    public void fillModelList();
-    
-    default void autoResizeColumns(JTable table) {
+    protected void autoResizeColumns(JTable table) {
         final TableColumnModel columnModel = table.getColumnModel();
         for (int column = 0; column < table.getColumnCount(); column++) {
             int width = 50; // Larghezza minima iniziale
@@ -86,5 +127,4 @@ public interface IPanelHelper {
             columnModel.getColumn(column).setPreferredWidth(width);
         }
     }
-
 }

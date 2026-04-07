@@ -4,27 +4,20 @@
  */
 package org.softcaster.master_data_mgr.views;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
 import org.softcaster.easy_pricer_core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
-import org.softcaster.master_data_mgr.models.BondTableModel;
-import org.softcaster.master_data_mgr.ui.DecimalRenderer;
+import org.softcaster.master_data_mgr.models.MasterDataTableModel;
+import org.softcaster.master_data_mgr.models.beans.SecurityBean;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
 
 /**
  *
  * @author softc
  */
-public class BondPanel extends javax.swing.JPanel {
+public class BondPanel extends AbstactMDPanel {
 
     private final SecurityMasterDataDAO dao;
 
@@ -36,7 +29,7 @@ public class BondPanel extends javax.swing.JPanel {
     public BondPanel(SecurityMasterDataDAO dao) {
         this.dao = dao;
         initComponents();
-        initTable();
+        postInitComponents(bondTable);
     }
 
     /**
@@ -86,75 +79,44 @@ public class BondPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblHeader;
     // End of variables declaration//GEN-END:variables
 
-    private void initTable() {
-        bondTable.setFillsViewportHeight(true);
-        bondTable.setRowHeight(25);
-        bondTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-
-        // Opzionale: Rimuovi le linee della griglia per un look più moderno (flat)
-        bondTable.setShowGrid(false);
-        bondTable.setIntercellSpacing(new Dimension(0, 0));
-
-        // Header Elegante
-        bondTable.getTableHeader().setOpaque(false);
-        bondTable.getTableHeader().setBackground(new Color(230, 230, 230));
-        bondTable.getTableHeader().setForeground(Color.BLACK);
-        bondTable.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
-
-        // Più spazio rende i dati più leggibili
-        bondTable.setRowHeight(30);
-
-        // Selezione
-        bondTable.setSelectionBackground(new Color(184, 207, 229)); // Un blu delicato per la riga selezionata
-        bondTable.setSelectionForeground(Color.BLACK);
-
-        bondTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        bondTable.setFocusable(false);
-        bondTable.setRowSelectionAllowed(true);
-
-        // Setto il model
-        BondTableModel model = new BondTableModel();
+    @Override
+    protected void fillModelList() {
+        // Crea e setta il model
+        SecurityBean prototype = new SecurityBean(null);
+        MasterDataTableModel<SecurityBean> model = new MasterDataTableModel<>(prototype);
         bondTable.setModel(model);
 
-        // Applico renderer
-        DecimalRenderer decimalRenderer = new DecimalRenderer();
-        bondTable.getColumnModel().getColumn(3).setCellRenderer(decimalRenderer);
-        bondTable.getColumnModel().getColumn(5).setCellRenderer(decimalRenderer);
-
-        // Rendo la tabella sortabile
-        bondTable.setAutoCreateRowSorter(true);
-
-        // Popolo la tabella
+        // Popola il model
         List<SecurityMasterData> bonds = dao.findAll();
-        model.setBondList(bonds);
 
-        // 2. Forza il ricalcolo delle larghezze (IMPORTANTE: fallo dopo che la tabella ha i dati)
-        java.awt.EventQueue.invokeLater(() -> {
-            autoResizeColumns(bondTable);
-        });
+        List<SecurityBean> securityBeanList = new ArrayList<>();
+        SecurityBean bean = null;
+        for (SecurityMasterData item : bonds) {
+            bean = new SecurityBean(item);
+            securityBeanList.add(bean);
+        }
+        model.setData(securityBeanList);
     }
 
-    public void autoResizeColumns(JTable table) {
-        final TableColumnModel columnModel = table.getColumnModel();
-        for (int column = 0; column < table.getColumnCount(); column++) {
-            int width = 50; // Larghezza minima iniziale
+    @Override
+    protected void acNewActionPerformed(ActionEvent evt) {
+        System.out.println("acNewActionPerformed");
+    }
 
-            // 1. Controlla la larghezza dell'Header
-            TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
-            Component headerComp = headerRenderer.getTableCellRendererComponent(table,
-                    columnModel.getColumn(column).getHeaderValue(), false, false, 0, column);
-            width = Math.max(headerComp.getPreferredSize().width + 20, width); // +20 per padding
-
-            // 2. Controlla la larghezza dei dati (limita a un numero di righe se la tabella è enorme)
-            for (int row = 0; row < Math.min(table.getRowCount(), 100); row++) {
-                TableCellRenderer renderer = table.getCellRenderer(row, column);
-                Component comp = table.prepareRenderer(renderer, row, column);
-                width = Math.max(comp.getPreferredSize().width + 20, width);
-            }
-
-            // Imposta la larghezza calcolata
-            columnModel.getColumn(column).setPreferredWidth(width);
+    @Override
+    protected void acModActionPerformed(ActionEvent evt) {
+        int rowIndex = bondTable.getSelectedRow();
+        if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = bondTable.convertRowIndexToModel(rowIndex);
+            MasterDataTableModel<SecurityBean> model = (MasterDataTableModel<SecurityBean>) bondTable.getModel();
+            SecurityBean bean = model.getElementAt(modelRow);
+            System.out.println(bean.getValueAt(0));
         }
     }
 
+    @Override
+    protected void acDelActionPerformed(ActionEvent evt) {
+        System.out.println("acDelActionPerformed");
+    }
 }

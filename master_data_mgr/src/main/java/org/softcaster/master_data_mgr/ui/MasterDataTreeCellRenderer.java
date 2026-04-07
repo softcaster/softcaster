@@ -18,8 +18,8 @@ import org.softcaster.master_data_mgr.models.MasterDataNode;
 public class MasterDataTreeCellRenderer extends DefaultTreeCellRenderer {
 
     ImageIcon securityIcon = new ImageIcon(getClass().getResource("/images/angular/post_add_16dp.png"));
-    ImageIcon forexIcon = new ImageIcon(getClass().getResource("/images/angular/subheader_16dp.png"));
-    ImageIcon futureIcon = new ImageIcon(getClass().getResource("/images/angular/outdoor_garden_16dp.png"));
+    ImageIcon forexIcon = new ImageIcon(getClass().getResource("/images/angular/euro_16dp.png"));
+    ImageIcon futureIcon = new ImageIcon(getClass().getResource("/images/angular/loyalty_16dp.png"));
     ImageIcon optionIcon = new ImageIcon(getClass().getResource("/images/angular/subheader_16dp.png"));
 
     @Override
