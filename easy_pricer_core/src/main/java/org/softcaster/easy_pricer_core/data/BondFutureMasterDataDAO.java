@@ -26,8 +26,10 @@ public class BondFutureMasterDataDAO {
     @Transactional
     public void delete(BondFutureMasterData bondFutureMasterData) {
         if (bondFutureMasterData != null && bondFutureMasterData.getIdMasterData() != null) {
-            quoteRepository.deleteInstrumentQuotes(bondFutureMasterData.getIdMasterData());
+            // Va cancellata prima la tabella storica che ha un riferimento
+            // alla tabella instrumet_quotes
             quoteRepository.deleteInstrumentQuoteHist(bondFutureMasterData.getIdMasterData());
+            quoteRepository.deleteInstrumentQuotes(bondFutureMasterData.getIdMasterData());
             repository.delete(bondFutureMasterData);
         }
     }
