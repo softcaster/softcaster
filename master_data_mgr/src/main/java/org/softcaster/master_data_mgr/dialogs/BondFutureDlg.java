@@ -4,10 +4,12 @@
  */
 package org.softcaster.master_data_mgr.dialogs;
 
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
+import org.softcaster.easy_pricer_core.data.BondFutureMasterData;
 import org.softcaster.easy_pricer_core.data.Currency;
 import org.softcaster.easy_pricer_core.data.Daycount;
 import org.softcaster.easy_pricer_core.data.SettlementType;
@@ -22,6 +24,8 @@ public class BondFutureDlg extends javax.swing.JDialog {
 
     private FutBondBean bean = null;
     private MasterDataFacade masterDataFacade = null;
+    private List<javax.swing.JTextField> fieldsToValidate;
+    private boolean isInsert = true;
 
     /**
      * Creates new form BondFutureDlg
@@ -431,8 +435,19 @@ public class BondFutureDlg extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        bean.getBondFutureMasterData().setCode(txtDescription.getText());
-        this.dispose();
+        
+        boolean isValid = validateFields() && validateIntegrity();
+        if (!isValid) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Please fill in all the required fields.", // Messaggio
+                    "Validation Error", // Titolo
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+
+        } else {
+            bean.getBondFutureMasterData().setCode(txtDescription.getText());
+            this.dispose();
+        }
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void txtContractValueFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtContractValueFocusLost
@@ -502,6 +517,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
         setUpSettlementCombo();
 
         if (bean != null) {
+            isInsert = false;
             txtIsin.setText(bean.getBondFutureMasterData().getIsin());
             txtIsin.setEditable(false);
             txtDescription.setText(bean.getBondFutureMasterData().getDescription());
@@ -516,6 +532,11 @@ public class BondFutureDlg extends javax.swing.JDialog {
             cbDaycount.setSelectedItem(bean.getBondFutureMasterData().getDaycount());
             cbSettlementType.setSelectedItem(bean.getBondFutureMasterData().getSettlementType());
         }
+
+        // Aggiungo i campi alla lista di validazione
+        fieldsToValidate = Arrays.asList(txtIsin, txtDescription, txtContractValue, txtTickSize,
+                txtInitMargin, txtIssueDate, txtExpiryDate, txtLastTradingDate, txtContractCode);
+
     }
 
     private void setUpCurrencyCombo() {
@@ -540,5 +561,34 @@ public class BondFutureDlg extends javax.swing.JDialog {
         // 2. Crea il modello partendo dalla lista
         DefaultComboBoxModel<SettlementType> model = new DefaultComboBoxModel<>(settlements.toArray(SettlementType[]::new));
         cbSettlementType.setModel(model);
+    }
+
+    // Check sulla validita dei campi, non devono essere blank
+    private boolean validateFields() {
+        return MDDialogHelper.validateFields(fieldsToValidate);
+    }
+
+    private boolean validateIntegrity() {
+        if (isInsert) {
+            // Controlla univocita codice ISIN
+            String isin = txtIsin.getText();
+            BondFutureMasterData bfmd = masterDataFacade.getBondFutureMasterDataDAO().findByIsin(isin);
+            if (bfmd != null) {
+                return false;
+            }
+        }
+        
+        // Controllo congruenza date
+        Date issueDate = new Date(txtIssueDate.getText());
+        Date expiryDate = new Date(txtExpiryDate.getText());
+        Date lastTradingDate = new Date(txtLastTradingDate.getText());
+        
+        if(issueDate.isGreaterThan(expiryDate) || issueDate.isGreaterThan(lastTradingDate))
+            return false;
+        
+        if(lastTradingDate.isGreaterThan(expiryDate))
+            return false;
+        
+        return true;
     }
 }
