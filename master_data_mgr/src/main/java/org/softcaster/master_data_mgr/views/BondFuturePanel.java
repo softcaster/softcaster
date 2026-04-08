@@ -131,7 +131,7 @@ public class BondFuturePanel extends AbstactMDPanel {
             dialog.setVisible(true);
 
             // Post chiusura dialog
-            System.out.println(bean.getBondFutureMasterData().getCode());
+            refreshModel(model);
         }
     }
 

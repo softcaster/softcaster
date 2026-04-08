@@ -4,11 +4,13 @@
  */
 package org.softcaster.master_data_mgr.dialogs;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_core.data.BondFutureMasterData;
 import org.softcaster.easy_pricer_core.data.Currency;
 import org.softcaster.easy_pricer_core.data.Daycount;
@@ -435,7 +437,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        
+
         boolean isValid = validateFields() && validateIntegrity();
         if (!isValid) {
             javax.swing.JOptionPane.showMessageDialog(
@@ -445,7 +447,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
                     javax.swing.JOptionPane.ERROR_MESSAGE);
 
         } else {
-            bean.getBondFutureMasterData().setCode(txtDescription.getText());
+            saveBean();
             this.dispose();
         }
     }//GEN-LAST:event_btnSaveActionPerformed
@@ -577,18 +579,41 @@ public class BondFutureDlg extends javax.swing.JDialog {
                 return false;
             }
         }
-        
+
         // Controllo congruenza date
         Date issueDate = new Date(txtIssueDate.getText());
         Date expiryDate = new Date(txtExpiryDate.getText());
         Date lastTradingDate = new Date(txtLastTradingDate.getText());
-        
-        if(issueDate.isGreaterThan(expiryDate) || issueDate.isGreaterThan(lastTradingDate))
+
+        if (issueDate.isGreaterThan(expiryDate) || issueDate.isGreaterThan(lastTradingDate)) {
             return false;
-        
-        if(lastTradingDate.isGreaterThan(expiryDate))
+        }
+
+        if (lastTradingDate.isGreaterThan(expiryDate)) {
             return false;
-        
+        }
+
         return true;
+    }
+
+    private boolean saveBean() {
+
+        try {
+            BondFutureMasterData bfmd = bean.getBondFutureMasterData();
+            bfmd.setIsin(txtIsin.getText());
+            bfmd.setCode(txtIsin.getText());
+            bfmd.setDescription(txtDescription.getText());
+            bfmd.setContractValue(Converter.toDouble(txtContractValue.getText(), false));
+            bfmd.setTickSize(Converter.toDouble(txtTickSize.getText(), false));
+            bfmd.setInitialMargin(Converter.toDouble(txtInitMargin.getText(), false));
+            bfmd.setExchangeContractCode(txtContractCode.getText());
+            bfmd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
+            bfmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
+            masterDataFacade.getBondFutureMasterDataDAO().saveOrUpdate(bfmd);
+            return true;
+        } catch (Exception ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            return false;
+        }
     }
 }
