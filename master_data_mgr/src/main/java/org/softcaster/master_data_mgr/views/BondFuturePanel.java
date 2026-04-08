@@ -10,8 +10,8 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_core.data.BondFutureMasterData;
-import org.softcaster.easy_pricer_core.data.BondFutureMasterDataDAO;
 import org.softcaster.master_data_mgr.JMasterDataMgr;
+import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.dialogs.BondFutureDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.FutBondBean;
@@ -22,15 +22,15 @@ import org.softcaster.master_data_mgr.models.beans.FutBondBean;
  */
 public class BondFuturePanel extends AbstactMDPanel {
 
-    private final BondFutureMasterDataDAO dao;
+    private final MasterDataFacade masterDataFacade;
 
     /**
      * Creates new form BondFuturePanel
      *
-     * @param dao
+     * @param masterDataFacade
      */
-    public BondFuturePanel(BondFutureMasterDataDAO dao) {
-        this.dao = dao;
+    public BondFuturePanel(MasterDataFacade masterDataFacade) {
+        this.masterDataFacade = masterDataFacade;
         initComponents();
         postInitComponents(futBondTable);
     }
@@ -101,8 +101,8 @@ public class BondFuturePanel extends AbstactMDPanel {
             parentFrame = frame;
         }
 
-        BondFutureDlg dialog = new BondFutureDlg(parentFrame, true, null);
-        dialog.setSize(450, 200);
+        BondFutureDlg dialog = new BondFutureDlg(parentFrame, true, null, masterDataFacade);
+        dialog.setSize(600, 300);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
@@ -124,8 +124,8 @@ public class BondFuturePanel extends AbstactMDPanel {
             MasterDataTableModel<FutBondBean> model = (MasterDataTableModel<FutBondBean>) futBondTable.getModel();
             FutBondBean bean = model.getElementAt(modelRow);
 
-            BondFutureDlg dialog = new BondFutureDlg(parentFrame, true, bean);
-            dialog.setSize(450, 200);
+            BondFutureDlg dialog = new BondFutureDlg(parentFrame, true, bean, masterDataFacade);
+            dialog.setSize(600, 300);
             // Centra la dialog rispetto al pannello
             dialog.setLocationRelativeTo(this);
             dialog.setVisible(true);
@@ -148,7 +148,7 @@ public class BondFuturePanel extends AbstactMDPanel {
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                 try {
-                    dao.delete(bean.getBondFutureMasterData());
+                    masterDataFacade.getBondFutureMasterDataDAO().delete(bean.getBondFutureMasterData());
                     refreshModel(model);
                 } catch (Exception ex) {
                     LoggerMgr.logError(ex.getLocalizedMessage());
@@ -160,7 +160,7 @@ public class BondFuturePanel extends AbstactMDPanel {
     @Override
     protected void refreshModel(MasterDataTableModel model) {
         // Popola il model
-        List<BondFutureMasterData> futBonds = dao.findAll();
+        List<BondFutureMasterData> futBonds = masterDataFacade.getBondFutureMasterDataDAO().findAll();
 
         List<FutBondBean> bondFutBeanList = new ArrayList<>();
         FutBondBean bean = null;

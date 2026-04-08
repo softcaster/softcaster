@@ -14,9 +14,6 @@ import javax.swing.JPanel;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.BondFutureMasterDataDAO;
-import org.softcaster.easy_pricer_core.data.CurrencyDAO;
-import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
 import org.softcaster.master_data_mgr.models.MasterDataNode;
 import org.softcaster.master_data_mgr.models.TreeModel;
 import org.softcaster.master_data_mgr.ui.MasterDataTreeCellRenderer;
@@ -35,11 +32,7 @@ import org.springframework.stereotype.Component;
 public class JMasterDataMgr extends javax.swing.JFrame {
 
     @Autowired
-    private SecurityMasterDataDAO securityMasterDataDAO;
-    @Autowired
-    private CurrencyDAO currencyDAO;
-    @Autowired
-    private BondFutureMasterDataDAO bondFutureMasterDataDAO;
+    private MasterDataFacade masterDataFacade;
 
     public static final String TITLE = "Master Data Versione 1.0";
 
@@ -259,9 +252,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
 
     private void addPanels() {
         // 1. Istanzia i pannelli
-        JPanel bondPanel = new BondPanel(securityMasterDataDAO);
-        JPanel fxPanel = new ForexPanel(currencyDAO);
-        JPanel futBondPanel = new BondFuturePanel(bondFutureMasterDataDAO);
+        JPanel bondPanel = new BondPanel(masterDataFacade.getSecurityMasterDataDAO());
+        JPanel fxPanel = new ForexPanel(masterDataFacade.getCurrencyDAO());
+        JPanel futBondPanel = new BondFuturePanel(masterDataFacade);
         JPanel defaultPanel = new HomePanel();
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)

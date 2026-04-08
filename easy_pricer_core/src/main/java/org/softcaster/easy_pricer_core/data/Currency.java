@@ -48,11 +48,11 @@ public class Currency implements Serializable {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "calendar", nullable = true)
     private Calendar calendar;
-    
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "daycount", nullable = true)
     private Daycount daycount;
-    
+
     public Integer getIdCurrency() {
         return idCurrency;
     }
@@ -124,6 +124,11 @@ public class Currency implements Serializable {
     @Override
     public int hashCode() {
         return getIdCurrency() == null ? 0 : idCurrency.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return isoCode;
     }
 
     /**

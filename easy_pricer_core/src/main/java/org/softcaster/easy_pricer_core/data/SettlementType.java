@@ -67,4 +67,9 @@ public class SettlementType implements Serializable {
     public int hashCode() {
         return getIdSettlementType() == null ? 0 : idSettlementType.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return code;
+    }
 }

@@ -67,4 +67,9 @@ public class Daycount implements Serializable {
     public int hashCode() {
         return getIdDaycount() == null ? 0 : idDaycount.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return code;
+    }
 }

@@ -4,7 +4,14 @@
  */
 package org.softcaster.master_data_mgr.dialogs;
 
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
+import org.softcaster.easy_pricer_core.data.Currency;
+import org.softcaster.easy_pricer_core.data.Daycount;
+import org.softcaster.easy_pricer_core.data.SettlementType;
+import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.FutBondBean;
 
 /**
@@ -14,14 +21,20 @@ import org.softcaster.master_data_mgr.models.beans.FutBondBean;
 public class BondFutureDlg extends javax.swing.JDialog {
 
     private FutBondBean bean = null;
+    private MasterDataFacade masterDataFacade = null;
+
     /**
      * Creates new form BondFutureDlg
+     *
      * @param parent
      * @param modal
+     * @param bean
+     * @param masterDataFacade
      */
-    public BondFutureDlg(java.awt.Frame parent, boolean modal, FutBondBean bean) {
+    public BondFutureDlg(java.awt.Frame parent, boolean modal, FutBondBean bean, MasterDataFacade masterDataFacade) {
         super(parent, modal);
         this.bean = bean;
+        this.masterDataFacade = masterDataFacade;
         initComponents();
         postInit();
     }
@@ -37,6 +50,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         mainPanel = new javax.swing.JPanel();
+        tabbedPane = new javax.swing.JTabbedPane();
         fieldPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -48,7 +62,23 @@ public class BondFutureDlg extends javax.swing.JDialog {
         txtTickSize = new javax.swing.JTextField();
         txtInitMargin = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        jLabel6 = new javax.swing.JLabel();
+        txtIssueDate = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        txtExpiryDate = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        txtLastTradingDate = new javax.swing.JTextField();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
+        additionalPanel = new javax.swing.JPanel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        txtContractCode = new javax.swing.JTextField();
+        cbCurrency = new javax.swing.JComboBox<>();
+        cbDaycount = new javax.swing.JComboBox<>();
+        filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        jLabel12 = new javax.swing.JLabel();
+        cbSettlementType = new javax.swing.JComboBox<>();
         btnPanel = new javax.swing.JPanel();
         btnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -60,6 +90,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
+        fieldPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
         fieldPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText("ISIN");
@@ -120,6 +151,11 @@ public class BondFutureDlg extends javax.swing.JDialog {
         fieldPanel.add(jLabel4, gridBagConstraints);
 
         txtContractValue.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtContractValue.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtContractValueFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -130,6 +166,11 @@ public class BondFutureDlg extends javax.swing.JDialog {
         fieldPanel.add(txtContractValue, gridBagConstraints);
 
         txtTickSize.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtTickSize.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtTickSizeFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -140,6 +181,11 @@ public class BondFutureDlg extends javax.swing.JDialog {
         fieldPanel.add(txtTickSize, gridBagConstraints);
 
         txtInitMargin.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtInitMargin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtInitMarginFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -158,14 +204,172 @@ public class BondFutureDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(jLabel5, gridBagConstraints);
+
+        jLabel6.setText("Issue Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(jLabel6, gridBagConstraints);
+
+        txtIssueDate.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtIssueDate.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtIssueDateFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(txtIssueDate, gridBagConstraints);
+
+        jLabel7.setText("Expity Date");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(jLabel7, gridBagConstraints);
+
+        txtExpiryDate.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtExpiryDate.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtExpiryDateFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(txtExpiryDate, gridBagConstraints);
+
+        jLabel8.setText("Last Trading Date");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(jLabel8, gridBagConstraints);
+
+        txtLastTradingDate.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtLastTradingDate.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtLastTradingDateFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(txtLastTradingDate, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         fieldPanel.add(filler1, gridBagConstraints);
+
+        tabbedPane.addTab("Specification", fieldPanel);
+
+        additionalPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
+        additionalPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel9.setText("Contract Code");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(jLabel9, gridBagConstraints);
+
+        jLabel10.setText("Currency");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(jLabel10, gridBagConstraints);
+
+        jLabel11.setText("Daycount");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(jLabel11, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(txtContractCode, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(cbCurrency, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(cbDaycount, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 1.0;
+        additionalPanel.add(filler3, gridBagConstraints);
+
+        jLabel12.setText("Settlement Type");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(jLabel12, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(cbSettlementType, gridBagConstraints);
+
+        tabbedPane.addTab("Additional", additionalPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -174,7 +378,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        mainPanel.add(fieldPanel, gridBagConstraints);
+        mainPanel.add(tabbedPane, gridBagConstraints);
 
         btnPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -219,11 +423,10 @@ public class BondFutureDlg extends javax.swing.JDialog {
 
         getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
-        pack();
+        setBounds(0, 0, 606, 307);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-        // TODO add your handling code here:
         this.dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
 
@@ -231,35 +434,111 @@ public class BondFutureDlg extends javax.swing.JDialog {
         bean.getBondFutureMasterData().setCode(txtDescription.getText());
         this.dispose();
     }//GEN-LAST:event_btnSaveActionPerformed
-    
+
+    private void txtContractValueFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtContractValueFocusLost
+        MDDialogHelper.textFieldDoubleFocusLost(txtContractValue);
+    }//GEN-LAST:event_txtContractValueFocusLost
+
+    private void txtTickSizeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTickSizeFocusLost
+        MDDialogHelper.textFieldDoubleFocusLost(txtTickSize);
+    }//GEN-LAST:event_txtTickSizeFocusLost
+
+    private void txtInitMarginFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtInitMarginFocusLost
+        MDDialogHelper.textFieldDoubleFocusLost(txtInitMargin);
+    }//GEN-LAST:event_txtInitMarginFocusLost
+
+    private void txtIssueDateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtIssueDateFocusLost
+        MDDialogHelper.textFieldDateFocusLost(txtIssueDate);
+    }//GEN-LAST:event_txtIssueDateFocusLost
+
+    private void txtExpiryDateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtExpiryDateFocusLost
+        MDDialogHelper.textFieldDateFocusLost(txtExpiryDate);
+    }//GEN-LAST:event_txtExpiryDateFocusLost
+
+    private void txtLastTradingDateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtLastTradingDateFocusLost
+        MDDialogHelper.textFieldDateFocusLost(txtLastTradingDate);
+    }//GEN-LAST:event_txtLastTradingDateFocusLost
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel additionalPanel;
     private javax.swing.JButton btnCancel;
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSave;
+    private javax.swing.JComboBox<Currency> cbCurrency;
+    private javax.swing.JComboBox<Daycount> cbDaycount;
+    private javax.swing.JComboBox<SettlementType> cbSettlementType;
     private javax.swing.JPanel fieldPanel;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
+    private javax.swing.Box.Filler filler3;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JTabbedPane tabbedPane;
+    private javax.swing.JTextField txtContractCode;
     private javax.swing.JTextField txtContractValue;
     private javax.swing.JTextField txtDescription;
+    private javax.swing.JTextField txtExpiryDate;
     private javax.swing.JTextField txtInitMargin;
     private javax.swing.JTextField txtIsin;
+    private javax.swing.JTextField txtIssueDate;
+    private javax.swing.JTextField txtLastTradingDate;
     private javax.swing.JTextField txtTickSize;
     // End of variables declaration//GEN-END:variables
 
     private void postInit() {
-        if(bean != null) {
+        setUpCurrencyCombo();
+        setUpDaycountCombo();
+        setUpSettlementCombo();
+
+        if (bean != null) {
             txtIsin.setText(bean.getBondFutureMasterData().getIsin());
             txtIsin.setEditable(false);
-            txtDescription.setText(bean.getBondFutureMasterData().getCode());
+            txtDescription.setText(bean.getBondFutureMasterData().getDescription());
             txtContractValue.setText(Converter.fromDouble(bean.getBondFutureMasterData().getContractValue()));
             txtTickSize.setText(Converter.fromDouble(bean.getBondFutureMasterData().getTickSize()));
             txtInitMargin.setText(Converter.fromDouble(bean.getBondFutureMasterData().getInitialMargin()));
+            txtIssueDate.setText(new Date(bean.getBondFutureMasterData().getIssueDate()).toString());
+            txtExpiryDate.setText(new Date(bean.getBondFutureMasterData().getMaturityDate()).toString());
+            txtLastTradingDate.setText(new Date(bean.getBondFutureMasterData().getMaturityDate()).toString());
+            txtContractCode.setText(bean.getBondFutureMasterData().getExchangeContractCode());
+            cbCurrency.setSelectedItem(bean.getBondFutureMasterData().getCurrency());
+            cbDaycount.setSelectedItem(bean.getBondFutureMasterData().getDaycount());
+            cbSettlementType.setSelectedItem(bean.getBondFutureMasterData().getSettlementType());
         }
+    }
+
+    private void setUpCurrencyCombo() {
+        List<Currency> currencies = masterDataFacade.getCurrencyDAO().findAll();
+
+        // 2. Crea il modello partendo dalla lista
+        DefaultComboBoxModel<Currency> model = new DefaultComboBoxModel<>(currencies.toArray(Currency[]::new));
+        cbCurrency.setModel(model);
+    }
+
+    private void setUpDaycountCombo() {
+        List<Daycount> daycounts = masterDataFacade.getDaycountDAO().findAll();
+
+        // 2. Crea il modello partendo dalla lista
+        DefaultComboBoxModel<Daycount> model = new DefaultComboBoxModel<>(daycounts.toArray(Daycount[]::new));
+        cbDaycount.setModel(model);
+    }
+
+    private void setUpSettlementCombo() {
+        List<SettlementType> settlements = masterDataFacade.getSettlementTypeDAO().findAll();
+
+        // 2. Crea il modello partendo dalla lista
+        DefaultComboBoxModel<SettlementType> model = new DefaultComboBoxModel<>(settlements.toArray(SettlementType[]::new));
+        cbSettlementType.setModel(model);
     }
 }

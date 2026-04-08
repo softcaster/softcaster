@@ -16,6 +16,12 @@ public class FutureMasterData extends MasterData {
     @Column(name = "isin")
     private String isin;
 
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "exchange_contract_code")
+    private String exchangeContractCode;
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "settlement_type", nullable = true)
     private SettlementType settlementType;
@@ -41,4 +47,34 @@ public class FutureMasterData extends MasterData {
     public void setSettlementType(SettlementType settlementType) {
         this.settlementType = settlementType;
     }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * @return the exchangeContractCode
+     */
+    public String getExchangeContractCode() {
+        return exchangeContractCode;
+    }
+
+    /**
+     * @param exchangeContractCode the exchangeContractCode to set
+     */
+    public void setExchangeContractCode(String exchangeContractCode) {
+        this.exchangeContractCode = exchangeContractCode;
+    }
+    
+    
 }
