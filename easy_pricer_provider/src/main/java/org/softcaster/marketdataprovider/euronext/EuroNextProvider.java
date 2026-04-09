@@ -60,8 +60,16 @@ public class EuroNextProvider extends AbstractProvider {
             String bidStrValue = valuesStr[1].split("<")[0];
             String askStrValue = valuesStr[1].split("<td class=\"table-danger\">")[1].split("<")[0];
 
-            double bidValue = Double.parseDouble(bidStrValue);
-            double askValue = Double.parseDouble(askStrValue);
+            double bidValue = 0.;
+            double askValue = 0.;
+
+            if (!askStrValue.isBlank()) {
+                askValue = Double.parseDouble(askStrValue);
+            }
+            if (!bidStrValue.isBlank()) {
+                bidValue = Double.parseDouble(bidStrValue);
+            }
+
             DataNode node = getBond(ric);
             if (node != null) {
                 node.setBid(bidValue);
@@ -82,8 +90,16 @@ public class EuroNextProvider extends AbstractProvider {
             String bidStrValue = valuesStr[1].split("<")[0];
             String askStrValue = valuesStr[1].split("<td class=\"table-danger\">")[1].split("<")[0];
 
-            double bidValue = Double.parseDouble(bidStrValue);
-            double askValue = Double.parseDouble(askStrValue);
+            double bidValue = 0.;
+            double askValue = 0.;
+
+            if (!askStrValue.isBlank()) {
+                askValue = Double.parseDouble(askStrValue);
+            }
+            if (!bidStrValue.isBlank()) {
+                bidValue = Double.parseDouble(bidStrValue);
+            }
+
             DataNode node = getBond(ric);
             if (node != null) {
                 node.setBid(bidValue);

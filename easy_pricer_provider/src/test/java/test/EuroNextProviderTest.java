@@ -48,7 +48,7 @@ public class EuroNextProviderTest {
         param.baseUrl = "https://live.euronext.com/en";
         param.extraParams.clear();
         param.extraParams.add("IT0024832682");
-        param.extraParams.add("MBTX-DMIL?fOrO=F&md=01-06-2026");
+        param.extraParams.add("MBTP-DMIL?fOrO=F&md=01-06-2026");
         param.market = MARKETS.FUTURES;
 
         provider.refresh(param);

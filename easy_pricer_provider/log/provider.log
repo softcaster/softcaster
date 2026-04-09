@@ -213,3 +213,63 @@ ERROR	[2026-03-30 09:56:29,849] [main] (LoggerMgr.java:31)
 ERROR	[2026-03-30 16:07:27,112] [main] (LoggerMgr.java:31)
      	Server returned HTTP response code: 504 for URL: https://mercatiwdg.ilsole24ore.com/FinanzaMercati/WidgetSelector/listino?widgetConfiguration=FMIRS
 
+ERROR	[2026-04-09 22:20:25,767] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,770] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,771] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,771] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,771] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,773] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,773] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,774] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,774] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,774] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,775] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,775] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,775] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,776] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,776] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,776] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,778] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,778] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,778] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+
+ERROR	[2026-04-09 22:20:25,778] [main] (LoggerMgr.java:31)
+     	Unparseable number: "-"
+

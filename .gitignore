@@ -9,3 +9,4 @@
 /market_data_service/target/
 /master_data_mgr/target/
 /market_data_service/log
+*.log

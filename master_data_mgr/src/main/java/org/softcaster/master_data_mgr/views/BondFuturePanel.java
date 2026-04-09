@@ -15,6 +15,7 @@ import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.dialogs.BondFutureDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.FutBondBean;
+import org.softcaster.master_data_mgr.ui.ZebraTable;
 
 /**
  *
@@ -46,7 +47,7 @@ public class BondFuturePanel extends AbstactMDPanel {
 
         lblHeader = new javax.swing.JLabel();
         futBondScrollPane = new javax.swing.JScrollPane();
-        futBondTable = new javax.swing.JTable();
+        futBondTable = new ZebraTable();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
