@@ -106,6 +106,10 @@ public class BondFuturePanel extends AbstactMDPanel {
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
+        
+        // Post chiusura dialog
+        MasterDataTableModel<FutBondBean> model = (MasterDataTableModel<FutBondBean>) futBondTable.getModel();
+        refreshModel(model);
     }
 
     @Override

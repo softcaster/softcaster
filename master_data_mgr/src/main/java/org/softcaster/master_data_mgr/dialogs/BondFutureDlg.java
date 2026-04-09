@@ -4,7 +4,6 @@
  */
 package org.softcaster.master_data_mgr.dialogs;
 
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -447,7 +446,14 @@ public class BondFutureDlg extends javax.swing.JDialog {
                     javax.swing.JOptionPane.ERROR_MESSAGE);
 
         } else {
-            saveBean();
+            if (!saveBean()) {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        "Error during save.\n See log file for more details.", // Messaggio
+                        "Save Error", // Titolo
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             this.dispose();
         }
     }//GEN-LAST:event_btnSaveActionPerformed
@@ -599,6 +605,10 @@ public class BondFutureDlg extends javax.swing.JDialog {
     private boolean saveBean() {
 
         try {
+            if (isInsert) {
+                bean = new FutBondBean(new BondFutureMasterData());
+                fillDefaultFields();
+            }
             BondFutureMasterData bfmd = bean.getBondFutureMasterData();
             bfmd.setIsin(txtIsin.getText());
             bfmd.setCode(txtIsin.getText());
@@ -609,11 +619,32 @@ public class BondFutureDlg extends javax.swing.JDialog {
             bfmd.setExchangeContractCode(txtContractCode.getText());
             bfmd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             bfmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
+            Currency currency = (Currency) cbCurrency.getSelectedItem();
+            bfmd.setCurrency(currency);
+            bfmd.setCalendar(currency.getCalendar());
+            bfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
+            bfmd.setDaycount((Daycount) cbDaycount.getSelectedItem());
             masterDataFacade.getBondFutureMasterDataDAO().saveOrUpdate(bfmd);
             return true;
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return false;
         }
+    }
+
+    private void fillDefaultFields() {
+        // Aggiungo campi standard
+        bean.getBondFutureMasterData().setTypeOfInterest(masterDataFacade.findTypeOfInterest("FIXED"));
+        bean.getBondFutureMasterData().setForm(masterDataFacade.findForm("BEARER"));
+        bean.getBondFutureMasterData().setFrequency(masterDataFacade.findFrequency("CUSTOM"));
+        bean.getBondFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("RC_NONE"));
+        bean.getBondFutureMasterData().setAccrualScheduleType(100);
+        bean.getBondFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("BFU"));
+        bean.getBondFutureMasterData().setAmortizationSchedule(masterDataFacade.findAmortizationSchedule("SAS"));
+
+        bean.getBondFutureMasterData().setBusinessDays(2);
+        bean.getBondFutureMasterData().setInterestRate(0.);
+        bean.getBondFutureMasterData().setIssuePrice(100.);
+        bean.getBondFutureMasterData().setRedempionPrice(100.);
     }
 }

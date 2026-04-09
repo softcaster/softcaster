@@ -13,7 +13,7 @@ import org.softcaster.master_data_mgr.models.IMasterDataModel;
  */
 public class FutBondBean implements IMasterDataModel {
 
-    private final BondFutureMasterData bfmd;
+    private BondFutureMasterData bfmd;
     
     public FutBondBean(BondFutureMasterData bfmd) {
         this.bfmd = bfmd;
@@ -25,7 +25,7 @@ public class FutBondBean implements IMasterDataModel {
             case 0 ->
                 bfmd.getIsin();
             case 1 ->
-                bfmd.getCode();
+                bfmd.getDescription();
             case 2 ->
                 bfmd.getMaturityDate();
             case 3 ->

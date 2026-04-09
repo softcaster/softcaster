@@ -56,18 +56,44 @@ public class EuroNextProvider extends AbstractProvider {
 
     private void parseBondResponse(String ric) {
         if (response != null && !response.isEmpty()) {
-            String[] bidStr = response.split("header-instrument-price\">")[1].split("<");
-            double value = Double.parseDouble(bidStr[0]);
+            String[] valuesStr = response.split("<td class=\"table-success\">");
+            String bidStrValue = valuesStr[1].split("<")[0];
+            String askStrValue = valuesStr[1].split("<td class=\"table-danger\">")[1].split("<")[0];
+
+            double bidValue = Double.parseDouble(bidStrValue);
+            double askValue = Double.parseDouble(askStrValue);
             DataNode node = getBond(ric);
             if (node != null) {
-                node.setBid(value);
-                node.setAsk(value);
+                node.setBid(bidValue);
+                node.setAsk(askValue);
             } else {
                 DataNode newNode = new DataNode();
                 newNode.setRic(ric);
-                newNode.setBid(value);
-                newNode.setAsk(value);
+                newNode.setBid(bidValue);
+                newNode.setAsk(askValue);
                 bondQuotes.add(newNode);
+            }
+        }
+    }
+
+    private void parseFutureResponse(String ric) {
+        if (response != null && !response.isEmpty()) {
+            String[] valuesStr = response.split("<td class=\"table-success\">");
+            String bidStrValue = valuesStr[1].split("<")[0];
+            String askStrValue = valuesStr[1].split("<td class=\"table-danger\">")[1].split("<")[0];
+
+            double bidValue = Double.parseDouble(bidStrValue);
+            double askValue = Double.parseDouble(askStrValue);
+            DataNode node = getBond(ric);
+            if (node != null) {
+                node.setBid(bidValue);
+                node.setAsk(askValue);
+            } else {
+                DataNode newNode = new DataNode();
+                newNode.setRic(ric);
+                newNode.setBid(bidValue);
+                newNode.setAsk(askValue);
+                futureQuotes.add(newNode);
             }
         }
     }
@@ -77,7 +103,9 @@ public class EuroNextProvider extends AbstractProvider {
         switch (param.market) {
             case BONDS ->
                 parseBondResponse(param.extraParams.get(0));
-            case CURRENCIES, YIELDS, EQUITIES, FUTURES, COMMODITIES -> {
+            case FUTURES ->
+                parseFutureResponse(param.extraParams.get(0));
+            case CURRENCIES, YIELDS, EQUITIES, COMMODITIES -> {
 
             }
         }
@@ -85,7 +113,17 @@ public class EuroNextProvider extends AbstractProvider {
 
     @Override
     protected void customConnect(ConnectionParam param) throws MalformedURLException, IOException {
-        String ric = param.extraParams.get(0) + param.extraParams.get(1); //"-MOTX";
+        String ric = "";
+        switch (param.market) {
+            case BONDS ->
+                ric = param.extraParams.get(0) + param.extraParams.get(1); //"-MOTX";
+            case FUTURES ->
+                ric = param.extraParams.get(1);
+            default -> {
+
+            }
+        }
+
         param.useBaseUrl = false;
         param.url += ric;
         HttpURLConnection conn = getConnection(param);
@@ -113,7 +151,10 @@ public class EuroNextProvider extends AbstractProvider {
             case BONDS -> {
                 return bondQuotes;
             }
-            case YIELDS, FUTURES, EQUITIES, COMMODITIES -> {
+            case FUTURES -> {
+                return futureQuotes;
+            }
+            case YIELDS, EQUITIES, COMMODITIES -> {
                 throw new MarketDataProviderException("Market not supported!");
             }
         }
@@ -123,16 +164,32 @@ public class EuroNextProvider extends AbstractProvider {
     @Override
     public void refresh(ConnectionParam param) throws MarketDataProviderException {
         try {
+            setSpecificUrl(param);
             connect(param);
             build(param.today);
         } catch (IOException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new MarketDataProviderException(ex.getLocalizedMessage());
-        }    
+        }
     }
 
     @Override
     public void build(org.softcaster.commons.types.Date currentDate) throws MarketDataProviderException {
     }
 
+    private void setSpecificUrl(ConnectionParam param) {
+
+        switch (param.market) {
+            case BONDS -> {
+                param.url = "https://live.euronext.com/en/ajax/getOrderBook/";
+            }
+            case FUTURES -> {
+                param.url = "https://live.euronext.com/en/ajax/getDerivativesOrderBook/";
+
+            }
+            case YIELDS, EQUITIES, COMMODITIES -> {
+                throw new MarketDataProviderException("Market not supported!");
+            }
+        }
+    }
 }

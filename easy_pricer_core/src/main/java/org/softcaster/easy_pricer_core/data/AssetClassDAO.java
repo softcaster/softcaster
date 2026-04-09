@@ -16,6 +16,11 @@ public class AssetClassDAO {
         return repository.findByIdAssetClass(idAssetClass);
     }
 
+    @Transactional(readOnly = true)
+    public AssetClass findByCode(String code) {
+        return repository.findByCode(code);
+    }
+
     @Transactional
     public AssetClass saveOrUpdate(AssetClass assetClass) {
         return repository.save(assetClass);

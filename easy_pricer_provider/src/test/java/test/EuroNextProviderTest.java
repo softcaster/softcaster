@@ -27,10 +27,16 @@ public class EuroNextProviderTest {
 
         EuroNextProvider provider = EuroNextProvider.getInstance();
         ConnectionParam param = new ConnectionParam();
-        param.baseUrl = "https://live.euronext.com/en/";
-        param.url = "https://live.euronext.com/en/ajax/getDetailedQuote/";
-        param.extraParams.add("IT0005494239");
-        param.extraParams.add("-MOTX"); //-DMIL future -ETLX equity
+        /*
+        param.baseUrl = "https://www.borsaitaliana.it";
+        param.url = "https://www.borsaitaliana.it/borsa/obbligazioni/mot/btp/scheda/";
+        param.extraParams.add("IT0001086567");
+        param.extraParams.add("-MOTX.html?lang=en"); //-DMIL future -ETLX equity
+        param.market = MARKETS.BONDS;
+        */
+        param.baseUrl = "https://live.euronext.com/en";
+        param.extraParams.add("IT0001086567");
+        param.extraParams.add("-MOTX");
         param.market = MARKETS.BONDS;
 
         provider.refresh(param);
@@ -38,4 +44,17 @@ public class EuroNextProviderTest {
         for (DataNode node : rates) {
             System.out.println(node.getRic() + "\t" + "\t" + node.getBid());
         }
+
+        param.baseUrl = "https://live.euronext.com/en";
+        param.extraParams.clear();
+        param.extraParams.add("IT0024832682");
+        param.extraParams.add("MBTX-DMIL?fOrO=F&md=01-06-2026");
+        param.market = MARKETS.FUTURES;
+
+        provider.refresh(param);
+        rates = provider.quotes(MARKETS.FUTURES);
+        for (DataNode node : rates) {
+            System.out.println(node.getRic() + "\t" + "\t" + node.getBid());
+        }
+
     }}

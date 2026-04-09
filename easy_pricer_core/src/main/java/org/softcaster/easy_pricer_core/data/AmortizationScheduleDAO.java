@@ -16,6 +16,11 @@ public class AmortizationScheduleDAO {
         return repository.findByIdAmortizationSchedule(idAmortizationSchedule);
     }
 
+    @Transactional(readOnly = true)
+    public AmortizationSchedule findByCode(String code) {
+        return repository.findByCode(code);
+    }
+
     @Transactional
     public AmortizationSchedule saveOrUpdate(AmortizationSchedule amortizationSchedule) {
         return repository.save(amortizationSchedule);
