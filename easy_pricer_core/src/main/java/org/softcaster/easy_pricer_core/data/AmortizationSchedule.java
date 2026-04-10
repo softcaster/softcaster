@@ -67,4 +67,9 @@ public class AmortizationSchedule implements Serializable {
     public int hashCode() {
         return getIdAmortizationSchedule() == null ? 0 : idAmortizationSchedule.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return code;
+    }    
 }

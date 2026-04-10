@@ -67,4 +67,9 @@ public class RollConvention implements Serializable {
     public int hashCode() {
         return getIdRollConvention() == null ? 0 : idRollConvention.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return code;
+    }    
 }

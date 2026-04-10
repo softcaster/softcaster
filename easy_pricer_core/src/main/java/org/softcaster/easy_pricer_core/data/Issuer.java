@@ -88,4 +88,9 @@ public class Issuer implements Serializable {
     public int hashCode() {
         return getIdIssuer() == null ? 0 : idIssuer.hashCode();
     }
+    
+    @Override
+    public String toString() {
+        return shortIssuerName;
+    }    
 }

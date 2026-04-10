@@ -16,6 +16,7 @@ import org.softcaster.easy_pricer_core.data.Form;
 import org.softcaster.easy_pricer_core.data.FormDAO;
 import org.softcaster.easy_pricer_core.data.Frequency;
 import org.softcaster.easy_pricer_core.data.FrequencyDAO;
+import org.softcaster.easy_pricer_core.data.IssuerDAO;
 import org.softcaster.easy_pricer_core.data.RollConvention;
 import org.softcaster.easy_pricer_core.data.RollConventionDAO;
 import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
@@ -36,6 +37,8 @@ public class MasterDataFacade {
     private SecurityMasterDataDAO securityMasterDataDAO;
     @Autowired
     private BondFutureMasterDataDAO bondFutureMasterDataDAO;
+    @Autowired
+    private IssuerDAO issuerDAO;
 
     @Autowired
     private CurrencyDAO currencyDAO;
@@ -161,4 +164,20 @@ public class MasterDataFacade {
     public AssetClass  findAssetClass(String code) {
         return assetClassDAO.findByCode(code);
     }
+
+    /**
+     * @return the issuerDAO
+     */
+    public IssuerDAO getIssuerDAO() {
+        return issuerDAO;
+    }
+
+    /**
+     * @param issuerDAO the issuerDAO to set
+     */
+    public void setIssuerDAO(IssuerDAO issuerDAO) {
+        this.issuerDAO = issuerDAO;
+    }
+    
+    
 }

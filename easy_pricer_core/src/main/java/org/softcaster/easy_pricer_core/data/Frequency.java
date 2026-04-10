@@ -84,4 +84,9 @@ public class Frequency implements Serializable {
     public int hashCode() {
         return getIdFrequency() == null ? 0 : idFrequency.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return code;
+    }    
 }

@@ -103,7 +103,7 @@ public class BondFuturePanel extends AbstactMDPanel {
         }
 
         BondFutureDlg dialog = new BondFutureDlg(parentFrame, true, null, masterDataFacade);
-        dialog.setSize(600, 300);
+        dialog.setSize(600, 400);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);

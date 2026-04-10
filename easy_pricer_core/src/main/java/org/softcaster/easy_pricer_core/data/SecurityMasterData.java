@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.Fetch;
@@ -32,8 +33,9 @@ public class SecurityMasterData extends MasterData {
     @Column(name = "lei")
     private String lei;
 
-    @Column(name = "issuer")
-    private Integer issuer;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "issuer", nullable = true)
+    private Issuer issuer;
 
     @Column(name = "issue_description")
     private String issueDescription;
@@ -86,14 +88,6 @@ public class SecurityMasterData extends MasterData {
         this.lei = lei;
     }
 
-    public Integer getIssuer() {
-        return issuer;
-    }
-
-    public void setIssuer(Integer issuer) {
-        this.issuer = issuer;
-    }
-
     public String getIssueDescription() {
         return issueDescription;
     }
@@ -138,6 +132,20 @@ public class SecurityMasterData extends MasterData {
      */
     public void setCashFlows(List<CashFlowItem> cashFlows) {
         this.cashFlows = cashFlows;
+    }
+
+    /**
+     * @return the issuer
+     */
+    public Issuer getIssuer() {
+        return issuer;
+    }
+
+    /**
+     * @param issuer the issuer to set
+     */
+    public void setIssuer(Issuer issuer) {
+        this.issuer = issuer;
     }
 
 }

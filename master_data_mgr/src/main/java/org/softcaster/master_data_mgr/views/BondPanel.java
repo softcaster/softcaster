@@ -8,7 +8,8 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.easy_pricer_core.data.SecurityMasterData;
-import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
+import org.softcaster.master_data_mgr.MasterDataFacade;
+import org.softcaster.master_data_mgr.dialogs.BondDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.SecurityBean;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
@@ -19,15 +20,15 @@ import org.softcaster.master_data_mgr.ui.ZebraTable;
  */
 public class BondPanel extends AbstactMDPanel {
 
-    private final SecurityMasterDataDAO dao;
+    private final MasterDataFacade masterDataFacade;
 
     /**
      * Creates new form BondPanel
      *
-     * @param dao
+     * @param masterDataFacade
      */
-    public BondPanel(SecurityMasterDataDAO dao) {
-        this.dao = dao;
+    public BondPanel(MasterDataFacade masterDataFacade) {
+        this.masterDataFacade = masterDataFacade;
         initComponents();
         postInitComponents(bondTable);
     }
@@ -92,7 +93,22 @@ public class BondPanel extends AbstactMDPanel {
 
     @Override
     protected void acNewActionPerformed(ActionEvent evt) {
-        System.out.println("acNewActionPerformed");
+        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+        java.awt.Frame parentFrame = null;
+
+        if (parentWindow instanceof java.awt.Frame frame) {
+            parentFrame = frame;
+        }
+
+        BondDlg dialog = new BondDlg(parentFrame, true, null, masterDataFacade);
+        dialog.setSize(600, 400);
+        // Centra la dialog rispetto al pannello
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+        // Post chiusura dialog
+        MasterDataTableModel<SecurityBean> model = (MasterDataTableModel<SecurityBean>) bondTable.getModel();
+        refreshModel(model);
     }
 
     @Override
@@ -103,7 +119,21 @@ public class BondPanel extends AbstactMDPanel {
             int modelRow = bondTable.convertRowIndexToModel(rowIndex);
             MasterDataTableModel<SecurityBean> model = (MasterDataTableModel<SecurityBean>) bondTable.getModel();
             SecurityBean bean = model.getElementAt(modelRow);
-            System.out.println(bean.getValueAt(0));
+            java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+            java.awt.Frame parentFrame = null;
+
+            if (parentWindow instanceof java.awt.Frame frame) {
+                parentFrame = frame;
+            }
+
+            BondDlg dialog = new BondDlg(parentFrame, true, bean, masterDataFacade);
+            dialog.setSize(600, 400);
+            // Centra la dialog rispetto al pannello
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+            // Post chiusura dialog
+            refreshModel(model);
         }
     }
 
@@ -114,7 +144,7 @@ public class BondPanel extends AbstactMDPanel {
 
     @Override
     protected void refreshModel(MasterDataTableModel model) {
-        List<SecurityMasterData> bonds = dao.findAll();
+        List<SecurityMasterData> bonds = masterDataFacade.getSecurityMasterDataDAO().findAll();
         List<SecurityBean> securityBeanList = new ArrayList<>();
         SecurityBean bean = null;
         for (SecurityMasterData item : bonds) {

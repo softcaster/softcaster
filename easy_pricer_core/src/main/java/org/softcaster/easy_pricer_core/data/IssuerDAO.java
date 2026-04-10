@@ -11,7 +11,9 @@ public class IssuerDAO {
 
     @Resource
     private IssuerRepository repository;
-
+    
+    private final Sort sortByShortIssuerName = Sort.by(Sort.Direction.ASC, "shortIssuerName");
+    
     @Transactional(readOnly = true)
     public Issuer findByIdIssuer(Integer idIssuer) {
         return repository.findByIdIssuer(idIssuer);
@@ -29,6 +31,6 @@ public class IssuerDAO {
 
     @Transactional(readOnly = true)
     public List<Issuer> findAll() {
-        return repository.findAll();
+        return repository.findAll(sortByShortIssuerName);
     }
 }

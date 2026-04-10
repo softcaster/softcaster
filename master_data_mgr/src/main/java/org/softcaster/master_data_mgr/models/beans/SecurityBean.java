@@ -45,5 +45,8 @@ public class SecurityBean implements IMasterDataModel {
     public String[] getColumnNames() {
         return new String[] {"Isin", "Description", "Issue Date", "Issue Price", "Maturity", "Redemption Price", "Coupon"};
     }
+    public SecurityMasterData getSecurityMasterData() {
+        return smd;
+    }
 
 }

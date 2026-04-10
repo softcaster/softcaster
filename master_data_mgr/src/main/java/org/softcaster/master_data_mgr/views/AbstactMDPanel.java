@@ -13,7 +13,6 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import org.softcaster.master_data_mgr.models.IMasterDataModel;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.ui.DecimalRenderer;
 import org.softcaster.master_data_mgr.ui.PopupListener;

@@ -67,4 +67,9 @@ public class Form implements Serializable {
     public int hashCode() {
         return getIdForm() == null ? 0 : idForm.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return code;
+    }    
 }

@@ -67,4 +67,9 @@ public class TypeOfInterest implements Serializable {
     public int hashCode() {
         return getIdTypeOfInterest() == null ? 0 : idTypeOfInterest.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return code;
+    }    
 }

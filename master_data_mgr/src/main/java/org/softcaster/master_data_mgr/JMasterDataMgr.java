@@ -252,7 +252,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
 
     private void addPanels() {
         // 1. Istanzia i pannelli
-        JPanel bondPanel = new BondPanel(masterDataFacade.getSecurityMasterDataDAO());
+        JPanel bondPanel = new BondPanel(masterDataFacade);
         JPanel fxPanel = new ForexPanel(masterDataFacade.getCurrencyDAO());
         JPanel futBondPanel = new BondFuturePanel(masterDataFacade);
         JPanel defaultPanel = new HomePanel();
