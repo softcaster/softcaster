@@ -13,9 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -29,12 +29,16 @@ import org.softcaster.easy_pricer_core.data.Issuer;
 import org.softcaster.easy_pricer_core.data.RollConvention;
 import org.softcaster.easy_pricer_core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_core.data.TypeOfInterest;
+import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.CashFlowBean;
 import org.softcaster.master_data_mgr.models.beans.SecurityBean;
 import org.softcaster.master_data_mgr.ui.DecimalRenderer;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
+import ph.alephzero.finance.DayCountBasis;
+import ph.alephzero.finance.cashflows.CashFlows;
+import ph.alephzero.finance.products.fixedincome.BondCashFlowGenerator;
 
 /**
  *
@@ -639,6 +643,11 @@ public class BondDlg extends javax.swing.JDialog {
         btnPanel.setLayout(new java.awt.GridBagLayout());
 
         btnGenerateCF.setLabel("Generate CF");
+        btnGenerateCF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGenerateCFActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         btnPanel.add(btnGenerateCF, gridBagConstraints);
@@ -691,27 +700,34 @@ public class BondDlg extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
 
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-
+    private boolean saveAction() {
         boolean isValid = validateFields() && validateIntegrity();
+
         if (!isValid) {
             javax.swing.JOptionPane.showMessageDialog(
                     this,
                     "Please fill in all the required fields.", // Messaggio
                     "Validation Error", // Titolo
                     javax.swing.JOptionPane.ERROR_MESSAGE);
-
-        } else {
-            if (!saveBean()) {
-                javax.swing.JOptionPane.showMessageDialog(
-                        this,
-                        "Error during save.\n See log file for more details.", // Messaggio
-                        "Save Error", // Titolo
-                        javax.swing.JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            this.dispose();
+            return false;
         }
+
+        if (!saveBean()) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Error during save.\n See log file for more details.", // Messaggio
+                    "Save Error", // Titolo
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+
+        if (saveAction())
+            this.dispose();
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void txtIssuePriceFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtIssuePriceFocusLost
@@ -745,6 +761,66 @@ public class BondDlg extends javax.swing.JDialog {
     private void txtNominalValueFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtNominalValueFocusLost
         MDDialogHelper.textFieldDoubleFocusLost(txtNominalValue);
     }//GEN-LAST:event_txtNominalValueFocusLost
+
+    private DayCountBasis getDayCountBasis(String code) {
+        return DayCountBasis.ACT_ACT;
+    }
+
+    private void btnGenerateCFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateCFActionPerformed
+
+        boolean showMessage = bean != null
+                && bean.getSecurityMasterData().getCashFlows() != null
+                && !bean.getSecurityMasterData().getCashFlows().isEmpty();
+        if (showMessage) {
+            if (JOptionPane.showConfirmDialog(this,
+                    "Cash Flows already present.\n Are you sure? ", JMasterDataMgr.TITLE,
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION) {
+                return;
+            }
+        }
+
+        CashFlows cf = BondCashFlowGenerator.cashFlowsOddBond(bean.getSecurityMasterData().getIssueDate(),
+                bean.getSecurityMasterData().getIssueDate(),
+                bean.getSecurityMasterData().getMaturityDate(),
+                bean.getSecurityMasterData().getFirstCouponPaymentDate(),
+                null,
+                bean.getSecurityMasterData().getNominalValue(),
+                bean.getSecurityMasterData().getInterestRate(),
+                bean.getSecurityMasterData().getFrequency().getYearFraction().intValue(),
+                getDayCountBasis(bean.getSecurityMasterData().getDaycount().getCode()));
+        List<CashFlowItem> cashFlows = new ArrayList();
+        Date start = null;
+        Date end = null;
+        CashFlowItem item = null;
+        for (java.util.Date date : cf.getDates()) {
+            if (start == null) {
+                start = new Date(date);
+            } else {
+                end = new Date(date);
+                item = new CashFlowItem();
+                item.setStartDate(start.sqlDate());
+                item.setEndDate(end.sqlDate());
+                item.setInterest(cf.getCashFlow(date, "INTEREST"));
+                item.setAmount(cf.getCashFlow(date, "PRINCIPAL"));
+                item.setMasterData(bean.getSecurityMasterData().getIdMasterData());
+                cashFlows.add(item);
+                start = end;
+            }
+        }
+
+        // Cancella vecchio cash flow (se esistente) per evitare errore:
+        // chiave duplicato viola il vincolo univoco "idx_md_ed"
+        if (showMessage) {
+            bean.getSecurityMasterData().getCashFlows().clear();
+            if (!saveBean()) {
+                return;
+            }
+        }
+        bean.getSecurityMasterData().setCashFlows(cashFlows);
+        MasterDataTableModel<CashFlowBean> model = (MasterDataTableModel<CashFlowBean>) tableCF.getModel();
+        refreshModel(model);
+    }//GEN-LAST:event_btnGenerateCFActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel additionalPanel;
@@ -818,11 +894,11 @@ public class BondDlg extends javax.swing.JDialog {
             txtDescription.setText(bean.getSecurityMasterData().getIssueDescription());
             txtIssuePrice.setText(Converter.fromDouble(bean.getSecurityMasterData().getIssuePrice()));
             txtRedempionPrice.setText(Converter.fromDouble(bean.getSecurityMasterData().getRedempionPrice()));
-            txtCoupon.setText(Converter.fromDouble(bean.getSecurityMasterData().getInterestRate()));
+            txtCoupon.setText(Converter.fromDouble(bean.getSecurityMasterData().getInterestRate() * 100.));
             txtIssueDate.setText(new Date(bean.getSecurityMasterData().getIssueDate()).toString());
             txtExpiryDate.setText(new Date(bean.getSecurityMasterData().getMaturityDate()).toString());
             txtFirstCpMaturity.setText(new Date(bean.getSecurityMasterData().getFirstCouponPaymentDate()).toString());
-            txtFirstCpRate.setText(Converter.fromDouble(bean.getSecurityMasterData().getFirstCouponRate()));
+            txtFirstCpRate.setText(Converter.fromDouble(bean.getSecurityMasterData().getFirstCouponRate() * 100.));
             txtCfiCode.setText(bean.getSecurityMasterData().getCfiCode());
             txtFisn.setText(bean.getSecurityMasterData().getFisn());
             txtLei.setText(bean.getSecurityMasterData().getLei());
@@ -976,7 +1052,7 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setIssueDescription(txtDescription.getText());
             smd.setIssuePrice(Converter.toDouble(txtIssuePrice.getText(), false));
             smd.setRedempionPrice(Converter.toDouble(txtRedempionPrice.getText(), false));
-            smd.setInterestRate(Converter.toDouble(txtCoupon.getText(), false));
+            smd.setInterestRate(Converter.toDouble(txtCoupon.getText(), false) / 100.);
             smd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             smd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
@@ -992,7 +1068,7 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setIssuer((Issuer) cbIssuer.getSelectedItem());
             smd.setNominalValue(Converter.toDouble(txtNominalValue.getText(), false));
             smd.setFirstCouponPaymentDate(new Date(txtFirstCpMaturity.getText()).sqlDate());
-            smd.setFirstCouponRate(Converter.toDouble(txtFirstCpRate.getText(), false));
+            smd.setFirstCouponRate(Converter.toDouble(txtFirstCpRate.getText(), false) / 100.);
             masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(smd);
 
             return true;
@@ -1017,13 +1093,7 @@ public class BondDlg extends javax.swing.JDialog {
         }
     }
 
-    protected void fillModelList() {
-        // Crea e setta il model
-        CashFlowBean prototype = new CashFlowBean(null);
-        MasterDataTableModel<CashFlowBean> model = new MasterDataTableModel<>(prototype);
-        tableCF.setModel(model);
-
-        // Popola il model
+    private void refreshModel(MasterDataTableModel model) {
         List<CashFlowItem> items = bean.getSecurityMasterData().getCashFlows();
         List<CashFlowBean> cfBeanList = new ArrayList<>();
         CashFlowBean cfb = null;
@@ -1032,6 +1102,16 @@ public class BondDlg extends javax.swing.JDialog {
             cfBeanList.add(cfb);
         }
         model.setData(cfBeanList);
+    }
+
+    protected void fillModelList() {
+        // Crea e setta il model
+        CashFlowBean prototype = new CashFlowBean(null);
+        MasterDataTableModel<CashFlowBean> model = new MasterDataTableModel<>(prototype);
+        tableCF.setModel(model);
+
+        // Popola il model
+        refreshModel(model);
     }
 
     protected void initTable() {

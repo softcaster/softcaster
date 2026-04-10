@@ -7,7 +7,10 @@ package org.softcaster.master_data_mgr.views;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_core.data.SecurityMasterData;
+import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.dialogs.BondDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
@@ -139,7 +142,26 @@ public class BondPanel extends AbstactMDPanel {
 
     @Override
     protected void acDelActionPerformed(ActionEvent evt) {
-        System.out.println("acDelActionPerformed");
+        int rowIndex = bondTable.getSelectedRow();
+        if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = bondTable.convertRowIndexToModel(rowIndex);
+            MasterDataTableModel<SecurityBean> model = (MasterDataTableModel<SecurityBean>) bondTable.getModel();
+            SecurityBean bean = model.getElementAt(modelRow);
+            if (JOptionPane.showConfirmDialog(this,
+                    "Are you sure to delete item? " + bean.getValueAt(0), JMasterDataMgr.TITLE,
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                try {
+                    masterDataFacade.getSecurityMasterDataDAO().delete(bean.getSecurityMasterData());
+                    refreshModel(model);
+                } catch (Exception ex) {
+                    LoggerMgr.logError(ex.getLocalizedMessage());
+                }
+            }
+            // Post chiusura dialog
+            refreshModel(model);
+        }
     }
 
     @Override
