@@ -5,6 +5,7 @@
 package org.softcaster.master_data_mgr.dialogs;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -38,7 +41,7 @@ import org.softcaster.master_data_mgr.ui.ZebraTable;
  * @author ep
  */
 public class BondDlg extends javax.swing.JDialog {
-    
+
     private SecurityBean bean = null;
     private MasterDataFacade masterDataFacade = null;
     private List<javax.swing.JTextField> fieldsToValidate;
@@ -124,9 +127,10 @@ public class BondDlg extends javax.swing.JDialog {
         scrollPaneCF = new javax.swing.JScrollPane();
         tableCF = new ZebraTable();
         btnPanel = new javax.swing.JPanel();
+        btnGenerateCF = new javax.swing.JButton();
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
         btnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
-        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Bond");
@@ -634,6 +638,17 @@ public class BondDlg extends javax.swing.JDialog {
 
         btnPanel.setLayout(new java.awt.GridBagLayout());
 
+        btnGenerateCF.setLabel("Generate CF");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        btnPanel.add(btnGenerateCF, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        btnPanel.add(filler2, gridBagConstraints);
+
         btnSave.setText("Save");
         btnSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -658,12 +673,6 @@ public class BondDlg extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         btnPanel.add(btnCancel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        btnPanel.add(filler2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -683,7 +692,7 @@ public class BondDlg extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        
+
         boolean isValid = validateFields() && validateIntegrity();
         if (!isValid) {
             javax.swing.JOptionPane.showMessageDialog(
@@ -691,7 +700,7 @@ public class BondDlg extends javax.swing.JDialog {
                     "Please fill in all the required fields.", // Messaggio
                     "Validation Error", // Titolo
                     javax.swing.JOptionPane.ERROR_MESSAGE);
-            
+
         } else {
             if (!saveBean()) {
                 javax.swing.JOptionPane.showMessageDialog(
@@ -740,6 +749,7 @@ public class BondDlg extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel additionalPanel;
     private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnGenerateCF;
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSave;
     private javax.swing.JPanel cashFlowPanel;
@@ -798,9 +808,9 @@ public class BondDlg extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     private void postInit() {
-        
+
         setUpCombos();
-        
+
         if (bean != null) {
             isInsert = false;
             txtIsin.setText(bean.getSecurityMasterData().getIsin());
@@ -830,13 +840,27 @@ public class BondDlg extends javax.swing.JDialog {
         // Aggiungo i campi alla lista di validazione
         fieldsToValidate = Arrays.asList(txtIsin, txtDescription, txtIssuePrice, txtRedempionPrice,
                 txtCoupon, txtIssueDate, txtExpiryDate, txtFirstCpMaturity, txtFirstCpRate, txtNominalValue);
-        
+
         initTable();
-        
+
+        // gestione bottone Generate CF
+        btnGenerateCF.setVisible(false);
+        tabbedPane.addChangeListener((ChangeEvent e) -> {
+            Component panel = tabbedPane.getSelectedComponent();
+            int index = tabbedPane.indexOfComponent(panel); // Trova l'indice del pannello
+            if (index != -1) {
+                String title1 = tabbedPane.getTitleAt(index); // Ottiene il testo del tab
+                if (title1.equalsIgnoreCase("Cash Flows")) {
+                    btnGenerateCF.setVisible(true);
+                } else {
+                    btnGenerateCF.setVisible(false);
+                }
+            }
+        });
     }
-    
+
     private void setUpCombos() {
-        
+
         setUpCurrencyCombo();
         setUpDaycountCombo();
         setUpIssuerCombo();
@@ -846,7 +870,7 @@ public class BondDlg extends javax.swing.JDialog {
         setUpToiCombo();
         setUpAmSchedCombo();
     }
-    
+
     private void setUpToiCombo() {
         List<TypeOfInterest> tois = masterDataFacade.getTypeOfInterestDAO().findAll();
 
@@ -854,7 +878,7 @@ public class BondDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<TypeOfInterest> model = new DefaultComboBoxModel<>(tois.toArray(TypeOfInterest[]::new));
         cbToi.setModel(model);
     }
-    
+
     private void setUpAmSchedCombo() {
         List<AmortizationSchedule> amscheds = masterDataFacade.getAmortizationScheduleDAO().findAll();
 
@@ -862,7 +886,7 @@ public class BondDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<AmortizationSchedule> model = new DefaultComboBoxModel<>(amscheds.toArray(AmortizationSchedule[]::new));
         cbAmortSched.setModel(model);
     }
-    
+
     private void setUpFormCombo() {
         List<Form> forms = masterDataFacade.getFormDAO().findAll();
 
@@ -870,7 +894,7 @@ public class BondDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<Form> model = new DefaultComboBoxModel<>(forms.toArray(Form[]::new));
         cbForm.setModel(model);
     }
-    
+
     private void setUpFrequencyCombo() {
         List<Frequency> frequencies = masterDataFacade.getFrequencyDAO().findAll();
 
@@ -878,7 +902,7 @@ public class BondDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<Frequency> model = new DefaultComboBoxModel<>(frequencies.toArray(Frequency[]::new));
         cbFrequency.setModel(model);
     }
-    
+
     private void setUpRollConvCombo() {
         List<RollConvention> rollconvs = masterDataFacade.getRollConventionDAO().findAll();
 
@@ -886,7 +910,7 @@ public class BondDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<RollConvention> model = new DefaultComboBoxModel<>(rollconvs.toArray(RollConvention[]::new));
         cbRollConv.setModel(model);
     }
-    
+
     private void setUpIssuerCombo() {
         List<Issuer> issuers = masterDataFacade.getIssuerDAO().findAll();
 
@@ -894,7 +918,7 @@ public class BondDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<Issuer> model = new DefaultComboBoxModel<>(issuers.toArray(Issuer[]::new));
         cbIssuer.setModel(model);
     }
-    
+
     private void setUpCurrencyCombo() {
         List<Currency> currencies = masterDataFacade.getCurrencyDAO().findAll();
 
@@ -902,7 +926,7 @@ public class BondDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<Currency> model = new DefaultComboBoxModel<>(currencies.toArray(Currency[]::new));
         cbCurrency.setModel(model);
     }
-    
+
     private void setUpDaycountCombo() {
         List<Daycount> daycounts = masterDataFacade.getDaycountDAO().findAll();
 
@@ -915,7 +939,7 @@ public class BondDlg extends javax.swing.JDialog {
     private boolean validateFields() {
         return MDDialogHelper.validateFields(fieldsToValidate);
     }
-    
+
     private boolean validateIntegrity() {
         if (isInsert) {
             // Controlla univocita codice ISIN
@@ -930,23 +954,23 @@ public class BondDlg extends javax.swing.JDialog {
         Date issueDate = new Date(txtIssueDate.getText());
         Date expiryDate = new Date(txtExpiryDate.getText());
         Date firstCpMaturity = new Date(txtFirstCpMaturity.getText());
-        
+
         if (issueDate.isGreaterThan(expiryDate) || issueDate.isGreaterThan(firstCpMaturity)) {
             return false;
         }
-        
+
         return !firstCpMaturity.isGreaterThan(expiryDate);
     }
-    
+
     private boolean saveBean() {
-        
+
         try {
             if (isInsert) {
                 bean = new SecurityBean(new SecurityMasterData());
                 fillDefaultFields();
             }
             SecurityMasterData smd = bean.getSecurityMasterData();
-            
+
             smd.setIsin(txtIsin.getText());
             smd.setCode(txtIsin.getText());
             smd.setIssueDescription(txtDescription.getText());
@@ -970,14 +994,14 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setFirstCouponPaymentDate(new Date(txtFirstCpMaturity.getText()).sqlDate());
             smd.setFirstCouponRate(Converter.toDouble(txtFirstCpRate.getText(), false));
             masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(smd);
-            
+
             return true;
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return false;
         }
     }
-    
+
     private void fillDefaultFields() {
         // Aggiungo campi standard
         bean.getSecurityMasterData().setAssetClass(masterDataFacade.findAssetClass("XRB"));
@@ -992,7 +1016,7 @@ public class BondDlg extends javax.swing.JDialog {
             bean.getSecurityMasterData().setLei("");
         }
     }
-    
+
     protected void fillModelList() {
         // Crea e setta il model
         CashFlowBean prototype = new CashFlowBean(null);
@@ -1009,7 +1033,7 @@ public class BondDlg extends javax.swing.JDialog {
         }
         model.setData(cfBeanList);
     }
-    
+
     protected void initTable() {
         tableCF.setFillsViewportHeight(true);
         tableCF.setRowHeight(25);
@@ -1031,7 +1055,7 @@ public class BondDlg extends javax.swing.JDialog {
         // Selezione
         tableCF.setSelectionBackground(new Color(184, 207, 229)); // Un blu delicato per la riga selezionata
         tableCF.setSelectionForeground(Color.BLACK);
-        
+
         tableCF.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableCF.setFocusable(false);
         tableCF.setRowSelectionAllowed(true);
@@ -1046,7 +1070,7 @@ public class BondDlg extends javax.swing.JDialog {
         if (!isInsert) {
             fillModelList();
         }
-        
+
     }
-    
+
 }
