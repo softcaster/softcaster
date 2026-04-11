@@ -6,6 +6,8 @@ package org.softcaster.master_data_mgr;
 
 import jakarta.annotation.PostConstruct;
 import java.awt.CardLayout;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -17,8 +19,10 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.master_data_mgr.models.MasterDataNode;
 import org.softcaster.master_data_mgr.models.TreeModel;
 import org.softcaster.master_data_mgr.ui.MasterDataTreeCellRenderer;
+import org.softcaster.master_data_mgr.views.AbstactMDPanel;
 import org.softcaster.master_data_mgr.views.BondFuturePanel;
 import org.softcaster.master_data_mgr.views.BondPanel;
+import org.softcaster.master_data_mgr.views.CurrPairPanel;
 import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.HomePanel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +38,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
     @Autowired
     private MasterDataFacade masterDataFacade;
 
-    public static final String TITLE = "Master Data Versione 1.0";
+    public static final String TITLE = "Master Data Version 1.0";
+    private AppCard currentCard;
+    private Map<AppCard, javax.swing.JPanel> cardMap = new HashMap<>();
 
     /**
      * Creates new form JMasterDataMgr
@@ -84,14 +90,26 @@ public class JMasterDataMgr extends javax.swing.JFrame {
 
                     // Logica per decidere quale pannello mostrare in base al tipo
                     switch (data.getType()) {
-                        case "BOND" ->
-                            cl.show(mainPanel, "BOND_CARD");
-                        case "CURRENCIES" ->
-                            cl.show(mainPanel, "CURRENCY_CARD");
-                        case "BOND_FUTURE" ->
-                            cl.show(mainPanel, "BOND_FUTURE_CARD");
-                        default ->
+                        case "BOND" -> {
+                            cl.show(mainPanel, AppCard.BOND_CARD.name());
+                            currentCard = AppCard.BOND_CARD;
+                        }
+                        case "CURRENCIES" -> {
+                            cl.show(mainPanel, AppCard.CURRENCY_CARD.name());
+                            currentCard = AppCard.CURRENCY_CARD;
+                        }
+                        case "BOND_FUTURE" -> {
+                            cl.show(mainPanel, AppCard.BOND_FUTURE_CARD.name());
+                            currentCard = AppCard.BOND_FUTURE_CARD;
+                        }
+                        case "CURR_PAIR" -> {
+                            cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
+                            currentCard = AppCard.CURR_PAIR_CARD;
+                        }
+                        default -> {
                             cl.show(mainPanel, "DEFAULT");
+                            currentCard = AppCard.DEFAULT;
+                        }
                     }
 
                     // Opzionale: Carica i dati specifici nel pannello appena mostrato
@@ -138,8 +156,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         btnDown = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        itemFilter = new javax.swing.JMenuItem();
+        itemDownLoad = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         itemExit = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -176,22 +196,43 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         toolBar.add(jSeparator1);
 
         btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/filter_alt_16dp.png"))); // NOI18N
-        btnFilter.setToolTipText("Add new Item");
+        btnFilter.setToolTipText("Filter Data");
         btnFilter.setFocusable(false);
         btnFilter.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnFilter.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         toolBar.add(btnFilter);
 
         btnDown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/download_16dp.png"))); // NOI18N
-        btnDown.setToolTipText("Edit selected Item");
+        btnDown.setToolTipText("Download Data");
         btnDown.setFocusable(false);
         btnDown.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnDown.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnDown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDownActionPerformed(evt);
+            }
+        });
         toolBar.add(btnDown);
 
         getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
 
         fileMenu.setText("File");
+
+        itemFilter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.ALT_DOWN_MASK));
+        itemFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/filter_alt_16dp.png"))); // NOI18N
+        itemFilter.setText("Filter");
+        fileMenu.add(itemFilter);
+
+        itemDownLoad.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.ALT_DOWN_MASK));
+        itemDownLoad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/download_16dp.png"))); // NOI18N
+        itemDownLoad.setText("Download");
+        itemDownLoad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemDownLoadActionPerformed(evt);
+            }
+        });
+        fileMenu.add(itemDownLoad);
+        fileMenu.add(jSeparator2);
 
         itemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.ALT_DOWN_MASK));
         itemExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/close16dp.png"))); // NOI18N
@@ -205,32 +246,37 @@ public class JMasterDataMgr extends javax.swing.JFrame {
 
         menuBar.add(fileMenu);
 
-        jMenu2.setText("Edit");
-        menuBar.add(jMenu2);
-
         setJMenuBar(menuBar);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void itemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemExitActionPerformed
-        // TODO add your handling code here:
         exitAction();
     }//GEN-LAST:event_itemExitActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
-        // TODO add your handling code here:
         exitAction();
     }//GEN-LAST:event_btnExitActionPerformed
+
+    private void btnDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDownActionPerformed
+        downloadAction();
+    }//GEN-LAST:event_btnDownActionPerformed
+
+    private void itemDownLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemDownLoadActionPerformed
+        downloadAction();
+    }//GEN-LAST:event_itemDownLoadActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDown;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnFilter;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem itemDownLoad;
     private javax.swing.JMenuItem itemExit;
-    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuItem itemFilter;
     private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JTree navigator;
@@ -250,22 +296,53 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         }
     }
 
+    private void downloadAction() {
+        AbstactMDPanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.downloadAction();
+        }
+    }
+
+    private void filterAction() {
+
+    }
+
+    private AbstactMDPanel getActiveCard() {
+        JPanel panel = cardMap.get(currentCard);
+        if (panel instanceof AbstactMDPanel abstactMDPanel) {
+            return abstactMDPanel;
+        } else {
+            return null;
+        }
+    }
+
     private void addPanels() {
         // 1. Istanzia i pannelli
         JPanel bondPanel = new BondPanel(masterDataFacade);
+        cardMap.put(AppCard.BOND_CARD, bondPanel);
+
         JPanel fxPanel = new ForexPanel(masterDataFacade.getCurrencyDAO());
+        cardMap.put(AppCard.CURRENCY_CARD, fxPanel);
+
+        JPanel currPairPanel = new CurrPairPanel(masterDataFacade);
+        cardMap.put(AppCard.CURR_PAIR_CARD, currPairPanel);
+
         JPanel futBondPanel = new BondFuturePanel(masterDataFacade);
+        cardMap.put(AppCard.BOND_FUTURE_CARD, futBondPanel);
+
         JPanel defaultPanel = new HomePanel();
+        cardMap.put(AppCard.DEFAULT, defaultPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
-        mainPanel.add(defaultPanel, "DEFAULT");
-        mainPanel.add(bondPanel, "BOND_CARD");
-        mainPanel.add(fxPanel, "CURRENCY_CARD");
-        mainPanel.add(futBondPanel, "BOND_FUTURE_CARD");
+        mainPanel.add(defaultPanel, AppCard.DEFAULT.name());
+        mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
+        mainPanel.add(fxPanel, AppCard.CURRENCY_CARD.name());
+        mainPanel.add(currPairPanel, AppCard.CURR_PAIR_CARD.name());
+        mainPanel.add(futBondPanel, AppCard.BOND_FUTURE_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();
-        cl.show(mainPanel, "DEFAULT");
+        cl.show(mainPanel, AppCard.DEFAULT.name());
     }
 
 }

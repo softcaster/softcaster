@@ -37,6 +37,9 @@ public abstract class AbstactMDPanel extends javax.swing.JPanel {
     protected abstract void acModActionPerformed(java.awt.event.ActionEvent evt);
 
     protected abstract void acDelActionPerformed(java.awt.event.ActionEvent evt);
+    
+    public abstract void downloadAction();
+    public abstract void filterAction();
 
     protected void postInitComponents(JTable table) {
         initTable(table);

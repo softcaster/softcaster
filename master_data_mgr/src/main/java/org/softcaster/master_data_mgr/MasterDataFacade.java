@@ -12,6 +12,7 @@ import org.softcaster.easy_pricer_core.data.BondFutureMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.CurrencyDAO;
 import org.softcaster.easy_pricer_core.data.Daycount;
 import org.softcaster.easy_pricer_core.data.DaycountDAO;
+import org.softcaster.easy_pricer_core.data.ForexMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.Form;
 import org.softcaster.easy_pricer_core.data.FormDAO;
 import org.softcaster.easy_pricer_core.data.Frequency;
@@ -23,6 +24,7 @@ import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.SettlementTypeDAO;
 import org.softcaster.easy_pricer_core.data.TypeOfInterest;
 import org.softcaster.easy_pricer_core.data.TypeOfInterestDAO;
+import org.softcaster.easy_pricer_core.data.YieldCurveDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,8 +40,10 @@ public class MasterDataFacade {
     @Autowired
     private BondFutureMasterDataDAO bondFutureMasterDataDAO;
     @Autowired
+    private ForexMasterDataDAO forexMasterDataDAO;
+    
+    @Autowired
     private IssuerDAO issuerDAO;
-
     @Autowired
     private CurrencyDAO currencyDAO;
     @Autowired
@@ -58,6 +62,8 @@ public class MasterDataFacade {
     private AmortizationScheduleDAO amortizationScheduleDAO;
     @Autowired
     private AssetClassDAO assetClassDAO;
+    @Autowired
+    private YieldCurveDAO yieldCurveDAO;
 
     /**
     * @return the securityMasterDataDAO
@@ -178,6 +184,32 @@ public class MasterDataFacade {
     public void setIssuerDAO(IssuerDAO issuerDAO) {
         this.issuerDAO = issuerDAO;
     }
-    
-    
+
+    /**
+     * @return the forexMasterDataDAO
+     */
+    public ForexMasterDataDAO getForexMasterDataDAO() {
+        return forexMasterDataDAO;
+    }
+
+    /**
+     * @param forexMasterDataDAO the forexMasterDataDAO to set
+     */
+    public void setForexMasterDataDAO(ForexMasterDataDAO forexMasterDataDAO) {
+        this.forexMasterDataDAO = forexMasterDataDAO;
+    }  
+
+    /**
+     * @return the yieldCurveDAO
+     */
+    public YieldCurveDAO getYieldCurveDAO() {
+        return yieldCurveDAO;
+    }
+
+    /**
+     * @param yieldCurveDAO the yieldCurveDAO to set
+     */
+    public void setYieldCurveDAO(YieldCurveDAO yieldCurveDAO) {
+        this.yieldCurveDAO = yieldCurveDAO;
+    }    
 }

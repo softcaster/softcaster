@@ -143,4 +143,12 @@ public class ForexPanel extends AbstactMDPanel {
         }
         model.setData(currencyBeanList);
     }
+    
+    @Override
+    public void downloadAction() {
+    }
+
+    @Override
+    public void filterAction() {
+    }
 }

@@ -9,31 +9,31 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.BondFutureMasterData;
+import org.softcaster.easy_pricer_core.data.ForexMasterData;
 import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
-import org.softcaster.master_data_mgr.dialogs.BondFutureDlg;
+import org.softcaster.master_data_mgr.dialogs.CurrencyPairsDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
-import org.softcaster.master_data_mgr.models.beans.FutBondBean;
+import org.softcaster.master_data_mgr.models.beans.ForexBean;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
 
 /**
  *
- * @author ep
+ * @author softc
  */
-public class BondFuturePanel extends AbstactMDPanel {
-
+public class CurrPairPanel extends AbstactMDPanel {
+    
     private final MasterDataFacade masterDataFacade;
 
     /**
-     * Creates new form BondFuturePanel
+     * Creates new form ForexPanel
      *
      * @param masterDataFacade
      */
-    public BondFuturePanel(MasterDataFacade masterDataFacade) {
+    public CurrPairPanel(MasterDataFacade masterDataFacade) {
         this.masterDataFacade = masterDataFacade;
         initComponents();
-        postInitComponents(futBondTable);
+        postInitComponents(fxTable);
     }
 
     /**
@@ -45,21 +45,38 @@ public class BondFuturePanel extends AbstactMDPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        popUp = new javax.swing.JPopupMenu();
+        acNew = new javax.swing.JMenuItem();
+        acMod = new javax.swing.JMenuItem();
+        acDel = new javax.swing.JMenuItem();
         lblHeader = new javax.swing.JLabel();
-        futBondScrollPane = new javax.swing.JScrollPane();
-        futBondTable = new ZebraTable();
+        fxScrollPane = new javax.swing.JScrollPane();
+        fxTable = new ZebraTable();
+
+        acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
+        acNew.setText("New");
+        popUp.add(acNew);
+
+        acMod.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/edit_16dp.png"))); // NOI18N
+        acMod.setText("Edit");
+        popUp.add(acMod);
+
+        acDel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/delete_16dp.png"))); // NOI18N
+        acDel.setText("Delete");
+        popUp.add(acDel);
 
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
         setLayout(new java.awt.BorderLayout(10, 10));
 
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("Bond Future Master Data");
+        lblHeader.setText("Currency Pairs Master Data");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
-        futBondTable.setModel(new javax.swing.table.DefaultTableModel(
+        fxTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -70,67 +87,70 @@ public class BondFuturePanel extends AbstactMDPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        futBondScrollPane.setViewportView(futBondTable);
+        fxScrollPane.setViewportView(fxTable);
 
-        add(futBondScrollPane, java.awt.BorderLayout.CENTER);
+        add(fxScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane futBondScrollPane;
-    private javax.swing.JTable futBondTable;
+    private javax.swing.JMenuItem acDel;
+    private javax.swing.JMenuItem acMod;
+    private javax.swing.JMenuItem acNew;
+    private javax.swing.JScrollPane fxScrollPane;
+    private javax.swing.JTable fxTable;
     private javax.swing.JLabel lblHeader;
+    private javax.swing.JPopupMenu popUp;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void fillModelList() {
         // Crea e setta il model
-        FutBondBean prototype = new FutBondBean(null);
-        MasterDataTableModel<FutBondBean> model = new MasterDataTableModel<>(prototype);
-        futBondTable.setModel(model);
+        ForexBean prototype = new ForexBean(null);
+        MasterDataTableModel<ForexBean> model = new MasterDataTableModel<>(prototype);
+        fxTable.setModel(model);
 
         // Popola il model
         refreshModel(model);
     }
-
+    
     @Override
     protected void acNewActionPerformed(ActionEvent evt) {
         java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
         java.awt.Frame parentFrame = null;
-
+        
         if (parentWindow instanceof java.awt.Frame frame) {
             parentFrame = frame;
         }
-
-        BondFutureDlg dialog = new BondFutureDlg(parentFrame, true, null, masterDataFacade);
+        
+        CurrencyPairsDlg dialog = new CurrencyPairsDlg(parentFrame, true, null, masterDataFacade);
         dialog.setSize(600, 400);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
-        
+
         // Post chiusura dialog
-        MasterDataTableModel<FutBondBean> model = (MasterDataTableModel<FutBondBean>) futBondTable.getModel();
+        MasterDataTableModel<ForexBean> model = (MasterDataTableModel<ForexBean>) fxTable.getModel();
         refreshModel(model);
     }
-
+    
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
-        int rowIndex = futBondTable.getSelectedRow();
+        int rowIndex = fxTable.getSelectedRow();
         if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = fxTable.convertRowIndexToModel(rowIndex);
+            MasterDataTableModel<ForexBean> model = (MasterDataTableModel<ForexBean>) fxTable.getModel();
+            ForexBean currPair = model.getElementAt(modelRow);
             java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
             java.awt.Frame parentFrame = null;
-
+            
             if (parentWindow instanceof java.awt.Frame frame) {
                 parentFrame = frame;
             }
-
-            // 1. CONVERSIONE FONDAMENTALE
-            int modelRow = futBondTable.convertRowIndexToModel(rowIndex);
-            MasterDataTableModel<FutBondBean> model = (MasterDataTableModel<FutBondBean>) futBondTable.getModel();
-            FutBondBean bean = model.getElementAt(modelRow);
-
-            BondFutureDlg dialog = new BondFutureDlg(parentFrame, true, bean, masterDataFacade);
-            dialog.setSize(600, 300);
+            
+            CurrencyPairsDlg dialog = new CurrencyPairsDlg(parentFrame, true, currPair, masterDataFacade);
+            dialog.setSize(600, 400);
             // Centra la dialog rispetto al pannello
             dialog.setLocationRelativeTo(this);
             dialog.setVisible(true);
@@ -139,21 +159,21 @@ public class BondFuturePanel extends AbstactMDPanel {
             refreshModel(model);
         }
     }
-
+    
     @Override
     protected void acDelActionPerformed(ActionEvent evt) {
-        int rowIndex = futBondTable.getSelectedRow();
+        int rowIndex = fxTable.getSelectedRow();
         if (rowIndex != -1) {
             // 1. CONVERSIONE FONDAMENTALE
-            int modelRow = futBondTable.convertRowIndexToModel(rowIndex);
-            MasterDataTableModel<FutBondBean> model = (MasterDataTableModel<FutBondBean>) futBondTable.getModel();
-            FutBondBean bean = model.getElementAt(modelRow);
+            int modelRow = fxTable.convertRowIndexToModel(rowIndex);
+            MasterDataTableModel<ForexBean> model = (MasterDataTableModel<ForexBean>) fxTable.getModel();
+            ForexBean bean = model.getElementAt(modelRow);
             if (JOptionPane.showConfirmDialog(this,
-                    "Are you sure to delete item? " + bean.getValueAt(0), JMasterDataMgr.TITLE,
+                    "Are you sure to delete item? " + bean.getValueAt(0) + bean.getValueAt(1), JMasterDataMgr.TITLE,
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                 try {
-                    masterDataFacade.getBondFutureMasterDataDAO().delete(bean.getBondFutureMasterData());
+                    masterDataFacade.getForexMasterDataDAO().delete(bean.getForexMasterData());
                     refreshModel(model);
                 } catch (Exception ex) {
                     LoggerMgr.logError(ex.getLocalizedMessage());
@@ -161,23 +181,22 @@ public class BondFuturePanel extends AbstactMDPanel {
             }
         }
     }
-
+    
     @Override
     protected void refreshModel(MasterDataTableModel model) {
-        // Popola il model
-        List<BondFutureMasterData> futBonds = masterDataFacade.getBondFutureMasterDataDAO().findAll();
-
-        List<FutBondBean> bondFutBeanList = new ArrayList<>();
-        FutBondBean bean = null;
-        for (BondFutureMasterData item : futBonds) {
-            bean = new FutBondBean(item);
-            bondFutBeanList.add(bean);
+        List<ForexMasterData> currPairs = masterDataFacade.getForexMasterDataDAO().findAll();
+        List<ForexBean> forexBeanList = new ArrayList<>();
+        ForexBean bean = null;
+        for (ForexMasterData item : currPairs) {
+            bean = new ForexBean(item);
+            forexBeanList.add(bean);
         }
-        model.setData(bondFutBeanList);
+        model.setData(forexBeanList);
     }
-
+    
     @Override
     public void downloadAction() {
+        System.out.println("CurrPairPanel downloadAction");
     }
 
     @Override

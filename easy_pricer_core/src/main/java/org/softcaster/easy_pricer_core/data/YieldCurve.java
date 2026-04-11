@@ -93,6 +93,11 @@ public class YieldCurve implements Serializable {
         return getIdYieldCurve() == null ? 0 : idYieldCurve.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return code;
+    }
+
     /**
      * @return the currency
      */

@@ -23,27 +23,11 @@ public class ForexMasterData  extends MasterData {
 
     @Column(name = "bcy_irc")
     private String bcyIrc;
-
+    
     @Column(name = "ccy_irc")
     private String ccyIrc;
 
-    public String getBcyIrc() {
-        return bcyIrc;
-    }
-
-    public void setBcyIrc(String bcyIrc) {
-        this.bcyIrc = bcyIrc;
-    }
-
-    public String getCcyIrc() {
-        return ccyIrc;
-    }
-
-    public void setCcyIrc(String ccyIrc) {
-        this.ccyIrc = ccyIrc;
-    }
-
-    /**
+   /**
      * @return the bcy
      */
     public Currency getBcy() {
@@ -69,6 +53,34 @@ public class ForexMasterData  extends MasterData {
      */
     public void setCcy(Currency ccy) {
         this.ccy = ccy;
+    }
+
+    /**
+     * @return the bcyIrc
+     */
+    public String getBcyIrc() {
+        return bcyIrc;
+    }
+
+    /**
+     * @param bcyIrc the bcyIrc to set
+     */
+    public void setBcyIrc(String bcyIrc) {
+        this.bcyIrc = bcyIrc;
+    }
+
+    /**
+     * @return the ccyIrc
+     */
+    public String getCcyIrc() {
+        return ccyIrc;
+    }
+
+    /**
+     * @param ccyIrc the ccyIrc to set
+     */
+    public void setCcyIrc(String ccyIrc) {
+        this.ccyIrc = ccyIrc;
     }
 
 }
