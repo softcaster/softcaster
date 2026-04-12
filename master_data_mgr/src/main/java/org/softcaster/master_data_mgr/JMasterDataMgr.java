@@ -26,6 +26,7 @@ import org.softcaster.master_data_mgr.views.CounterpartyPanel;
 import org.softcaster.master_data_mgr.views.CurrPairPanel;
 import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.HomePanel;
+import org.softcaster.master_data_mgr.views.IssuerPanel;
 import org.softcaster.master_data_mgr.views.PortfolioPanel;
 import org.softcaster.master_data_mgr.views.PositionPanel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +121,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case "POSITION" -> {
                             cl.show(mainPanel, AppCard.POSITION_CARD.name());
                             currentCard = AppCard.POSITION_CARD;
+                        }
+                        case "ISSUER" -> {
+                            cl.show(mainPanel, AppCard.ISSUER_CARD.name());
+                            currentCard = AppCard.ISSUER_CARD;
                         }
                         default -> {
                             cl.show(mainPanel, "DEFAULT");
@@ -357,6 +362,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         JPanel positionPanel = new PositionPanel(masterDataFacade);
         cardMap.put(AppCard.POSITION_CARD, positionPanel);
 
+        JPanel issuerPanel = new IssuerPanel(masterDataFacade);
+        cardMap.put(AppCard.ISSUER_CARD, issuerPanel);
+
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT.name());
         mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
@@ -366,6 +374,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(counterpartyPanel, AppCard.COUNTERPARTY_CARD.name());
         mainPanel.add(portfolioPanel, AppCard.PORTFOLIO_CARD.name());
         mainPanel.add(positionPanel, AppCard.POSITION_CARD.name());
+        mainPanel.add(issuerPanel, AppCard.ISSUER_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

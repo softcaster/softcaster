@@ -49,6 +49,7 @@ public class TreeModel {
         // References
         DefaultMutableTreeNode references = new DefaultMutableTreeNode("References");
         references.add(new DefaultMutableTreeNode(new MasterDataNode("Counterparts","COUNTERPARTY")));
+        references.add(new DefaultMutableTreeNode(new MasterDataNode("Issuers","ISSUER")));
         references.add(new DefaultMutableTreeNode(new MasterDataNode("Portfolios","PORTFOLIO")));
         references.add(new DefaultMutableTreeNode(new MasterDataNode("Positions","POSITION")));
         root.add(references);

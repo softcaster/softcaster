@@ -44,7 +44,7 @@ public class MasterDataTreeCellRenderer extends DefaultTreeCellRenderer {
                     setIcon(futureIcon);
                 case "BOND_OPTION", "MM_OPTION", "FX_OPTION" ->
                     setIcon(optionIcon);
-                case "COUNTERPARTY", "PORTFOLIO", "POSITION" ->
+                case "COUNTERPARTY", "PORTFOLIO", "POSITION", "ISSUER" ->
                     setIcon(ctpIcon);
                 default -> {
                     setIcon(getDefaultLeafIcon()); // Torna al "pallino" o icona di default
