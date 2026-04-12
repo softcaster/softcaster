@@ -33,6 +33,10 @@ public class PositionMasterData implements Serializable {
     @JoinColumn(name = "currency", nullable = true)
     private Currency currency;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "portfolio", nullable = true)
+    private PortfolioMasterData portfolio;
+
     @Column(name = "code")
     private String code;
 
@@ -111,5 +115,24 @@ public class PositionMasterData implements Serializable {
      */
     public void setDetails(List<PositionDetail> details) {
         this.details = details;
+    }
+    
+    @Override
+    public String toString() {
+        return code;
+    }
+
+    /**
+     * @return the portfolio
+     */
+    public PortfolioMasterData getPortfolio() {
+        return portfolio;
+    }
+
+    /**
+     * @param portfolio the portfolio to set
+     */
+    public void setPortfolio(PortfolioMasterData portfolio) {
+        this.portfolio = portfolio;
     }
 }

@@ -209,3 +209,7 @@ public class EuroNextProvider extends AbstractProvider {
         }
     }
 }
+/*
+https://www.borsaitaliana.it/borsa/derivati/btp-mini-futures-10y/scheda/IT0024832682-XDMI.html?lang=en
+https://www.borsaitaliana.it/borsa/obbligazioni/mot/btp/scheda/IT0001086567-MOTX.html?lang=en
+*/

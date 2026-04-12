@@ -399,6 +399,25 @@ CREATE SEQUENCE cash_flow_item_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE cash_flow_item_s OWNER TO easypricer;
 
 -- ----------------------------------------------------------------------------
+-- cash_flow_reset 
+-- ----------------------------------------------------------------------------
+CREATE TABLE cash_flow_reset
+(
+    id_cash_flow_reset INTEGER NOT NULL
+    , master_data INTEGER NOT NULL
+    , start_date_reset DATE NOT NULL -- data reset nuovo coupon
+    , interest_reset NUMERIC(15,5) NOT NULL  -- valore nuovo coupon
+    , PRIMARY KEY (id_cash_flow_reset)
+    , CONSTRAINT fk_master_data FOREIGN KEY (master_data)
+        REFERENCES master_data(id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+CREATE UNIQUE INDEX idx_md_sdr ON cash_flow_reset(master_data,start_date_reset);
+ALTER TABLE cash_flow_reset OWNER TO easypricer;
+-- Creo sequenza
+CREATE SEQUENCE cash_flow_reset_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE cash_flow_reset_s OWNER TO easypricer;
+
+-- ----------------------------------------------------------------------------
 -- yield_curve
 -- ----------------------------------------------------------------------------
 CREATE TABLE yield_curve
@@ -617,6 +636,7 @@ CREATE TABLE counterparty
 (
     id_counterparty INTEGER NOT NULL
     , ctp_type INTEGER NOT NULL 
+    , lei_code VARCHAR(50)  
     , country INTEGER NOT NULL 
     , code VARCHAR(25) NOT NULL 
     , description VARCHAR(255) NOT NULL 
@@ -633,16 +653,38 @@ CREATE SEQUENCE counterparty_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE counterparty_s OWNER TO easypricer;
 
 -- ----------------------------------------------------------------------------
+-- portfolio_master_data - anagrafica posizione 
+-- ----------------------------------------------------------------------------
+CREATE TABLE portfolio_master_data
+(
+    id_portfolio INTEGER NOT NULL
+    , currency  INTEGER NOT NULL -- divisa del portfolio
+    , code VARCHAR(25) NOT NULL 
+    , description VARCHAR(255) NOT NULL  -- legal name
+    , CONSTRAINT fk_currency FOREIGN KEY (currency)
+        REFERENCES currency(id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , PRIMARY KEY (id_portfolio)
+);
+CREATE UNIQUE INDEX idx_portfolio_code ON portfolio_master_data(code);
+ALTER TABLE portfolio_master_data OWNER TO easypricer;
+-- Creo sequenza
+CREATE SEQUENCE portfolio_master_data_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE portfolio_master_data_s OWNER TO easypricer;
+
+-- ----------------------------------------------------------------------------
 -- position_master_data - anagrafica posizione 
 -- ----------------------------------------------------------------------------
 CREATE TABLE position_master_data
 (
     id_position INTEGER NOT NULL
+    , portfolio INTEGER NOT NULL
     , currency  INTEGER NOT NULL -- divisa della posizione
     , code VARCHAR(25) NOT NULL 
-    , description VARCHAR(255) NOT NULL 
+    , description VARCHAR(255) NOT NULL  -- legal name
     , CONSTRAINT fk_currency FOREIGN KEY (currency)
         REFERENCES currency(id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_portfolio FOREIGN KEY (portfolio)
+        REFERENCES portfolio_master_data(id_portfolio) ON DELETE NO ACTION ON UPDATE NO ACTION
     , PRIMARY KEY (id_position)
 );
 CREATE UNIQUE INDEX idx_position_code ON position_master_data(code);

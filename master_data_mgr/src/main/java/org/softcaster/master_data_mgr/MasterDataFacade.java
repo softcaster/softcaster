@@ -9,6 +9,9 @@ import org.softcaster.easy_pricer_core.data.AmortizationScheduleDAO;
 import org.softcaster.easy_pricer_core.data.AssetClass;
 import org.softcaster.easy_pricer_core.data.AssetClassDAO;
 import org.softcaster.easy_pricer_core.data.BondFutureMasterDataDAO;
+import org.softcaster.easy_pricer_core.data.CounterpartyDAO;
+import org.softcaster.easy_pricer_core.data.CounterpartyTypeDAO;
+import org.softcaster.easy_pricer_core.data.CountryDAO;
 import org.softcaster.easy_pricer_core.data.CurrencyDAO;
 import org.softcaster.easy_pricer_core.data.Daycount;
 import org.softcaster.easy_pricer_core.data.DaycountDAO;
@@ -18,6 +21,8 @@ import org.softcaster.easy_pricer_core.data.FormDAO;
 import org.softcaster.easy_pricer_core.data.Frequency;
 import org.softcaster.easy_pricer_core.data.FrequencyDAO;
 import org.softcaster.easy_pricer_core.data.IssuerDAO;
+import org.softcaster.easy_pricer_core.data.PortfolioMasterDataDAO;
+import org.softcaster.easy_pricer_core.data.PositionMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.RollConvention;
 import org.softcaster.easy_pricer_core.data.RollConventionDAO;
 import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
@@ -41,11 +46,20 @@ public class MasterDataFacade {
     private BondFutureMasterDataDAO bondFutureMasterDataDAO;
     @Autowired
     private ForexMasterDataDAO forexMasterDataDAO;
-    
+
     @Autowired
     private IssuerDAO issuerDAO;
     @Autowired
+    private CounterpartyDAO counterpartyDAO;
+    @Autowired
+    private PortfolioMasterDataDAO portfolioMasterDataDAO;
+    @Autowired
+    private PositionMasterDataDAO positionMasterDataDAO;
+
+    @Autowired
     private CurrencyDAO currencyDAO;
+    @Autowired
+    private CountryDAO countryDAO;
     @Autowired
     private DaycountDAO daycountDAO;
     @Autowired
@@ -64,11 +78,12 @@ public class MasterDataFacade {
     private AssetClassDAO assetClassDAO;
     @Autowired
     private YieldCurveDAO yieldCurveDAO;
+    @Autowired
+    private CounterpartyTypeDAO counterpartyTypeDAO;
 
     /**
-    * @return the securityMasterDataDAO
-    */
-
+     * @return the securityMasterDataDAO
+     */
     public SecurityMasterDataDAO getSecurityMasterDataDAO() {
         return securityMasterDataDAO;
     }
@@ -92,13 +107,6 @@ public class MasterDataFacade {
      */
     public DaycountDAO getDaycountDAO() {
         return daycountDAO;
-    }
-
-    /**
-     * @return the settlementTypeDAO
-     */
-    public SettlementTypeDAO getSettlementTypeDAO() {
-        return settlementTypeDAO;
     }
 
     /**
@@ -150,24 +158,24 @@ public class MasterDataFacade {
     public Daycount findDaycount(String code) {
         return daycountDAO.findByCode(code);
     }
-    
-    public Form  findForm(String code) {
+
+    public Form findForm(String code) {
         return formDAO.findByCode(code);
     }
 
-    public Frequency  findFrequency(String code) {
+    public Frequency findFrequency(String code) {
         return frequencyDAO.findByCode(code);
     }
 
-    public RollConvention  findRollConvention(String code) {
+    public RollConvention findRollConvention(String code) {
         return rollConventionDAO.findByCode(code);
     }
 
-    public AmortizationSchedule  findAmortizationSchedule(String code) {
+    public AmortizationSchedule findAmortizationSchedule(String code) {
         return amortizationScheduleDAO.findByCode(code);
     }
 
-    public AssetClass  findAssetClass(String code) {
+    public AssetClass findAssetClass(String code) {
         return assetClassDAO.findByCode(code);
     }
 
@@ -179,25 +187,11 @@ public class MasterDataFacade {
     }
 
     /**
-     * @param issuerDAO the issuerDAO to set
-     */
-    public void setIssuerDAO(IssuerDAO issuerDAO) {
-        this.issuerDAO = issuerDAO;
-    }
-
-    /**
      * @return the forexMasterDataDAO
      */
     public ForexMasterDataDAO getForexMasterDataDAO() {
         return forexMasterDataDAO;
     }
-
-    /**
-     * @param forexMasterDataDAO the forexMasterDataDAO to set
-     */
-    public void setForexMasterDataDAO(ForexMasterDataDAO forexMasterDataDAO) {
-        this.forexMasterDataDAO = forexMasterDataDAO;
-    }  
 
     /**
      * @return the yieldCurveDAO
@@ -207,9 +201,45 @@ public class MasterDataFacade {
     }
 
     /**
-     * @param yieldCurveDAO the yieldCurveDAO to set
+     * @return the counterparty
      */
-    public void setYieldCurveDAO(YieldCurveDAO yieldCurveDAO) {
-        this.yieldCurveDAO = yieldCurveDAO;
-    }    
+    public CounterpartyDAO getCounterpartyDAO() {
+        return counterpartyDAO;
+    }
+                                                                                            
+    /**
+     * @return the countryDAO
+     */
+    public CountryDAO getCountryDAO() {
+        return countryDAO;
+    }
+
+    /**
+     * @return the counterpartyTypeDAO
+     */
+    public CounterpartyTypeDAO getCounterpartyTypeDAO() {
+        return counterpartyTypeDAO;
+    }
+
+    /**
+     * @return the portfolioMasterDataDAO
+     */
+    public PortfolioMasterDataDAO getPortfolioMasterDataDAO() {
+        return portfolioMasterDataDAO;
+    }
+
+    /**
+     * @return the positionMasterDataDAO
+     */
+    public PositionMasterDataDAO getPositionMasterDataDAO() {
+        return positionMasterDataDAO;
+    }
+
+    /**
+     * @return the settlementTypeDAO
+     */
+    public SettlementTypeDAO getSettlementTypeDAO() {
+        return settlementTypeDAO;
+    }
+
 }

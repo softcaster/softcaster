@@ -6,10 +6,13 @@ ALTER TABLE bond_future_master_data DROP COLUMN master_data;
 ALTER TABLE currency ADD COLUMN daycount INTEGER;
 UPDATE currency SET daycount = (SELECT id_daycount FROM daycount WHERE code='ACT_360' LIMIT 1);
 ALTER TABLE currency ALTER COLUMN daycount SET NOT NULL;
-ALTER TABLE currency ADD CONSTRAINT fk_daycount FOREIGN KEY (daycount)
-        REFERENCES daycount(id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-ALTER TABLE currency ADD COLUMN business_days INTEGER NOT NULL DEFAULT 2;
+ALTER TABLE position_master_data ADD COLUMN portfolio INTEGER NOT NULL;
+ALTER TABLE position_master_data ADD CONSTRAINT fk_portfolio FOREIGN KEY (portfolio)
+        REFERENCES portfolio_master_data(id_portfolio) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE counterparty DROP COLUMN leiCode;
+ALTER TABLE counterparty ADD COLUMN lei_code VARCHAR(50) DEFAULT '';
+
 ALTER TABLE future_master_data ADD COLUMN exchange_contract_code VARCHAR(25) NOT NULL DEFAULT '';
 
 select code,id_master_data from master_data where id_master_data not in(SELECT master_data FROM cash_flow_item where amount=100);

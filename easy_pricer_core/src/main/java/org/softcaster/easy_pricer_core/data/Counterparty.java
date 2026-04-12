@@ -38,6 +38,9 @@ public class Counterparty implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "lei_code")
+    private String leiCode;
+    
     public Integer getIdCounterparty() {
         return idCounterparty;
     }
@@ -78,6 +81,11 @@ public class Counterparty implements Serializable {
     public int hashCode() {
         return getIdCounterparty() == null ? 0 : idCounterparty.hashCode();
     }
+    
+     @Override
+    public String toString() {
+        return code;
+    }
 
     /**
      * @return the ctpType
@@ -105,5 +113,19 @@ public class Counterparty implements Serializable {
      */
     public void setCountry(Country country) {
         this.country = country;
+    }
+
+    /**
+     * @return the leiCode
+     */
+    public String getLeiCode() {
+        return leiCode;
+    }
+
+    /**
+     * @param leiCode the leiCode to set
+     */
+    public void setLeiCode(String leiCode) {
+        this.leiCode = leiCode;
     }
 }

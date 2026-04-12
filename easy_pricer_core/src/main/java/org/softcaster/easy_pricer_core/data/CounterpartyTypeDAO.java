@@ -18,6 +18,11 @@ public class CounterpartyTypeDAO {
     public CounterpartyType findByIdCounterpartyType(Integer idCounterpartyType) {
         return repository.findByIdCounterpartyType(idCounterpartyType);
     }
+    
+    @Transactional(readOnly = true)
+    public CounterpartyType findByCode(String code) {
+        return repository.findByCode(code);
+    }
 
     @Transactional(readOnly = true)
     public List<CounterpartyType> findAll() {

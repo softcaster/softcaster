@@ -153,6 +153,11 @@ public class Country implements Serializable {
         return getIdCountry() == null ? 0 : idCountry.hashCode();
     }
 
+     @Override
+    public String toString() {
+        return alfa3Code;
+    }
+    
     /**
      * @return the calendar
      */

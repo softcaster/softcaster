@@ -2,6 +2,7 @@ package org.softcaster.easy_pricer_core.data;
 
 import java.util.List;
 import jakarta.annotation.Resource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +11,8 @@ public class CountryDAO {
 
     @Resource
     private CountryRepository repository;
+    
+    private final Sort sortByAlfa3Code = Sort.by(Sort.Direction.ASC, "alfa3Code");
 
     @Transactional(readOnly = true)
     public Country findByIdCountry(Integer idCountry) {
@@ -28,9 +31,10 @@ public class CountryDAO {
 
     @Transactional(readOnly = true)
     public List<Country> findAll() {
-        return repository.findAll();
+        return repository.findAll(sortByAlfa3Code);
     }
 
+    @Transactional(readOnly = true)
     public Country findByAlfa3Code(String alfa3Code) {
         return repository.findByAlfa3Code(alfa3Code);
     }

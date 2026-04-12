@@ -67,4 +67,9 @@ public class CounterpartyType implements Serializable {
     public int hashCode() {
         return getIdCounterpartyType() == null ? 0 : idCounterpartyType.hashCode();
     }
+    
+     @Override
+    public String toString() {
+        return code;
+    }
 }

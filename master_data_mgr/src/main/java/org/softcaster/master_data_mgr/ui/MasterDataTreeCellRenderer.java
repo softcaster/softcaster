@@ -21,6 +21,7 @@ public class MasterDataTreeCellRenderer extends DefaultTreeCellRenderer {
     ImageIcon forexIcon = new ImageIcon(getClass().getResource("/images/angular/euro_16dp.png"));
     ImageIcon futureIcon = new ImageIcon(getClass().getResource("/images/angular/loyalty_16dp.png"));
     ImageIcon optionIcon = new ImageIcon(getClass().getResource("/images/angular/subheader_16dp.png"));
+    ImageIcon ctpIcon = new ImageIcon(getClass().getResource("/images/angular/enterprise_16dp.png"));
 
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -35,15 +36,17 @@ public class MasterDataTreeCellRenderer extends DefaultTreeCellRenderer {
         if (leaf && userObject instanceof MasterDataNode data) {
             // Logica per cambiare l'icona in base al tipo
             switch (data.getType()) {
-                case "BOND","EQUITY" ->
+                case "BOND", "EQUITY" ->
                     setIcon(securityIcon);
-                case "CURRENCIES","CURR_PAIR" ->
+                case "CURRENCIES", "CURR_PAIR" ->
                     setIcon(forexIcon);
-                case "BOND_FUTURE","MM_FUTURE","FX_FUTURE" ->
+                case "BOND_FUTURE", "MM_FUTURE", "FX_FUTURE" ->
                     setIcon(futureIcon);
-                case "BOND_OPTION","MM_OPTION","FX_OPTION" ->
+                case "BOND_OPTION", "MM_OPTION", "FX_OPTION" ->
                     setIcon(optionIcon);
-                default ->{
+                case "COUNTERPARTY", "PORTFOLIO", "POSITION" ->
+                    setIcon(ctpIcon);
+                default -> {
                     setIcon(getDefaultLeafIcon()); // Torna al "pallino" o icona di default
                 }
             }

@@ -22,9 +22,12 @@ import org.softcaster.master_data_mgr.ui.MasterDataTreeCellRenderer;
 import org.softcaster.master_data_mgr.views.AbstactMDPanel;
 import org.softcaster.master_data_mgr.views.BondFuturePanel;
 import org.softcaster.master_data_mgr.views.BondPanel;
+import org.softcaster.master_data_mgr.views.CounterpartyPanel;
 import org.softcaster.master_data_mgr.views.CurrPairPanel;
 import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.HomePanel;
+import org.softcaster.master_data_mgr.views.PortfolioPanel;
+import org.softcaster.master_data_mgr.views.PositionPanel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -105,6 +108,18 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case "CURR_PAIR" -> {
                             cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
                             currentCard = AppCard.CURR_PAIR_CARD;
+                        }
+                        case "COUNTERPARTY" -> {
+                            cl.show(mainPanel, AppCard.COUNTERPARTY_CARD.name());
+                            currentCard = AppCard.COUNTERPARTY_CARD;
+                        }
+                        case "PORTFOLIO" -> {
+                            cl.show(mainPanel, AppCard.PORTFOLIO_CARD.name());
+                            currentCard = AppCard.PORTFOLIO_CARD;
+                        }
+                        case "POSITION" -> {
+                            cl.show(mainPanel, AppCard.POSITION_CARD.name());
+                            currentCard = AppCard.POSITION_CARD;
                         }
                         default -> {
                             cl.show(mainPanel, "DEFAULT");
@@ -332,6 +347,15 @@ public class JMasterDataMgr extends javax.swing.JFrame {
 
         JPanel defaultPanel = new HomePanel();
         cardMap.put(AppCard.DEFAULT, defaultPanel);
+        
+        JPanel counterpartyPanel = new CounterpartyPanel(masterDataFacade);
+        cardMap.put(AppCard.COUNTERPARTY_CARD, counterpartyPanel);
+
+        JPanel portfolioPanel = new PortfolioPanel(masterDataFacade);
+        cardMap.put(AppCard.PORTFOLIO_CARD, portfolioPanel);
+
+        JPanel positionPanel = new PositionPanel(masterDataFacade);
+        cardMap.put(AppCard.POSITION_CARD, positionPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT.name());
@@ -339,6 +363,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(fxPanel, AppCard.CURRENCY_CARD.name());
         mainPanel.add(currPairPanel, AppCard.CURR_PAIR_CARD.name());
         mainPanel.add(futBondPanel, AppCard.BOND_FUTURE_CARD.name());
+        mainPanel.add(counterpartyPanel, AppCard.COUNTERPARTY_CARD.name());
+        mainPanel.add(portfolioPanel, AppCard.PORTFOLIO_CARD.name());
+        mainPanel.add(positionPanel, AppCard.POSITION_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();
