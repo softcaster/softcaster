@@ -226,12 +226,8 @@ public class MarketDataService {
 
                     List<DataNode> rates = provider.quotes(MARKETS.FUTURES);
                     for (DataNode node : rates) {
-                        if (node.getRic().equalsIgnoreCase(code)) {
-                            rate = node.getBid();
-                            break;
-                        }
+                        updatePrice(node.getRic(), node.getBid());
                     }
-                    updatePrice(code, rate);
                 }
 
                 case "InvestingComProvider" -> {
@@ -258,7 +254,6 @@ public class MarketDataService {
 
     private void addPrice(String[] line) {
         IMarketDataProvider provider = ProviderFactory.getInstance(line[2]);
-        double rate = 0.;
         String token = line[1];
         if (provider != null) {
             if (line[3].compareToIgnoreCase("FFU") == 0) {

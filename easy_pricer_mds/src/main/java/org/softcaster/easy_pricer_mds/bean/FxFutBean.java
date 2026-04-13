@@ -10,18 +10,16 @@ import org.softcaster.easy_pricer_mds.model.IMDSModel;
  *
  * @author ep
  */
-public class CurrencyPairBean implements IMDSModel, ITrendable {
+public class FxFutBean implements IMDSModel, ITrendable {
 
-    private final String bcy;
-    private final String ccy;
+    private final String code;
     private Double bid;
     private Double ask;
     private int trendBid = 0;
     private int trendAsk = 0;
 
-    public CurrencyPairBean(String bcy, String ccy, double bid, double ask) {
-        this.bcy = bcy;
-        this.ccy = ccy;
+    public FxFutBean(String code, double bid, double ask) {
+        this.code = code;
         this.bid = bid;
         this.ask = ask;
     }
@@ -30,12 +28,10 @@ public class CurrencyPairBean implements IMDSModel, ITrendable {
     public Object getValueAt(int columnIndex) {
         return switch (columnIndex) {
             case 0 ->
-                bcy;
+                code;
             case 1 ->
-                ccy;
-            case 2 ->
                 getBid();
-            case 3 ->
+            case 2 ->
                 getAsk();
             default ->
                 null;
@@ -44,7 +40,7 @@ public class CurrencyPairBean implements IMDSModel, ITrendable {
 
     @Override
     public String[] getColumnNames() {
-        return new String[]{"Bcy", "Ccy", "Bid", "Ask"};
+        return new String[]{"Code", "Bid", "Ask"};
     }
 
     /**
@@ -105,10 +101,10 @@ public class CurrencyPairBean implements IMDSModel, ITrendable {
 
     @Override
     public int getTrendForColumn(int columnIndex) {
-        if (columnIndex == 2) {
+        if (columnIndex == 1) {
             return trendBid;
         }
-        if (columnIndex == 3) {
+        if (columnIndex == 2) {
             return trendAsk;
         }
         return 0;

@@ -5,34 +5,30 @@
 package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
-import org.softcaster.easy_pricer_mds.model.CurrPairTableModel;
+import org.softcaster.easy_pricer_mds.MarketDataNotFoundException;
+import org.softcaster.easy_pricer_mds.MarketDataService;
+import org.softcaster.easy_pricer_mds.bean.FxFutBean;
 import org.softcaster.easy_pricer_mds.model.MDSTableModel;
 import org.softcaster.easy_pricer_mds.ui.ZebraTable;
-import org.softcaster.marketdataprovider.ConnectionParam;
-import org.softcaster.marketdataprovider.DataNode;
-import org.softcaster.marketdataprovider.MARKETS;
-import org.softcaster.marketdataprovider.investingcom.InvestingComProvider;
 
 /**
  *
  * @author softc
  */
-public class CurrPairPanel extends AbstactMDPanel {
-    
-    private List<CurrencyPairBean> forexBeanList = new ArrayList<>();
+public class FxFutPanel extends AbstactMDPanel {
+
+    private List<FxFutBean> fxFutBeanList = new ArrayList<>();
 
     /**
      * Creates new form ForexPanel
      *
      */
-    public CurrPairPanel() {
+    public FxFutPanel() {
         initComponents();
-        postInitComponents(fxTable);
+        postInitComponents(fxFutTable);
     }
 
     /**
@@ -49,8 +45,8 @@ public class CurrPairPanel extends AbstactMDPanel {
         acMod = new javax.swing.JMenuItem();
         acDel = new javax.swing.JMenuItem();
         lblHeader = new javax.swing.JLabel();
-        fxScrollPane = new javax.swing.JScrollPane();
-        fxTable = new ZebraTable();
+        fxFutScrollPane = new javax.swing.JScrollPane();
+        fxFutTable = new ZebraTable();
 
         acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
         acNew.setText("New");
@@ -71,11 +67,11 @@ public class CurrPairPanel extends AbstactMDPanel {
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("Currency Pairs Quotes");
+        lblHeader.setText("Fx Future Quotes");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
-        fxTable.setModel(new javax.swing.table.DefaultTableModel(
+        fxFutTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -86,9 +82,9 @@ public class CurrPairPanel extends AbstactMDPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        fxScrollPane.setViewportView(fxTable);
+        fxFutScrollPane.setViewportView(fxFutTable);
 
-        add(fxScrollPane, java.awt.BorderLayout.CENTER);
+        add(fxFutScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -96,8 +92,8 @@ public class CurrPairPanel extends AbstactMDPanel {
     private javax.swing.JMenuItem acDel;
     private javax.swing.JMenuItem acMod;
     private javax.swing.JMenuItem acNew;
-    private javax.swing.JScrollPane fxScrollPane;
-    private javax.swing.JTable fxTable;
+    private javax.swing.JScrollPane fxFutScrollPane;
+    private javax.swing.JTable fxFutTable;
     private javax.swing.JLabel lblHeader;
     private javax.swing.JPopupMenu popUp;
     // End of variables declaration//GEN-END:variables
@@ -105,52 +101,74 @@ public class CurrPairPanel extends AbstactMDPanel {
     @Override
     protected void fillModelList() {
         // Crea e setta il model
-        CurrencyPairBean prototype = new CurrencyPairBean("","",0.,0.);
-        CurrPairTableModel model = new CurrPairTableModel(prototype);
-        fxTable.setModel(model);
+        FxFutBean prototype = new FxFutBean("", 0., 0.);
+        MDSTableModel<FxFutBean> model = new MDSTableModel<>(prototype);
+        fxFutTable.setModel(model);
 
         // Popola il model
         refreshModel(model);
     }
-    
+
     @Override
     protected void acNewActionPerformed(ActionEvent evt) {
     }
-    
+
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
     }
-    
+
     @Override
     protected void acDelActionPerformed(ActionEvent evt) {
     }
-    
+
     @Override
     protected void refreshModel(MDSTableModel model) {
-        
-        forexBeanList.clear();
-        
-        InvestingComProvider provider = InvestingComProvider.getInstance();
-        ConnectionParam param = new ConnectionParam();
-        param.baseUrl = "https://www.investing.com";
-        param.url = "https://www.investing.com/currencies/streaming-forex-rates-majors";
-        param.market = MARKETS.CURRENCIES;
         try {
-            provider.connect(param);
-            List<DataNode> currPairs = provider.quotes(MARKETS.CURRENCIES);
-            CurrencyPairBean bean = null;
-            for (DataNode node : currPairs) {
-                bean = new CurrencyPairBean(node.getRic().substring(0,3),node.getRic().substring(3,6),
-                node.getBid(),node.getAsk());
-                forexBeanList.add(bean);
-            }
-        } catch (IOException ex) {
+            fxFutBeanList.clear();
+
+            MarketDataService service = MarketDataService.getInstance();
+            double price = service.getSpotPrice("6EJ6");
+            FxFutBean bean = new FxFutBean("6EJ6", price, price);
+            fxFutBeanList.add(bean);
+
+            price = service.getSpotPrice("6EK6");
+            bean = new FxFutBean("6EK6", price, price);
+            fxFutBeanList.add(bean);
+
+            price = service.getSpotPrice("6EM6");
+            bean = new FxFutBean("6EM6", price, price);
+            fxFutBeanList.add(bean);
+
+            price = service.getSpotPrice("6EN6");
+            bean = new FxFutBean("6EN6", price, price);
+            fxFutBeanList.add(bean);
+
+            price = service.getSpotPrice("6EU6");
+            bean = new FxFutBean("6EU6", price, price);
+            fxFutBeanList.add(bean);
+
+            price = service.getSpotPrice("6EZ6");
+            bean = new FxFutBean("6EZ6", price, price);
+            fxFutBeanList.add(bean);
+
+            price = service.getSpotPrice("6BJ6");
+            bean = new FxFutBean("6BJ6", price, price);
+            fxFutBeanList.add(bean);
+
+            price = service.getSpotPrice("6BK6");
+            bean = new FxFutBean("6BK6", price, price);
+            fxFutBeanList.add(bean);
+
+            price = service.getSpotPrice("6BM6");
+            bean = new FxFutBean("6BM6", price, price);
+            fxFutBeanList.add(bean);
+
+            model.setData(fxFutBeanList);
+        } catch(MarketDataNotFoundException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
         }
-        
-        model.setData(forexBeanList);
     }
-    
+
     @Override
     public void downloadAction() {
     }
@@ -161,7 +179,8 @@ public class CurrPairPanel extends AbstactMDPanel {
 
     @Override
     public void refreshAction() {
-        MDSTableModel<CurrencyPairBean> model = (MDSTableModel<CurrencyPairBean>) fxTable.getModel();
-        this.refreshModel(model);
+        MarketDataService service = MarketDataService.getInstance();
+        double price = service.getSpotPrice("6EM6");
+        System.out.println(price);
     }
 }

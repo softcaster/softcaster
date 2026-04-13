@@ -15,7 +15,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class MDSTableModel<T extends IMDSModel> extends AbstractTableModel {
 
-    private final List<T> data = new ArrayList<>();
+    protected final List<T> data = new ArrayList<>();
     private final T prototype; // Ci serve un "esempio" per leggere le colonne
 
     public MDSTableModel(T prototype) {

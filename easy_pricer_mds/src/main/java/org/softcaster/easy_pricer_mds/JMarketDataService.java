@@ -22,6 +22,7 @@ import org.softcaster.easy_pricer_mds.model.TreeModel;
 import org.softcaster.easy_pricer_mds.ui.MDSTreeCellRenderer;
 import org.softcaster.easy_pricer_mds.view.AbstactMDPanel;
 import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
+import org.softcaster.easy_pricer_mds.view.FxFutPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,7 @@ public class JMarketDataService extends javax.swing.JFrame {
 
     private AppCard currentCard;
     private Map<AppCard, javax.swing.JPanel> cardMap = new HashMap<>();
+    private MarketDataService service = null;
 
     /**
      * Creates new form JMarketDataService
@@ -57,6 +59,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         // Forza l'esecuzione sul thread di Swing per evitare race conditions
         java.awt.EventQueue.invokeLater(() -> {
 
+            service = MarketDataService.getInstance();
+            service.updateMarketData();
             // Titolo
             this.setTitle(TITLE);
 
@@ -89,6 +93,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                         case CURR_PAIR -> {
                             cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
                             currentCard = AppCard.CURR_PAIR_CARD;
+                        }
+                        case FX_FUTURE -> {
+                            cl.show(mainPanel, AppCard.FX_FUTURE_CARD.name());
+                            currentCard = AppCard.FX_FUTURE_CARD;
                         }
                         default -> {
                             cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
@@ -250,10 +258,13 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.DEFAULT_CARD, defaultPanel);
         JPanel cpPanel = new CurrPairPanel();
         cardMap.put(AppCard.CURR_PAIR_CARD, cpPanel);
+        JPanel fxFutPanel = new FxFutPanel();
+        cardMap.put(AppCard.FX_FUTURE_CARD, fxFutPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
         mainPanel.add(cpPanel, AppCard.CURR_PAIR_CARD.name());
+        mainPanel.add(fxFutPanel, AppCard.FX_FUTURE_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();
