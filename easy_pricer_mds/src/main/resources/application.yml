@@ -1,0 +1,13 @@
+# Configurazione Server (Opzionale)
+#server:
+#  port: 8080
+
+# Configurazione Spring
+spring:
+  # Forza l'app a NON far partire Tomcat sulla 8080
+  main:    
+    web-application-type: NONE  
+  # Spegne gRPC (porta 9090) 
+  grpc:
+    server:
+      port: -1                         

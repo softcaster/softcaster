@@ -2,8 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict uqSlMP5AF4mCXgd2ku3hhEU0ygYKUrXYKFZwQmIVSyxIA6NI3X1hUUK4i3VXfFp
-
 -- Dumped from database version 18.1
 -- Dumped by pg_dump version 18.1
 
@@ -5787,5 +5785,4 @@ ALTER TABLE ONLY public.yield_curve_item
 -- PostgreSQL database dump complete
 --
 
-\unrestrict uqSlMP5AF4mCXgd2ku3hhEU0ygYKUrXYKFZwQmIVSyxIA6NI3X1hUUK4i3VXfFp
 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<params>
+    <param>
+        <name>CURRENCY_PAIRS</name>
+        <value>EURUSD,EURCHF,EURJPY,EURGBP</value>
+    </param>
+    <param>
+        <name>CURRENCY_PAIRS_PROVIDER</name>
+        <value>InvestingComProvider</value>
+    </param>
+    <param>
+        <name>SECURITIES</name>
+        <value>IT0005398406,IT0005162828,IT0004923998</value>
+    </param>
+    <param>
+        <name>SECURITIES_PROVIDER</name>
+        <value>EuroNextProvider</value>
+    </param>
+    <param>
+        <name>PY_DEBUG</name>
+        <value>false</value>
+    </param>
+</params>

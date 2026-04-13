@@ -2,19 +2,20 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.master_data_mgr.models;
+package org.softcaster.easy_pricer_mds.model;
 
-import org.softcaster.master_data_mgr.AppTreeItem;
+import org.softcaster.easy_pricer_mds.AppTreeItem;
+
 
 /**
  *
  * @author softc
  */
-public class MasterDataNode {
+public class MDSNode {
     private final String name;
     private final AppTreeItem type; // es: "BOND", "FUTURE", "EQUITY"
 
-    public MasterDataNode(String name, AppTreeItem type) {
+    public MDSNode(String name, AppTreeItem type) {
         this.name = name;
         this.type = type;
     }

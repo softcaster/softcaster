@@ -6,6 +6,7 @@ package org.softcaster.master_data_mgr.models;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import org.softcaster.master_data_mgr.AppTreeItem;
 
 /**
  *
@@ -20,26 +21,26 @@ public class TreeModel {
         DefaultMutableTreeNode instruments = new DefaultMutableTreeNode("Instruments");
         DefaultMutableTreeNode securities = new DefaultMutableTreeNode("Securities");
         // Foglie
-        securities.add(new DefaultMutableTreeNode(new MasterDataNode("Bonds", "BOND")));
-        securities.add(new DefaultMutableTreeNode(new MasterDataNode("Equities", "EQUITY")));
+        securities.add(new DefaultMutableTreeNode(new MasterDataNode("Bonds", AppTreeItem.BOND)));
+        securities.add(new DefaultMutableTreeNode(new MasterDataNode("Equities", AppTreeItem.EQUITY)));
         instruments.add(securities);
 
         DefaultMutableTreeNode forex = new DefaultMutableTreeNode("Forex");
-        forex.add(new DefaultMutableTreeNode(new MasterDataNode("Currencies", "CURRENCIES")));
-        forex.add(new DefaultMutableTreeNode(new MasterDataNode("Curr.Pairs", "CURR_PAIR")));
+        forex.add(new DefaultMutableTreeNode(new MasterDataNode("Currencies", AppTreeItem.CURRENCY)));
+        forex.add(new DefaultMutableTreeNode(new MasterDataNode("Curr.Pairs", AppTreeItem.CURR_PAIR)));
         instruments.add(forex);
 
         DefaultMutableTreeNode derivatives = new DefaultMutableTreeNode("Derivatives");
         DefaultMutableTreeNode futures = new DefaultMutableTreeNode("Futures");
-        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Futures", "BOND_FUTURE")));
-        futures.add(new DefaultMutableTreeNode(new MasterDataNode("MM Futures", "MM_FUTURE")));
-        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Futures", "FX_FUTURE")));
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Futures", AppTreeItem.BOND_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("MM Futures", AppTreeItem.MM_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Futures", AppTreeItem.FX_FUTURE)));
         derivatives.add(futures);
 
         DefaultMutableTreeNode options = new DefaultMutableTreeNode("Options");
-        options.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Options", "BOND_OPTION")));
-        options.add(new DefaultMutableTreeNode(new MasterDataNode("MM Options", "MM_OPTION")));
-        options.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Options", "FX_OPTION")));
+        options.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Options", AppTreeItem.BOND_OPTION)));
+        options.add(new DefaultMutableTreeNode(new MasterDataNode("MM Options", AppTreeItem.MM_OPTION)));
+        options.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Options", AppTreeItem.FX_OPTION)));
         derivatives.add(options);
 
         instruments.add(derivatives);
@@ -48,10 +49,10 @@ public class TreeModel {
 
         // References
         DefaultMutableTreeNode references = new DefaultMutableTreeNode("References");
-        references.add(new DefaultMutableTreeNode(new MasterDataNode("Counterparts","COUNTERPARTY")));
-        references.add(new DefaultMutableTreeNode(new MasterDataNode("Issuers","ISSUER")));
-        references.add(new DefaultMutableTreeNode(new MasterDataNode("Portfolios","PORTFOLIO")));
-        references.add(new DefaultMutableTreeNode(new MasterDataNode("Positions","POSITION")));
+        references.add(new DefaultMutableTreeNode(new MasterDataNode("Counterparts",AppTreeItem.COUNTERPARTY)));
+        references.add(new DefaultMutableTreeNode(new MasterDataNode("Issuers",AppTreeItem.ISSUER)));
+        references.add(new DefaultMutableTreeNode(new MasterDataNode("Portfolios",AppTreeItem.PORTFOLIO)));
+        references.add(new DefaultMutableTreeNode(new MasterDataNode("Positions",AppTreeItem.POSITION)));
         root.add(references);
 
         DefaultTreeModel model = new DefaultTreeModel(root);

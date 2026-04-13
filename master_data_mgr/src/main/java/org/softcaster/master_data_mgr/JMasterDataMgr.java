@@ -94,35 +94,35 @@ public class JMasterDataMgr extends javax.swing.JFrame {
 
                     // Logica per decidere quale pannello mostrare in base al tipo
                     switch (data.getType()) {
-                        case "BOND" -> {
+                        case BOND -> {
                             cl.show(mainPanel, AppCard.BOND_CARD.name());
                             currentCard = AppCard.BOND_CARD;
                         }
-                        case "CURRENCIES" -> {
+                        case CURRENCY -> {
                             cl.show(mainPanel, AppCard.CURRENCY_CARD.name());
                             currentCard = AppCard.CURRENCY_CARD;
                         }
-                        case "BOND_FUTURE" -> {
+                        case BOND_FUTURE -> {
                             cl.show(mainPanel, AppCard.BOND_FUTURE_CARD.name());
                             currentCard = AppCard.BOND_FUTURE_CARD;
                         }
-                        case "CURR_PAIR" -> {
+                        case CURR_PAIR -> {
                             cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
                             currentCard = AppCard.CURR_PAIR_CARD;
                         }
-                        case "COUNTERPARTY" -> {
+                        case COUNTERPARTY -> {
                             cl.show(mainPanel, AppCard.COUNTERPARTY_CARD.name());
                             currentCard = AppCard.COUNTERPARTY_CARD;
                         }
-                        case "PORTFOLIO" -> {
+                        case PORTFOLIO -> {
                             cl.show(mainPanel, AppCard.PORTFOLIO_CARD.name());
                             currentCard = AppCard.PORTFOLIO_CARD;
                         }
-                        case "POSITION" -> {
+                        case POSITION -> {
                             cl.show(mainPanel, AppCard.POSITION_CARD.name());
                             currentCard = AppCard.POSITION_CARD;
                         }
-                        case "ISSUER" -> {
+                        case ISSUER -> {
                             cl.show(mainPanel, AppCard.ISSUER_CARD.name());
                             currentCard = AppCard.ISSUER_CARD;
                         }

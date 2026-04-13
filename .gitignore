@@ -10,3 +10,4 @@
 /master_data_mgr/target/
 /market_data_service/log
 *.log
+/easy_pricer_mds/target/
