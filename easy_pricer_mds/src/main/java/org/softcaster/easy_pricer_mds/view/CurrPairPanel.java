@@ -24,7 +24,7 @@ import org.softcaster.marketdataprovider.investingcom.InvestingComProvider;
  */
 public class CurrPairPanel extends AbstactMDPanel {
     
-    private List<CurrencyPairBean> forexBeanList = new ArrayList<>();
+    private final List<CurrencyPairBean> forexBeanList = new ArrayList<>();
 
     /**
      * Creates new form ForexPanel

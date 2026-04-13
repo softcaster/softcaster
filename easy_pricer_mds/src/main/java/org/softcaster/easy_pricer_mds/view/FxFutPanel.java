@@ -20,7 +20,7 @@ import org.softcaster.easy_pricer_mds.ui.ZebraTable;
  */
 public class FxFutPanel extends AbstactMDPanel {
 
-    private List<FxFutBean> fxFutBeanList = new ArrayList<>();
+    private final List<FxFutBean> fxFutBeanList = new ArrayList<>();
 
     /**
      * Creates new form ForexPanel
@@ -164,7 +164,7 @@ public class FxFutPanel extends AbstactMDPanel {
             fxFutBeanList.add(bean);
 
             model.setData(fxFutBeanList);
-        } catch(MarketDataNotFoundException ex) {
+        } catch (MarketDataNotFoundException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
         }
     }
