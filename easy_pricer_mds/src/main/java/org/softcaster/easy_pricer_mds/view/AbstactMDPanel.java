@@ -28,6 +28,8 @@ public abstract class AbstactMDPanel extends javax.swing.JPanel {
     private javax.swing.JMenuItem acMod;
     private javax.swing.JMenuItem acNew;
 
+    public abstract void refreshAction();
+    
     protected abstract void fillModelList();
 
     protected abstract void refreshModel(MDSTableModel model);

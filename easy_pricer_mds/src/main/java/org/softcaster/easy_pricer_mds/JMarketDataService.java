@@ -20,6 +20,7 @@ import static org.softcaster.easy_pricer_mds.AppTreeItem.CURR_PAIR;
 import org.softcaster.easy_pricer_mds.model.MDSNode;
 import org.softcaster.easy_pricer_mds.model.TreeModel;
 import org.softcaster.easy_pricer_mds.ui.MDSTreeCellRenderer;
+import org.softcaster.easy_pricer_mds.view.AbstactMDPanel;
 import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
 import org.springframework.stereotype.Component;
@@ -132,6 +133,13 @@ public class JMarketDataService extends javax.swing.JFrame {
         sideNavScrollPane = new javax.swing.JScrollPane();
         navigator = new javax.swing.JTree();
         mainPanel = new javax.swing.JPanel();
+        toolBar = new javax.swing.JToolBar();
+        btnExit = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        btnRefresh = new javax.swing.JButton();
+        menuBar = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
+        itemExit = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -153,15 +161,77 @@ public class JMarketDataService extends javax.swing.JFrame {
 
         getContentPane().add(splitPane, java.awt.BorderLayout.CENTER);
 
+        toolBar.setRollover(true);
+
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/close16dp.png"))); // NOI18N
+        btnExit.setFocusable(false);
+        btnExit.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnExit.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
+        toolBar.add(btnExit);
+        toolBar.add(jSeparator1);
+
+        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/file_open_16dp.png"))); // NOI18N
+        btnRefresh.setFocusable(false);
+        btnRefresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnRefresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnRefresh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRefreshActionPerformed(evt);
+            }
+        });
+        toolBar.add(btnRefresh);
+
+        getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
+
+        fileMenu.setText("File");
+
+        itemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.ALT_DOWN_MASK));
+        itemExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/close16dp.png"))); // NOI18N
+        itemExit.setText("Exit");
+        itemExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemExitActionPerformed(evt);
+            }
+        });
+        fileMenu.add(itemExit);
+
+        menuBar.add(fileMenu);
+
+        setJMenuBar(menuBar);
+
         setBounds(0, 0, 571, 424);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void itemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemExitActionPerformed
+        exitAction();
+    }//GEN-LAST:event_itemExitActionPerformed
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        exitAction();
+    }//GEN-LAST:event_btnExitActionPerformed
+
+    private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
+        refreshAction();
+    }//GEN-LAST:event_btnRefreshActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnExit;
+    private javax.swing.JButton btnRefresh;
+    private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem itemExit;
+    private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JTree navigator;
     private javax.swing.JPanel sideNav;
     private javax.swing.JScrollPane sideNavScrollPane;
     private javax.swing.JSplitPane splitPane;
+    private javax.swing.JToolBar toolBar;
     // End of variables declaration//GEN-END:variables
     private void exitAction() {
         if (JOptionPane.showConfirmDialog(this,
@@ -189,4 +259,21 @@ public class JMarketDataService extends javax.swing.JFrame {
         CardLayout cl = (CardLayout) mainPanel.getLayout();
         cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
     }
+    
+    private AbstactMDPanel getActiveCard() {
+        JPanel panel = cardMap.get(currentCard);
+        if (panel instanceof AbstactMDPanel abstactMDPanel) {
+            return abstactMDPanel;
+        } else {
+            return null;
+        }
+    }
+
+    private void refreshAction() {
+        AbstactMDPanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.refreshAction();
+        }
+    }
+
 }

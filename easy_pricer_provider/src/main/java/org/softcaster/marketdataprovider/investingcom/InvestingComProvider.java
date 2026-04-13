@@ -57,6 +57,10 @@ public class InvestingComProvider extends AbstractProvider {
     }
 
     private void parseResponseForex() {
+        
+        // Cancello vecchia lista
+        currencyQuotes.clear();
+        
         addCurrencyPair("EUR", "USD");
         addCurrencyPair("EUR", "CHF");
         addCurrencyPair("EUR", "GBP");

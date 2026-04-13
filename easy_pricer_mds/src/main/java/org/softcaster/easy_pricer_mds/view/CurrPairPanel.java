@@ -5,11 +5,17 @@
 package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
 import org.softcaster.easy_pricer_mds.model.MDSTableModel;
 import org.softcaster.easy_pricer_mds.ui.ZebraTable;
+import org.softcaster.marketdataprovider.ConnectionParam;
+import org.softcaster.marketdataprovider.DataNode;
+import org.softcaster.marketdataprovider.MARKETS;
+import org.softcaster.marketdataprovider.investingcom.InvestingComProvider;
 
 /**
  *
@@ -120,6 +126,27 @@ public class CurrPairPanel extends AbstactMDPanel {
     
     @Override
     protected void refreshModel(MDSTableModel model) {
+        
+        forexBeanList.clear();
+        
+        InvestingComProvider provider = InvestingComProvider.getInstance();
+        ConnectionParam param = new ConnectionParam();
+        param.baseUrl = "https://www.investing.com";
+        param.url = "https://www.investing.com/currencies/streaming-forex-rates-majors";
+        param.market = MARKETS.CURRENCIES;
+        try {
+            provider.connect(param);
+            List<DataNode> currPairs = provider.quotes(MARKETS.CURRENCIES);
+            CurrencyPairBean bean = null;
+            for (DataNode node : currPairs) {
+                bean = new CurrencyPairBean(node.getRic().substring(0,3),node.getRic().substring(3,6),
+                node.getBid(),node.getAsk());
+                forexBeanList.add(bean);
+            }
+        } catch (IOException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+        }
+        
         model.setData(forexBeanList);
     }
     
@@ -129,5 +156,11 @@ public class CurrPairPanel extends AbstactMDPanel {
 
     @Override
     public void filterAction() {
+    }
+
+    @Override
+    public void refreshAction() {
+        MDSTableModel<CurrencyPairBean> model = (MDSTableModel<CurrencyPairBean>) fxTable.getModel();
+        this.refreshModel(model);
     }
 }

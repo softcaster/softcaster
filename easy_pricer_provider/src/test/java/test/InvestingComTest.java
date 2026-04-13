@@ -23,7 +23,7 @@ import org.softcaster.marketdataprovider.investingcom.InvestingComProvider;
 public class InvestingComTest {
 
     private static void testCurrencyPairs() {
-        EuriborRatesProvider provider = EuriborRatesProvider.getInstance();
+        InvestingComProvider provider = InvestingComProvider.getInstance();
         ConnectionParam param = new ConnectionParam();
         param.baseUrl = "https://www.investing.com";
         param.url = "https://www.investing.com/currencies/streaming-forex-rates-majors";
@@ -95,9 +95,9 @@ public class InvestingComTest {
         // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
         MarketDataProviderHelper.initializePython();
 
-        testEuriborCurve();
-        testYieldCurves();
+        //testEuriborCurve();
+        //testYieldCurves();
 
-        // testCurrencyPairs();
+        testCurrencyPairs();
     }
 }
