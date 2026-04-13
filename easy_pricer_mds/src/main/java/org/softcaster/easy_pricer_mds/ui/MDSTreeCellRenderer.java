@@ -34,6 +34,8 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
         if (leaf && userObject instanceof MDSNode data) {
             // Logica per cambiare l'icona in base al tipo
             switch (data.getType()) {
+                case CURR_PAIR ->
+                    setIcon(forexIcon);
                 case BOND, EQUITY ->
                     setIcon(securityIcon);
                 case YC_UPDATE, YC_DEFINE ->

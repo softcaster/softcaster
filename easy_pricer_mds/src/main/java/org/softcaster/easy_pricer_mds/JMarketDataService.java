@@ -16,9 +16,11 @@ import javax.swing.JPanel;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.utils.LoggerMgr;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.CURR_PAIR;
 import org.softcaster.easy_pricer_mds.model.MDSNode;
 import org.softcaster.easy_pricer_mds.model.TreeModel;
 import org.softcaster.easy_pricer_mds.ui.MDSTreeCellRenderer;
+import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
 import org.springframework.stereotype.Component;
 
@@ -83,14 +85,12 @@ public class JMarketDataService extends javax.swing.JFrame {
 
                     // Logica per decidere quale pannello mostrare in base al tipo
                     switch (data.getType()) {
-                        case BOND -> {
-                        }
-                        case BOND_FUTURE -> {
-                        }
                         case CURR_PAIR -> {
+                            cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
+                            currentCard = AppCard.CURR_PAIR_CARD;
                         }
                         default -> {
-                            cl.show(mainPanel, "DEFAULT");
+                            cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
                             currentCard = AppCard.DEFAULT_CARD;
                         }
                     }
@@ -178,9 +178,12 @@ public class JMarketDataService extends javax.swing.JFrame {
         // 1. Istanzia i pannelli
         JPanel defaultPanel = new HomePanel();
         cardMap.put(AppCard.DEFAULT_CARD, defaultPanel);
+        JPanel cpPanel = new CurrPairPanel();
+        cardMap.put(AppCard.CURR_PAIR_CARD, cpPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
+        mainPanel.add(cpPanel, AppCard.CURR_PAIR_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();
