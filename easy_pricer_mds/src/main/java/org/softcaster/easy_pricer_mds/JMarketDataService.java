@@ -145,8 +145,12 @@ public class JMarketDataService extends javax.swing.JFrame {
         btnExit = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         btnRefresh = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        itemRefresh = new javax.swing.JMenuItem();
+        itemSave = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         itemExit = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -172,6 +176,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         toolBar.setRollover(true);
 
         btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/close16dp.png"))); // NOI18N
+        btnExit.setToolTipText("Exit");
         btnExit.setFocusable(false);
         btnExit.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnExit.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -184,6 +189,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         toolBar.add(jSeparator1);
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/file_open_16dp.png"))); // NOI18N
+        btnRefresh.setToolTipText("Refresh");
         btnRefresh.setFocusable(false);
         btnRefresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnRefresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -194,9 +200,27 @@ public class JMarketDataService extends javax.swing.JFrame {
         });
         toolBar.add(btnRefresh);
 
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/save_16dp.png"))); // NOI18N
+        jButton1.setToolTipText("Save");
+        jButton1.setFocusable(false);
+        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBar.add(jButton1);
+
         getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
 
         fileMenu.setText("File");
+
+        itemRefresh.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.ALT_DOWN_MASK));
+        itemRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/file_open_16dp.png"))); // NOI18N
+        itemRefresh.setText("Refresh");
+        fileMenu.add(itemRefresh);
+
+        itemSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_DOWN_MASK));
+        itemSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/save_16dp.png"))); // NOI18N
+        itemSave.setText("Save");
+        fileMenu.add(itemSave);
+        fileMenu.add(jSeparator2);
 
         itemExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.ALT_DOWN_MASK));
         itemExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/close16dp.png"))); // NOI18N
@@ -232,7 +256,11 @@ public class JMarketDataService extends javax.swing.JFrame {
     private javax.swing.JButton btnRefresh;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem itemExit;
+    private javax.swing.JMenuItem itemRefresh;
+    private javax.swing.JMenuItem itemSave;
+    private javax.swing.JButton jButton1;
     private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JTree navigator;
