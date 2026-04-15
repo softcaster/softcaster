@@ -6,6 +6,7 @@ package org.softcaster.easy_pricer_mds.model;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.easy_pricer_mds.AppTreeItem;
 
 /**
@@ -21,19 +22,19 @@ public class TreeModel {
         DefaultMutableTreeNode instruments = new DefaultMutableTreeNode("Price Update");
         DefaultMutableTreeNode securities = new DefaultMutableTreeNode("Securities");
         // Foglie
-        securities.add(new DefaultMutableTreeNode(new MDSNode("Bonds", AppTreeItem.BOND)));
-        securities.add(new DefaultMutableTreeNode(new MDSNode("Equities", AppTreeItem.EQUITY)));
+        securities.add(new DefaultMutableTreeNode(new FndtNode<>("Bonds", AppTreeItem.BOND)));
+        securities.add(new DefaultMutableTreeNode(new FndtNode<>("Equities", AppTreeItem.EQUITY)));
         instruments.add(securities);
 
         DefaultMutableTreeNode forex = new DefaultMutableTreeNode("Forex");
-        forex.add(new DefaultMutableTreeNode(new MDSNode("Curr.Pairs", AppTreeItem.CURR_PAIR)));
+        forex.add(new DefaultMutableTreeNode(new FndtNode<>("Curr.Pairs", AppTreeItem.CURR_PAIR)));
         instruments.add(forex);
 
         DefaultMutableTreeNode derivatives = new DefaultMutableTreeNode("Derivatives");
         DefaultMutableTreeNode futures = new DefaultMutableTreeNode("Futures");
-        futures.add(new DefaultMutableTreeNode(new MDSNode("Bond Futures", AppTreeItem.BOND_FUTURE)));
-        futures.add(new DefaultMutableTreeNode(new MDSNode("MM Futures", AppTreeItem.MM_FUTURE)));
-        futures.add(new DefaultMutableTreeNode(new MDSNode("Fx Futures", AppTreeItem.FX_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new FndtNode<>("Bond Futures", AppTreeItem.BOND_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new FndtNode<>("MM Futures", AppTreeItem.MM_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new FndtNode<>("Fx Futures", AppTreeItem.FX_FUTURE)));
         derivatives.add(futures);
 
         instruments.add(derivatives);
@@ -42,8 +43,8 @@ public class TreeModel {
 
         // YC
         DefaultMutableTreeNode references = new DefaultMutableTreeNode("Yield Curve");
-        references.add(new DefaultMutableTreeNode(new MDSNode("Update",AppTreeItem.YC_UPDATE)));
-        references.add(new DefaultMutableTreeNode(new MDSNode("Define",AppTreeItem.YC_DEFINE)));
+        references.add(new DefaultMutableTreeNode(new FndtNode<>("Update",AppTreeItem.YC_UPDATE)));
+        references.add(new DefaultMutableTreeNode(new FndtNode<>("Define",AppTreeItem.YC_DEFINE)));
         root.add(references);
 
         DefaultTreeModel model = new DefaultTreeModel(root);

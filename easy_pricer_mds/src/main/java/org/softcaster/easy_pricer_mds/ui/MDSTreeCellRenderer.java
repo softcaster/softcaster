@@ -9,7 +9,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import org.softcaster.easy_pricer_mds.model.MDSNode;
+import org.softcaster.commons.ui.model.FndtNode;
+import org.softcaster.easy_pricer_mds.AppTreeItem;
 
 /**
  *
@@ -31,19 +32,22 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
         Object userObject = node.getUserObject();
 
-        if (leaf && userObject instanceof MDSNode data) {
-            // Logica per cambiare l'icona in base al tipo
-            switch (data.getType()) {
-                case CURR_PAIR ->
-                    setIcon(forexIcon);
-                case BOND, EQUITY ->
-                    setIcon(securityIcon);
-                case YC_UPDATE, YC_DEFINE ->
-                    setIcon(forexIcon);
-                case BOND_FUTURE, MM_FUTURE, FX_FUTURE ->
-                    setIcon(futureIcon);
-                default -> {
-                    setIcon(getDefaultLeafIcon()); // Torna al "pallino" o icona di default
+        if (leaf && userObject instanceof FndtNode data) {
+            // Verifico il tipo esplicito
+            if (data.getType() instanceof AppTreeItem item) {
+                // Logica per cambiare l'icona in base al tipo
+                switch (item) {
+                    case CURR_PAIR ->
+                        setIcon(forexIcon);
+                    case BOND, EQUITY ->
+                        setIcon(securityIcon);
+                    case YC_UPDATE, YC_DEFINE ->
+                        setIcon(forexIcon);
+                    case BOND_FUTURE, MM_FUTURE, FX_FUTURE ->
+                        setIcon(futureIcon);
+                    default -> {
+                        setIcon(getDefaultLeafIcon()); // Torna al "pallino" o icona di default
+                    }
                 }
             }
         } else if (!leaf) {

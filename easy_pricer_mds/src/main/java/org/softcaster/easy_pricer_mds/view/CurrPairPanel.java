@@ -120,11 +120,11 @@ public class CurrPairPanel extends FndtAbstactPanel {
     protected void acNewActionPerformed(ActionEvent evt) {
         java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
         java.awt.Frame parentFrame = null;
-        
+
         if (parentWindow instanceof java.awt.Frame frame) {
             parentFrame = frame;
         }
-        
+
         CurrPairIQDlg dialog = new CurrPairIQDlg(parentFrame, true, null, mDSFacade);
         dialog.setSize(425, 200);
         // Centra la dialog rispetto al pannello
@@ -132,9 +132,9 @@ public class CurrPairPanel extends FndtAbstactPanel {
         dialog.setVisible(true);
 
         // Post chiusura dialog
-        CurrPairTableModel  model =  (CurrPairTableModel) fxTable.getModel();
+        CurrPairTableModel model = (CurrPairTableModel) fxTable.getModel();
         refreshModel(model);
-        
+
     }
 
     @Override
@@ -147,11 +147,11 @@ public class CurrPairPanel extends FndtAbstactPanel {
             CurrencyPairBean currPair = model.getElementAt(modelRow);
             java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
             java.awt.Frame parentFrame = null;
-            
+
             if (parentWindow instanceof java.awt.Frame frame) {
                 parentFrame = frame;
             }
-            
+
             CurrPairIQDlg dialog = new CurrPairIQDlg(parentFrame, true, currPair, mDSFacade);
             dialog.setSize(425, 200);
             // Centra la dialog rispetto al pannello
@@ -165,37 +165,6 @@ public class CurrPairPanel extends FndtAbstactPanel {
 
     @Override
     protected void acDelActionPerformed(ActionEvent evt) {
-    }
-
-    protected void refreshModel(CurrPairTableModel model) {
-
-        // Cancella vecchia lista
-        forexBeanList.clear();
-
-        // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> pairs = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FSP");
-        if(pairs.isEmpty())
-            return;
-        
-        // Aggiorno service
-        List<String> tokenList = new ArrayList<>();
-        for(InstrumentQuote quote: pairs) {
-            tokenList.add(quote.getCode());
-        }
-        
-        MarketDataService mds = MarketDataService.getInstance();
-        mds.updateFxPrice(tokenList, "InvestingComProvider", null);
-        
-        CurrencyPairBean bean = null;
-
-        for (InstrumentQuote quote : pairs) {
-            quote.setBid(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.BID));
-            quote.setAsk(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.ASK));
-            bean = new CurrencyPairBean(quote);
-            forexBeanList.add(bean);
-        }
-
-        model.setData(forexBeanList);
     }
 
     @Override
@@ -214,5 +183,33 @@ public class CurrPairPanel extends FndtAbstactPanel {
 
     @Override
     protected void refreshModel(FndtTableModel ftm) {
+        // Cancella vecchia lista
+        forexBeanList.clear();
+
+        // Leggo lista pairs anagrafiche
+        List<InstrumentQuote> pairs = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FSP");
+        if (pairs.isEmpty()) {
+            return;
+        }
+
+        // Aggiorno service
+        List<String> tokenList = new ArrayList<>();
+        for (InstrumentQuote quote : pairs) {
+            tokenList.add(quote.getCode());
+        }
+
+        MarketDataService mds = MarketDataService.getInstance();
+        mds.updateFxPrice(tokenList, "InvestingComProvider", null);
+
+        CurrencyPairBean bean = null;
+
+        for (InstrumentQuote quote : pairs) {
+            quote.setBid(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.BID));
+            quote.setAsk(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.ASK));
+            bean = new CurrencyPairBean(quote);
+            forexBeanList.add(bean);
+        }
+
+        ftm.setData(forexBeanList);
     }
 }

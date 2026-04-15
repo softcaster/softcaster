@@ -15,9 +15,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.commons.utils.LoggerMgr;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.CURR_PAIR;
-import org.softcaster.easy_pricer_mds.model.MDSNode;
 import org.softcaster.easy_pricer_mds.model.TreeModel;
 import org.softcaster.easy_pricer_mds.ui.MDSTreeCellRenderer;
 import org.softcaster.easy_pricer_mds.view.AbstactMDPanel;
@@ -63,8 +63,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         // Forza l'esecuzione sul thread di Swing per evitare race conditions
         java.awt.EventQueue.invokeLater(() -> {
 
-            service = MarketDataService.getInstance();
-            service.updateMarketData();
+            //service = MarketDataService.getInstance();
+            //service.updateMarketData();
             // Titolo
             this.setTitle(TITLE);
 
@@ -87,13 +87,15 @@ public class JMarketDataService extends javax.swing.JFrame {
                     return; // Nessuna selezione
                 }
                 Object userObject = node.getUserObject();
-                if (node.isLeaf() && userObject instanceof MDSNode data) {
+                if (node.isLeaf() && userObject instanceof FndtNode data) {
 
+                 // Verifico il tipo esplicito
+                 if (data.getType() instanceof AppTreeItem item) {
                     // Recupera il CardLayout dal mainPanel
                     CardLayout cl = (CardLayout) (mainPanel.getLayout());
-
+                    
                     // Logica per decidere quale pannello mostrare in base al tipo
-                    switch (data.getType()) {
+                    switch (item) {
                         case CURR_PAIR -> {
                             cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
                             currentCard = AppCard.CURR_PAIR_CARD;
@@ -107,7 +109,7 @@ public class JMarketDataService extends javax.swing.JFrame {
                             currentCard = AppCard.DEFAULT_CARD;
                         }
                     }
-
+                 }
                     // Opzionale: Carica i dati specifici nel pannello appena mostrato
                     // bondPanel.loadData(data.getId()); 
                 }

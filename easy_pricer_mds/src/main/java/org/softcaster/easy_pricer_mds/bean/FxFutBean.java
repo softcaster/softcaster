@@ -4,13 +4,14 @@
  */
 package org.softcaster.easy_pricer_mds.bean;
 
-import org.softcaster.easy_pricer_mds.model.IMDSModel2;
+import org.softcaster.commons.ui.bean.ITrendable;
+import org.softcaster.commons.ui.model.IFndtModel;
 
 /**
  *
  * @author ep
  */
-public class FxFutBean implements IMDSModel2, ITrendable2 {
+public class FxFutBean implements IFndtModel, ITrendable {
 
     private final String code;
     private Double bid;

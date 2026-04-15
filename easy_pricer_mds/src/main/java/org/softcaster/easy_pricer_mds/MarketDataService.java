@@ -66,15 +66,20 @@ public class MarketDataService {
 
     public double getSpotPrice(String ticker, REQUEST_TYPE request) {
         double price = 0.;
-        switch (request) {
-            case BID ->
-                price = getSpot(ticker).bid();
-            case ASK ->
-                price = getSpot(ticker).ask();
-            case MIDDLE ->
-                price = getSpot(ticker).middle();
-            default -> {
+        try {
+            switch (request) {
+                case BID ->
+                    price = getSpot(ticker).bid();
+                case ASK ->
+                    price = getSpot(ticker).ask();
+                case MIDDLE ->
+                    price = getSpot(ticker).middle();
+                default -> {
+                }
             }
+        } catch (Exception ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            price = 0;
         }
         return price;
     }
@@ -146,7 +151,7 @@ public class MarketDataService {
                     progressInfo.setProgress(progress + step * cnt);
                     cnt++;
                 }
-                */
+                 */
             }
             if (progressInfo != null) {
                 progressInfo.setProgress(100);

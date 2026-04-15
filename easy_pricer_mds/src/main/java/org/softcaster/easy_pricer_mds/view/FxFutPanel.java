@@ -7,10 +7,13 @@ package org.softcaster.easy_pricer_mds.view;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import org.softcaster.commons.ui.model.FndtTableModel;
+import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_mds.MarketDataNotFoundException;
 import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.FxFutBean;
+import org.softcaster.easy_pricer_mds.model.FxFutTableModel;
 import org.softcaster.easy_pricer_mds.model.MDSTableModel;
 import org.softcaster.easy_pricer_mds.ui.ZebraTable;
 import org.softcaster.marketdataprovider.REQUEST_TYPE;
@@ -19,7 +22,7 @@ import org.softcaster.marketdataprovider.REQUEST_TYPE;
  *
  * @author softc
  */
-public class FxFutPanel extends AbstactMDPanel {
+public class FxFutPanel extends FndtAbstactPanel {
 
     private final List<FxFutBean> fxFutBeanList = new ArrayList<>();
 
@@ -103,7 +106,7 @@ public class FxFutPanel extends AbstactMDPanel {
     protected void fillModelList() {
         // Crea e setta il model
         FxFutBean prototype = new FxFutBean("", 0., 0.);
-        MDSTableModel<FxFutBean> model = new MDSTableModel<>(prototype);
+        FxFutTableModel model = new FxFutTableModel(prototype);
         fxFutTable.setModel(model);
 
         // Popola il model
@@ -123,17 +126,29 @@ public class FxFutPanel extends AbstactMDPanel {
     }
 
     @Override
-    protected void refreshModel(MDSTableModel model) {
+    public void downloadAction() {
+    }
+
+    @Override
+    public void filterAction() {
+    }
+
+    @Override
+    public void refreshAction() {
+        MarketDataService service = MarketDataService.getInstance();
+        double price = service.getSpotPrice("6EM6", REQUEST_TYPE.MIDDLE);
+        System.out.println(price);
+    }
+
+    @Override
+    protected void refreshModel(FndtTableModel ftm) {
         try {
             fxFutBeanList.clear();
 
             MarketDataService service = MarketDataService.getInstance();
-            double price = service.getSpotPrice("6EJ6", REQUEST_TYPE.MIDDLE);
-            FxFutBean bean = new FxFutBean("6EJ6", price, price);
-            fxFutBeanList.add(bean);
 
-            price = service.getSpotPrice("6EK6", REQUEST_TYPE.MIDDLE);
-            bean = new FxFutBean("6EK6", price, price);
+            double price = service.getSpotPrice("6EK6", REQUEST_TYPE.MIDDLE);
+            FxFutBean bean = new FxFutBean("6EK6", price, price);
             fxFutBeanList.add(bean);
 
             price = service.getSpotPrice("6EM6", REQUEST_TYPE.MIDDLE);
@@ -164,24 +179,9 @@ public class FxFutPanel extends AbstactMDPanel {
             bean = new FxFutBean("6BM6", price, price);
             fxFutBeanList.add(bean);
 
-            model.setData(fxFutBeanList);
+            ftm.setData(fxFutBeanList);
         } catch (MarketDataNotFoundException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
         }
-    }
-
-    @Override
-    public void downloadAction() {
-    }
-
-    @Override
-    public void filterAction() {
-    }
-
-    @Override
-    public void refreshAction() {
-        MarketDataService service = MarketDataService.getInstance();
-        double price = service.getSpotPrice("6EM6", REQUEST_TYPE.MIDDLE);
-        System.out.println(price);
     }
 }
