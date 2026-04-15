@@ -24,6 +24,7 @@ import org.softcaster.easy_pricer_mds.view.AbstactMDPanel;
 import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
 import org.softcaster.easy_pricer_mds.view.FxFutPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,6 +36,9 @@ public class JMarketDataService extends javax.swing.JFrame {
 
     public static final String TITLE = "Market Data Service 1.0";
 
+    @Autowired
+    private MDSFacade mDSFacade;
+    
     private AppCard currentCard;
     private Map<AppCard, javax.swing.JPanel> cardMap = new HashMap<>();
     private MarketDataService service = null;
@@ -284,7 +288,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         // 1. Istanzia i pannelli
         JPanel defaultPanel = new HomePanel();
         cardMap.put(AppCard.DEFAULT_CARD, defaultPanel);
-        JPanel cpPanel = new CurrPairPanel();
+        JPanel cpPanel = new CurrPairPanel(mDSFacade);
         cardMap.put(AppCard.CURR_PAIR_CARD, cpPanel);
         JPanel fxFutPanel = new FxFutPanel();
         cardMap.put(AppCard.FX_FUTURE_CARD, fxFutPanel);

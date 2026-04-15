@@ -4,39 +4,37 @@
  */
 package org.softcaster.easy_pricer_mds.bean;
 
-import org.softcaster.easy_pricer_mds.model.IMDSModel;
+import org.softcaster.commons.ui.bean.ITrendable;
+import org.softcaster.commons.ui.model.IFndtModel;
+import org.softcaster.easy_pricer_core.data.InstrumentQuote;
 
 /**
  *
  * @author ep
  */
-public class CurrencyPairBean implements IMDSModel, ITrendable {
+//public class CurrencyPairBean implements IMDSModel2, ITrendable2 {
+public class CurrencyPairBean implements IFndtModel, ITrendable {
 
-    private final String bcy;
-    private final String ccy;
-    private Double bid;
-    private Double ask;
+    private final InstrumentQuote iQuote;
+
     private int trendBid = 0;
     private int trendAsk = 0;
 
-    public CurrencyPairBean(String bcy, String ccy, double bid, double ask) {
-        this.bcy = bcy;
-        this.ccy = ccy;
-        this.bid = bid;
-        this.ask = ask;
+    public CurrencyPairBean(InstrumentQuote iQuote) {
+        this.iQuote = iQuote;
     }
 
     @Override
     public Object getValueAt(int columnIndex) {
         return switch (columnIndex) {
             case 0 ->
-                bcy;
+                iQuote.getCode().substring(0,3);
             case 1 ->
-                ccy;
+                iQuote.getCode().substring(3,6);
             case 2 ->
-                getBid();
+                iQuote.getBid();
             case 3 ->
-                getAsk();
+                iQuote.getAsk();
             default ->
                 null;
         };
@@ -51,28 +49,28 @@ public class CurrencyPairBean implements IMDSModel, ITrendable {
      * @return the bid
      */
     public Double getBid() {
-        return bid;
+        return iQuote.getBid();
     }
 
     /**
      * @param bid the bid to set
      */
     public void setBid(Double bid) {
-        this.bid = bid;
+        iQuote.setBid(bid);
     }
 
     /**
      * @return the ask
      */
     public Double getAsk() {
-        return ask;
+        return iQuote.getAsk();
     }
 
     /**
      * @param ask the ask to set
      */
     public void setAsk(Double ask) {
-        this.ask = ask;
+        iQuote.setAsk(ask);
     }
 
     /**
@@ -113,5 +111,8 @@ public class CurrencyPairBean implements IMDSModel, ITrendable {
         }
         return 0;
     }
-
+    
+    public InstrumentQuote getInstrumentQuote() {
+        return iQuote;
+    }
 }

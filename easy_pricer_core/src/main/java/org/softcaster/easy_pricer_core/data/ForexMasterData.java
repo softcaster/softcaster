@@ -83,4 +83,8 @@ public class ForexMasterData  extends MasterData {
         this.ccyIrc = ccyIrc;
     }
 
+    @Override
+    public String toString() {
+        return getCode();
+    }    
 }

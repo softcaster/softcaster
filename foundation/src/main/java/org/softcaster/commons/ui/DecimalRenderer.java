@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.easy_pricer_mds.ui;
+package org.softcaster.commons.ui;
 
 /**
  *
@@ -14,8 +14,8 @@ import java.text.DecimalFormat;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.softcaster.easy_pricer_mds.model.MDSTableModel;
-import org.softcaster.easy_pricer_mds.bean.ITrendable2;
+import org.softcaster.commons.ui.bean.ITrendable;
+import org.softcaster.commons.ui.model.FndtTableModel;
 
 public class DecimalRenderer extends DefaultTableCellRenderer {
 
@@ -37,11 +37,11 @@ public class DecimalRenderer extends DefaultTableCellRenderer {
         setHorizontalAlignment(JLabel.RIGHT);
 
         // 3. Logica del colore
-        if (table.getModel() instanceof MDSTableModel<?> model) {
+        if (table.getModel() instanceof FndtTableModel<?> model) {
             int modelRow = table.convertRowIndexToModel(row);
             Object element = model.getElementAt(modelRow);
 
-            if (element instanceof ITrendable2 trendable && !isSelected) {
+            if (element instanceof ITrendable trendable && !isSelected) {
                 int trend = trendable.getTrendForColumn(column);
 
                 if (trend > 0) {

@@ -24,6 +24,10 @@ import org.softcaster.marketdataprovider.ConnectionParam;
 import org.softcaster.marketdataprovider.DataNode;
 import org.softcaster.marketdataprovider.IMarketDataProvider;
 import org.softcaster.marketdataprovider.MARKETS;
+import org.softcaster.marketdataprovider.REQUEST_TYPE;
+import static org.softcaster.marketdataprovider.REQUEST_TYPE.ASK;
+import static org.softcaster.marketdataprovider.REQUEST_TYPE.BID;
+import static org.softcaster.marketdataprovider.REQUEST_TYPE.MIDDLE;
 import org.softcaster.marketdataprovider.YieldNode;
 
 /**
@@ -60,8 +64,19 @@ public class MarketDataService {
         }
     }
 
-    public double getSpotPrice(String ticker) {
-        return getSpot(ticker).price();
+    public double getSpotPrice(String ticker, REQUEST_TYPE request) {
+        double price = 0.;
+        switch (request) {
+            case BID ->
+                price = getSpot(ticker).bid();
+            case ASK ->
+                price = getSpot(ticker).ask();
+            case MIDDLE ->
+                price = getSpot(ticker).middle();
+            default -> {
+            }
+        }
+        return price;
     }
 
     public YieldCurve getYieldCurve(String curveName) {
@@ -110,16 +125,7 @@ public class MarketDataService {
         }
     }
 
-    public void updateFxPrice(IProgressInfo progressInfo) {
-        // Leggo lista di currency pairs
-        ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String currencyPairs = paramsMgr.getParamValue("CURRENCY_PAIRS");
-        String provider = paramsMgr.getParamValue("CURRENCY_PAIRS_PROVIDER");
-
-        // 1. Divido la stringa in un array usando la virgola come separatore
-        String[] tokenArray = currencyPairs.split(",");
-        // 2. Converto l'array in una List<String>
-        List<String> tokenList = Arrays.asList(tokenArray);
+    public void updateFxPrice(List<String> tokenList, String provider, IProgressInfo progressInfo) {
 
         int progress = tokenList.size() / 10;
         if (progress < 10) {
@@ -131,17 +137,22 @@ public class MarketDataService {
         int step = 100 / progress;
         int cnt = 0;
         try {
+            // Legge tutto in un unico blocco
             for (String token : tokenList) {
                 addSpotPrice(token, provider);
+                break;
+                /*
                 if (progressInfo != null) {
                     progressInfo.setProgress(progress + step * cnt);
                     cnt++;
                 }
+                */
             }
-            progressInfo.setProgress(100);
+            if (progressInfo != null) {
+                progressInfo.setProgress(100);
+            }
         } catch (Exception ex) {
-            String error = "Error reading file: ticker_link.csv [" + ex.getLocalizedMessage() + "]";
-            LoggerMgr.logError(error);
+            LoggerMgr.logError(ex.getLocalizedMessage());
         }
     }
 
@@ -181,8 +192,8 @@ public class MarketDataService {
     }
 
     // Aggiorna l'ultimo prezzo di un asset (es. Forex)
-    private void updatePrice(String ticker, double price) {
-        spotPrices.put(ticker, new SpotPrice(ticker, price));
+    private void updatePrice(String ticker, double bid, double ask, double middle) {
+        spotPrices.put(ticker, new SpotPrice(ticker, bid, ask, middle));
     }
 
     private void addSpotPrice(String token, String strProvider) {
@@ -203,10 +214,10 @@ public class MarketDataService {
                     for (DataNode node : rates) {
                         if (node.getRic().equalsIgnoreCase(token)) {
                             rate = node.getBid();
+                            updatePrice(token, node.getBid(), node.getAsk(), (node.getBid() + node.getAsk()) / 2.);
                             break;
                         }
                     }
-                    updatePrice(token, rate);
                 }
 
                 case "CmeGroupProvider" -> {
@@ -226,7 +237,7 @@ public class MarketDataService {
 
                     List<DataNode> rates = provider.quotes(MARKETS.FUTURES);
                     for (DataNode node : rates) {
-                        updatePrice(node.getRic(), node.getBid());
+                        updatePrice(token, node.getBid(), node.getAsk(), (node.getBid() + node.getAsk()) / 2.);
                     }
                 }
 
@@ -237,14 +248,11 @@ public class MarketDataService {
                     param.market = MARKETS.CURRENCIES;
                     provider.refresh(param);
 
+                    // Questo provider legge tutto in un blocco
                     List<DataNode> rates = provider.quotes(MARKETS.CURRENCIES);
                     for (DataNode node : rates) {
-                        if (node.getRic().equalsIgnoreCase(token)) {
-                            rate = node.getBid();
-                            break;
-                        }
+                        updatePrice(node.getRic(), node.getBid(), node.getAsk(), (node.getBid() + node.getAsk()) / 2.);
                     }
-                    updatePrice(token, rate);
                 }
                 default -> {
                 }

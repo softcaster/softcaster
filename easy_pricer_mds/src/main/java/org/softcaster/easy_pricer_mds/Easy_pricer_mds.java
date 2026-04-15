@@ -8,20 +8,25 @@ import org.softcaster.marketdataprovider.MarketDataProviderHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  *
  * @author ep
  */
 // Al momento escludo DB
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+//@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+@SpringBootApplication()
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
 @ComponentScan(basePackages = {
-    "org.softcaster.easy_pricer_mds"
+    "org.softcaster.easy_pricer_mds",
+    "org.softcaster.easy_pricer_core" // Il pacchetto della LIBRERIA
 })
+@EntityScan("org.softcaster.easy_pricer_core.data")
+@EnableJpaRepositories("org.softcaster.easy_pricer_core.data")
 
 public class Easy_pricer_mds implements CommandLineRunner {
 

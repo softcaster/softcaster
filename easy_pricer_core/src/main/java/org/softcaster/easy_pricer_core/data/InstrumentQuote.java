@@ -3,9 +3,12 @@ package org.softcaster.easy_pricer_core.data;
 import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.sql.Types;
@@ -23,8 +26,9 @@ public class InstrumentQuote implements Serializable {
     @Column(name = "id_instrument_quote", columnDefinition = "INTEGER")
     private Integer idInstrumentQuote;
 
-    @Column(name = "master_data")
-    private Integer masterData;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "master_data", nullable = true)
+    private MasterData masterData;
 
     @Column(name = "code")
     private String code;
@@ -43,14 +47,6 @@ public class InstrumentQuote implements Serializable {
 
     public void setIdInstrumentQuote(Integer idInstrumentQuote) {
         this.idInstrumentQuote = idInstrumentQuote;
-    }
-
-    public Integer getMasterData() {
-        return masterData;
-    }
-
-    public void setMasterData(Integer masterData) {
-        this.masterData = masterData;
     }
 
     public String getCode() {
@@ -92,5 +88,19 @@ public class InstrumentQuote implements Serializable {
     @Override
     public int hashCode() {
         return getIdInstrumentQuote() == null ? 0 : idInstrumentQuote.hashCode();
+    }
+
+    /**
+     * @return the masterData
+     */
+    public MasterData getMasterData() {
+        return masterData;
+    }
+
+    /**
+     * @param masterData the masterData to set
+     */
+    public void setMasterData(MasterData masterData) {
+        this.masterData = masterData;
     }
 }

@@ -5,13 +5,14 @@
 package org.softcaster.easy_pricer_mds.model;
 
 import java.util.List;
+import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
 
 /**
  *
  * @author softc
  */
-public class CurrPairTableModel extends MDSTableModel<CurrencyPairBean> {
+public class CurrPairTableModel extends FndtTableModel<CurrencyPairBean> {
 
     public CurrPairTableModel(CurrencyPairBean prototype) {
         super(prototype);

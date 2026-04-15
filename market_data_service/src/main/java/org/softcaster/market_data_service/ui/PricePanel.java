@@ -22,6 +22,7 @@ import org.softcaster.market_data_service.MarketDataService;
 import static org.softcaster.market_data_service.ui.Instruments.CURRENCY_PAIRS;
 import static org.softcaster.market_data_service.ui.Instruments.FUTURES;
 import static org.softcaster.market_data_service.ui.Instruments.SECURITIES;
+import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
 /**
  *
@@ -185,7 +186,7 @@ public class PricePanel extends javax.swing.JPanel implements IProgressInfo {
                 // Aggiungi EUR/USD in nero
                 doc.insertString(doc.getLength(), token + "\t", blackStyle);
                 // Aggiungi il valore in blu
-                String price = Converter.fromDouble(mds.getSpotPrice(token));
+                String price = Converter.fromDouble(mds.getSpotPrice(token, REQUEST_TYPE.MIDDLE));
                 doc.insertString(doc.getLength(), price + "\n", blueStyle);
             } catch (BadLocationException ex) {
                 LoggerMgr.logError(ex.getLocalizedMessage());
@@ -214,7 +215,7 @@ public class PricePanel extends javax.swing.JPanel implements IProgressInfo {
                 // Aggiungi EUR/USD in nero
                 doc.insertString(doc.getLength(), token + "\t", blackStyle);
                 // Aggiungi il valore in blu
-                String price = Converter.fromDouble(mds.getSpotPrice(token));
+                String price = Converter.fromDouble(mds.getSpotPrice(token, REQUEST_TYPE.MIDDLE));
                 doc.insertString(doc.getLength(), price + "\n", blueStyle);
             } catch (BadLocationException ex) {
                 LoggerMgr.logError(ex.getLocalizedMessage());

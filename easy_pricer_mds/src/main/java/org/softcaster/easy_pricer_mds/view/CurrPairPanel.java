@@ -5,32 +5,35 @@
 package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.commons.ui.model.FndtTableModel;
+import org.softcaster.commons.ui.view.FndtAbstactPanel;
+import org.softcaster.easy_pricer_core.data.InstrumentQuote;
+import org.softcaster.easy_pricer_mds.MDSFacade;
+import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
+import org.softcaster.easy_pricer_mds.dialog.CurrPairIQDlg;
 import org.softcaster.easy_pricer_mds.model.CurrPairTableModel;
-import org.softcaster.easy_pricer_mds.model.MDSTableModel;
 import org.softcaster.easy_pricer_mds.ui.ZebraTable;
-import org.softcaster.marketdataprovider.ConnectionParam;
-import org.softcaster.marketdataprovider.DataNode;
-import org.softcaster.marketdataprovider.MARKETS;
-import org.softcaster.marketdataprovider.investingcom.InvestingComProvider;
+import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
 /**
  *
  * @author softc
  */
-public class CurrPairPanel extends AbstactMDPanel {
-    
+public class CurrPairPanel extends FndtAbstactPanel {
+
     private final List<CurrencyPairBean> forexBeanList = new ArrayList<>();
+    private MDSFacade mDSFacade = null;
 
     /**
      * Creates new form ForexPanel
      *
+     * @param mDSFacade
      */
-    public CurrPairPanel() {
+    public CurrPairPanel(MDSFacade mDSFacade) {
+        this.mDSFacade = mDSFacade;
         initComponents();
         postInitComponents(fxTable);
     }
@@ -105,52 +108,96 @@ public class CurrPairPanel extends AbstactMDPanel {
     @Override
     protected void fillModelList() {
         // Crea e setta il model
-        CurrencyPairBean prototype = new CurrencyPairBean("","",0.,0.);
+        CurrencyPairBean prototype = new CurrencyPairBean(null);
         CurrPairTableModel model = new CurrPairTableModel(prototype);
         fxTable.setModel(model);
 
         // Popola il model
         refreshModel(model);
     }
-    
+
     @Override
     protected void acNewActionPerformed(ActionEvent evt) {
+        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+        java.awt.Frame parentFrame = null;
+        
+        if (parentWindow instanceof java.awt.Frame frame) {
+            parentFrame = frame;
+        }
+        
+        CurrPairIQDlg dialog = new CurrPairIQDlg(parentFrame, true, null, mDSFacade);
+        dialog.setSize(425, 200);
+        // Centra la dialog rispetto al pannello
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+        // Post chiusura dialog
+        CurrPairTableModel  model =  (CurrPairTableModel) fxTable.getModel();
+        refreshModel(model);
+        
     }
-    
+
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
+        int rowIndex = fxTable.getSelectedRow();
+        if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = fxTable.convertRowIndexToModel(rowIndex);
+            CurrPairTableModel model = (CurrPairTableModel) fxTable.getModel();
+            CurrencyPairBean currPair = model.getElementAt(modelRow);
+            java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+            java.awt.Frame parentFrame = null;
+            
+            if (parentWindow instanceof java.awt.Frame frame) {
+                parentFrame = frame;
+            }
+            
+            CurrPairIQDlg dialog = new CurrPairIQDlg(parentFrame, true, currPair, mDSFacade);
+            dialog.setSize(425, 200);
+            // Centra la dialog rispetto al pannello
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+            // Post chiusura dialog
+            refreshModel(model);
+        }
     }
-    
+
     @Override
     protected void acDelActionPerformed(ActionEvent evt) {
     }
-    
-    @Override
-    protected void refreshModel(MDSTableModel model) {
-        
+
+    protected void refreshModel(CurrPairTableModel model) {
+
+        // Cancella vecchia lista
         forexBeanList.clear();
+
+        // Leggo lista pairs anagrafiche
+        List<InstrumentQuote> pairs = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FSP");
+        if(pairs.isEmpty())
+            return;
         
-        InvestingComProvider provider = InvestingComProvider.getInstance();
-        ConnectionParam param = new ConnectionParam();
-        param.baseUrl = "https://www.investing.com";
-        param.url = "https://www.investing.com/currencies/streaming-forex-rates-majors";
-        param.market = MARKETS.CURRENCIES;
-        try {
-            provider.connect(param);
-            List<DataNode> currPairs = provider.quotes(MARKETS.CURRENCIES);
-            CurrencyPairBean bean = null;
-            for (DataNode node : currPairs) {
-                bean = new CurrencyPairBean(node.getRic().substring(0,3),node.getRic().substring(3,6),
-                node.getBid(),node.getAsk());
-                forexBeanList.add(bean);
-            }
-        } catch (IOException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
+        // Aggiorno service
+        List<String> tokenList = new ArrayList<>();
+        for(InstrumentQuote quote: pairs) {
+            tokenList.add(quote.getCode());
         }
         
+        MarketDataService mds = MarketDataService.getInstance();
+        mds.updateFxPrice(tokenList, "InvestingComProvider", null);
+        
+        CurrencyPairBean bean = null;
+
+        for (InstrumentQuote quote : pairs) {
+            quote.setBid(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.BID));
+            quote.setAsk(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.ASK));
+            bean = new CurrencyPairBean(quote);
+            forexBeanList.add(bean);
+        }
+
         model.setData(forexBeanList);
     }
-    
+
     @Override
     public void downloadAction() {
     }
@@ -161,7 +208,11 @@ public class CurrPairPanel extends AbstactMDPanel {
 
     @Override
     public void refreshAction() {
-        MDSTableModel<CurrencyPairBean> model = (MDSTableModel<CurrencyPairBean>) fxTable.getModel();
+        CurrPairTableModel model = (CurrPairTableModel) fxTable.getModel();
         this.refreshModel(model);
+    }
+
+    @Override
+    protected void refreshModel(FndtTableModel ftm) {
     }
 }

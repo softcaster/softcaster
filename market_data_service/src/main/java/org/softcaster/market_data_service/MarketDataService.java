@@ -24,6 +24,7 @@ import org.softcaster.marketdataprovider.ConnectionParam;
 import org.softcaster.marketdataprovider.DataNode;
 import org.softcaster.marketdataprovider.IMarketDataProvider;
 import org.softcaster.marketdataprovider.MARKETS;
+import org.softcaster.marketdataprovider.REQUEST_TYPE;
 import org.softcaster.marketdataprovider.YieldNode;
 
 /**
@@ -60,8 +61,19 @@ public class MarketDataService {
         }
     }
 
-    public double getSpotPrice(String ticker) {
-        return getSpot(ticker).price();
+    public double getSpotPrice(String ticker, REQUEST_TYPE request) {
+        double price = 0.;
+        switch (request) {
+            case BID ->
+                price = getSpot(ticker).bid();
+            case ASK ->
+                price = getSpot(ticker).ask();
+            case MIDDLE ->
+                price = getSpot(ticker).middle();
+            default -> {
+            }
+        }
+        return price;
     }
 
     public YieldCurve getYieldCurve(String curveName) {
@@ -181,8 +193,8 @@ public class MarketDataService {
     }
 
     // Aggiorna l'ultimo prezzo di un asset (es. Forex)
-    private void updatePrice(String ticker, double price) {
-        spotPrices.put(ticker, new SpotPrice(ticker, price));
+    private void updatePrice(String ticker, double bid, double ask, double middle) {
+        spotPrices.put(ticker, new SpotPrice(ticker, bid, ask, middle));
     }
 
     private void addSpotPrice(String token, String strProvider) {
@@ -203,10 +215,10 @@ public class MarketDataService {
                     for (DataNode node : rates) {
                         if (node.getRic().equalsIgnoreCase(token)) {
                             rate = node.getBid();
+                            updatePrice(token, node.getBid(), node.getAsk(), (node.getBid() + node.getAsk()) / 2.);
                             break;
                         }
                     }
-                    updatePrice(token, rate);
                 }
 
                 case "CmeGroupProvider" -> {
@@ -228,10 +240,10 @@ public class MarketDataService {
                     for (DataNode node : rates) {
                         if (node.getRic().equalsIgnoreCase(code)) {
                             rate = node.getBid();
+                            updatePrice(token, node.getBid(), node.getAsk(), (node.getBid() + node.getAsk()) / 2.);
                             break;
                         }
                     }
-                    updatePrice(code, rate);
                 }
 
                 case "InvestingComProvider" -> {
@@ -245,10 +257,10 @@ public class MarketDataService {
                     for (DataNode node : rates) {
                         if (node.getRic().equalsIgnoreCase(token)) {
                             rate = node.getBid();
+                            updatePrice(token, node.getBid(), node.getAsk(), (node.getBid() + node.getAsk()) / 2.);
                             break;
                         }
                     }
-                    updatePrice(token, rate);
                 }
                 default -> {
                 }

@@ -4,7 +4,6 @@
  */
 package org.softcaster.master_data_mgr.dialogs;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.types.Date;

@@ -11,3 +11,32 @@ spring:
   grpc:
     server:
       port: -1                         
+  # Configurazione Database PostgreSQL
+  datasource:
+    url: jdbc:postgresql://localhost:5432/easypricer # Il nome del tuo DB
+    username: easypricer                                  # Il tuo utente Postgres
+    password: easypricer                           # La tua password
+    driver-class-name: org.postgresql.Driver
+
+  # 2. Configurazione JPA / Hibernate
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      # 'update' crea le tabelle se mancano o le aggiorna. 
+      # In produzione usa 'validate'.
+      ddl-auto: validate 
+    
+    # Se true mostra le query SQL nella console (utile per il debug)
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true             # Rende l'SQL nel log più leggibile
+        highlight_sql: true          # Colora l'SQL nella console
+
+# 3. Configurazione Logging (per vedere meglio cosa succede)
+logging:
+  level:
+    # Rimuovi o imposta a INFO queste tre righe:
+    org.hibernate.SQL: INFO                             # Era probabilmente su DEBUG - INFO
+    org.hibernate.orm.jdbc.bind: INFO                   # Nasconde i parametri dei prepared statements - TRACE - INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO # (Per versioni precedenti di Hibernate)

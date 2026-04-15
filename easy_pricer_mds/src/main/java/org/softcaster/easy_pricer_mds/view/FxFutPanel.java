@@ -13,6 +13,7 @@ import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.FxFutBean;
 import org.softcaster.easy_pricer_mds.model.MDSTableModel;
 import org.softcaster.easy_pricer_mds.ui.ZebraTable;
+import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
 /**
  *
@@ -127,39 +128,39 @@ public class FxFutPanel extends AbstactMDPanel {
             fxFutBeanList.clear();
 
             MarketDataService service = MarketDataService.getInstance();
-            double price = service.getSpotPrice("6EJ6");
+            double price = service.getSpotPrice("6EJ6", REQUEST_TYPE.MIDDLE);
             FxFutBean bean = new FxFutBean("6EJ6", price, price);
             fxFutBeanList.add(bean);
 
-            price = service.getSpotPrice("6EK6");
+            price = service.getSpotPrice("6EK6", REQUEST_TYPE.MIDDLE);
             bean = new FxFutBean("6EK6", price, price);
             fxFutBeanList.add(bean);
 
-            price = service.getSpotPrice("6EM6");
+            price = service.getSpotPrice("6EM6", REQUEST_TYPE.MIDDLE);
             bean = new FxFutBean("6EM6", price, price);
             fxFutBeanList.add(bean);
 
-            price = service.getSpotPrice("6EN6");
+            price = service.getSpotPrice("6EN6", REQUEST_TYPE.MIDDLE);
             bean = new FxFutBean("6EN6", price, price);
             fxFutBeanList.add(bean);
 
-            price = service.getSpotPrice("6EU6");
+            price = service.getSpotPrice("6EU6", REQUEST_TYPE.MIDDLE);
             bean = new FxFutBean("6EU6", price, price);
             fxFutBeanList.add(bean);
 
-            price = service.getSpotPrice("6EZ6");
+            price = service.getSpotPrice("6EZ6", REQUEST_TYPE.MIDDLE);
             bean = new FxFutBean("6EZ6", price, price);
             fxFutBeanList.add(bean);
 
-            price = service.getSpotPrice("6BJ6");
+            price = service.getSpotPrice("6BJ6", REQUEST_TYPE.MIDDLE);
             bean = new FxFutBean("6BJ6", price, price);
             fxFutBeanList.add(bean);
 
-            price = service.getSpotPrice("6BK6");
+            price = service.getSpotPrice("6BK6", REQUEST_TYPE.MIDDLE);
             bean = new FxFutBean("6BK6", price, price);
             fxFutBeanList.add(bean);
 
-            price = service.getSpotPrice("6BM6");
+            price = service.getSpotPrice("6BM6", REQUEST_TYPE.MIDDLE);
             bean = new FxFutBean("6BM6", price, price);
             fxFutBeanList.add(bean);
 
@@ -180,7 +181,7 @@ public class FxFutPanel extends AbstactMDPanel {
     @Override
     public void refreshAction() {
         MarketDataService service = MarketDataService.getInstance();
-        double price = service.getSpotPrice("6EM6");
+        double price = service.getSpotPrice("6EM6", REQUEST_TYPE.MIDDLE);
         System.out.println(price);
     }
 }

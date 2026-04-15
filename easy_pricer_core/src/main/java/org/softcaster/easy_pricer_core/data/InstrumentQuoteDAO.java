@@ -20,6 +20,11 @@ public class InstrumentQuoteDAO {
     }
 
     @Transactional(readOnly = true)
+    public List<InstrumentQuote> findByAssetClass(String assetClass) {
+        return repository.findByAssetClass(assetClass);
+    }
+
+    @Transactional(readOnly = true)
     public InstrumentQuote findByIdInstrumentQuote(Integer idInstrumentQuote) {
         return repository.findByIdInstrumentQuote(idInstrumentQuote);
     }

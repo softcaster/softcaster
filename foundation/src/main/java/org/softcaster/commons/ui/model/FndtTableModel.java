@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.easy_pricer_mds.model;
+package org.softcaster.commons.ui.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +13,12 @@ import javax.swing.table.AbstractTableModel;
  * @author softc
  * @param <T> i vari beans specifici
  */
-public class MDSTableModel<T extends IMDSModel2> extends AbstractTableModel {
+public class FndtTableModel<T extends IFndtModel> extends AbstractTableModel {
 
     protected final List<T> data = new ArrayList<>();
     private final T prototype; // Ci serve un "esempio" per leggere le colonne
 
-    public MDSTableModel(T prototype) {
+    public FndtTableModel(T prototype) {
         this.prototype = prototype;
     }
 
