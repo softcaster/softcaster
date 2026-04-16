@@ -16,6 +16,7 @@ import org.softcaster.easy_pricer_core.data.InstrumentQuote;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
+import org.softcaster.easy_pricer_mds.dialog.BondIQDlg;
 import org.softcaster.easy_pricer_mds.model.BondTableModel;
 import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
@@ -119,10 +120,48 @@ public class BondPanel extends FndtAbstactPanel {
 
     @Override
     protected void acNewActionPerformed(ActionEvent evt) {
+        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+        java.awt.Frame parentFrame = null;
+
+        if (parentWindow instanceof java.awt.Frame frame) {
+            parentFrame = frame;
+        }
+
+        BondIQDlg dialog = new BondIQDlg(parentFrame, true, null, mDSFacade);
+        dialog.setSize(425, 200);
+        // Centra la dialog rispetto al pannello
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+        // Post chiusura dialog
+        BondTableModel model = (BondTableModel) bondTable.getModel();
+        refreshModel(model);
     }
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
+        int rowIndex = bondTable.getSelectedRow();
+        if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = bondTable.convertRowIndexToModel(rowIndex);
+            BondTableModel model = (BondTableModel) bondTable.getModel();
+            BondBean bean = model.getElementAt(modelRow);
+            java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+            java.awt.Frame parentFrame = null;
+
+            if (parentWindow instanceof java.awt.Frame frame) {
+                parentFrame = frame;
+            }
+
+            BondIQDlg dialog = new BondIQDlg(parentFrame, true, bean, mDSFacade);
+            dialog.setSize(425, 200);
+            // Centra la dialog rispetto al pannello
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+            // Post chiusura dialog
+            refreshModel(model);
+        }
     }
 
     @Override
