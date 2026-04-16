@@ -1,8 +1,12 @@
 
+UPDATE instrument_quote 
+SET code = code || '-MOTX'
+WHERE provider = 'EuroNextProvider';
+
 UPDATE master_data SET accrual_schedule_type=100;
 ALTER TABLE bond_future_master_data DROP CONSTRAINT IF EXISTS fk_master_data;
 ALTER TABLE bond_future_master_data DROP COLUMN master_data;
-
+ALTER TABLE instrument_quote ADD COLUMN provider VARCHAR(50) NOT NULL DEFAULT '';
 ALTER TABLE currency ADD COLUMN daycount INTEGER;
 UPDATE currency SET daycount = (SELECT id_daycount FROM daycount WHERE code='ACT_360' LIMIT 1);
 ALTER TABLE currency ALTER COLUMN daycount SET NOT NULL;

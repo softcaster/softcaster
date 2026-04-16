@@ -148,4 +148,8 @@ public class SecurityMasterData extends MasterData {
         this.issuer = issuer;
     }
 
+    @Override
+    public String toString() {
+        return isin;
+    }
 }

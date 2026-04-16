@@ -9,8 +9,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import org.softcaster.commons.imports.CsvImport;
@@ -144,7 +144,7 @@ public class MarketDataService {
         try {
             // Legge tutto in un unico blocco
             for (String token : tokenList) {
-                addSpotPrice(token, provider);
+                addSpotPrice(token, provider, MARKETS.CURRENCIES);
                 break;
                 /*
                 if (progressInfo != null) {
@@ -155,6 +155,37 @@ public class MarketDataService {
             }
             if (progressInfo != null) {
                 progressInfo.setProgress(100);
+            }
+        } catch (Exception ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+        }
+    }
+
+    public void updateBondFutPrice(Map<String, List<String>> tokenList, IProgressInfo progressInfo) {
+
+        try {
+            for (Map.Entry<String, List<String>> entry : tokenList.entrySet()) {
+                String provider = entry.getKey();
+                List<String> tokens = entry.getValue();
+
+                for (String token : tokens) {
+                    addSpotPrice(token, provider, MARKETS.FUTURES);
+                }
+            }
+        } catch (Exception ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+        }
+    }
+
+    public void updateBondPrice(Map<String, List<String>> tokenList, Object object) {
+        try {
+            for (Map.Entry<String, List<String>> entry : tokenList.entrySet()) {
+                String provider = entry.getKey();
+                List<String> tokens = entry.getValue();
+
+                for (String token : tokens) {
+                    addSpotPrice(token, provider, MARKETS.BONDS);
+                }
             }
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
@@ -183,7 +214,7 @@ public class MarketDataService {
         int cnt = 0;
         try {
             for (String token : tokenList) {
-                addSpotPrice(token, provider);
+                addSpotPrice(token, provider, MARKETS.BONDS);
                 if (progressInfo != null) {
                     progressInfo.setProgress(progress + step * cnt);
                     cnt++;
@@ -201,24 +232,22 @@ public class MarketDataService {
         spotPrices.put(ticker, new SpotPrice(ticker, bid, ask, middle));
     }
 
-    private void addSpotPrice(String token, String strProvider) {
+    private void addSpotPrice(String token, String strProvider, MARKETS market) {
         IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
-        double rate = 0.;
         if (provider != null) {
             switch (strProvider) {
                 case "EuroNextProvider" -> {
                     ConnectionParam param = new ConnectionParam();
                     param.baseUrl = "https://live.euronext.com/en/";
-                    param.url = "https://live.euronext.com/en/ajax/getDetailedQuote/";
+                    param.url = "";
                     param.extraParams.add(token);
-                    param.extraParams.add("-MOTX"); //-DMIL future -ETLX equity
-                    param.market = MARKETS.BONDS;
+                    param.extraParams.add(""); //-DMIL future -ETLX equity
+                    param.market = market;
 
                     provider.refresh(param);
-                    List<DataNode> rates = provider.quotes(MARKETS.BONDS);
+                    List<DataNode> rates = provider.quotes(market);
                     for (DataNode node : rates) {
                         if (node.getRic().equalsIgnoreCase(token)) {
-                            rate = node.getBid();
                             updatePrice(token, node.getBid(), node.getAsk(), (node.getBid() + node.getAsk()) / 2.);
                             break;
                         }
@@ -232,11 +261,11 @@ public class MarketDataService {
                     param.baseUrl = "https://www.cmegroup.com";
                     param.url = "https://www.cmegroup.com/CmeWS/mvc/quotes/v2/";
                     // parametri
-                    StringTokenizer st = new StringTokenizer(token, "#");
-                    String productId = st.nextToken();
-                    String code = st.nextToken();
-                    param.extraParams.add(productId);
-                    param.extraParams.add(code);
+                    //StringTokenizer st = new StringTokenizer(token, "#");
+                    //String productId = st.nextToken();
+                    //String code = st.nextToken();
+                    param.extraParams.add(token);
+                    param.extraParams.add(""/*code*/);
                     param.market = MARKETS.FUTURES;
                     provider.refresh(param);
 
@@ -272,7 +301,7 @@ public class MarketDataService {
             if (line[3].compareToIgnoreCase("FFU") == 0) {
                 token += "#" + line[0];
             }
-            addSpotPrice(token, line[2]);
+            addSpotPrice(token, line[2], MARKETS.BONDS);
         }
     }
 

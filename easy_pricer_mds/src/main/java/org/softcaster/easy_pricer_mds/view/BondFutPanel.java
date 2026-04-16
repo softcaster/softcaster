@@ -6,25 +6,27 @@ package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.easy_pricer_core.data.InstrumentQuote;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.MarketDataService;
-import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
-import org.softcaster.easy_pricer_mds.dialog.CurrPairIQDlg;
-import org.softcaster.easy_pricer_mds.model.CurrPairTableModel;
+import org.softcaster.easy_pricer_mds.bean.BondFutBean;
+import org.softcaster.easy_pricer_mds.dialog.BondFutIQDlg;
+import org.softcaster.easy_pricer_mds.model.BondFutTableModel;
 import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
 /**
  *
  * @author softc
  */
-public class CurrPairPanel extends FndtAbstactPanel {
+public class BondFutPanel extends FndtAbstactPanel {
 
-    private final List<CurrencyPairBean> forexBeanList = new ArrayList<>();
+    private final List<BondFutBean> bondFutBeanList = new ArrayList<>();
     private MDSFacade mDSFacade = null;
 
     /**
@@ -32,10 +34,10 @@ public class CurrPairPanel extends FndtAbstactPanel {
      *
      * @param mDSFacade
      */
-    public CurrPairPanel(MDSFacade mDSFacade) {
+    public BondFutPanel(MDSFacade mDSFacade) {
         this.mDSFacade = mDSFacade;
         initComponents();
-        postInitComponents(fxTable);
+        postInitComponents(bondFutTable);
     }
 
     /**
@@ -53,7 +55,7 @@ public class CurrPairPanel extends FndtAbstactPanel {
         acDel = new javax.swing.JMenuItem();
         lblHeader = new javax.swing.JLabel();
         fxScrollPane = new javax.swing.JScrollPane();
-        fxTable = new ZebraTable();
+        bondFutTable = new ZebraTable();
 
         acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
         acNew.setText("New");
@@ -74,11 +76,11 @@ public class CurrPairPanel extends FndtAbstactPanel {
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("Currency Pairs Quotes");
+        lblHeader.setText("Bond Futures Quotes");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
-        fxTable.setModel(new javax.swing.table.DefaultTableModel(
+        bondFutTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -89,7 +91,7 @@ public class CurrPairPanel extends FndtAbstactPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        fxScrollPane.setViewportView(fxTable);
+        fxScrollPane.setViewportView(bondFutTable);
 
         add(fxScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
@@ -99,8 +101,8 @@ public class CurrPairPanel extends FndtAbstactPanel {
     private javax.swing.JMenuItem acDel;
     private javax.swing.JMenuItem acMod;
     private javax.swing.JMenuItem acNew;
+    private javax.swing.JTable bondFutTable;
     private javax.swing.JScrollPane fxScrollPane;
-    private javax.swing.JTable fxTable;
     private javax.swing.JLabel lblHeader;
     private javax.swing.JPopupMenu popUp;
     // End of variables declaration//GEN-END:variables
@@ -108,9 +110,9 @@ public class CurrPairPanel extends FndtAbstactPanel {
     @Override
     protected void fillModelList() {
         // Crea e setta il model
-        CurrencyPairBean prototype = new CurrencyPairBean(null);
-        CurrPairTableModel model = new CurrPairTableModel(prototype);
-        fxTable.setModel(model);
+        BondFutBean prototype = new BondFutBean(null);
+        BondFutTableModel model = new BondFutTableModel(prototype);
+        bondFutTable.setModel(model);
 
         // Popola il model
         refreshModel(model);
@@ -125,25 +127,25 @@ public class CurrPairPanel extends FndtAbstactPanel {
             parentFrame = frame;
         }
 
-        CurrPairIQDlg dialog = new CurrPairIQDlg(parentFrame, true, null, mDSFacade);
+        BondFutIQDlg dialog = new BondFutIQDlg(parentFrame, true, null, mDSFacade);
         dialog.setSize(425, 200);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
 
         // Post chiusura dialog
-        CurrPairTableModel model = (CurrPairTableModel) fxTable.getModel();
+        BondFutTableModel model = (BondFutTableModel) bondFutTable.getModel();
         refreshModel(model);
     }
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
-        int rowIndex = fxTable.getSelectedRow();
+        int rowIndex = bondFutTable.getSelectedRow();
         if (rowIndex != -1) {
             // 1. CONVERSIONE FONDAMENTALE
-            int modelRow = fxTable.convertRowIndexToModel(rowIndex);
-            CurrPairTableModel model = (CurrPairTableModel) fxTable.getModel();
-            CurrencyPairBean currPair = model.getElementAt(modelRow);
+            int modelRow = bondFutTable.convertRowIndexToModel(rowIndex);
+            BondFutTableModel model = (BondFutTableModel) bondFutTable.getModel();
+            BondFutBean bean = model.getElementAt(modelRow);
             java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
             java.awt.Frame parentFrame = null;
 
@@ -151,7 +153,7 @@ public class CurrPairPanel extends FndtAbstactPanel {
                 parentFrame = frame;
             }
 
-            CurrPairIQDlg dialog = new CurrPairIQDlg(parentFrame, true, currPair, mDSFacade);
+            BondFutIQDlg dialog = new BondFutIQDlg(parentFrame, true, bean, mDSFacade);
             dialog.setSize(425, 200);
             // Centra la dialog rispetto al pannello
             dialog.setLocationRelativeTo(this);
@@ -176,39 +178,38 @@ public class CurrPairPanel extends FndtAbstactPanel {
 
     @Override
     public void refreshAction() {
-        CurrPairTableModel model = (CurrPairTableModel) fxTable.getModel();
+        BondFutTableModel model = (BondFutTableModel) bondFutTable.getModel();
         this.refreshModel(model);
     }
 
     @Override
     protected void refreshModel(FndtTableModel ftm) {
         // Cancella vecchia lista
-        forexBeanList.clear();
+        bondFutBeanList.clear();
 
         // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> pairs = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FSP");
-        if (pairs.isEmpty()) {
+        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("BFU");
+        if (iqList.isEmpty()) {
             return;
         }
 
         // Aggiorno service
-        List<String> tokenList = new ArrayList<>();
-        for (InstrumentQuote quote : pairs) {
-            tokenList.add(quote.getCode());
+        Map<String, List<String>> tokenList = new HashMap<>();
+        for (InstrumentQuote quote : iqList) {
+            tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
         }
-
         MarketDataService mds = MarketDataService.getInstance();
-        mds.updateFxPrice(tokenList, "InvestingComProvider", null);
+        mds.updateBondFutPrice(tokenList, null);
 
-        CurrencyPairBean bean = null;
+        BondFutBean bean = null;
 
-        for (InstrumentQuote quote : pairs) {
+        for (InstrumentQuote quote : iqList) {
             quote.setBid(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.BID));
             quote.setAsk(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.ASK));
-            bean = new CurrencyPairBean(quote);
-            forexBeanList.add(bean);
+            bean = new BondFutBean(quote);
+            bondFutBeanList.add(bean);
         }
 
-        ftm.setData(forexBeanList);
+        ftm.setData(bondFutBeanList);
     }
 }

@@ -6,32 +6,37 @@ package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
-import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_mds.MarketDataNotFoundException;
+import org.softcaster.easy_pricer_core.data.InstrumentQuote;
+import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.MarketDataService;
-import org.softcaster.easy_pricer_mds.bean.FxFutBean;
-import org.softcaster.easy_pricer_mds.model.FxFutTableModel;
+import org.softcaster.easy_pricer_mds.bean.BondBean;
+import org.softcaster.easy_pricer_mds.model.BondTableModel;
 import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
 /**
  *
  * @author softc
  */
-public class FxFutPanel extends FndtAbstactPanel {
+public class BondPanel extends FndtAbstactPanel {
 
-    private final List<FxFutBean> fxFutBeanList = new ArrayList<>();
+    private final List<BondBean> bondBeanList = new ArrayList<>();
+    private MDSFacade mDSFacade = null;
 
     /**
      * Creates new form ForexPanel
      *
+     * @param mDSFacade
      */
-    public FxFutPanel() {
+    public BondPanel(MDSFacade mDSFacade) {
+        this.mDSFacade = mDSFacade;
         initComponents();
-        postInitComponents(fxFutTable);
+        postInitComponents(bondTable);
     }
 
     /**
@@ -48,8 +53,8 @@ public class FxFutPanel extends FndtAbstactPanel {
         acMod = new javax.swing.JMenuItem();
         acDel = new javax.swing.JMenuItem();
         lblHeader = new javax.swing.JLabel();
-        fxFutScrollPane = new javax.swing.JScrollPane();
-        fxFutTable = new ZebraTable();
+        fxScrollPane = new javax.swing.JScrollPane();
+        bondTable = new ZebraTable();
 
         acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
         acNew.setText("New");
@@ -70,11 +75,11 @@ public class FxFutPanel extends FndtAbstactPanel {
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("Fx Future Quotes");
+        lblHeader.setText("Bonds Quotes");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
-        fxFutTable.setModel(new javax.swing.table.DefaultTableModel(
+        bondTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -85,9 +90,9 @@ public class FxFutPanel extends FndtAbstactPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        fxFutScrollPane.setViewportView(fxFutTable);
+        fxScrollPane.setViewportView(bondTable);
 
-        add(fxFutScrollPane, java.awt.BorderLayout.CENTER);
+        add(fxScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -95,8 +100,8 @@ public class FxFutPanel extends FndtAbstactPanel {
     private javax.swing.JMenuItem acDel;
     private javax.swing.JMenuItem acMod;
     private javax.swing.JMenuItem acNew;
-    private javax.swing.JScrollPane fxFutScrollPane;
-    private javax.swing.JTable fxFutTable;
+    private javax.swing.JTable bondTable;
+    private javax.swing.JScrollPane fxScrollPane;
     private javax.swing.JLabel lblHeader;
     private javax.swing.JPopupMenu popUp;
     // End of variables declaration//GEN-END:variables
@@ -104,9 +109,9 @@ public class FxFutPanel extends FndtAbstactPanel {
     @Override
     protected void fillModelList() {
         // Crea e setta il model
-        FxFutBean prototype = new FxFutBean("", 0., 0.);
-        FxFutTableModel model = new FxFutTableModel(prototype);
-        fxFutTable.setModel(model);
+        BondBean prototype = new BondBean(null);
+        BondTableModel model = new BondTableModel(prototype);
+        bondTable.setModel(model);
 
         // Popola il model
         refreshModel(model);
@@ -134,53 +139,38 @@ public class FxFutPanel extends FndtAbstactPanel {
 
     @Override
     public void refreshAction() {
-        MarketDataService service = MarketDataService.getInstance();
-        double price = service.getSpotPrice("6EM6", REQUEST_TYPE.MIDDLE);
-        System.out.println(price);
+        BondTableModel model = (BondTableModel) bondTable.getModel();
+        this.refreshModel(model);
     }
 
     @Override
     protected void refreshModel(FndtTableModel ftm) {
-        try {
-            fxFutBeanList.clear();
+        // Cancella vecchia lista
+        bondBeanList.clear();
 
-            MarketDataService service = MarketDataService.getInstance();
-
-            double price = service.getSpotPrice("6EK6", REQUEST_TYPE.MIDDLE);
-            FxFutBean bean = new FxFutBean("6EK6", price, price);
-            fxFutBeanList.add(bean);
-
-            price = service.getSpotPrice("6EM6", REQUEST_TYPE.MIDDLE);
-            bean = new FxFutBean("6EM6", price, price);
-            fxFutBeanList.add(bean);
-
-            price = service.getSpotPrice("6EN6", REQUEST_TYPE.MIDDLE);
-            bean = new FxFutBean("6EN6", price, price);
-            fxFutBeanList.add(bean);
-
-            price = service.getSpotPrice("6EU6", REQUEST_TYPE.MIDDLE);
-            bean = new FxFutBean("6EU6", price, price);
-            fxFutBeanList.add(bean);
-
-            price = service.getSpotPrice("6EZ6", REQUEST_TYPE.MIDDLE);
-            bean = new FxFutBean("6EZ6", price, price);
-            fxFutBeanList.add(bean);
-
-            price = service.getSpotPrice("6BJ6", REQUEST_TYPE.MIDDLE);
-            bean = new FxFutBean("6BJ6", price, price);
-            fxFutBeanList.add(bean);
-
-            price = service.getSpotPrice("6BK6", REQUEST_TYPE.MIDDLE);
-            bean = new FxFutBean("6BK6", price, price);
-            fxFutBeanList.add(bean);
-
-            price = service.getSpotPrice("6BM6", REQUEST_TYPE.MIDDLE);
-            bean = new FxFutBean("6BM6", price, price);
-            fxFutBeanList.add(bean);
-
-            ftm.setData(fxFutBeanList);
-        } catch (MarketDataNotFoundException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
+        // Leggo lista pairs anagrafiche
+        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("XRB");
+        if (iqList.isEmpty()) {
+            return;
         }
+
+        // Aggiorno service
+        Map<String, List<String>> tokenList = new HashMap<>();
+        for (InstrumentQuote quote : iqList) {
+            tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
+        }
+        MarketDataService mds = MarketDataService.getInstance();
+        mds.updateBondPrice(tokenList, null);
+
+        BondBean bean = null;
+
+        for (InstrumentQuote quote : iqList) {
+            quote.setBid(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.BID));
+            quote.setAsk(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.ASK));
+            bean = new BondBean(quote);
+            bondBeanList.add(bean);
+        }
+
+        ftm.setData(bondBeanList);
     }
 }

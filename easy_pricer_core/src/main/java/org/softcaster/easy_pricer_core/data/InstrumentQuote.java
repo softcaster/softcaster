@@ -33,6 +33,9 @@ public class InstrumentQuote implements Serializable {
     @Column(name = "code")
     private String code;
 
+    @Column(name = "provider")
+    private String provider;
+
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "bid")
     private Double bid;
@@ -102,5 +105,19 @@ public class InstrumentQuote implements Serializable {
      */
     public void setMasterData(MasterData masterData) {
         this.masterData = masterData;
+    }
+
+    /**
+     * @return the provider
+     */
+    public String getProvider() {
+        return provider;
+    }
+
+    /**
+     * @param provider the provider to set
+     */
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 }

@@ -10,20 +10,20 @@ import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.ui.dialog.DialogHelper;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.ForexMasterData;
+import org.softcaster.easy_pricer_core.data.BondFutureMasterData;
 import org.softcaster.easy_pricer_core.data.InstrumentQuote;
 import org.softcaster.easy_pricer_core.data.MasterData;
 import org.softcaster.easy_pricer_mds.MDSFacade;
-import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
+import org.softcaster.easy_pricer_mds.bean.BondFutBean;
 
 /**
  *
  * @author ep
  */
-public class CurrPairIQDlg extends javax.swing.JDialog {
+public class BondFutIQDlg extends javax.swing.JDialog {
 
     private final MDSFacade mDSFacade;
-    private CurrencyPairBean bean;
+    private BondFutBean bean;
     private boolean isInsert = true;
     private List<javax.swing.JTextField> fieldsToValidate;
 
@@ -35,7 +35,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
      * @param bean
      * @param mDSFacade
      */
-    public CurrPairIQDlg(java.awt.Frame parent, boolean modal, CurrencyPairBean bean, MDSFacade mDSFacade) {
+    public BondFutIQDlg(java.awt.Frame parent, boolean modal, BondFutBean bean, MDSFacade mDSFacade) {
         super(parent, modal);
         this.mDSFacade = mDSFacade;
         this.bean = bean;
@@ -63,7 +63,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
         txtBid = new javax.swing.JTextField();
         txtAsk = new javax.swing.JTextField();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
-        cbCurrPair = new javax.swing.JComboBox<>();
+        cbBondFut = new javax.swing.JComboBox<>();
         btnPanel = new javax.swing.JPanel();
         brnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -77,7 +77,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
 
         detailPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Curr. Pair");
+        jLabel1.setText("Bond Futures");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -168,7 +168,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        detailPanel.add(cbCurrPair, gridBagConstraints);
+        detailPanel.add(cbBondFut, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -270,7 +270,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
     private javax.swing.JButton brnSave;
     private javax.swing.JButton btnCancel;
     private javax.swing.JPanel btnPanel;
-    private javax.swing.JComboBox<ForexMasterData> cbCurrPair;
+    private javax.swing.JComboBox<BondFutureMasterData> cbBondFut;
     private javax.swing.JPanel detailPanel;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
@@ -291,7 +291,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
         if (bean != null) {
             isInsert = false;
             txtCode.setText(bean.getInstrumentQuote().getCode());
-            cbCurrPair.setSelectedItem(bean.getInstrumentQuote().getMasterData());
+            cbBondFut.setSelectedItem(bean.getInstrumentQuote().getMasterData());
             txtBid.setText(Converter.fromDouble(bean.getBid()));
             txtAsk.setText(Converter.fromDouble(bean.getAsk()));
         } else {
@@ -304,11 +304,11 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
     }
 
     private void setUpCurrencyPairsCombo() {
-        List<ForexMasterData> currencies = mDSFacade.getForexMasterDataDAO().findAll();
+        List<BondFutureMasterData> bfmdList = mDSFacade.getBondFutureMasterDataDAO().findAll();
 
         // 2. Crea il modello partendo dalla lista
-        DefaultComboBoxModel<ForexMasterData> model = new DefaultComboBoxModel<>(currencies.toArray(ForexMasterData[]::new));
-        cbCurrPair.setModel(model);
+        DefaultComboBoxModel<BondFutureMasterData> model = new DefaultComboBoxModel<>(bfmdList.toArray(BondFutureMasterData[]::new));
+        cbBondFut.setModel(model);
 
     }
 
@@ -323,10 +323,10 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
     private boolean saveBean() {
         try {
             if (isInsert) {
-                bean = new CurrencyPairBean(new InstrumentQuote());
+                bean = new BondFutBean(new InstrumentQuote());
             }
             InstrumentQuote iq = bean.getInstrumentQuote();
-            iq.setMasterData((MasterData) cbCurrPair.getSelectedItem());
+            iq.setMasterData((MasterData) cbBondFut.getSelectedItem());
             iq.setCode(txtCode.getText());
             iq.setBid(Converter.toDouble(txtBid.getText(), false));
             iq.setAsk(Converter.toDouble(txtAsk.getText(), false));

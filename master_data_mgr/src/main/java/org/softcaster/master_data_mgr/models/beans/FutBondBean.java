@@ -13,12 +13,12 @@ import org.softcaster.master_data_mgr.models.IMasterDataModel;
  */
 public class FutBondBean implements IMasterDataModel {
 
-    private BondFutureMasterData bfmd;
-    
+    private final BondFutureMasterData bfmd;
+
     public FutBondBean(BondFutureMasterData bfmd) {
         this.bfmd = bfmd;
     }
-    
+
     @Override
     public Object getValueAt(int columnIndex) {
         return switch (columnIndex) {
@@ -27,12 +27,14 @@ public class FutBondBean implements IMasterDataModel {
             case 1 ->
                 bfmd.getDescription();
             case 2 ->
-                bfmd.getMaturityDate();
+                bfmd.getCurrency().getIsoCode();
             case 3 ->
-                bfmd.getContractValue();
+                bfmd.getMaturityDate();
             case 4 ->
-                bfmd.getTickSize();
+                bfmd.getContractValue();
             case 5 ->
+                bfmd.getTickSize();
+            case 6 ->
                 bfmd.getSettlementType().getCode();
             default ->
                 null;
@@ -41,9 +43,9 @@ public class FutBondBean implements IMasterDataModel {
 
     @Override
     public String[] getColumnNames() {
-        return new String[] {"Isin", "Description", "Maturity", "Contract Value", "Tick Size", "Settlement"};
+        return new String[]{"Isin", "Description", "Currency", "Maturity", "Contract Value", "Tick Size", "Settlement"};
     }
-    
+
     public BondFutureMasterData getBondFutureMasterData() {
         return bfmd;
     }

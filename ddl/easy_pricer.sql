@@ -538,7 +538,8 @@ CREATE TABLE instrument_quote
 (
     id_instrument_quote INTEGER NOT NULL
     , master_data INTEGER NOT NULL -- future 
-    , code VARCHAR(25) NOT NULL 
+    , provider VARCHAR(50) NOT NULL 
+    , code VARCHAR(255) NOT NULL 
     , bid NUMERIC(15,5) NOT NULL  
     , ask NUMERIC(15,5) NOT NULL  
     , CONSTRAINT fk_master_data FOREIGN KEY (master_data)

@@ -132,9 +132,9 @@ public class EuroNextProvider extends AbstractProvider {
         String ric = "";
         switch (param.market) {
             case BONDS ->
-                ric = param.extraParams.get(0) + param.extraParams.get(1); //"-MOTX";
+                ric = param.extraParams.get(0); 
             case FUTURES ->
-                ric = param.extraParams.get(1);
+                ric = param.extraParams.get(0);
             default -> {
 
             }

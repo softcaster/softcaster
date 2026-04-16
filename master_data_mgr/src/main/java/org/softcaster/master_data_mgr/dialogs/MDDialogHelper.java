@@ -19,7 +19,7 @@ public class MDDialogHelper {
     public static void textFieldDoubleFocusLost(javax.swing.JTextField textField) {
         String doubleStr = textField.getText();
         try {
-            double price = Converter.toDouble(doubleStr, true);
+            double price = Converter.toDouble(doubleStr, false);
             textField.setText(Converter.fromDouble(price));
         } catch (ParseException ex) {
             textField.setText("");

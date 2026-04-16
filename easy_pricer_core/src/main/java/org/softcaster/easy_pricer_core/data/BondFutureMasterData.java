@@ -75,4 +75,8 @@ public class BondFutureMasterData extends FutureMasterData {
         this.deliverables = deliverables;
     }
 
+    @Override
+    public String toString() {
+        return getCode();
+    }    
 }

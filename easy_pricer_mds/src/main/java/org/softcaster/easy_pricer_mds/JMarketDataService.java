@@ -16,11 +16,15 @@ import javax.swing.JPanel;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.ui.model.FndtNode;
+import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.commons.utils.LoggerMgr;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND_FUTURE;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.CURR_PAIR;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.FX_FUTURE;
 import org.softcaster.easy_pricer_mds.model.TreeModel;
 import org.softcaster.easy_pricer_mds.ui.MDSTreeCellRenderer;
-import org.softcaster.easy_pricer_mds.view.AbstactMDPanel;
+import org.softcaster.easy_pricer_mds.view.BondFutPanel;
+import org.softcaster.easy_pricer_mds.view.BondPanel;
 import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
 import org.softcaster.easy_pricer_mds.view.FxFutPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
@@ -38,7 +42,7 @@ public class JMarketDataService extends javax.swing.JFrame {
 
     @Autowired
     private MDSFacade mDSFacade;
-    
+
     private AppCard currentCard;
     private Map<AppCard, javax.swing.JPanel> cardMap = new HashMap<>();
     private MarketDataService service = null;
@@ -89,27 +93,35 @@ public class JMarketDataService extends javax.swing.JFrame {
                 Object userObject = node.getUserObject();
                 if (node.isLeaf() && userObject instanceof FndtNode data) {
 
-                 // Verifico il tipo esplicito
-                 if (data.getType() instanceof AppTreeItem item) {
-                    // Recupera il CardLayout dal mainPanel
-                    CardLayout cl = (CardLayout) (mainPanel.getLayout());
-                    
-                    // Logica per decidere quale pannello mostrare in base al tipo
-                    switch (item) {
-                        case CURR_PAIR -> {
-                            cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
-                            currentCard = AppCard.CURR_PAIR_CARD;
-                        }
-                        case FX_FUTURE -> {
-                            cl.show(mainPanel, AppCard.FX_FUTURE_CARD.name());
-                            currentCard = AppCard.FX_FUTURE_CARD;
-                        }
-                        default -> {
-                            cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
-                            currentCard = AppCard.DEFAULT_CARD;
+                    // Verifico il tipo esplicito
+                    if (data.getType() instanceof AppTreeItem item) {
+                        // Recupera il CardLayout dal mainPanel
+                        CardLayout cl = (CardLayout) (mainPanel.getLayout());
+
+                        // Logica per decidere quale pannello mostrare in base al tipo
+                        switch (item) {
+                            case CURR_PAIR -> {
+                                cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
+                                currentCard = AppCard.CURR_PAIR_CARD;
+                            }
+                            case FX_FUTURE -> {
+                                cl.show(mainPanel, AppCard.FX_FUTURE_CARD.name());
+                                currentCard = AppCard.FX_FUTURE_CARD;
+                            }
+                            case BOND_FUTURE -> {
+                                cl.show(mainPanel, AppCard.BOND_FUTURE_CARD.name());
+                                currentCard = AppCard.BOND_FUTURE_CARD;
+                            }
+                            case BOND -> {
+                                cl.show(mainPanel, AppCard.BOND_CARD.name());
+                                currentCard = AppCard.BOND_CARD;
+                            }
+                            default -> {
+                                cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
+                                currentCard = AppCard.DEFAULT_CARD;
+                            }
                         }
                     }
-                 }
                     // Opzionale: Carica i dati specifici nel pannello appena mostrato
                     // bondPanel.loadData(data.getId()); 
                 }
@@ -294,20 +306,26 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.CURR_PAIR_CARD, cpPanel);
         JPanel fxFutPanel = new FxFutPanel();
         cardMap.put(AppCard.FX_FUTURE_CARD, fxFutPanel);
+        JPanel bondFutPanel = new BondFutPanel(mDSFacade);
+        cardMap.put(AppCard.BOND_FUTURE_CARD, bondFutPanel);
+        JPanel bondPanel = new BondPanel(mDSFacade);
+        cardMap.put(AppCard.BOND_CARD, bondPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
         mainPanel.add(cpPanel, AppCard.CURR_PAIR_CARD.name());
         mainPanel.add(fxFutPanel, AppCard.FX_FUTURE_CARD.name());
+        mainPanel.add(bondFutPanel, AppCard.BOND_FUTURE_CARD.name());
+        mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();
         cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
     }
-    
-    private AbstactMDPanel getActiveCard() {
+
+    private FndtAbstactPanel getActiveCard() {
         JPanel panel = cardMap.get(currentCard);
-        if (panel instanceof AbstactMDPanel abstactMDPanel) {
+        if (panel instanceof FndtAbstactPanel abstactMDPanel) {
             return abstactMDPanel;
         } else {
             return null;
@@ -315,7 +333,7 @@ public class JMarketDataService extends javax.swing.JFrame {
     }
 
     private void refreshAction() {
-        AbstactMDPanel activePanel = getActiveCard();
+        FndtAbstactPanel activePanel = getActiveCard();
         if (activePanel != null) {
             activePanel.refreshAction();
         }
