@@ -1,4 +1,4 @@
-
+ALTER TABLE instrument_quote ADD COLUMN quote provider VARCHAR(50) NOT NULL DEFAULT='EuroNextProvider';
 UPDATE instrument_quote 
 SET code = code || '-MOTX'
 WHERE provider = 'EuroNextProvider';

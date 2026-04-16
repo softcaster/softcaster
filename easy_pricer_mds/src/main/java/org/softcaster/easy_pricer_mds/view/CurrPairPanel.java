@@ -126,7 +126,7 @@ public class CurrPairPanel extends FndtAbstactPanel {
         }
 
         CurrPairIQDlg dialog = new CurrPairIQDlg(parentFrame, true, null, mDSFacade);
-        dialog.setSize(425, 200);
+        dialog.setSize(425, 250);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
@@ -152,7 +152,7 @@ public class CurrPairPanel extends FndtAbstactPanel {
             }
 
             CurrPairIQDlg dialog = new CurrPairIQDlg(parentFrame, true, currPair, mDSFacade);
-            dialog.setSize(425, 200);
+            dialog.setSize(425, 250);
             // Centra la dialog rispetto al pannello
             dialog.setLocationRelativeTo(this);
             dialog.setVisible(true);

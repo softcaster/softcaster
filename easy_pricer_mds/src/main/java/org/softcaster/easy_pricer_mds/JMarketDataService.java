@@ -67,8 +67,6 @@ public class JMarketDataService extends javax.swing.JFrame {
         // Forza l'esecuzione sul thread di Swing per evitare race conditions
         java.awt.EventQueue.invokeLater(() -> {
 
-            //service = MarketDataService.getInstance();
-            //service.updateMarketData();
             // Titolo
             this.setTitle(TITLE);
 

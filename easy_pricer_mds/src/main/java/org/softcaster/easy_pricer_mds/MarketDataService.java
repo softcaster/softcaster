@@ -261,11 +261,7 @@ public class MarketDataService {
                     param.baseUrl = "https://www.cmegroup.com";
                     param.url = "https://www.cmegroup.com/CmeWS/mvc/quotes/v2/";
                     // parametri
-                    //StringTokenizer st = new StringTokenizer(token, "#");
-                    //String productId = st.nextToken();
-                    //String code = st.nextToken();
                     param.extraParams.add(token);
-                    param.extraParams.add(""/*code*/);
                     param.market = MARKETS.FUTURES;
                     provider.refresh(param);
 
