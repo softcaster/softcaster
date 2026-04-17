@@ -140,6 +140,28 @@ public class FxFutPanel extends FndtAbstactPanel {
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
+        int rowIndex = fxFutTable.getSelectedRow();
+        if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = fxFutTable.convertRowIndexToModel(rowIndex);
+            FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
+            FxFutBean bean = model.getElementAt(modelRow);
+            java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+            java.awt.Frame parentFrame = null;
+
+            if (parentWindow instanceof java.awt.Frame frame) {
+                parentFrame = frame;
+            }
+
+            FxFutIQDlg1 dialog = new FxFutIQDlg1(parentFrame, true, bean, mDSFacade);
+            dialog.setSize(425, 250);
+            // Centra la dialog rispetto al pannello
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+            // Post chiusura dialog
+            refreshModel(model);
+        }
     }
 
     @Override

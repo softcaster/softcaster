@@ -21,6 +21,16 @@ public class FxFutTableModel extends FndtTableModel<FxFutBean> {
     @Override
     public void setData(List<FxFutBean> newData) {
 
+        for (int i = 0; i < newData.size(); i++) {
+            if (i < this.data.size()) {
+                FxFutBean cpbOld = this.data.get(i);
+                FxFutBean cpbNew = newData.get(i);
+
+                // Calcola la tendenza la salva nel nuovo bean
+                cpbNew.setTrendBid(Double.compare(cpbNew.getBid(), cpbOld.getBid()));
+                cpbNew.setTrendAsk(Double.compare(cpbNew.getAsk(), cpbOld.getAsk()));
+            }
+        }
         super.setData(newData); // Questo chiama fireTableDataChanged()
     }
 

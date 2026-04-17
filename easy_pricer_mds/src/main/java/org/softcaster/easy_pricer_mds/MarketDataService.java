@@ -267,7 +267,8 @@ public class MarketDataService {
 
                     List<DataNode> rates = provider.quotes(MARKETS.FUTURES);
                     for (DataNode node : rates) {
-                        updatePrice(token, node.getBid(), node.getAsk(), (node.getBid() + node.getAsk()) / 2.);
+                        String[] tokens = token.split("@");
+                        updatePrice(tokens[0] + "@" + node.getRic(), node.getBid(), node.getAsk(), (node.getBid() + node.getAsk()) / 2.);
                     }
                 }
 

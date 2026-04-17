@@ -155,7 +155,8 @@ public class CmeGroupProvider extends AbstractProvider {
             // Ric, significativo solo per richieste futures
             String ric = "";
             if (param.market == MARKETS.FUTURES) {
-                ric = param.extraParams.get(0);
+                String[] tokens = param.extraParams.get(0).split("@");
+                ric = tokens[0];
             }
             // Chiamata all'url json completo
             // Eseguiamo la fetch dell'URL specifico dall'interno del contesto autorizzato
