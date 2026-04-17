@@ -2,40 +2,35 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
-package org.softcaster.easy_pricer_mds.view;
+package org.softcaster.master_data_mgr.views;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
-import org.softcaster.easy_pricer_core.data.InstrumentQuote;
-import org.softcaster.easy_pricer_mds.MDSFacade;
-import org.softcaster.easy_pricer_mds.MarketDataService;
-import org.softcaster.easy_pricer_mds.bean.FxFutBean;
-import org.softcaster.easy_pricer_mds.dialog.FxFutIQDlg1;
-import org.softcaster.easy_pricer_mds.model.FxFutTableModel;
-import org.softcaster.marketdataprovider.REQUEST_TYPE;
+import org.softcaster.easy_pricer_core.data.FxFutureMasterData;
+import org.softcaster.master_data_mgr.MasterDataFacade;
+import org.softcaster.master_data_mgr.dialogs.FxFutureDlg;
+import org.softcaster.master_data_mgr.models.FxFutTableModel;
+import org.softcaster.master_data_mgr.models.beans.FxFutBean;
+import org.softcaster.master_data_mgr.ui.ZebraTable;
 
 /**
  *
- * @author softc
+ * @author ep
  */
-public class FxFutPanel extends FndtAbstactPanel {
+public class FxFuturePanel extends FndtAbstactPanel {
 
-    private final List<FxFutBean> fxFutBeanList = new ArrayList<>();
-    private MDSFacade mDSFacade = null;
+    private final MasterDataFacade masterDataFacade;
 
     /**
-     * Creates new form ForexPanel
+     * Creates new form BondFuturePanel
      *
-     * @param mDSFacade
+     * @param masterDataFacade
      */
-    public FxFutPanel(MDSFacade mDSFacade) {
-        this.mDSFacade = mDSFacade;
+    public FxFuturePanel(MasterDataFacade masterDataFacade) {
+        this.masterDataFacade = masterDataFacade;
         initComponents();
         postInitComponents(fxFutTable);
     }
@@ -49,34 +44,17 @@ public class FxFutPanel extends FndtAbstactPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        popUp = new javax.swing.JPopupMenu();
-        acNew = new javax.swing.JMenuItem();
-        acMod = new javax.swing.JMenuItem();
-        acDel = new javax.swing.JMenuItem();
         lblHeader = new javax.swing.JLabel();
-        fxFutScrollPane = new javax.swing.JScrollPane();
+        futBondScrollPane = new javax.swing.JScrollPane();
         fxFutTable = new ZebraTable();
-
-        acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
-        acNew.setText("New");
-        popUp.add(acNew);
-
-        acMod.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/edit_16dp.png"))); // NOI18N
-        acMod.setText("Edit");
-        popUp.add(acMod);
-
-        acDel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/delete_16dp.png"))); // NOI18N
-        acDel.setText("Delete");
-        popUp.add(acDel);
 
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
         setLayout(new java.awt.BorderLayout(10, 10));
 
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("Fx Future Quotes");
+        lblHeader.setText("Fx Future Master Data");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
@@ -91,22 +69,21 @@ public class FxFutPanel extends FndtAbstactPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        fxFutScrollPane.setViewportView(fxFutTable);
+        futBondScrollPane.setViewportView(fxFutTable);
 
-        add(fxFutScrollPane, java.awt.BorderLayout.CENTER);
+        add(futBondScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem acDel;
-    private javax.swing.JMenuItem acMod;
-    private javax.swing.JMenuItem acNew;
-    private javax.swing.JScrollPane fxFutScrollPane;
+    private javax.swing.JScrollPane futBondScrollPane;
     private javax.swing.JTable fxFutTable;
     private javax.swing.JLabel lblHeader;
-    private javax.swing.JPopupMenu popUp;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     *
+     */
     @Override
     protected void fillModelList() {
         // Crea e setta il model
@@ -127,12 +104,12 @@ public class FxFutPanel extends FndtAbstactPanel {
             parentFrame = frame;
         }
 
-        FxFutIQDlg1 dialog = new FxFutIQDlg1(parentFrame, true, null, mDSFacade);
-        dialog.setSize(425, 250);
+        FxFutureDlg dialog = new FxFutureDlg(parentFrame, true, null, masterDataFacade);
+        dialog.setSize(600, 400);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
-
+        
         // Post chiusura dialog
         FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
         refreshModel(model);
@@ -140,6 +117,29 @@ public class FxFutPanel extends FndtAbstactPanel {
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
+        int rowIndex = fxFutTable.getSelectedRow();
+        if (rowIndex != -1) {
+            java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+            java.awt.Frame parentFrame = null;
+
+            if (parentWindow instanceof java.awt.Frame frame) {
+                parentFrame = frame;
+            }
+
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = fxFutTable.convertRowIndexToModel(rowIndex);
+            FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
+            FxFutBean bean = model.getElementAt(modelRow);
+
+            FxFutureDlg dialog = new FxFutureDlg(parentFrame, true, bean, masterDataFacade);
+            dialog.setSize(600, 300);
+            // Centra la dialog rispetto al pannello
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+            // Post chiusura dialog
+            refreshModel(model);
+        }
     }
 
     @Override
@@ -156,38 +156,19 @@ public class FxFutPanel extends FndtAbstactPanel {
 
     @Override
     public void refreshAction() {
-        FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
-        this.refreshModel(model);
     }
 
     @Override
     protected void refreshModel(FndtTableModel ftm) {
-        // Cancella vecchia lista
-        fxFutBeanList.clear();
+        // Popola il model
+        List<FxFutureMasterData> fxFutures = masterDataFacade.getFxFutureMasterDataDAO().findAll();
 
-        // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FFU");
-        if (iqList.isEmpty()) {
-            return;
-        }
-
-        // Aggiorno service
-        Map<String, List<String>> tokenList = new HashMap<>();
-        for (InstrumentQuote quote : iqList) {
-            tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
-        }
-        MarketDataService mds = MarketDataService.getInstance();
-        mds.updateBondFutPrice(tokenList, null);
-
+        List<FxFutBean> fxFutBeanList = new ArrayList<>();
         FxFutBean bean = null;
-
-        for (InstrumentQuote quote : iqList) {
-            quote.setBid(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.BID));
-            quote.setAsk(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.ASK));
-            bean = new FxFutBean(quote);
+        for (FxFutureMasterData item : fxFutures) {
+            bean = new FxFutBean(item);
             fxFutBeanList.add(bean);
         }
-
         ftm.setData(fxFutBeanList);
     }
 }

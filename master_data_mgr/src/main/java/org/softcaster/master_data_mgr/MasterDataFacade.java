@@ -20,6 +20,8 @@ import org.softcaster.easy_pricer_core.data.Form;
 import org.softcaster.easy_pricer_core.data.FormDAO;
 import org.softcaster.easy_pricer_core.data.Frequency;
 import org.softcaster.easy_pricer_core.data.FrequencyDAO;
+import org.softcaster.easy_pricer_core.data.FutureMasterDataDAO;
+import org.softcaster.easy_pricer_core.data.FxFutureMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.IssuerDAO;
 import org.softcaster.easy_pricer_core.data.PortfolioMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.PositionMasterDataDAO;
@@ -46,6 +48,8 @@ public class MasterDataFacade {
     private BondFutureMasterDataDAO bondFutureMasterDataDAO;
     @Autowired
     private ForexMasterDataDAO forexMasterDataDAO;
+    @Autowired
+    private FxFutureMasterDataDAO fxFutureMasterDataDAO;
 
     @Autowired
     private IssuerDAO issuerDAO;
@@ -240,6 +244,13 @@ public class MasterDataFacade {
      */
     public SettlementTypeDAO getSettlementTypeDAO() {
         return settlementTypeDAO;
+    }
+
+    /**
+     * @return the fxFutureMasterDataDAO
+     */
+    public FxFutureMasterDataDAO getFxFutureMasterDataDAO() {
+        return fxFutureMasterDataDAO;
     }
 
 }

@@ -178,6 +178,7 @@ public class BondFutIQDlg extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -188,6 +189,7 @@ public class BondFutIQDlg extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -344,6 +346,11 @@ public class BondFutIQDlg extends javax.swing.JDialog {
 
         // Aggiungo i campi alla lista di validazione
         fieldsToValidate = Arrays.asList(txtCode, txtBid, txtAsk);
+        
+        // Aggiusto i campi
+        txtCode.setColumns(10);
+        txtBid.setColumns(10);
+        txtAsk.setColumns(10);        
     }
 
     private void setUpCurrencyPairsCombo() {

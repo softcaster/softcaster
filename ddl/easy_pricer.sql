@@ -510,6 +510,23 @@ CREATE TABLE bond_future_master_data
 ALTER TABLE bond_future_master_data OWNER TO easypricer;
 
 -- ----------------------------------------------------------------------------
+-- fx_future_master_data - anagrafica forex future
+-- ----------------------------------------------------------------------------
+CREATE TABLE fx_future_master_data
+(
+    id_master_data INTEGER NOT NULL
+    , underlying INTEGER NOT NULL -- coppia sottostante il contratto
+    , contract_value NUMERIC(15,5) NOT NULL  
+    , tick_size NUMERIC(15,5) NOT NULL  
+    , initial_margin NUMERIC(15,5) NOT NULL  
+    , maintenance_margin NUMERIC(15,5) NOT NULL  
+    , CONSTRAINT fk_underlying FOREIGN KEY (underlying)
+        REFERENCES forex_master_data(id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , PRIMARY KEY (id_master_data)
+);
+ALTER TABLE fx_future_master_data OWNER TO easypricer;
+
+-- ----------------------------------------------------------------------------
 -- deliverable_bonds - consegnabili
 -- ----------------------------------------------------------------------------
 CREATE TABLE deliverable_bonds

@@ -10,20 +10,20 @@ import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.ui.dialog.DialogHelper;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.ForexMasterData;
+import org.softcaster.easy_pricer_core.data.FxFutureMasterData;
 import org.softcaster.easy_pricer_core.data.InstrumentQuote;
 import org.softcaster.easy_pricer_core.data.MasterData;
 import org.softcaster.easy_pricer_mds.MDSFacade;
-import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
+import org.softcaster.easy_pricer_mds.bean.FxFutBean;
 
 /**
  *
  * @author ep
  */
-public class CurrPairIQDlg extends javax.swing.JDialog {
+public class FxFutIQDlg1 extends javax.swing.JDialog {
 
     private final MDSFacade mDSFacade;
-    private CurrencyPairBean bean;
+    private FxFutBean bean;
     private boolean isInsert = true;
     private List<javax.swing.JTextField> fieldsToValidate;
 
@@ -35,7 +35,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
      * @param bean
      * @param mDSFacade
      */
-    public CurrPairIQDlg(java.awt.Frame parent, boolean modal, CurrencyPairBean bean, MDSFacade mDSFacade) {
+    public FxFutIQDlg1(java.awt.Frame parent, boolean modal, FxFutBean bean, MDSFacade mDSFacade) {
         super(parent, modal);
         this.mDSFacade = mDSFacade;
         this.bean = bean;
@@ -63,9 +63,11 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
         txtBid = new javax.swing.JTextField();
         txtAsk = new javax.swing.JTextField();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
-        cbCurrPair = new javax.swing.JComboBox<>();
+        cbFxFut = new javax.swing.JComboBox<>();
         jLabel5 = new javax.swing.JLabel();
         cbProvider = new javax.swing.JComboBox<>();
+        filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+        filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
         btnPanel = new javax.swing.JPanel();
         brnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -79,7 +81,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
 
         detailPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Curr. Pair");
+        jLabel1.setText("Fx Futures");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -170,7 +172,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        detailPanel.add(cbCurrPair, gridBagConstraints);
+        detailPanel.add(cbFxFut, gridBagConstraints);
 
         jLabel5.setText("Provider");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -193,6 +195,20 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         detailPanel.add(cbProvider, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        detailPanel.add(filler4, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        detailPanel.add(filler5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -249,7 +265,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
 
         getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
-        setBounds(0, 0, 431, 252);
+        setBounds(0, 0, 431, 239);
     }// </editor-fold>//GEN-END:initComponents
 
     private void brnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_brnSaveActionPerformed
@@ -294,12 +310,14 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
     private javax.swing.JButton brnSave;
     private javax.swing.JButton btnCancel;
     private javax.swing.JPanel btnPanel;
-    private javax.swing.JComboBox<ForexMasterData> cbCurrPair;
+    private javax.swing.JComboBox<FxFutureMasterData> cbFxFut;
     private javax.swing.JComboBox<String> cbProvider;
     private javax.swing.JPanel detailPanel;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
+    private javax.swing.Box.Filler filler4;
+    private javax.swing.Box.Filler filler5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -317,7 +335,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
         if (bean != null) {
             isInsert = false;
             txtCode.setText(bean.getInstrumentQuote().getCode());
-            cbCurrPair.setSelectedItem(bean.getInstrumentQuote().getMasterData());
+            cbFxFut.setSelectedItem(bean.getInstrumentQuote().getMasterData());
             txtBid.setText(Converter.fromDouble(bean.getBid()));
             txtAsk.setText(Converter.fromDouble(bean.getAsk()));
             cbProvider.setSelectedItem(bean.getInstrumentQuote().getProvider());
@@ -328,7 +346,7 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
 
         // Aggiungo i campi alla lista di validazione
         fieldsToValidate = Arrays.asList(txtCode, txtBid, txtAsk);
-
+        
         // Aggiusto i campi
         txtCode.setColumns(10);
         txtBid.setColumns(10);
@@ -336,11 +354,11 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
     }
 
     private void setUpCurrencyPairsCombo() {
-        List<ForexMasterData> currencies = mDSFacade.getForexMasterDataDAO().findAll();
+        List<FxFutureMasterData> ffmdList = mDSFacade.getFxFutureMasterDataDAO().findAll();
 
         // 2. Crea il modello partendo dalla lista
-        DefaultComboBoxModel<ForexMasterData> model = new DefaultComboBoxModel<>(currencies.toArray(ForexMasterData[]::new));
-        cbCurrPair.setModel(model);
+        DefaultComboBoxModel<FxFutureMasterData> model = new DefaultComboBoxModel<>(ffmdList.toArray(FxFutureMasterData[]::new));
+        cbFxFut.setModel(model);
 
     }
 
@@ -355,14 +373,14 @@ public class CurrPairIQDlg extends javax.swing.JDialog {
     private boolean saveBean() {
         try {
             if (isInsert) {
-                bean = new CurrencyPairBean(new InstrumentQuote());
+                bean = new FxFutBean(new InstrumentQuote());
             }
             InstrumentQuote iq = bean.getInstrumentQuote();
-            iq.setMasterData((MasterData) cbCurrPair.getSelectedItem());
+            iq.setMasterData((MasterData) cbFxFut.getSelectedItem());
             iq.setCode(txtCode.getText());
-            iq.setProvider(cbProvider.getSelectedItem().toString());
             iq.setBid(Converter.toDouble(txtBid.getText(), false));
             iq.setAsk(Converter.toDouble(txtAsk.getText(), false));
+            iq.setProvider(cbProvider.getSelectedItem().toString());
             mDSFacade.getInstrumentQuoteDAO().saveOrUpdate(iq);
             return true;
         } catch (Exception ex) {

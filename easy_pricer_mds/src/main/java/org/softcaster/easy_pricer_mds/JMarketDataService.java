@@ -302,7 +302,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.DEFAULT_CARD, defaultPanel);
         JPanel cpPanel = new CurrPairPanel(mDSFacade);
         cardMap.put(AppCard.CURR_PAIR_CARD, cpPanel);
-        JPanel fxFutPanel = new FxFutPanel();
+        JPanel fxFutPanel = new FxFutPanel(mDSFacade);
         cardMap.put(AppCard.FX_FUTURE_CARD, fxFutPanel);
         JPanel bondFutPanel = new BondFutPanel(mDSFacade);
         cardMap.put(AppCard.BOND_FUTURE_CARD, bondFutPanel);

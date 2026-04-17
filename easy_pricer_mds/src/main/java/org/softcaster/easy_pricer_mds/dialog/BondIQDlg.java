@@ -64,6 +64,8 @@ public class BondIQDlg extends javax.swing.JDialog {
         txtAsk = new javax.swing.JTextField();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
         cbBond = new javax.swing.JComboBox<>();
+        jLabel5 = new javax.swing.JLabel();
+        cbProvider = new javax.swing.JComboBox<>();
         btnPanel = new javax.swing.JPanel();
         brnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -77,7 +79,8 @@ public class BondIQDlg extends javax.swing.JDialog {
 
         detailPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Bonds");
+        jLabel1.setText("Bond");
+        jLabel1.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -156,7 +159,7 @@ public class BondIQDlg extends javax.swing.JDialog {
         detailPanel.add(txtAsk, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         detailPanel.add(filler2, gridBagConstraints);
@@ -169,6 +172,28 @@ public class BondIQDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         detailPanel.add(cbBond, gridBagConstraints);
+
+        jLabel5.setText("Provider");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        detailPanel.add(jLabel5, gridBagConstraints);
+
+        cbProvider.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CmeGroupProvider", "EuroNextProvider", "InvestingComProvider" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        detailPanel.add(cbProvider, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -225,7 +250,7 @@ public class BondIQDlg extends javax.swing.JDialog {
 
         getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
-        setBounds(0, 0, 424, 201);
+        setBounds(0, 0, 424, 252);
     }// </editor-fold>//GEN-END:initComponents
 
     private void brnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_brnSaveActionPerformed
@@ -271,6 +296,7 @@ public class BondIQDlg extends javax.swing.JDialog {
     private javax.swing.JButton btnCancel;
     private javax.swing.JPanel btnPanel;
     private javax.swing.JComboBox<SecurityMasterData> cbBond;
+    private javax.swing.JComboBox<String> cbProvider;
     private javax.swing.JPanel detailPanel;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
@@ -279,6 +305,7 @@ public class BondIQDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTextField txtAsk;
     private javax.swing.JTextField txtBid;
@@ -294,6 +321,7 @@ public class BondIQDlg extends javax.swing.JDialog {
             cbBond.setSelectedItem(bean.getInstrumentQuote().getMasterData());
             txtBid.setText(Converter.fromDouble(bean.getBid()));
             txtAsk.setText(Converter.fromDouble(bean.getAsk()));
+            cbProvider.setSelectedItem(bean.getInstrumentQuote().getProvider());
         } else {
             txtBid.setText(Converter.fromDouble(0.));
             txtAsk.setText(Converter.fromDouble(0.));
@@ -301,6 +329,11 @@ public class BondIQDlg extends javax.swing.JDialog {
 
         // Aggiungo i campi alla lista di validazione
         fieldsToValidate = Arrays.asList(txtCode, txtBid, txtAsk);
+
+        // Aggiusto i campi
+        txtCode.setColumns(10);
+        txtBid.setColumns(10);
+        txtAsk.setColumns(10);
     }
 
     private void setUpBondsCombo() {
@@ -330,6 +363,7 @@ public class BondIQDlg extends javax.swing.JDialog {
             iq.setCode(txtCode.getText());
             iq.setBid(Converter.toDouble(txtBid.getText(), false));
             iq.setAsk(Converter.toDouble(txtAsk.getText(), false));
+            iq.setProvider(cbProvider.getSelectedItem().toString());
             mDSFacade.getInstrumentQuoteDAO().saveOrUpdate(iq);
             return true;
         } catch (Exception ex) {

@@ -6,6 +6,8 @@ package org.softcaster.easy_pricer_mds.bean;
 
 import org.softcaster.commons.ui.bean.ITrendable;
 import org.softcaster.commons.ui.model.IFndtModel;
+import org.softcaster.easy_pricer_core.data.FxFutureMasterData;
+import org.softcaster.easy_pricer_core.data.InstrumentQuote;
 
 /**
  *
@@ -13,27 +15,30 @@ import org.softcaster.commons.ui.model.IFndtModel;
  */
 public class FxFutBean implements IFndtModel, ITrendable {
 
-    private final String code;
-    private Double bid;
-    private Double ask;
+    private final InstrumentQuote iQuote;
     private int trendBid = 0;
     private int trendAsk = 0;
 
-    public FxFutBean(String code, double bid, double ask) {
-        this.code = code;
-        this.bid = bid;
-        this.ask = ask;
+    public FxFutBean(InstrumentQuote iQuote) {
+        this.iQuote = iQuote;
     }
 
     @Override
     public Object getValueAt(int columnIndex) {
         return switch (columnIndex) {
-            case 0 ->
-                code;
+            case 0 ->{
+                String code = "";
+                if(iQuote.getMasterData() instanceof FxFutureMasterData ffmd) {
+                    code = ffmd.getCode() + " - " + ffmd.getDescription();
+                }
+                yield code;
+            }
             case 1 ->
-                getBid();
+                iQuote.getCode();
             case 2 ->
-                getAsk();
+                iQuote.getBid();
+            case 3 ->
+                iQuote.getAsk();
             default ->
                 null;
         };
@@ -41,35 +46,35 @@ public class FxFutBean implements IFndtModel, ITrendable {
 
     @Override
     public String[] getColumnNames() {
-        return new String[]{"Code", "Bid", "Ask"};
+        return new String[]{"Description","Code", "Bid", "Ask"};
     }
 
     /**
      * @return the bid
      */
     public Double getBid() {
-        return bid;
+        return iQuote.getBid();
     }
 
     /**
      * @param bid the bid to set
      */
     public void setBid(Double bid) {
-        this.bid = bid;
+        iQuote.setBid(bid);
     }
 
     /**
      * @return the ask
      */
     public Double getAsk() {
-        return ask;
+        return iQuote.getAsk();
     }
 
     /**
      * @param ask the ask to set
      */
     public void setAsk(Double ask) {
-        this.ask = ask;
+        iQuote.setAsk(ask);
     }
 
     /**
@@ -102,13 +107,16 @@ public class FxFutBean implements IFndtModel, ITrendable {
 
     @Override
     public int getTrendForColumn(int columnIndex) {
-        if (columnIndex == 1) {
+        if (columnIndex == 2) {
             return trendBid;
         }
-        if (columnIndex == 2) {
+        if (columnIndex == 3) {
             return trendAsk;
         }
         return 0;
     }
-
+    
+    public InstrumentQuote getInstrumentQuote() {
+        return iQuote;
+    }
 }

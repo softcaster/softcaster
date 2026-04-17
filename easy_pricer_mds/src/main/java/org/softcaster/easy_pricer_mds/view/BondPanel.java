@@ -128,7 +128,7 @@ public class BondPanel extends FndtAbstactPanel {
         }
 
         BondIQDlg dialog = new BondIQDlg(parentFrame, true, null, mDSFacade);
-        dialog.setSize(425, 200);
+        dialog.setSize(425, 250);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
@@ -154,7 +154,7 @@ public class BondPanel extends FndtAbstactPanel {
             }
 
             BondIQDlg dialog = new BondIQDlg(parentFrame, true, bean, mDSFacade);
-            dialog.setSize(425, 200);
+            dialog.setSize(425, 250);
             // Centra la dialog rispetto al pannello
             dialog.setLocationRelativeTo(this);
             dialog.setVisible(true);

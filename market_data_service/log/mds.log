@@ -1740,3 +1740,9 @@ ERROR	[2026-03-31 08:46:08,088] [main] (LoggerMgr.java:31)
  INFO	[2026-04-04 11:17:13,112] [AWT-EventQueue-0] (LoggerMgr.java:36)
      	Bye bye!
 
+ERROR	[2026-04-17 09:22:22,587] [AWT-EventQueue-0] (LoggerMgr.java:31)
+     	Error reading file: ticker_link.csv [Index 1 out of bounds for length 1]
+
+ INFO	[2026-04-17 09:22:49,366] [AWT-EventQueue-0] (LoggerMgr.java:36)
+     	Bye bye!
+
