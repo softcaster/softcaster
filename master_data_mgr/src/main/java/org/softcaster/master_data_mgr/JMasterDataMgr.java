@@ -17,6 +17,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.utils.LoggerMgr;
 import static org.softcaster.master_data_mgr.AppTreeItem.BOND_FUTURE;
+import static org.softcaster.master_data_mgr.AppTreeItem.FX_FUTURE;
 import org.softcaster.master_data_mgr.models.MasterDataNode;
 import org.softcaster.master_data_mgr.models.TreeModel;
 import org.softcaster.master_data_mgr.ui.MasterDataTreeCellRenderer;
@@ -29,6 +30,7 @@ import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.FxFuturePanel;
 import org.softcaster.master_data_mgr.views.HomePanel;
 import org.softcaster.master_data_mgr.views.IssuerPanel;
+import org.softcaster.master_data_mgr.views.MmFuturePanel;
 import org.softcaster.master_data_mgr.views.PortfolioPanel;
 import org.softcaster.master_data_mgr.views.PositionPanel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +113,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case FX_FUTURE -> {
                             cl.show(mainPanel, AppCard.FX_FUTURE_CARD.name());
                             currentCard = AppCard.FX_FUTURE_CARD;
+                        }
+                        case MM_FUTURE -> {
+                            cl.show(mainPanel, AppCard.MM_FUTURE_CARD.name());
+                            currentCard = AppCard.MM_FUTURE_CARD;
                         }
                         case CURR_PAIR -> {
                             cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
@@ -358,6 +364,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
 
         JPanel fxFuturePanel = new FxFuturePanel(masterDataFacade);
         cardMap.put(AppCard.FX_FUTURE_CARD, fxFuturePanel);
+        
+        JPanel mmFuturePanel = new MmFuturePanel(masterDataFacade);
+        cardMap.put(AppCard.MM_FUTURE_CARD, mmFuturePanel);
 
         JPanel defaultPanel = new HomePanel();
         cardMap.put(AppCard.DEFAULT, defaultPanel);
@@ -381,6 +390,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(currPairPanel, AppCard.CURR_PAIR_CARD.name());
         mainPanel.add(futBondPanel, AppCard.BOND_FUTURE_CARD.name());
         mainPanel.add(fxFuturePanel, AppCard.FX_FUTURE_CARD.name());
+        mainPanel.add(mmFuturePanel, AppCard.MM_FUTURE_CARD.name());
         mainPanel.add(counterpartyPanel, AppCard.COUNTERPARTY_CARD.name());
         mainPanel.add(portfolioPanel, AppCard.PORTFOLIO_CARD.name());
         mainPanel.add(positionPanel, AppCard.POSITION_CARD.name());

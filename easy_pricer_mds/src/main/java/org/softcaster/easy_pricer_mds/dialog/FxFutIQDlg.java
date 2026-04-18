@@ -20,7 +20,7 @@ import org.softcaster.easy_pricer_mds.bean.FxFutBean;
  *
  * @author ep
  */
-public class FxFutIQDlg1 extends javax.swing.JDialog {
+public class FxFutIQDlg extends javax.swing.JDialog {
 
     private final MDSFacade mDSFacade;
     private FxFutBean bean;
@@ -35,7 +35,7 @@ public class FxFutIQDlg1 extends javax.swing.JDialog {
      * @param bean
      * @param mDSFacade
      */
-    public FxFutIQDlg1(java.awt.Frame parent, boolean modal, FxFutBean bean, MDSFacade mDSFacade) {
+    public FxFutIQDlg(java.awt.Frame parent, boolean modal, FxFutBean bean, MDSFacade mDSFacade) {
         super(parent, modal);
         this.mDSFacade = mDSFacade;
         this.bean = bean;

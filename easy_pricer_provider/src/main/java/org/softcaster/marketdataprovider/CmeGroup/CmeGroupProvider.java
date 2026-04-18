@@ -97,6 +97,22 @@ public class CmeGroupProvider extends AbstractProvider {
         }
     }
 
+    private double parseQuote(String quote) throws ParseException {
+        if (quote.contains("'")) {
+            // Logica specifica per i BOND (ZB, ZN, ZF)
+            String[] tokens = quote.split("'");
+            // Parte intera
+            double handle = Converter.toDouble(tokens[0],false);
+            // 32-esimi
+            double thirtySeconds = Converter.toDouble(tokens[1].replace("+", ""),false);
+            double fraction = quote.contains("+") ? (thirtySeconds / 32.0) + (0.5 / 32.0) : (thirtySeconds / 32.0);
+            return (handle + fraction);
+        } else {
+            // Logica per VALUTE (6E) o INDICI (ES)
+            return Converter.toDouble(quote, false);
+        }
+    }
+
     private void parseResponseFuture() {
         if (response != null && !response.isEmpty()) {
 
@@ -106,7 +122,9 @@ public class CmeGroupProvider extends AbstractProvider {
                 DataNode node = null;
                 for (Quote quote : root.quotes) {
                     try {
-                        double value = Converter.toDouble(quote.last, false);
+                        // TBond future quotano come i TBond, in 32-esimi
+                        // il separatore e' l'apostrofo
+                        double value = parseQuote(quote.last);
                         node = new DataNode();
                         node.setAsk(value);
                         node.setBid(value);

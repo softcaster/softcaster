@@ -2,6 +2,7 @@ package org.softcaster.easy_pricer_core.data;
 
 import java.util.List;
 import jakarta.annotation.Resource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,8 @@ public class BondFutureMasterDataDAO {
     @Resource
     private InstrumentQuoteRepository quoteRepository;
 
+    private final Sort sortByIsin = Sort.by(Sort.Direction.ASC, "isin");
+    
     @Transactional(readOnly = true)
     public BondFutureMasterData findByIdMasterData(Integer idMasterData) {
         return repository.findByIdMasterData(idMasterData);
@@ -36,7 +39,7 @@ public class BondFutureMasterDataDAO {
 
     @Transactional(readOnly = true)
     public List<BondFutureMasterData> findAll() {
-        return repository.findAll();
+        return repository.findAll(sortByIsin);
     }
 
     public BondFutureMasterData findByIsin(String isin) {

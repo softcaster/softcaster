@@ -15,18 +15,18 @@ import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.easy_pricer_core.data.InstrumentQuote;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.MarketDataService;
-import org.softcaster.easy_pricer_mds.bean.FxFutBean;
-import org.softcaster.easy_pricer_mds.dialog.FxFutIQDlg;
-import org.softcaster.easy_pricer_mds.model.FxFutTableModel;
+import org.softcaster.easy_pricer_mds.bean.MmFutBean;
+import org.softcaster.easy_pricer_mds.dialog.MmFutIQDlg;
+import org.softcaster.easy_pricer_mds.model.MmFutTableModel;
 import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
 /**
  *
  * @author softc
  */
-public class FxFutPanel extends FndtAbstactPanel {
+public class MmFutPanel extends FndtAbstactPanel {
 
-    private final List<FxFutBean> fxFutBeanList = new ArrayList<>();
+    private final List<MmFutBean> mmFutBeanList = new ArrayList<>();
     private MDSFacade mDSFacade = null;
 
     /**
@@ -34,10 +34,10 @@ public class FxFutPanel extends FndtAbstactPanel {
      *
      * @param mDSFacade
      */
-    public FxFutPanel(MDSFacade mDSFacade) {
+    public MmFutPanel(MDSFacade mDSFacade) {
         this.mDSFacade = mDSFacade;
         initComponents();
-        postInitComponents(fxFutTable);
+        postInitComponents(mmFutTable);
     }
 
     /**
@@ -55,7 +55,7 @@ public class FxFutPanel extends FndtAbstactPanel {
         acDel = new javax.swing.JMenuItem();
         lblHeader = new javax.swing.JLabel();
         fxFutScrollPane = new javax.swing.JScrollPane();
-        fxFutTable = new ZebraTable();
+        mmFutTable = new ZebraTable();
 
         acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
         acNew.setText("New");
@@ -76,11 +76,11 @@ public class FxFutPanel extends FndtAbstactPanel {
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("Fx Future Quotes");
+        lblHeader.setText("MM Future Quotes");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
-        fxFutTable.setModel(new javax.swing.table.DefaultTableModel(
+        mmFutTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -91,7 +91,7 @@ public class FxFutPanel extends FndtAbstactPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        fxFutScrollPane.setViewportView(fxFutTable);
+        fxFutScrollPane.setViewportView(mmFutTable);
 
         add(fxFutScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
@@ -102,17 +102,17 @@ public class FxFutPanel extends FndtAbstactPanel {
     private javax.swing.JMenuItem acMod;
     private javax.swing.JMenuItem acNew;
     private javax.swing.JScrollPane fxFutScrollPane;
-    private javax.swing.JTable fxFutTable;
     private javax.swing.JLabel lblHeader;
+    private javax.swing.JTable mmFutTable;
     private javax.swing.JPopupMenu popUp;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void fillModelList() {
         // Crea e setta il model
-        FxFutBean prototype = new FxFutBean(null);
-        FxFutTableModel model = new FxFutTableModel(prototype);
-        fxFutTable.setModel(model);
+        MmFutBean prototype = new MmFutBean(null);
+        MmFutTableModel model = new MmFutTableModel(prototype);
+        mmFutTable.setModel(model);
 
         // Popola il model
         refreshModel(model);
@@ -127,25 +127,25 @@ public class FxFutPanel extends FndtAbstactPanel {
             parentFrame = frame;
         }
 
-        FxFutIQDlg dialog = new FxFutIQDlg(parentFrame, true, null, mDSFacade);
+        MmFutIQDlg dialog = new MmFutIQDlg(parentFrame, true, null, mDSFacade);
         dialog.setSize(425, 250);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
 
         // Post chiusura dialog
-        FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
+        MmFutTableModel model = (MmFutTableModel) mmFutTable.getModel();
         refreshModel(model);
     }
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
-        int rowIndex = fxFutTable.getSelectedRow();
+        int rowIndex = mmFutTable.getSelectedRow();
         if (rowIndex != -1) {
             // 1. CONVERSIONE FONDAMENTALE
-            int modelRow = fxFutTable.convertRowIndexToModel(rowIndex);
-            FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
-            FxFutBean bean = model.getElementAt(modelRow);
+            int modelRow = mmFutTable.convertRowIndexToModel(rowIndex);
+            MmFutTableModel model = (MmFutTableModel) mmFutTable.getModel();
+            MmFutBean bean = model.getElementAt(modelRow);
             java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
             java.awt.Frame parentFrame = null;
 
@@ -153,7 +153,7 @@ public class FxFutPanel extends FndtAbstactPanel {
                 parentFrame = frame;
             }
 
-            FxFutIQDlg dialog = new FxFutIQDlg(parentFrame, true, bean, mDSFacade);
+            MmFutIQDlg dialog = new MmFutIQDlg(parentFrame, true, bean, mDSFacade);
             dialog.setSize(425, 250);
             // Centra la dialog rispetto al pannello
             dialog.setLocationRelativeTo(this);
@@ -178,17 +178,17 @@ public class FxFutPanel extends FndtAbstactPanel {
 
     @Override
     public void refreshAction() {
-        FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
+        MmFutTableModel model = (MmFutTableModel) mmFutTable.getModel();
         this.refreshModel(model);
     }
 
     @Override
     protected void refreshModel(FndtTableModel ftm) {
         // Cancella vecchia lista
-        fxFutBeanList.clear();
+        mmFutBeanList.clear();
 
         // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FFU");
+        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("MFU");
         if (iqList.isEmpty()) {
             return;
         }
@@ -201,15 +201,15 @@ public class FxFutPanel extends FndtAbstactPanel {
         MarketDataService mds = MarketDataService.getInstance();
         mds.updateBondFutPrice(tokenList, null);
 
-        FxFutBean bean = null;
+        MmFutBean bean = null;
 
         for (InstrumentQuote quote : iqList) {
             quote.setBid(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.BID));
             quote.setAsk(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.ASK));
-            bean = new FxFutBean(quote);
-            fxFutBeanList.add(bean);
+            bean = new MmFutBean(quote);
+            mmFutBeanList.add(bean);
         }
 
-        ftm.setData(fxFutBeanList);
+        ftm.setData(mmFutBeanList);
     }
 }

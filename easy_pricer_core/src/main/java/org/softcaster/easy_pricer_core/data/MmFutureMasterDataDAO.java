@@ -6,43 +6,43 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service("fxFutureMasterDataDAO")
-public class FxFutureMasterDataDAO {
+@Service("mmFutureMasterDataDAO")
+public class MmFutureMasterDataDAO {
 
     @Resource
-    private FxFutureMasterDataRepository repository;
+    private MmFutureMasterDataRepository repository;
     @Resource
     private InstrumentQuoteRepository quoteRepository;
-
+    
     private final Sort sortByIsin = Sort.by(Sort.Direction.ASC, "isin");
 
     @Transactional(readOnly = true)
-    public FxFutureMasterData findByIdMasterData(Integer idMasterData) {
+    public MmFutureMasterData findByIdMasterData(Integer idMasterData) {
         return repository.findByIdMasterData(idMasterData);
     }
 
     @Transactional
-    public FxFutureMasterData saveOrUpdate(FxFutureMasterData fxFutureMasterData) {
-        return repository.save(fxFutureMasterData);
+    public MmFutureMasterData saveOrUpdate(MmFutureMasterData mmFutureMasterData) {
+        return repository.save(mmFutureMasterData);
     }
 
     @Transactional
-    public void delete(FxFutureMasterData fxFutureMasterData) {
-        if (fxFutureMasterData != null && fxFutureMasterData.getIdMasterData() != null) {
+    public void delete(MmFutureMasterData mmFutureMasterData) {
+        if (mmFutureMasterData != null && mmFutureMasterData.getIdMasterData() != null) {
             // Va cancellata prima la tabella storica che ha un riferimento
             // alla tabella instrumet_quotes
-            quoteRepository.deleteInstrumentQuoteHist(fxFutureMasterData.getIdMasterData());
-            quoteRepository.deleteInstrumentQuotes(fxFutureMasterData.getIdMasterData());
-            repository.delete(fxFutureMasterData);
+            quoteRepository.deleteInstrumentQuoteHist(mmFutureMasterData.getIdMasterData());
+            quoteRepository.deleteInstrumentQuotes(mmFutureMasterData.getIdMasterData());
+            repository.delete(mmFutureMasterData);
         }
     }
 
     @Transactional(readOnly = true)
-    public List<FxFutureMasterData> findAll() {
+    public List<MmFutureMasterData> findAll() {
         return repository.findAll(sortByIsin);
     }
 
-    public FxFutureMasterData findByIsin(String isin) {
+    public MmFutureMasterData findByIsin(String isin) {
         return repository.findByIsin(isin);
     }
 }

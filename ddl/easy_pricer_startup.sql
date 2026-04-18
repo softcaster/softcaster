@@ -119,6 +119,7 @@ INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (n
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FSP','Spot Forex',(SELECT id_super_class FROM super_class WHERE code='FX'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FFW','Forex Forward',(SELECT id_super_class FROM super_class WHERE code='FX'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FFU','Forex Future',(SELECT id_super_class FROM super_class WHERE code='FX'));
+INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'MFU','MM Future',(SELECT id_super_class FROM super_class WHERE code='CCE'));
 
 -- ----------------------------------------------------------------------------
 -- amortization_schedule

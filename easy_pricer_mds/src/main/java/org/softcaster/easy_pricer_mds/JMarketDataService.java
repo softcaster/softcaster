@@ -28,6 +28,7 @@ import org.softcaster.easy_pricer_mds.view.BondPanel;
 import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
 import org.softcaster.easy_pricer_mds.view.FxFutPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
+import org.softcaster.easy_pricer_mds.view.MmFutPanel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -105,6 +106,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                             case FX_FUTURE -> {
                                 cl.show(mainPanel, AppCard.FX_FUTURE_CARD.name());
                                 currentCard = AppCard.FX_FUTURE_CARD;
+                            }
+                            case MM_FUTURE -> {
+                                cl.show(mainPanel, AppCard.MM_FUTURE_CARD.name());
+                                currentCard = AppCard.MM_FUTURE_CARD;
                             }
                             case BOND_FUTURE -> {
                                 cl.show(mainPanel, AppCard.BOND_FUTURE_CARD.name());
@@ -304,6 +309,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.CURR_PAIR_CARD, cpPanel);
         JPanel fxFutPanel = new FxFutPanel(mDSFacade);
         cardMap.put(AppCard.FX_FUTURE_CARD, fxFutPanel);
+        JPanel mmFutPanel = new MmFutPanel(mDSFacade);
+        cardMap.put(AppCard.MM_FUTURE_CARD, mmFutPanel);
         JPanel bondFutPanel = new BondFutPanel(mDSFacade);
         cardMap.put(AppCard.BOND_FUTURE_CARD, bondFutPanel);
         JPanel bondPanel = new BondPanel(mDSFacade);
@@ -313,6 +320,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
         mainPanel.add(cpPanel, AppCard.CURR_PAIR_CARD.name());
         mainPanel.add(fxFutPanel, AppCard.FX_FUTURE_CARD.name());
+        mainPanel.add(mmFutPanel, AppCard.MM_FUTURE_CARD.name());
         mainPanel.add(bondFutPanel, AppCard.BOND_FUTURE_CARD.name());
         mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
 

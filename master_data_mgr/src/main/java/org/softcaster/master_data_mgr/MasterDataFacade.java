@@ -20,9 +20,9 @@ import org.softcaster.easy_pricer_core.data.Form;
 import org.softcaster.easy_pricer_core.data.FormDAO;
 import org.softcaster.easy_pricer_core.data.Frequency;
 import org.softcaster.easy_pricer_core.data.FrequencyDAO;
-import org.softcaster.easy_pricer_core.data.FutureMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.FxFutureMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.IssuerDAO;
+import org.softcaster.easy_pricer_core.data.MmFutureMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.PortfolioMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.PositionMasterDataDAO;
 import org.softcaster.easy_pricer_core.data.RollConvention;
@@ -50,6 +50,8 @@ public class MasterDataFacade {
     private ForexMasterDataDAO forexMasterDataDAO;
     @Autowired
     private FxFutureMasterDataDAO fxFutureMasterDataDAO;
+    @Autowired
+    private MmFutureMasterDataDAO mmFutureMasterDataDAO;
 
     @Autowired
     private IssuerDAO issuerDAO;
@@ -253,4 +255,10 @@ public class MasterDataFacade {
         return fxFutureMasterDataDAO;
     }
 
+    /**
+     * @return the mmFutureMasterDataDAO
+     */
+    public MmFutureMasterDataDAO getMmFutureMasterDataDAO() {
+        return mmFutureMasterDataDAO;
+    }
 }

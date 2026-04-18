@@ -8,13 +8,12 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.springframework.data.domain.Sort;
 
 @Entity
-@Table(name = "fx_future_master_data")
+@Table(name = "mm_future_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 
-public class FxFutureMasterData extends FutureMasterData {
+public class MmFutureMasterData extends FutureMasterData {
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "underlying", nullable = true)
