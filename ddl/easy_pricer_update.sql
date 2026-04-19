@@ -61,6 +61,10 @@ INSERT INTO yield_curve(id_yield_curve,code,description,currency,calendar,compou
     VALUES (nextval('yield_curve_s'),'SOFR','SOFR Averages Rates',
     (SELECT id_currency FROM currency WHERE iso_code='USD'),
     (SELECT id_calendar FROM calendar WHERE code='USD'),1);
+INSERT INTO yield_curve(id_yield_curve,code,description,currency,calendar,compounding) 
+    VALUES (nextval('yield_curve_s'),'ESTER','ESTER Averages Rates',
+    (SELECT id_currency FROM currency WHERE iso_code='EUR'),
+    (SELECT id_calendar FROM calendar WHERE code='EUR'),1);
 
 
 -- pg_dump -U easypricer -d easypricer > easypricer.pgsql

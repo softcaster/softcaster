@@ -1,4 +1,4 @@
-﻿--
+--
 -- PostgreSQL database dump
 --
 
@@ -599,6 +599,22 @@ CREATE TABLE public.future_master_data (
 ALTER TABLE public.future_master_data OWNER TO easypricer;
 
 --
+-- Name: fx_future_master_data; Type: TABLE; Schema: public; Owner: easypricer
+--
+
+CREATE TABLE public.fx_future_master_data (
+    id_master_data integer NOT NULL,
+    underlying integer NOT NULL,
+    contract_value numeric(15,5) NOT NULL,
+    tick_size numeric(15,5) NOT NULL,
+    initial_margin numeric(15,5) NOT NULL,
+    maintenance_margin numeric(15,5) NOT NULL
+);
+
+
+ALTER TABLE public.fx_future_master_data OWNER TO easypricer;
+
+--
 -- Name: holiday; Type: TABLE; Schema: public; Owner: easypricer
 --
 
@@ -634,9 +650,10 @@ ALTER SEQUENCE public.holiday_s OWNER TO easypricer;
 CREATE TABLE public.instrument_quote (
     id_instrument_quote integer NOT NULL,
     master_data integer NOT NULL,
-    code character varying(25) NOT NULL,
+    code character varying(255) NOT NULL,
     bid numeric(15,5) NOT NULL,
-    ask numeric(15,5) NOT NULL
+    ask numeric(15,5) NOT NULL,
+    provider character varying(50) DEFAULT 'EuroNextProvider'::character varying NOT NULL
 );
 
 
@@ -817,6 +834,22 @@ CREATE SEQUENCE public.master_data_s
 
 
 ALTER SEQUENCE public.master_data_s OWNER TO easypricer;
+
+--
+-- Name: mm_future_master_data; Type: TABLE; Schema: public; Owner: easypricer
+--
+
+CREATE TABLE public.mm_future_master_data (
+    id_master_data integer NOT NULL,
+    underlying integer NOT NULL,
+    contract_value numeric(15,5) NOT NULL,
+    tick_size numeric(15,5) NOT NULL,
+    initial_margin numeric(15,5) NOT NULL,
+    maintenance_margin numeric(15,5) NOT NULL
+);
+
+
+ALTER TABLE public.mm_future_master_data OWNER TO easypricer;
 
 --
 -- Name: portfolio_master_data; Type: TABLE; Schema: public; Owner: easypricer
@@ -1159,6 +1192,7 @@ COPY public.asset_class (id_asset_class, super_class, code, description) FROM st
 16	8	FSP	Spot Forex
 17	8	FFW	Forex Forward
 18	8	FFU	Forex Future
+19	6	MFU	MM Future
 \.
 
 
@@ -1169,6 +1203,7 @@ COPY public.asset_class (id_asset_class, super_class, code, description) FROM st
 COPY public.bond_future_master_data (id_master_data, contract_value, tick_size, initial_margin) FROM stdin;
 67	25000.00000	0.01000	0.05000
 70	25000.00000	0.01000	0.05000
+81	100000.00000	0.03125	3000.00000
 \.
 
 
@@ -3772,7 +3807,6 @@ COPY public.currency (id_currency, iso_code, currency_numeric_code, description,
 164	VED	926	Bol├¡var Soberano	2	0	1	3	2	8
 3	ALL	8	Lek	2	0	1	3	2	8
 4	DZD	12	Algerian Dinar	2	0	1	3	2	8
-5	USD	840	US Dollar	2	0	1	3	2	8
 6	AOA	973	Kwanza	2	0	1	3	2	8
 83	KPW	408	North Korean Won	2	0	1	3	2	8
 8	XAD	396	Arab Accounting Dinar	2	0	1	3	2	8
@@ -3800,6 +3834,7 @@ COPY public.currency (id_currency, iso_code, currency_numeric_code, description,
 30	BND	96	Brunei Dollar	2	0	1	3	2	8
 116	PAB	590	Balboa	2	0	1	3	2	8
 1	AFN	971	´╗┐Afghani	2	0	1	3	2	8
+5	USD	840	US Dollar	2	0	1	4	2	8
 104	MDL	498	Moldovan Leu	2	0	1	3	2	8
 69	HNL	340	Lempira	2	0	1	3	2	8
 70	HKD	344	Hong Kong Dollar	2	0	1	3	2	8
@@ -3953,6 +3988,20 @@ COPY public.frequency (id_frequency, code, description, year_fraction) FROM stdi
 COPY public.future_master_data (id_master_data, isin, settlement_type, description, exchange_contract_code) FROM stdin;
 67	IT0024832682	2	Btp Mini-futures 10y Giugno 2026	MBTP
 70	IT0001	2	Btp Mini-futures 10y Settembre 2026	MBTP
+81	ZBM6	1	U.S. Treasury Bond 10Y Future	CME
+83	6SM6	1	Swiss Franc Futures	CME
+82	6EM6	1	Euro Future	CME
+84	ESRM6	1	ESTR Futures JUN 2026	CME
+\.
+
+
+--
+-- Data for Name: fx_future_master_data; Type: TABLE DATA; Schema: public; Owner: easypricer
+--
+
+COPY public.fx_future_master_data (id_master_data, underlying, contract_value, tick_size, initial_margin, maintenance_margin) FROM stdin;
+82	69	125000.00000	0.01000	300.00000	200.00000
+83	74	125000.00000	0.01000	300.00000	200.00000
 \.
 
 
@@ -3986,72 +4035,78 @@ COPY public.holiday (id_holiday, calendar, holiday_day, holiday_month, descripti
 -- Data for Name: instrument_quote; Type: TABLE DATA; Schema: public; Owner: easypricer
 --
 
-COPY public.instrument_quote (id_instrument_quote, master_data, code, bid, ask) FROM stdin;
-42	30	IT0005402117	81.53000	81.53000
-43	31	IT0005676504	98.05000	98.05000
-44	32	IT0005648149	99.53000	99.53000
-45	33	IT0005631590	100.10000	100.10000
-46	34	IT0005607970	102.05000	102.05000
-47	35	IT0005508590	103.29000	103.29000
-48	36	IT0005358806	98.45000	98.45000
-49	37	IT0005466351	86.49000	86.49000
-50	38	IT0005584856	102.45000	102.45000
-51	39	IT0003535157	110.77000	110.77000
-52	40	IT0005634800	99.14000	99.14000
-53	41	IT0005560948	105.05000	105.05000
-3	50	IT0005692485	99.19500	99.19500
-4	51	IT0005674335	98.71600	98.71600
-5	52	IT0005669269	98.90000	98.90000
-6	53	IT0005680639	99.58700	99.58700
-7	54	IT0005666851	99.10600	99.10600
-8	55	IT0005650574	99.68700	99.68700
-9	56	IT0005655037	99.50000	99.50000
-10	57	IT0005660029	99.31200	99.31200
-11	58	IT0005645509	99.85700	99.85700
-12	1	IT0005668238	102.38000	102.38000
-13	2	IT0005611741	97.30000	97.30000
-14	44	IT0005640666	99.99200	99.99200
-15	3	IT0005534141	100.56000	100.56000
-16	4	IT0005217390	70.45000	70.45000
-17	5	IT0005480980	64.93000	64.93000
-18	6	IT0005425233	59.10000	59.10000
-19	7	IT0005398406	71.32000	71.32000
-54	42	IT0005544082	106.15000	106.15000
-55	43	IT0005240350	93.96000	93.96000
-56	45	IT0005689887	98.07600	98.07600
-57	46	IT0005670895	99.92600	99.92600
-58	47	IT0005695256	97.86700	97.86700
-59	60	IT0005689960	98.99000	98.99000
-60	62	IT0001200390	94.79000	94.79000
-61	63	IT0003256820	114.88000	114.88000
-62	64	IT0005599904	101.22000	101.22000
-63	59	IT0001086567	103.07300	103.07300
-64	65	IT0005416570	97.78000	97.78000
-66	67	IT0024832682	117.98000	117.98000
-1	48	IT0005684888	98.28800	98.28800
-2	49	IT0005678492	98.50600	98.50600
-20	8	IT0005363111	93.01000	93.01000
-21	9	IT0005273013	87.90000	87.90000
-22	10	IT0005162828	78.27000	78.27000
-23	11	IT0005441883	58.61000	58.61000
-24	12	IT0005083057	86.15000	86.15000
-25	13	IT0005631608	97.77000	97.77000
-26	14	IT0005438004	64.41000	64.41000
-27	15	IT0004923998	107.13000	107.13000
-28	16	IT0005530032	103.26000	103.26000
-29	17	IT0005421703	74.67000	74.67000
-30	18	IT0005635583	97.70000	97.70000
-31	19	IT0004532559	110.80000	110.80000
-32	20	IT0005377152	90.48000	90.48000
-33	21	IT0005582421	101.74000	101.74000
-34	22	IT0005442097	78.80000	78.80000
-35	23	IT0004286966	110.93000	110.93000
-36	24	IT0005321325	90.79000	90.79000
-37	25	IT0005496770	94.20000	94.20000
-38	26	IT0005596470	102.12000	102.12000
-39	27	IT0005433195	74.82000	74.82000
-40	28	IT0003934657	102.35000	102.35000
-41	29	IT0005177909	87.34000	87.34000
+COPY public.instrument_quote (id_instrument_quote, master_data, code, bid, ask, provider) FROM stdin;
+69	69	EURUSD	0.00000	0.00000	InvestingComProvider
+70	74	EURCHF	0.00000	0.00000	InvestingComProvider
+72	82	58@6EM6	97.86750	97.86750	CmeGroupProvider
+74	84	10247@ESRM6	97.86750	97.86750	CmeGroupProvider
+42	30	IT0005402117-MOTX	81.53000	81.53000	EuroNextProvider
+43	31	IT0005676504-MOTX	98.05000	98.05000	EuroNextProvider
+44	32	IT0005648149-MOTX	99.53000	99.53000	EuroNextProvider
+45	33	IT0005631590-MOTX	100.10000	100.10000	EuroNextProvider
+46	34	IT0005607970-MOTX	102.05000	102.05000	EuroNextProvider
+47	35	IT0005508590-MOTX	103.29000	103.29000	EuroNextProvider
+48	36	IT0005358806-MOTX	98.45000	98.45000	EuroNextProvider
+49	37	IT0005466351-MOTX	86.49000	86.49000	EuroNextProvider
+50	38	IT0005584856-MOTX	102.45000	102.45000	EuroNextProvider
+51	39	IT0003535157-MOTX	110.77000	110.77000	EuroNextProvider
+52	40	IT0005634800-MOTX	99.14000	99.14000	EuroNextProvider
+53	41	IT0005560948-MOTX	105.05000	105.05000	EuroNextProvider
+3	50	IT0005692485-MOTX	99.19500	99.19500	EuroNextProvider
+4	51	IT0005674335-MOTX	98.71600	98.71600	EuroNextProvider
+5	52	IT0005669269-MOTX	98.90000	98.90000	EuroNextProvider
+6	53	IT0005680639-MOTX	99.58700	99.58700	EuroNextProvider
+7	54	IT0005666851-MOTX	99.10600	99.10600	EuroNextProvider
+8	55	IT0005650574-MOTX	99.68700	99.68700	EuroNextProvider
+9	56	IT0005655037-MOTX	99.50000	99.50000	EuroNextProvider
+10	57	IT0005660029-MOTX	99.31200	99.31200	EuroNextProvider
+11	58	IT0005645509-MOTX	99.85700	99.85700	EuroNextProvider
+12	1	IT0005668238-MOTX	102.38000	102.38000	EuroNextProvider
+13	2	IT0005611741-MOTX	97.30000	97.30000	EuroNextProvider
+14	44	IT0005640666-MOTX	99.99200	99.99200	EuroNextProvider
+15	3	IT0005534141-MOTX	100.56000	100.56000	EuroNextProvider
+16	4	IT0005217390-MOTX	70.45000	70.45000	EuroNextProvider
+17	5	IT0005480980-MOTX	64.93000	64.93000	EuroNextProvider
+18	6	IT0005425233-MOTX	59.10000	59.10000	EuroNextProvider
+19	7	IT0005398406-MOTX	71.32000	71.32000	EuroNextProvider
+54	42	IT0005544082-MOTX	106.15000	106.15000	EuroNextProvider
+55	43	IT0005240350-MOTX	93.96000	93.96000	EuroNextProvider
+56	45	IT0005689887-MOTX	98.07600	98.07600	EuroNextProvider
+57	46	IT0005670895-MOTX	99.92600	99.92600	EuroNextProvider
+58	47	IT0005695256-MOTX	97.86700	97.86700	EuroNextProvider
+59	60	IT0005689960-MOTX	98.99000	98.99000	EuroNextProvider
+60	62	IT0001200390-MOTX	94.79000	94.79000	EuroNextProvider
+61	63	IT0003256820-MOTX	114.88000	114.88000	EuroNextProvider
+62	64	IT0005599904-MOTX	101.22000	101.22000	EuroNextProvider
+63	59	IT0001086567-MOTX	103.07300	103.07300	EuroNextProvider
+64	65	IT0005416570-MOTX	97.78000	97.78000	EuroNextProvider
+1	48	IT0005684888-MOTX	98.28800	98.28800	EuroNextProvider
+2	49	IT0005678492-MOTX	98.50600	98.50600	EuroNextProvider
+20	8	IT0005363111-MOTX	93.01000	93.01000	EuroNextProvider
+21	9	IT0005273013-MOTX	87.90000	87.90000	EuroNextProvider
+22	10	IT0005162828-MOTX	78.27000	78.27000	EuroNextProvider
+23	11	IT0005441883-MOTX	58.61000	58.61000	EuroNextProvider
+24	12	IT0005083057-MOTX	86.15000	86.15000	EuroNextProvider
+25	13	IT0005631608-MOTX	97.77000	97.77000	EuroNextProvider
+26	14	IT0005438004-MOTX	64.41000	64.41000	EuroNextProvider
+27	15	IT0004923998-MOTX	107.13000	107.13000	EuroNextProvider
+28	16	IT0005530032-MOTX	103.26000	103.26000	EuroNextProvider
+29	17	IT0005421703-MOTX	74.67000	74.67000	EuroNextProvider
+30	18	IT0005635583-MOTX	97.70000	97.70000	EuroNextProvider
+31	19	IT0004532559-MOTX	110.80000	110.80000	EuroNextProvider
+32	20	IT0005377152-MOTX	90.48000	90.48000	EuroNextProvider
+33	21	IT0005582421-MOTX	101.74000	101.74000	EuroNextProvider
+34	22	IT0005442097-MOTX	78.80000	78.80000	EuroNextProvider
+35	23	IT0004286966-MOTX	110.93000	110.93000	EuroNextProvider
+36	24	IT0005321325-MOTX	90.79000	90.79000	EuroNextProvider
+37	25	IT0005496770-MOTX	94.20000	94.20000	EuroNextProvider
+38	26	IT0005596470-MOTX	102.12000	102.12000	EuroNextProvider
+39	27	IT0005433195-MOTX	74.82000	74.82000	EuroNextProvider
+40	28	IT0003934657-MOTX	102.35000	102.35000	EuroNextProvider
+41	29	IT0005177909-MOTX	87.34000	87.34000	EuroNextProvider
+66	67	MBTP-DMIL?fOrO=F&md=01-06-2026	117.98000	117.98000	EuroNextProvider
+71	81	307@ZBM6	0.00000	0.00000	CmeGroupProvider
+73	83	86@6SM6	0.00000	0.00000	CmeGroupProvider
 \.
 
 
@@ -4296,6 +4351,10 @@ COPY public.master_data (id_master_data, code, currency, calendar, issue_date, m
 78	EURAUD	2	3	2026-04-11	2026-04-11	7	4	8	100	10	100	0.0000000000	0.00000	0.00000	2	16	4
 79	EURJPY	2	3	2026-04-11	2026-04-11	7	4	8	100	10	100	0.0000000000	0.00000	0.00000	2	16	4
 80	IT0005583643	2	3	2024-02-19	2037-02-19	7	4	10	7	6	100	0.0730000000	100.00000	100.00000	2	11	4
+81	ZBM6	5	3	2025-09-22	2026-05-22	7	4	10	100	10	100	0.0000000000	100.00000	100.00000	2	15	4
+82	6EM6	5	3	2021-06-15	2026-06-15	7	4	8	100	10	100	0.0000000000	100.00000	100.00000	2	18	4
+83	6SM6	5	3	2021-06-15	2026-06-15	7	4	8	100	10	100	0.0000000000	100.00000	100.00000	2	18	4
+84	ESRM6	5	3	2023-03-17	2026-06-15	7	4	8	100	10	100	0.0000000000	100.00000	100.00000	2	19	4
 48	IT0005684888	2	3	2025-12-12	2026-12-14	7	4	10	7	10	100	0.0000000000	97.82500	100.00000	2	9	6
 49	IT0005678492	2	3	2025-11-14	2026-11-13	7	4	10	7	10	100	0.0000000000	97.95700	100.00000	2	9	6
 71	IT0002	2	3	2026-01-01	2031-01-01	7	4	10	8	10	100	0.0300000000	100.00000	100.00000	2	11	4
@@ -4365,6 +4424,15 @@ COPY public.master_data (id_master_data, code, currency, calendar, issue_date, m
 67	IT0024832682	2	3	2026-03-06	2026-06-10	7	4	10	100	10	100	0.0000000000	100.00000	100.00000	2	15	6
 69	EURUSD	2	3	2026-03-21	2026-03-21	7	4	10	100	10	100	0.0000000000	0.00000	0.00000	2	16	6
 74	EURCHF	2	3	2026-04-11	2026-04-11	7	4	8	100	10	100	0.0000000000	0.00000	0.00000	2	16	4
+\.
+
+
+--
+-- Data for Name: mm_future_master_data; Type: TABLE DATA; Schema: public; Owner: easypricer
+--
+
+COPY public.mm_future_master_data (id_master_data, underlying, contract_value, tick_size, initial_margin, maintenance_margin) FROM stdin;
+84	69	250000.00000	0.02000	300.00000	200.00000
 \.
 
 
@@ -4540,12 +4608,13 @@ COPY public.type_of_interest (id_type_of_interest, code, description) FROM stdin
 --
 
 COPY public.yield_curve (id_yield_curve, code, description, currency, calendar, compounding) FROM stdin;
-3	ITAYC	Investing.com - Italy - Government Bonds	2	3	1
-4	USAYC	Investing.com - United States - Government Bonds	5	4	1
-2	ECBYC	European Central Bank Yield Curve	2	3	3
-6	EURIRS	Eurirs Rates	2	3	1
-5	EURIBOR	Euribor Rates	2	3	0
-7	SOFR	SOFR Averages Rates	5	4	1
+2	ECBYC	European Central Bank Yield Curve	2	3	2
+3	ITAYC	Investing.com - Italy - Government Bonds	2	3	3
+4	USAYC	Investing.com - United States - Government Bonds	5	4	3
+5	EURIBOR	Euribor Rates	2	3	2
+6	EURIRS	Eurirs Rates	2	3	3
+7	SOFR	SOFR Averages Rates	5	4	2
+8	ESTER	ESTER Averages Rates	2	3	2
 \.
 
 
@@ -4667,7 +4736,7 @@ SELECT pg_catalog.setval('public.amortization_schedule_s', 6, true);
 -- Name: asset_class_s; Type: SEQUENCE SET; Schema: public; Owner: easypricer
 --
 
-SELECT pg_catalog.setval('public.asset_class_s', 18, true);
+SELECT pg_catalog.setval('public.asset_class_s', 19, true);
 
 
 --
@@ -4779,7 +4848,7 @@ SELECT pg_catalog.setval('public.instrument_quote_hist_s', 330, true);
 -- Name: instrument_quote_s; Type: SEQUENCE SET; Schema: public; Owner: easypricer
 --
 
-SELECT pg_catalog.setval('public.instrument_quote_s', 66, true);
+SELECT pg_catalog.setval('public.instrument_quote_s', 74, true);
 
 
 --
@@ -4807,7 +4876,7 @@ SELECT pg_catalog.setval('public.master_data_code_s', 1, false);
 -- Name: master_data_s; Type: SEQUENCE SET; Schema: public; Owner: easypricer
 --
 
-SELECT pg_catalog.setval('public.master_data_s', 80, true);
+SELECT pg_catalog.setval('public.master_data_s', 84, true);
 
 
 --
@@ -4877,7 +4946,7 @@ SELECT pg_catalog.setval('public.yield_curve_item_s', 460, true);
 -- Name: yield_curve_s; Type: SEQUENCE SET; Schema: public; Owner: easypricer
 --
 
-SELECT pg_catalog.setval('public.yield_curve_s', 7, true);
+SELECT pg_catalog.setval('public.yield_curve_s', 8, true);
 
 
 --
@@ -5041,6 +5110,14 @@ ALTER TABLE ONLY public.future_master_data
 
 
 --
+-- Name: fx_future_master_data fx_future_master_data_pkey; Type: CONSTRAINT; Schema: public; Owner: easypricer
+--
+
+ALTER TABLE ONLY public.fx_future_master_data
+    ADD CONSTRAINT fx_future_master_data_pkey PRIMARY KEY (id_master_data);
+
+
+--
 -- Name: holiday holiday_pkey; Type: CONSTRAINT; Schema: public; Owner: easypricer
 --
 
@@ -5094,6 +5171,14 @@ ALTER TABLE ONLY public.market_segment
 
 ALTER TABLE ONLY public.master_data
     ADD CONSTRAINT master_data_pkey PRIMARY KEY (id_master_data);
+
+
+--
+-- Name: mm_future_master_data mm_future_master_data_pkey; Type: CONSTRAINT; Schema: public; Owner: easypricer
+--
+
+ALTER TABLE ONLY public.mm_future_master_data
+    ADD CONSTRAINT mm_future_master_data_pkey PRIMARY KEY (id_master_data);
 
 
 --
@@ -5771,6 +5856,22 @@ ALTER TABLE ONLY public.finacial_txn
 
 ALTER TABLE ONLY public.master_data
     ADD CONSTRAINT fk_type_of_interest FOREIGN KEY (type_of_interest) REFERENCES public.type_of_interest(id_type_of_interest);
+
+
+--
+-- Name: fx_future_master_data fk_underlying; Type: FK CONSTRAINT; Schema: public; Owner: easypricer
+--
+
+ALTER TABLE ONLY public.fx_future_master_data
+    ADD CONSTRAINT fk_underlying FOREIGN KEY (underlying) REFERENCES public.forex_master_data(id_master_data);
+
+
+--
+-- Name: mm_future_master_data fk_underlying; Type: FK CONSTRAINT; Schema: public; Owner: easypricer
+--
+
+ALTER TABLE ONLY public.mm_future_master_data
+    ADD CONSTRAINT fk_underlying FOREIGN KEY (underlying) REFERENCES public.forex_master_data(id_master_data);
 
 
 --

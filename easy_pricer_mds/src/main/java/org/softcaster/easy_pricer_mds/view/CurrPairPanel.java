@@ -15,7 +15,7 @@ import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
 import org.softcaster.easy_pricer_mds.dialog.CurrPairIQDlg;
-import org.softcaster.easy_pricer_mds.model.CurrPairTableModel;
+import org.softcaster.easy_pricer_mds.ui.model.CurrPairTableModel;
 import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
 /**

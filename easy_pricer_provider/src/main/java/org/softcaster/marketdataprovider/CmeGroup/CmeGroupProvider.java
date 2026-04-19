@@ -15,6 +15,7 @@ import com.microsoft.playwright.options.WaitUntilState;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.softcaster.commons.types.Date;
@@ -41,6 +42,10 @@ import org.softcaster.marketdataprovider.interpreter.ProviderHelper;
  *
  * @author ep
  */
+/*
+https://www.cmegroup.com/services/sofr-strip-rates/ 
+https://www.cmegroup.com/services/term-estr/
+ */
 public class CmeGroupProvider extends AbstractProvider {
 
     private static CmeGroupProvider _instance = null;
@@ -57,7 +62,7 @@ public class CmeGroupProvider extends AbstractProvider {
         return _instance;
     }
 
-    private void parseResponseYieldCurve(String idCurve) {
+    private void parseResponseSofr() {
         if (response != null && !response.isEmpty()) {
 
             // Sostituisce tutte le chiavi "average..." che hanno valore "-" con "0"
@@ -78,7 +83,7 @@ public class CmeGroupProvider extends AbstractProvider {
 
             ProviderHelper helper = ProviderHelper.getInstance();
             if (sofrRates != null && helper != null) {
-                List<YieldNode> nodes = helper.getNodeList(idCurve);
+                List<YieldNode> nodes = helper.getNodeList("SOFR");
                 int pos = 0;
                 double value = 0.;
                 for (YieldNode node : nodes) {
@@ -97,14 +102,61 @@ public class CmeGroupProvider extends AbstractProvider {
         }
     }
 
+    private void parseResponseEster() {
+        if (response != null && !response.isEmpty()) {
+
+            List<TermESTRRate> esterRates = null;
+            try {
+                ObjectMapper om = new ObjectMapper();
+                EsterRoot root = om.readValue(response, EsterRoot.class);
+                esterRates = root.termESTRRates;
+            } catch (JsonProcessingException ex) {
+                LoggerMgr.logError(ex.getLocalizedMessage());
+                return;
+            }
+
+            // Tassi a data corrente
+            ArrayList<EsterRate> rates = esterRates.get(0).rates;
+
+            ProviderHelper helper = ProviderHelper.getInstance();
+            if (esterRates != null && helper != null) {
+                List<YieldNode> nodes = helper.getNodeList("ESTER");
+                int pos = 0;
+                double value = 0.;
+                for (YieldNode node : nodes) {
+                    try {
+                        value = Converter.toDouble(rates.get(pos).price, false);
+                    } catch (ParseException ex) {
+                        LoggerMgr.logError(ex.getLocalizedMessage());
+                        value = 0.;
+                    }
+
+                    node.setBid(value);
+                    node.setAsk(value);
+                    rateQuotes.add(node);
+                    pos++;
+                }
+            }
+        }
+
+    }
+
+    private void parseResponseYieldCurve(String idCurve) {
+        if (idCurve.equals("SOFR")) {
+            parseResponseSofr();
+        } else if (idCurve.equals("ESTER")) {
+            parseResponseEster();
+        }
+    }
+
     private double parseQuote(String quote) throws ParseException {
         if (quote.contains("'")) {
             // Logica specifica per i BOND (ZB, ZN, ZF)
             String[] tokens = quote.split("'");
             // Parte intera
-            double handle = Converter.toDouble(tokens[0],false);
+            double handle = Converter.toDouble(tokens[0], false);
             // 32-esimi
-            double thirtySeconds = Converter.toDouble(tokens[1].replace("+", ""),false);
+            double thirtySeconds = Converter.toDouble(tokens[1].replace("+", ""), false);
             double fraction = quote.contains("+") ? (thirtySeconds / 32.0) + (0.5 / 32.0) : (thirtySeconds / 32.0);
             return (handle + fraction);
         } else {

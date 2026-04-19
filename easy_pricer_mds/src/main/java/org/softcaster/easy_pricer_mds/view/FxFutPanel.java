@@ -17,7 +17,7 @@ import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.FxFutBean;
 import org.softcaster.easy_pricer_mds.dialog.FxFutIQDlg;
-import org.softcaster.easy_pricer_mds.model.FxFutTableModel;
+import org.softcaster.easy_pricer_mds.ui.model.FxFutTableModel;
 import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
 /**

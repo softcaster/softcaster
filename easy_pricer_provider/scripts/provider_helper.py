@@ -408,6 +408,38 @@ class PyProviderHelper(IProviderHelper):
         return nodeList;
 
     #
+    # Tassi Ester
+    #
+    def getNodeListEster(self):
+
+        nodeList = list()
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
+        node.setOffset(1);
+        node.setRic("ESTER 1M");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
+        node.setOffset(3);
+        node.setRic("ESTER 3M");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
+        node.setOffset(6);
+        node.setRic("ESTER 6M");
+        nodeList.append(node);
+
+        node = YieldNode()
+        node.setOffsetType(OFFSET_TYPE.YEARS);
+        node.setOffset(1);
+        node.setRic("ESTER 1Y");
+        nodeList.append(node);
+        return nodeList;
+
+    #
     # Entry Point
     #    
     def getNodeList(self, curveId):
@@ -429,6 +461,8 @@ class PyProviderHelper(IProviderHelper):
             return self.getNodeListEurirs()
         elif curveId=='SOFR':    
             return self.getNodeListSofr()
+        elif curveId=='ESTER':    
+            return self.getNodeListEster()
         else:
             return None
        

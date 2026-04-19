@@ -17,7 +17,7 @@ import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
 import org.softcaster.easy_pricer_mds.dialog.BondIQDlg;
-import org.softcaster.easy_pricer_mds.model.BondTableModel;
+import org.softcaster.easy_pricer_mds.ui.model.BondTableModel;
 import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
 /**

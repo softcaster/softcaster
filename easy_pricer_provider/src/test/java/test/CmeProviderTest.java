@@ -10,6 +10,7 @@ import org.softcaster.marketdataprovider.ConnectionParam;
 import org.softcaster.marketdataprovider.DataNode;
 import org.softcaster.marketdataprovider.MARKETS;
 import org.softcaster.marketdataprovider.MarketDataProviderHelper;
+import org.softcaster.marketdataprovider.YieldNode;
 
 /**
  *
@@ -18,12 +19,14 @@ import org.softcaster.marketdataprovider.MarketDataProviderHelper;
 public class CmeProviderTest {
 
     private static void testCme() {
+        System.out.println("-------------------------------------------------------");
+        System.out.println("ESTER");
         CmeGroupProvider provider = CmeGroupProvider.getInstance();
-        ConnectionParam param = new ConnectionParam();
-        /*
+        
+        ConnectionParam param = new ConnectionParam();       
         param.baseUrl = "https://www.cmegroup.com";
-        param.url = "https://www.cmegroup.com/services/sofr-strip-rates/";
-        param.extraParams.add("SOFR");
+        param.url = "https://www.cmegroup.com/services/term-estr/";
+        param.extraParams.add("ESTER");
         param.market = MARKETS.YIELDS;
         
         provider.refresh(param);
@@ -33,7 +36,26 @@ public class CmeProviderTest {
                 System.out.println(yieldNode.getRic() + "\t" + yieldNode.getMaturity() + "\t" + node.getBid());
             }
         }
-        */
+        
+        System.out.println();
+
+        System.out.println("-------------------------------------------------------");
+        System.out.println("SOFR");
+        param = new ConnectionParam();       
+        param.baseUrl = "https://www.cmegroup.com";
+        param.url = "https://www.cmegroup.com/services/sofr-strip-rates/";
+        param.extraParams.add("SOFR");
+        param.market = MARKETS.YIELDS;
+        
+        provider.refresh(param);
+        rates = provider.quotes(MARKETS.YIELDS);
+        for (DataNode node : rates) {
+            if (node instanceof YieldNode yieldNode) {
+                System.out.println(yieldNode.getRic() + "\t" + yieldNode.getMaturity() + "\t" + node.getBid());
+            }
+        }
+        
+/*        
         // M6EM6-2674; SR3M6-8462
         provider = CmeGroupProvider.getInstance();
         param = new ConnectionParam();
@@ -47,6 +69,7 @@ public class CmeProviderTest {
         for (DataNode node : rates) {
                 System.out.println(node.getRic() + "\t"  + node.getBid());
         }
+*/
     }
 
     public static void main(String[] args) {

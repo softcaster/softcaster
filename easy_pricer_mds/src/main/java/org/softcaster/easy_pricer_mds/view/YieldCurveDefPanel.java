@@ -6,27 +6,27 @@ package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import org.softcaster.commons.types.Date;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
-import org.softcaster.easy_pricer_core.data.InstrumentQuote;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.MarketDataService;
-import org.softcaster.easy_pricer_mds.bean.MmFutBean;
-import org.softcaster.easy_pricer_mds.dialog.MmFutIQDlg;
+import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;
 import org.softcaster.easy_pricer_mds.ui.model.MmFutTableModel;
-import org.softcaster.marketdataprovider.REQUEST_TYPE;
+import org.softcaster.easy_pricer_mds.ui.model.YieldCurveTableModel;
 
 /**
  *
  * @author softc
  */
-public class MmFutPanel extends FndtAbstactPanel {
+public class YieldCurveDefPanel extends FndtAbstactPanel {
 
-    private final List<MmFutBean> mmFutBeanList = new ArrayList<>();
+    private final List<YieldCurveBean> ycBeanList = new ArrayList<>();
     private MDSFacade mDSFacade = null;
 
     /**
@@ -34,10 +34,10 @@ public class MmFutPanel extends FndtAbstactPanel {
      *
      * @param mDSFacade
      */
-    public MmFutPanel(MDSFacade mDSFacade) {
+    public YieldCurveDefPanel(MDSFacade mDSFacade) {
         this.mDSFacade = mDSFacade;
         initComponents();
-        postInitComponents(mmFutTable);
+        postInitComponents(yieldCurveTable);
     }
 
     /**
@@ -55,7 +55,7 @@ public class MmFutPanel extends FndtAbstactPanel {
         acDel = new javax.swing.JMenuItem();
         lblHeader = new javax.swing.JLabel();
         fxFutScrollPane = new javax.swing.JScrollPane();
-        mmFutTable = new ZebraTable();
+        yieldCurveTable = new ZebraTable();
 
         acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
         acNew.setText("New");
@@ -76,11 +76,11 @@ public class MmFutPanel extends FndtAbstactPanel {
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("MM Future Quotes");
+        lblHeader.setText("Yield Curve Rates");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
-        mmFutTable.setModel(new javax.swing.table.DefaultTableModel(
+        yieldCurveTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -91,7 +91,7 @@ public class MmFutPanel extends FndtAbstactPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        fxFutScrollPane.setViewportView(mmFutTable);
+        fxFutScrollPane.setViewportView(yieldCurveTable);
 
         add(fxFutScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
@@ -103,16 +103,16 @@ public class MmFutPanel extends FndtAbstactPanel {
     private javax.swing.JMenuItem acNew;
     private javax.swing.JScrollPane fxFutScrollPane;
     private javax.swing.JLabel lblHeader;
-    private javax.swing.JTable mmFutTable;
     private javax.swing.JPopupMenu popUp;
+    private javax.swing.JTable yieldCurveTable;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void fillModelList() {
         // Crea e setta il model
-        MmFutBean prototype = new MmFutBean(null);
-        MmFutTableModel model = new MmFutTableModel(prototype);
-        mmFutTable.setModel(model);
+        YieldCurveBean prototype = new YieldCurveBean(null, 0., 0.);
+        YieldCurveTableModel model = new YieldCurveTableModel(prototype);
+        yieldCurveTable.setModel(model);
 
         // Popola il model
         refreshModel(model);
@@ -120,48 +120,10 @@ public class MmFutPanel extends FndtAbstactPanel {
 
     @Override
     protected void acNewActionPerformed(ActionEvent evt) {
-        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
-        java.awt.Frame parentFrame = null;
-
-        if (parentWindow instanceof java.awt.Frame frame) {
-            parentFrame = frame;
-        }
-
-        MmFutIQDlg dialog = new MmFutIQDlg(parentFrame, true, null, mDSFacade);
-        dialog.setSize(425, 250);
-        // Centra la dialog rispetto al pannello
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-
-        // Post chiusura dialog
-        MmFutTableModel model = (MmFutTableModel) mmFutTable.getModel();
-        refreshModel(model);
     }
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
-        int rowIndex = mmFutTable.getSelectedRow();
-        if (rowIndex != -1) {
-            // 1. CONVERSIONE FONDAMENTALE
-            int modelRow = mmFutTable.convertRowIndexToModel(rowIndex);
-            MmFutTableModel model = (MmFutTableModel) mmFutTable.getModel();
-            MmFutBean bean = model.getElementAt(modelRow);
-            java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
-            java.awt.Frame parentFrame = null;
-
-            if (parentWindow instanceof java.awt.Frame frame) {
-                parentFrame = frame;
-            }
-
-            MmFutIQDlg dialog = new MmFutIQDlg(parentFrame, true, bean, mDSFacade);
-            dialog.setSize(425, 250);
-            // Centra la dialog rispetto al pannello
-            dialog.setLocationRelativeTo(this);
-            dialog.setVisible(true);
-
-            // Post chiusura dialog
-            refreshModel(model);
-        }
     }
 
     @Override
@@ -178,38 +140,25 @@ public class MmFutPanel extends FndtAbstactPanel {
 
     @Override
     public void refreshAction() {
-        MmFutTableModel model = (MmFutTableModel) mmFutTable.getModel();
+        MmFutTableModel model = (MmFutTableModel) yieldCurveTable.getModel();
         this.refreshModel(model);
     }
 
     @Override
     protected void refreshModel(FndtTableModel ftm) {
         // Cancella vecchia lista
-        mmFutBeanList.clear();
+        ycBeanList.clear();
 
-        // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("MFU");
-        if (iqList.isEmpty()) {
-            return;
-        }
-
-        // Aggiorno service
-        Map<String, List<String>> tokenList = new HashMap<>();
-        for (InstrumentQuote quote : iqList) {
-            tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
-        }
         MarketDataService mds = MarketDataService.getInstance();
-        mds.updateBondFutPrice(tokenList, null);
+        mds.updateYieldCurve("SOFR");
 
-        MmFutBean bean = null;
-
-        for (InstrumentQuote quote : iqList) {
-            quote.setBid(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.BID));
-            quote.setAsk(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.ASK));
-            bean = new MmFutBean(quote);
-            mmFutBeanList.add(bean);
+        YieldCurveBean ycb = null;
+        NavigableMap<org.softcaster.commons.types.Date, Double> rates = mds.getRates("SOFR");
+        for (Map.Entry<Date, Double> entry : rates.entrySet()) {
+            ycb = new YieldCurveBean(entry.getKey(),entry.getValue(),entry.getValue());
+            ycBeanList.add(ycb);
         }
 
-        ftm.setData(mmFutBeanList);
+        ftm.setData(ycBeanList);
     }
 }

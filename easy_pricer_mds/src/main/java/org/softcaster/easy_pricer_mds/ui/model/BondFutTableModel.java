@@ -2,36 +2,36 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.easy_pricer_mds.model;
+package org.softcaster.easy_pricer_mds.ui.model;
 
 import java.util.List;
 import org.softcaster.commons.ui.model.FndtTableModel;
-import org.softcaster.easy_pricer_mds.bean.FxFutBean;
+import org.softcaster.easy_pricer_mds.bean.BondFutBean;
 
 /**
  *
- * @author ep
+ * @author softc
  */
-public class FxFutTableModel extends FndtTableModel<FxFutBean> {
+public class BondFutTableModel extends FndtTableModel<BondFutBean> {
 
-    public FxFutTableModel(FxFutBean prototype) {
+    public BondFutTableModel(BondFutBean prototype) {
         super(prototype);
     }
 
     @Override
-    public void setData(List<FxFutBean> newData) {
+    public void setData(List<BondFutBean> newData) {
 
         for (int i = 0; i < newData.size(); i++) {
             if (i < this.data.size()) {
-                FxFutBean cpbOld = this.data.get(i);
-                FxFutBean cpbNew = newData.get(i);
+                BondFutBean cpbOld = this.data.get(i);
+                BondFutBean cpbNew = newData.get(i);
 
                 // Calcola la tendenza la salva nel nuovo bean
                 cpbNew.setTrendBid(Double.compare(cpbNew.getBid(), cpbOld.getBid()));
                 cpbNew.setTrendAsk(Double.compare(cpbNew.getAsk(), cpbOld.getAsk()));
             }
         }
+        
         super.setData(newData); // Questo chiama fireTableDataChanged()
     }
-
 }

@@ -6,6 +6,7 @@ package org.softcaster.easy_pricer_mds.model;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -35,6 +36,14 @@ public record YieldCurve(
         sortedMap.putAll(rates);
         // Rendiamo la mappa navigabile ma non modificabile
         rates = Collections.unmodifiableNavigableMap(sortedMap);
+    }
+
+    public Iterator<Double> getRates() {
+        return rates.values().iterator();
+    }
+
+    public NavigableMap<org.softcaster.commons.types.Date, Double> getRatesMap() {
+        return rates;
     }
 
     public double getRate(Date settlement) {

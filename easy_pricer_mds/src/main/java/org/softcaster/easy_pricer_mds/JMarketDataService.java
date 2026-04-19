@@ -18,10 +18,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.commons.utils.LoggerMgr;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND_FUTURE;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.CURR_PAIR;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.FX_FUTURE;
-import org.softcaster.easy_pricer_mds.model.TreeModel;
+import org.softcaster.easy_pricer_mds.ui.model.TreeModel;
 import org.softcaster.easy_pricer_mds.ui.MDSTreeCellRenderer;
 import org.softcaster.easy_pricer_mds.view.BondFutPanel;
 import org.softcaster.easy_pricer_mds.view.BondPanel;
@@ -29,6 +30,7 @@ import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
 import org.softcaster.easy_pricer_mds.view.FxFutPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
 import org.softcaster.easy_pricer_mds.view.MmFutPanel;
+import org.softcaster.easy_pricer_mds.view.YieldCurveDefPanel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -118,6 +120,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                             case BOND -> {
                                 cl.show(mainPanel, AppCard.BOND_CARD.name());
                                 currentCard = AppCard.BOND_CARD;
+                            }
+                            case YC_DEFINE -> {
+                                cl.show(mainPanel, AppCard.YC_DEFINE_CARD.name());
+                                currentCard = AppCard.YC_DEFINE_CARD;
                             }
                             default -> {
                                 cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
@@ -315,6 +321,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.BOND_FUTURE_CARD, bondFutPanel);
         JPanel bondPanel = new BondPanel(mDSFacade);
         cardMap.put(AppCard.BOND_CARD, bondPanel);
+        JPanel ycPanel = new YieldCurveDefPanel(mDSFacade);
+        cardMap.put(AppCard.YC_DEFINE_CARD, ycPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
@@ -323,6 +331,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(mmFutPanel, AppCard.MM_FUTURE_CARD.name());
         mainPanel.add(bondFutPanel, AppCard.BOND_FUTURE_CARD.name());
         mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
+        mainPanel.add(ycPanel, AppCard.YC_DEFINE_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -369,5 +370,38 @@ public class MarketDataService {
                 }
             }
         }
+    }
+
+    public NavigableMap<org.softcaster.commons.types.Date, Double> getRates(String idCurve) {
+        return yieldCurves.get(idCurve).getRatesMap();
+    }
+
+    public void updateYieldCurve(String idCurve) {
+        switch (idCurve) {
+            case "SOFR" ->
+                updateSofrTem();
+            default -> {
+            }
+        }
+    }
+
+    private void updateSofrTem() {
+        ConnectionParam param = new ConnectionParam();
+        param.baseUrl = "https://www.cmegroup.com";
+        param.url = "https://www.cmegroup.com/services/sofr-strip-rates/";
+        param.extraParams.add("SOFR");
+        param.market = MARKETS.YIELDS;
+
+        CmeGroupProvider provider = CmeGroupProvider.getInstance();
+        provider.refresh(param);
+
+        List<DataNode> rates = provider.quotes(MARKETS.YIELDS);
+        NavigableMap<org.softcaster.commons.types.Date, Double> sourceRates = new TreeMap<>();
+        for (DataNode node : rates) {
+            if (node instanceof YieldNode yieldNode) {
+                sourceRates.put(yieldNode.getMaturity(), node.getBid());
+            }
+        }
+        yieldCurves.put("SOFR", new YieldCurve("USD", "USD", sourceRates));
     }
 }
