@@ -1,0 +1,18 @@
+/* src/index.css */
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Fondamentale per far occupare all'app tutto lo schermo senza scroll strani */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Evita il doppio scroll della pagina */
+}
+
+body {
+  display: block; /* Vite a volte mette flex o place-items center qui, rimuovilo! */
+}

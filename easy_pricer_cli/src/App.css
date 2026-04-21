@@ -1,0 +1,127 @@
+/* Font e base */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 13px;
+    margin: 0;
+}
+
+/* --- GESTIONE BORDI (Meno marcati) --- */
+.border-bottom-1,
+.border-right-1,
+.surface-border {
+    border-color: #f0f0f0 !important;
+    /* Grigio molto tenue */
+}
+
+.p-splitter {
+    border: none;
+}
+
+.p-splitter-gutter {
+    background: #f8f9fa !important;
+    /* Quasi invisibile finché non ci passi sopra */
+    height: 4px !important;
+}
+
+/* --- SIDEBAR DARK MODE --- */
+.custom-sidebar {
+    background-color: #2c3e50 !important;
+    border-right: 1px solid #1a252f !important;
+}
+
+.custom-sidebar .p-tree {
+    background: transparent !important;
+    border: none;
+    padding: 0;
+}
+
+/* Testi e Icone Sidebar */
+.custom-sidebar .p-treenode-label,
+.custom-sidebar .p-treenode-icon,
+.custom-sidebar .font-bold {
+    color: #bdc3c7 !important;
+}
+
+/* Hover e Selezione Sidebar */
+.custom-sidebar .p-treenode-content:hover {
+    background: #34495e !important;
+}
+
+.custom-sidebar .p-treenode-content.p-highlight {
+    background: #3498db !important;
+    /* Blu scuro integrato */
+    color: white !important;
+}
+
+.custom-sidebar .p-treenode-content.p-highlight .p-treenode-label,
+.custom-sidebar .p-treenode-content.p-highlight .p-treenode-icon {
+    color: white !important;
+}
+
+/* --- MAIN CONTENT (AREA BIANCA) --- */
+
+/* Rimuoviamo i bordi arrotondati ovunque */
+.p-tree,
+.p-datatable,
+.p-column-header-content,
+.p-inputtext,
+.p-button {
+    border-radius: 0 !important;
+}
+
+/* Toolbar Desktop Style */
+.p-toolbar {
+    padding: 0.2rem 0.5rem !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.p-toolbar .p-button {
+    width: 28px;
+    height: 28px;
+    color: #555 !important;
+}
+
+/* Tabella Professionale */
+.p-datatable.p-datatable-sm .p-datatable-thead>tr>th {
+    background-color: #f8f9fa;
+    color: #444;
+    border: 1px solid #f0f0f0;
+    font-weight: 600;
+}
+
+.p-datatable.p-datatable-sm .p-datatable-tbody>tr>td {
+    border: 1px solid #f5f5f5;
+    padding: 0.4rem;
+}
+
+/* Selezione riga Tabella (Blu Windows) */
+.p-datatable-tbody>tr.p-highlight {
+    background: #0078d7 !important;
+    color: white !important;
+}
+
+/* Sostituisce il bordo nero di PrimeFlex con uno quasi invisibile */
+.border-right-1,
+.border-bottom-1,
+.surface-border {
+    border-color: #f0f0f0 !important;
+}
+
+/* Rende l'header della tabella meno pesante */
+.p-datatable .p-datatable-thead>tr>th {
+    border-color: #f0f0f0 !important;
+    background-color: #fafafa !important;
+}
+
+/* Toglie l'alone azzurro di focus dai pulsanti della toolbar */
+.p-button:focus {
+    box-shadow: none !important;
+}
+
+/* Rende il pulsante del calendario più sobrio e grigio */
+.p-datepicker-trigger {
+    background: #f8f9fa !important;
+    border-color: #ced4da !important;
+    color: #6c757d !important;
+}
