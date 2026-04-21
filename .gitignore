@@ -11,3 +11,4 @@
 /market_data_service/log
 *.log
 /easy_pricer_mds/target/
+/easy_pricer_cli/node_modules/
