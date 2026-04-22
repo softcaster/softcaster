@@ -27,4 +27,5 @@ public class ProjectConfig {
     public ForexForward forexForward() {
         return new ForexForward();
     }
+ 
 }

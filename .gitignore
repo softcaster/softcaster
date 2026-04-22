@@ -12,3 +12,4 @@
 *.log
 /easy_pricer_mds/target/
 /easy_pricer_cli/node_modules/
+/easy_pricer_srv/target/

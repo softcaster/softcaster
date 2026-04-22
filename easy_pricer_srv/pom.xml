@@ -25,7 +25,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- INDISPENSABILE: Il JAR che contiene i DAO e le Entità -->
         <dependency>
             <groupId>org.softcaster</groupId>
             <artifactId>easy_pricer_core</artifactId>
@@ -43,7 +42,7 @@
         </dependency>    
         <dependency>
             <groupId>org.softcaster</groupId>
-            <artifactId>provider</artifactId>
+            <artifactId>mds</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>    
     </dependencies>

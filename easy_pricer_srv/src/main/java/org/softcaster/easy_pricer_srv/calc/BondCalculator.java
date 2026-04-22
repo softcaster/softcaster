@@ -5,10 +5,16 @@ package org.softcaster.easy_pricer_srv.calc;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.softcaster.commons.types.Date;
+import org.softcaster.easy_pricer_core.data.InstrumentQuote;
+import org.softcaster.easy_pricer_core.data.InstrumentQuoteDAO;
 import org.softcaster.easy_pricer_core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
+import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.marketdataprovider.REQUEST_TYPE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ph.alephzero.finance.DayCountBasis;
@@ -25,13 +31,15 @@ public class BondCalculator {
 
     @Autowired
     private SecurityMasterDataDAO smdDAO;
+    @Autowired
+    private InstrumentQuoteDAO instrumentQuoteDAO;
 
     public List<BondCalcOutputData> bondsValuation() {
         List<BondCalcOutputData> bondList = new ArrayList<>();
         BondPriceRequest request = new BondPriceRequest();
         org.softcaster.commons.types.Date referenceDate = new org.softcaster.commons.types.Date();
         //dbProvider.refresh(referenceDate.sqlDate());
-        
+
         // Lista bond su db
         BondCalcOutputData output = null;
         List<SecurityMasterData> securitiesList = smdDAO.findAll();
@@ -45,7 +53,7 @@ public class BondCalculator {
             output.setMaturity(bond.getMaturityDate());
             // Abilitare solo se fullCalc
             double cleanPriceTh = 0; //output.getPresentValue() - output.getAccruedInterest();
-            output.setPresentValue(cleanPriceTh);            
+            output.setPresentValue(cleanPriceTh);
             output.setCleanPrice(request.getReferencePrice());
             bondList.add(output);
         }
@@ -82,7 +90,7 @@ public class BondCalculator {
                         cashFlowItem.setEnd(item.getEnddate());
                         cashFlowItem.setInterest(item.getInterest());
                         cashFlowItem.setAmount(item.getAmount());
-                        cashFlowItem.setDiscountFactors(0.1/*dbProvider.getMoneyMarketRate("", REQUEST_TYPE.BID, item.getEnddate())*/);                        
+                        cashFlowItem.setDiscountFactors(0.1/*dbProvider.getMoneyMarketRate("", REQUEST_TYPE.BID, item.getEnddate())*/);
                         cashFlows.add(cashFlowItem);
                     }
                     input.setCashFlows(cashFlows);
@@ -99,9 +107,23 @@ public class BondCalculator {
 
     public BondCalcOutputData bondValuation(String isin) {
 
+        // Leggo lista pairs anagrafiche
+        List<InstrumentQuote> iqList = instrumentQuoteDAO.findByAssetClass("XRB");
+        if (iqList.isEmpty()) {
+            return null;
+        }
+
+        // Aggiorno service
+        Map<String, List<String>> tokenList = new HashMap<>();
+        for (InstrumentQuote quote : iqList) {
+            tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
+        }
+        MarketDataService mds = MarketDataService.getInstance();
+        mds.updateBondPrice(tokenList, null);
+
         BondPriceRequest request = new BondPriceRequest();
         request.setIsin(isin);
-        request.setReferencePrice(100./*getEuroNextProvider().getBondQuote(isin, REQUEST_TYPE.MIDDLE)*/);
+        request.setReferencePrice(mds.getSpotPrice(isin + "-MOTX", REQUEST_TYPE.BID));
         request.setReferenceDate(new Date().sqlDate());
         request.setFullCalc(false);
 
