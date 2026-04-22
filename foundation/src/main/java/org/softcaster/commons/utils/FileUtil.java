@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Properties;
+import org.python.util.PythonInterpreter;
+import org.softcaster.commons.xml.ParamsMgr;
 
 /**
  *
@@ -151,4 +154,30 @@ public class FileUtil {
             throw new IOException("Error while trying to restart the application", e);
         }
     }
+    
+    public static void initializeLogger() {
+
+        // Impostazioni log file
+        File conf = new File(System.getProperty("user.dir")
+                + "//conf//log4j.conf");
+        System.setProperty("log4j.configuration", "file:" + conf);
+    }
+
+    public static void initializePython() {
+
+        String scriptsPath = System.getProperty("user.dir") + "\\scripts";
+        String fullPythonPath = "__pyclasspath__/Lib" + File.pathSeparator + scriptsPath;
+
+        Properties props = new Properties();
+        props.put("python.console.encoding", "UTF-8");
+        props.put("python.import.site", "false"); // Disabilita la ricerca di siti esterni
+        props.setProperty("python.path", fullPythonPath);
+        // Leggo parametro che attiva debug python
+        ParamsMgr paramsMgr = ParamsMgr.getInstance();
+        String debugMode = paramsMgr.getParamValue("PY_DEBUG");
+        props.put("python.debug", debugMode);
+        PythonInterpreter.initialize(System.getProperties(), props, new String[]{""});
+
+    }
+    
 }

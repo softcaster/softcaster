@@ -1,18 +1,20 @@
 import { lazy } from 'react';
-import type { LazyExoticComponent, ComponentType } from 'react';
 import type { TreeNode } from 'primereact/treenode';
 
 // 1. Definiamo i Lazy Components (le importazioni rimangono qui)
-const ForexView = lazy(() => import('../components/views/ForexView'));
-const FxFutureView = lazy(() => import('../components/views/FxFuture'));
+export const ForexView = lazy(() => import('../components/views/ForexView'));
+export const FxFutureView = lazy(() => import('../components/views/FxFuture'));
 // Aggiungi qui gli altri man mano che li crei:
 // const BondsView = lazy(() => import('../components/views/BondsView'));
 
 // 2. Mappa dei componenti
+/*
+import type { LazyExoticComponent, ComponentType } from 'react';
 export const viewMap: Record<string, LazyExoticComponent<ComponentType<any>>> = {
     'forex-key': ForexView,
     'fxfuture-key': FxFutureView,
 };
+*/
 
 export const navigationNodes: TreeNode[] = [
   {
@@ -29,12 +31,13 @@ export const navigationNodes: TreeNode[] = [
             key: 'forex-key', 
             label: 'Forex (Spot/Fwd)', 
             icon: 'pi pi-fw pi-money-bill',
-            data: 'Forex view' // Puoi allegare metadati qui
+            data: '/forex' // link
           },
           { 
             key: 'fxfuture-key', 
             label: 'FX Futures', 
-            icon: 'pi pi-fw pi-chart-bar' 
+            icon: 'pi pi-fw pi-chart-bar', 
+            data: '/fxfuture' // link
           },
         ]
       },
