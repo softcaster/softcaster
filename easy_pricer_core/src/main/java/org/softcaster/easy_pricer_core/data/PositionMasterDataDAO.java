@@ -20,6 +20,11 @@ public class PositionMasterDataDAO {
     }
 
     @Transactional(readOnly = true)
+    public PositionMasterData findByCode(String code) {
+        return repository.findByCode(code);
+    }
+
+    @Transactional(readOnly = true)
     public List<PositionMasterData> findAll() {
         return repository.findAll(sortByCode);
     }

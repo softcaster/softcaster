@@ -21,11 +21,8 @@ public class CurrencyRestController {
     @Autowired
     private CurrencyDAO dao;
 
-    @Autowired
-    private ApplicationContext appContext;
-
-    @GetMapping("/currency/r0")
-    public ResponseEntity findAll() {
+    @GetMapping("/currency/r01")
+    public ResponseEntity<List<Currency>> findAll() {
         List<Currency> listaCurrency = dao.findAll();
         if (listaCurrency == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
@@ -33,9 +30,18 @@ public class CurrencyRestController {
         return new ResponseEntity(listaCurrency, HttpStatus.OK);
     }
 
-    @GetMapping("/currency/r1/{id}")
-    public ResponseEntity findByIdCurrency(@PathVariable("id") Integer idCurrency) {
+    @GetMapping("/currency/r02/{id}")
+    public ResponseEntity<Currency> findByIdCurrency(@PathVariable("id") Integer idCurrency) {
         Currency currency = dao.findByIdCurrency(idCurrency);
+        if (currency == null) {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity(currency, HttpStatus.OK);
+    }
+
+    @GetMapping("/currency/r03/{id}")
+    public ResponseEntity<Currency> findByIsoCode(@PathVariable("id") String isoCode) {
+        Currency currency = dao.findByIsoCode(isoCode);
         if (currency == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
@@ -44,7 +50,7 @@ public class CurrencyRestController {
 
     // save/update record
     @PostMapping(value = "/currency")
-    public ResponseEntity saveOrUpdate(@RequestBody Currency currency) {
+    public ResponseEntity<Currency> saveOrUpdate(@RequestBody Currency currency) {
         try {
             if (currency.getIdCurrency() == 0) {
                 currency.setIdCurrency(null);
@@ -58,8 +64,8 @@ public class CurrencyRestController {
     }
     
     // delete record
-    @DeleteMapping("/currency/d1/{id}")
-    public ResponseEntity delete(@PathVariable("id") Integer idCurrency) {
+    @DeleteMapping("/currency/d01/{id}")
+    public ResponseEntity<Currency> delete(@PathVariable("id") Integer idCurrency) {
         Currency currency = dao.findByIdCurrency(idCurrency);
         if (currency != null) {
             dao.delete(currency);

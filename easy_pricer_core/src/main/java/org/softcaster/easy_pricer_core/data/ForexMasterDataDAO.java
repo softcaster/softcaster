@@ -19,6 +19,11 @@ public class ForexMasterDataDAO {
         return repository.findByIdMasterData(idMasterData);
     }
 
+    @Transactional(readOnly = true)
+    public ForexMasterData findByCode(String code) {
+        return repository.findByCode(code);
+    }
+
     @Transactional
     public ForexMasterData saveOrUpdate(ForexMasterData forexMasterData) {
         return repository.save(forexMasterData);

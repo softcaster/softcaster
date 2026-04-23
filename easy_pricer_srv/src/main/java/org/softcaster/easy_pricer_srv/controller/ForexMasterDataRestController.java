@@ -20,8 +20,8 @@ public class ForexMasterDataRestController {
     @Autowired
     private ForexMasterDataDAO dao;
 
-    @GetMapping("/forex_master_data/r0")
-    public ResponseEntity findAll() {
+    @GetMapping("/forex_master_data/r01")
+    public ResponseEntity<List<ForexMasterData>> findAll() {
         List<ForexMasterData> listaForexMasterData = dao.findAll();
         if (listaForexMasterData == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
@@ -29,9 +29,18 @@ public class ForexMasterDataRestController {
         return new ResponseEntity(listaForexMasterData, HttpStatus.OK);
     }
 
-    @GetMapping("/forex_master_data/r1/{id}")
-    public ResponseEntity findByIdMasterData(@PathVariable("id") Integer idMasterData) {
+    @GetMapping("/forex_master_data/r02/{id}")
+    public ResponseEntity<ForexMasterData> findByIdMasterData(@PathVariable("id") Integer idMasterData) {
         ForexMasterData forexMasterData = dao.findByIdMasterData(idMasterData);
+        if (forexMasterData == null) {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity(forexMasterData, HttpStatus.OK);
+    }
+
+    @GetMapping("/forex_master_data/r03/{id}")
+    public ResponseEntity<ForexMasterData> findByCode(@PathVariable("id") String code) {
+        ForexMasterData forexMasterData = dao.findByCode(code);
         if (forexMasterData == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
@@ -40,7 +49,7 @@ public class ForexMasterDataRestController {
 
     // save/update record
     @PostMapping(value = "/forex_master_data")
-    public ResponseEntity saveOrUpdate(@RequestBody ForexMasterData forexMasterData) {
+    public ResponseEntity<ForexMasterData> saveOrUpdate(@RequestBody ForexMasterData forexMasterData) {
         try {
             if (forexMasterData.getIdMasterData() == 0) {
                 forexMasterData.setIdMasterData(null);
@@ -54,8 +63,8 @@ public class ForexMasterDataRestController {
     }
 
     // delete record
-    @DeleteMapping("/forex_master_data/d1/{id}")
-    public ResponseEntity delete(@PathVariable("id") Integer idMasterData) {
+    @DeleteMapping("/forex_master_data/d01/{id}")
+    public ResponseEntity<ForexMasterData> delete(@PathVariable("id") Integer idMasterData) {
         ForexMasterData forexMasterData = dao.findByIdMasterData(idMasterData);
         if (forexMasterData != null) {
             dao.delete(forexMasterData);
@@ -64,5 +73,4 @@ public class ForexMasterDataRestController {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
     }
-
 }

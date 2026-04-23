@@ -20,8 +20,8 @@ public class PositionMasterDataRestController {
     @Autowired
     private PositionMasterDataDAO dao;
 
-    @GetMapping("/position_master_data/r0")
-    public ResponseEntity findAll() {
+    @GetMapping("/position_master_data/r01")
+    public ResponseEntity<List<PositionMasterData>> findAll() {
         List<PositionMasterData> listaPositionMasterData = dao.findAll();
         if (listaPositionMasterData == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
@@ -29,9 +29,18 @@ public class PositionMasterDataRestController {
         return new ResponseEntity(listaPositionMasterData, HttpStatus.OK);
     }
 
-    @GetMapping("/position_master_data/r1/{id}")
-    public ResponseEntity findByIdPosition(@PathVariable("id") Integer idPosition) {
+    @GetMapping("/position_master_data/r02/{id}")
+    public ResponseEntity<PositionMasterData> findByIdPosition(@PathVariable("id") Integer idPosition) {
         PositionMasterData positionMasterData = dao.findByIdPosition(idPosition);
+        if (positionMasterData == null) {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity(positionMasterData, HttpStatus.OK);
+    }
+
+    @GetMapping("/position_master_data/r03/{id}")
+    public ResponseEntity<PositionMasterData> findByCode(@PathVariable("id") String code) {
+        PositionMasterData positionMasterData = dao.findByCode(code);
         if (positionMasterData == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
@@ -40,7 +49,7 @@ public class PositionMasterDataRestController {
     
     // save/update record
     @PostMapping(value = "/position_master_data")
-    public ResponseEntity saveOrUpdate(@RequestBody PositionMasterData positionMasterData) {
+    public ResponseEntity<PositionMasterData> saveOrUpdate(@RequestBody PositionMasterData positionMasterData) {
         try {
             if (positionMasterData.getIdPosition()== 0) {
                 positionMasterData.setIdPosition(null);
@@ -54,8 +63,8 @@ public class PositionMasterDataRestController {
     }
     
     // delete record
-    @DeleteMapping("/position_master_data/d1/{id}")
-    public ResponseEntity delete(@PathVariable("id") Integer idPosition) {
+    @DeleteMapping("/position_master_data/d01/{id}")
+    public ResponseEntity<PositionMasterData> delete(@PathVariable("id") Integer idPosition) {
         PositionMasterData positionMasterData = dao.findByIdPosition(idPosition);
         if (positionMasterData != null) {
             dao.delete(positionMasterData);

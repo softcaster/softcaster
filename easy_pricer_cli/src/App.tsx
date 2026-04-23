@@ -1,13 +1,13 @@
 import { useState, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Tree } from 'primereact/tree';
-import type { TreeSelectionEvent } from 'primereact/tree';
+//import type { TreeSelectionEvent } from 'primereact/tree';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import type { TreeExpandedKeysType } from 'primereact/tree';
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
 import { ActionProvider, useActions } from './context/ActionContext';
-import { navigationNodes, ForexView, FxFutureView } from './config/navigation.config';
+import { navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView } from './config/navigation.config';
 
 const ToolbarWrapper = () => {
   const { onSave, onNew } = useActions(); // Hook che abbiamo creato prima
@@ -76,7 +76,7 @@ const MainLayout = () => {
               navigate(e.node.data);
             }
           }}
-          onSelectionChange={(e: TreeSelectionEvent) => {
+          onSelectionChange={(/*e: TreeSelectionEvent*/) => {
             // Se il nodo ha un URL nei metadati (data), navighiamo
             //if (e.node.data) navigate(e.node.data);
           }}
@@ -97,15 +97,19 @@ const MainLayout = () => {
             </div>
           }>
             <Routes>
+              <Route path="/" element={<HomeView />} />
               <Route path="/forex" element={<ForexView />} />
               <Route path="/fxfuture" element={<FxFutureView />} />
-              {/* Default Page */}
-              <Route path="/" element={
-                <div className="flex flex-column align-items-center justify-content-center h-full text-400">
-                  <i className="pi pi-mouse-pointer text-4xl mb-3"></i>
-                  <p>Seleziona un elemento dal menu a sinistra per iniziare</p>
-                </div>
-              } />
+
+              {/* Tutte le altre sezioni caricano il placeholder */}
+              <Route path="/bond" element={<PlaceholderView />} />
+              <Route path="/bondfuture" element={<PlaceholderView />} />
+              <Route path="/user" element={<PlaceholderView />} />
+              <Route path="/log" element={<PlaceholderView />} />
+
+              {/* Pagina generica per URL inesistenti */}
+              <Route path="*" element={<div>404 - Not Found</div>} />
+
             </Routes>
           </Suspense>
         </div>

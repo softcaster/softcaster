@@ -4,10 +4,10 @@ import type { TreeNode } from 'primereact/treenode';
 // 1. Definiamo i Lazy Components (le importazioni rimangono qui)
 export const ForexView = lazy(() => import('../components/views/ForexView'));
 export const FxFutureView = lazy(() => import('../components/views/FxFuture'));
-// Aggiungi qui gli altri man mano che li crei:
-// const BondsView = lazy(() => import('../components/views/BondsView'));
+export const HomeView  = lazy(() => import('../components/views/HomeView'));
+export const PlaceholderView  = lazy(() => import('../components/views/PlaceholderView'));
 
-// 2. Mappa dei componenti
+// 2. Mappa dei componenti (old style)
 /*
 import type { LazyExoticComponent, ComponentType } from 'react';
 export const viewMap: Record<string, LazyExoticComponent<ComponentType<any>>> = {
@@ -23,8 +23,8 @@ export const navigationNodes: TreeNode[] = [
     icon: 'pi pi-fw pi-database',
     children: [
       {
-        key: 'instruments',
-        label: 'Financial Instruments',
+        key: 'forex-std',
+        label: 'Forex',
         icon: 'pi pi-fw pi-briefcase',
         children: [
           { 
@@ -46,8 +46,8 @@ export const navigationNodes: TreeNode[] = [
         label: 'Fixed Income',
         icon: 'pi pi-fw pi-percentage',
         children: [
-          { key: 'bonds-gov', label: 'Government Bonds', icon: 'pi pi-fw pi-flag' },
-          { key: 'bonds-corp', label: 'Corporate Bonds', icon: 'pi pi-fw pi-building' }
+          { key: 'bond-key', label: 'Bonds', icon: 'pi pi-fw pi-flag', data: '/bond' },
+          { key: 'bondfuture-key', label: 'Bond Futures', icon: 'pi pi-fw pi-building', data: '/bondfuture'  }
         ]
       }
     ]
@@ -57,8 +57,8 @@ export const navigationNodes: TreeNode[] = [
     label: 'System Settings',
     icon: 'pi pi-fw pi-cog',
     children: [
-      { key: 'users', label: 'User Management', icon: 'pi pi-fw pi-users' },
-      { key: 'logs', label: 'Audit Logs', icon: 'pi pi-fw pi-list' }
+      { key: 'user-key', label: 'User Management', icon: 'pi pi-fw pi-users', data: '/user' },
+      { key: 'log-key', label: 'Audit Logs', icon: 'pi pi-fw pi-list', data: '/log' }
     ]
   }
 ];

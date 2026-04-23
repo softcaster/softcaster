@@ -1,6 +1,6 @@
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import type { ForexTrade } from '../data/ForexTrade';
+import type { ForexTrade } from '../data/fxtrade';
 import type { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
 
 interface ForexTableProps {
