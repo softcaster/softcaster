@@ -2,15 +2,14 @@
 import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
-import type { ForexTrade } from '../data/fxtrade';
 import { Dropdown } from 'primereact/dropdown';
-import type { ForexMasterData, PositionMasterData } from '../data/schema';
+import type { ForexMasterData, PositionMasterData, FinacialTxn } from '../data/schema';
 
 interface ForexFormProps {
-    data: ForexTrade | null;
+    data: FinacialTxn | null;
     currencies: ForexMasterData[];
     positions: PositionMasterData[],
-    onChange: (data: ForexTrade) => void;
+    onChange: (data: FinacialTxn) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop
@@ -21,50 +20,74 @@ export const ForexForm = ({ data, currencies, positions, onChange }: ForexFormPr
 
                 <div className="col-12 md:col-3">
                     <label className="text-sm font-bold block mb-2">Currency Pair</label>
+
                     <Dropdown
-                        value={data?.currPair} // Il trade selezionato
-                        options={currencies} // La lista di ForexMasterData caricata dal server
+                        value={data?.masterData}
+                        options={currencies}
+                        dataKey="idMasterData" // Indispensabile per confrontare gli oggetti
+                        optionLabel="code"
                         onChange={(e) => {
                             if (data) {
-                                onChange({ ...data, currPair: e.value });
+                                console.log("Nuovo MasterData selezionato:", e.value); // Verifica cosa arriva qui
+                                onChange({ ...data, masterData: e.value });
                             }
                         }}
-                        optionLabel="description" // O il campo che vuoi visualizzare (es. "EUR/USD Spot")
-                        placeholder="Select Forex Instrument"
-                        filter
                         className="w-full"
-                        // Opzionale: un template per mostrare BCY e CCY nella lista
-                        itemTemplate={(option: ForexMasterData) => (
-                            <div>
-                                <span className="font-bold">{option?.code}</span>
-                                <small className="ml-2 text-500">({option.bcy?.isoCode}/{option.ccy?.isoCode})</small>
-                            </div>
-                        )} />
+                        filter
+
+                        // 1. Cosa mostrare quando la combo è chiusa (elemento selezionato)
+                        valueTemplate={(option, props) => {
+                            if (option) {
+                                return <span>{option.code}</span>;
+                            }
+                            return <span>{props.placeholder}</span>;
+                        }}
+
+                        // 2. Cosa mostrare nelle righe della lista quando è aperta
+                        itemTemplate={(option) => {
+                            return (
+                                <div className="flex flex-column">
+                                    <span className="font-bold">{option.code}</span>
+                                </div>
+                            );
+                        }}
+                    />
                 </div>
 
                 <div className="col-12 md:col-3">
                     <label className="text-sm font-bold block mb-2">Positions</label>
                     <Dropdown
-                        //value={data?.currPair} // Il trade selezionato
+                        value={data?.positionMd}
                         options={positions} // La lista di ForexMasterData caricata dal server
-                        /*
+                        dataKey="idPosition"
                         onChange={(e) => {
                             if (data) {
-                                onChange({ ...data, currPair: e.value });
+                                onChange({ ...data, positionMd: e.value });
                             }
                         }}
-                            */
-                        optionLabel="description" // O il campo che vuoi visualizzare (es. "EUR/USD Spot")
                         placeholder="Select Position"
                         filter
                         className="w-full"
-                        // Opzionale: un template per mostrare BCY e CCY nella lista
-                        itemTemplate={(option: PositionMasterData) => (
-                            <div>
-                                <span className="font-bold">{option?.code}</span>
-                                <small className="ml-2 text-500">({option.description})</small>
-                            </div>
-                        )} />
+
+                        // 1. Cosa mostrare quando la combo è chiusa (elemento selezionato)
+                        valueTemplate={(option, props) => {
+                            if (option) {
+                                return <span>{option.code} - {option.description}</span>;
+                            }
+                            return <span>{props.placeholder}</span>;
+                        }}
+
+                        // 2. Cosa mostrare nelle righe della lista quando è aperta
+                        itemTemplate={(option) => {
+                            return (
+                                <div className="flex flex-column">
+                                    <span className="font-bold">{option.code}</span>
+                                    <small className="text-500">{option.description}</small>
+                                </div>
+                            );
+                        }}
+
+                    />
                 </div>
 
                 <div className="col-12 md:col-3">
@@ -76,37 +99,43 @@ export const ForexForm = ({ data, currencies, positions, onChange }: ForexFormPr
                                 onChange({ ...data, price: e.value ?? 0 });
                             }
                         }}
-                        mode="decimal" minFractionDigits={2} placeholder="0.00" />
+                        mode="decimal" minFractionDigits={5} placeholder="0.00000"
+                        inputStyle={{ textAlign: 'right' }}
+                        className="w-full" />
                 </div>
+
                 <div className="col-12 md:col-3">
                     <label className="block mb-2 font-bold text-sm">Units</label>
-                    <InputNumber value={data?.units || 0}
+                    <InputNumber value={data?.quantity || 0}
                         onValueChange={(e) => {
                             // Verifichiamo che data non sia null prima di chiamare onChange
                             if (data) {
-                                onChange({ ...data, units: e.value ?? 0 });
+                                onChange({ ...data, quantity: e.value ?? 0 });
                             }
                         }}
-                        useGrouping={false} placeholder="1000" />
+                        useGrouping={false} placeholder="1000"
+                        mode="decimal" minFractionDigits={5}
+                        inputStyle={{ textAlign: 'right' }}
+                        className="w-full" />
                 </div>
                 <div className="col-12 md:col-3">
                     <label className="block mb-2 font-bold text-sm">Value Date</label>
-                    <Calendar value={data?.valueDate}
+                    <Calendar value={data?.tradeDate}
                         onChange={(e) => {
                             // Verifichiamo che data non sia null prima di chiamare onChange
                             if (data) {
-                                onChange({ ...data, valueDate: e.value as Date | null });
+                                onChange({ ...data, tradeDate: e.value as Date | null });
                             }
                         }}
                         showIcon dateFormat="dd/mm/yy" />
                 </div>
                 <div className="col-12 md:col-3">
                     <label className="block mb-2 font-bold text-sm">Reference</label>
-                    <InputText value={data?.reference || ''}
+                    <InputText value={data?.description || ''}
                         onChange={(e) => {
                             // Verifichiamo che data non sia null prima di chiamare onChange
                             if (data) {
-                                onChange({ ...data, reference: e.target.value ?? 0 });
+                                onChange({ ...data, description: e.target.value ?? 0 });
                             }
                         }}
                         placeholder="Trade ID..." />

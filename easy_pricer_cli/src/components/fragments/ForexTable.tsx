@@ -1,21 +1,21 @@
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import type { ForexTrade } from '../data/fxtrade';
 import type { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
+import type { FinacialTxn} from '../data/schema';
 
 interface ForexTableProps {
-    data: ForexTrade[];
-    selection: ForexTrade | null;
-    onSelectionChange: (value: ForexTrade) => void;
+    data: FinacialTxn[];
+    selection: FinacialTxn | null;
+    onSelectionChange: (value: FinacialTxn) => void;
 }
 
 export const ForexTable = ({ data, selection, onSelectionChange }: ForexTableProps) => {
     return (
-        <DataTable <ForexTrade[]>
+        <DataTable <FinacialTxn[]>
             value={data}
             selectionMode="single"
             selection={selection}
-            onSelectionChange={(e: DataTableSelectionSingleChangeEvent<ForexTrade[]>) =>
+            onSelectionChange={(e: DataTableSelectionSingleChangeEvent<FinacialTxn[]>) =>
                 onSelectionChange(e.value)}
             dataKey="id"
             stripedRows

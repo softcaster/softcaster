@@ -401,12 +401,12 @@ export interface FinacialTxn {
     idFinacialTxn: number;
     counterparty: Counterparty;
     positionMd: PositionMasterData;
-    masterData: BondFutureMasterData;
+    masterData: MasterData;
     txnStatus: TxnStatus;
     txnSize: number;
     description: string;
-    tradeDate: Date;
-    settlement: Date;
+    tradeDate: Date | null;
+    settlement: Date | null;
     quantity: number;
     price: number;
 }

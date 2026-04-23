@@ -6,25 +6,28 @@ import { ForexTable } from '../fragments/ForexTable';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { useActions } from '../../context/ActionContext';
 import { fetchForexMasterData, fetchPositionMasterData } from '../services/services';
-import type { ForexMasterData, PositionMasterData } from '../data/schema';
-import type { ForexTrade } from '../data/fxtrade';
+import type { ForexMasterData, PositionMasterData,FinacialTxn, Counterparty, TxnStatus} from '../data/schema';
 
-// oggetto per il reset
-const DEFAULT_TRADE: ForexTrade = {
-    id: '',
-    currPair: '',
-    price: 0,
-    units: 0,
-    valueDate: new Date(),
-    reference: ''
+const DEFAULT_TXN: FinacialTxn = {
+    idFinacialTxn: 0,
+    counterparty: {} as Counterparty,
+    positionMd: {} as PositionMasterData,
+    masterData: { code: '' } as ForexMasterData, // Inizializzato come ForexMD
+    txnStatus: {} as TxnStatus,
+    txnSize: 0,
+    description: '',
+    tradeDate: new Date(),
+    settlement: new Date(),
+    quantity: 0,
+    price: 0
 };
 
 const ForexView: React.FC = () => {
     const [fxMasterDataList, setFxMasterDataList] = useState<ForexMasterData[]>([]);
     const [positionMasterDataList, setPositionMasterDataList] = useState<PositionMasterData[]>([]);
-    const [trades, setTrades] = useState<ForexTrade[]>([/* dati iniziali */]);
+    const [trades, setTrades] = useState<FinacialTxn[]>([/* dati iniziali */]);
     // Stato condiviso
-    const [selectedTrade, setSelectedTrade] = useState<ForexTrade>(DEFAULT_TRADE);
+    const [selectedTrade, setSelectedTrade] = useState<FinacialTxn>(DEFAULT_TXN);
     const { setAction } = useActions();
 
     useEffect(() => {
@@ -41,7 +44,7 @@ const ForexView: React.FC = () => {
     // Funzione specifica per il Forex
     const handleSave = () => {
         // 1. Validazione minima
-        if (selectedTrade.price <= 0 || selectedTrade.units <= 0) return;
+        if (selectedTrade.price <= 0) return;
 
         // 2. Simulazione salvataggio (qui andrebbe la chiamata API fetch/axios)
         const newTrade = { ...selectedTrade, id: Math.random().toString(36).substr(2, 9) };
@@ -50,13 +53,13 @@ const ForexView: React.FC = () => {
         setTrades([...trades, newTrade]);
 
         // 4. Reset del form ai valori di default
-        setSelectedTrade(DEFAULT_TRADE);
+        setSelectedTrade(DEFAULT_TXN);
 
         alert("Deal salvato con successo!");
     };
 
     const handleNew = () => {
-        setSelectedTrade(DEFAULT_TRADE);
+        setSelectedTrade(DEFAULT_TXN);
     };
 
     // Registriamo queste funzioni nel Context globale
@@ -88,7 +91,7 @@ const ForexView: React.FC = () => {
                 <ForexTable
                     data={trades}
                     selection={selectedTrade}
-                    onSelectionChange={(val) => setSelectedTrade(val ?? DEFAULT_TRADE)}
+                    onSelectionChange={(val) => setSelectedTrade(val ?? DEFAULT_TXN)}
                 />
             </SplitterPanel>
 
