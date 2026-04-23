@@ -5,8 +5,8 @@ import { ForexForm } from '../fragments/ForexForm';
 import { ForexTable } from '../fragments/ForexTable';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { useActions } from '../../context/ActionContext';
-import { fetchForexMasterData } from '../services/services';
-import type { ForexMasterData } from '../data/schema';
+import { fetchForexMasterData, fetchPositionMasterData } from '../services/services';
+import type { ForexMasterData, PositionMasterData } from '../data/schema';
 import type { ForexTrade } from '../data/fxtrade';
 
 // oggetto per il reset
@@ -21,16 +21,21 @@ const DEFAULT_TRADE: ForexTrade = {
 
 const ForexView: React.FC = () => {
     const [fxMasterDataList, setFxMasterDataList] = useState<ForexMasterData[]>([]);
+    const [positionMasterDataList, setPositionMasterDataList] = useState<PositionMasterData[]>([]);
     const [trades, setTrades] = useState<ForexTrade[]>([/* dati iniziali */]);
     // Stato condiviso
     const [selectedTrade, setSelectedTrade] = useState<ForexTrade>(DEFAULT_TRADE);
     const { setAction } = useActions();
 
     useEffect(() => {
-        // Carichiamo le valute dal backend Spring Boot
+        // Carichiamo le currency pair
         fetchForexMasterData().then(data => {
             setFxMasterDataList(data);
         }).catch(err => console.error("Errore caricamento divise", err));
+        // Carichiamo le posizioni
+        fetchPositionMasterData().then(data => {
+            setPositionMasterDataList(data);
+        }).catch(err => console.error("Errore caricamento posizioni", err));
     }, []);
 
     // Funzione specifica per il Forex
@@ -72,7 +77,8 @@ const ForexView: React.FC = () => {
             <SplitterPanel size={30} minSize={20} className="overflow-auto">
                 <ForexForm
                     data={selectedTrade}
-                    currencies={fxMasterDataList} 
+                    currencies={fxMasterDataList}
+                    positions={positionMasterDataList}
                     onChange={setSelectedTrade}
                 />
             </SplitterPanel>
