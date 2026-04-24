@@ -14,7 +14,7 @@ const DEFAULT_TXN: FinacialTxn = {
     positionMd: {} as PositionMasterData,
     masterData: { code: '' } as ForexMasterData, // Inizializzato come ForexMD
     txnStatus: {} as TxnStatus,
-    txnSize: 0,
+    txnSide: 1,
     description: '',
     tradeDate: new Date(),
     settlement: new Date(),
@@ -67,13 +67,6 @@ const ForexView: React.FC = () => {
         setAction({ save: handleSave, new: handleNew });
     }, [selectedTrade]); // Aggiorna il riferimento così Save legge sempre i dati aggiornati 
 
-    // Dati 
-    /*
-    const trades: ForexTrade[] = [
-        { id: '1', price: 1.0854, units: 100000, valueDate: new Date(), reference: 'TRD-9901' },
-        { id: '2', price: 1.0862, units: 50000, valueDate: new Date(), reference: 'TRD-9902' },
-    ];
-    */
     return (
         <Splitter layout="vertical" style={{ height: '100%' }} className="border-none">
             {/* PANNELLO SUPERIORE: FORM */}

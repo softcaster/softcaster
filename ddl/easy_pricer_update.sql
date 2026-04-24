@@ -1,3 +1,4 @@
+ALTER TABLE finacial_txn RENAME COLUMN txn_size TO txn_side;
 ALTER TABLE instrument_quote ADD COLUMN quote provider VARCHAR(50) NOT NULL DEFAULT='EuroNextProvider';
 UPDATE instrument_quote 
 SET code = code || '-MOTX'

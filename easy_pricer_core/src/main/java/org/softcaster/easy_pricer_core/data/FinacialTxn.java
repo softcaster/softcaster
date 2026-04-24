@@ -42,8 +42,8 @@ public class FinacialTxn implements Serializable {
     @JoinColumn(name = "txn_status", nullable = true)
     private TxnStatus txnStatus;
 
-    @Column(name = "txn_size")
-    private Short txnSize;
+    @Column(name = "txn_side")
+    private Short txnSide;
 
     @Column(name = "description")
     private String description;
@@ -70,12 +70,12 @@ public class FinacialTxn implements Serializable {
         this.idFinacialTxn = idFinacialTxn;
     }
 
-    public Short getTxnSize() {
-        return txnSize;
+    public Short getTxnSide() {
+        return txnSide;
     }
 
-    public void setTxnSize(Short txnSize) {
-        this.txnSize = txnSize;
+    public void setTxnSide(Short txnSide) {
+        this.txnSide = txnSide;
     }
 
     public String getDescription() {

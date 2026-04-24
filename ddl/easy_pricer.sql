@@ -738,9 +738,16 @@ CREATE TABLE position_detail
     , master_data  INTEGER NOT NULL -- identificativo strumento (ogni strumento lavora con la propria divisa)
     , realized_pnl NUMERIC(15,5) NOT NULL  
     , unrealized_pnl NUMERIC(15,5) NOT NULL  
-    , avg_price NUMERIC(15,5) NOT NULL  
-    , market_value NUMERIC(15,5) NOT NULL  
-    , net_quantity NUMERIC(15,5) NOT NULL  
+    , buy_qty      NUMERIC(15,5) NOT NULL  -- quantita acquistata (incrementale)
+    , notional_value_buy NUMERIC(15,5) NOT NULL  -- controvalore di acquisto (incrementale)
+    , buy_fees NUMERIC(15,5) NOT NULL  -- commissioni di acquisto (incrementale)
+    , buy_taxes NUMERIC(15,5) NOT NULL  -- tasse di transazione sull'acquisto
+    , sell_qty      NUMERIC(15,5) NOT NULL  -- quantita venduta (incrementale)
+    , notional_value_sell NUMERIC(15,5) NOT NULL  -- controvalore di vendita (incrementale)
+    , sell_fees NUMERIC(15,5) NOT NULL  -- commissioni di vendita (incrementale)
+    , sell_taxes NUMERIC(15,5) NOT NULL  -- tasse di transazione sulla vendita
+    , multiplier NUMERIC(15,5) NOT NULL  DEFAULT 1 -- nel caso dei Bond sara 0.01
+    , market_price NUMERIC(15,5) NOT NULL  -- prezzo di mercato a cui potrei vendere (sempre bid)
     , CONSTRAINT fk_master_data FOREIGN KEY (master_data)
         REFERENCES master_data(id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
     , CONSTRAINT fk_position_md FOREIGN KEY (position_md)
@@ -778,7 +785,7 @@ CREATE TABLE finacial_txn
     , position_md  INTEGER NOT NULL -- position
     , master_data  INTEGER NOT NULL -- identificativo strumento
     , txn_status  INTEGER NOT NULL -- stato transazione
-    , txn_size SMALLINT NOT NULL -- (Buy/Sell)
+    , txn_side SMALLINT NOT NULL -- (Buy/Sell)
     , description VARCHAR(255) NOT NULL 
     , trade_date DATE NOT NULL DEFAULT NOW()
     , settlement DATE NOT NULL -- valuta

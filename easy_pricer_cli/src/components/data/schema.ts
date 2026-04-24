@@ -403,7 +403,7 @@ export interface FinacialTxn {
     positionMd: PositionMasterData;
     masterData: MasterData;
     txnStatus: TxnStatus;
-    txnSize: number;
+    txnSide: number;
     description: string;
     tradeDate: Date | null;
     settlement: Date | null;

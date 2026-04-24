@@ -4,6 +4,7 @@ import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import type { ForexMasterData, PositionMasterData, FinacialTxn } from '../data/schema';
+import { SideSelector } from './SideSelector';
 
 interface ForexFormProps {
     data: FinacialTxn | null;
@@ -51,6 +52,13 @@ export const ForexForm = ({ data, currencies, positions, onChange }: ForexFormPr
                                 </div>
                             );
                         }}
+                    />
+                </div>
+
+                <div className="col-12 md:col-3">
+                    <SideSelector
+                        value={data?.txnSide ?? null}
+                        onChange={(val: number) => onChange({ ...data!, txnSide: val })}
                     />
                 </div>
 
