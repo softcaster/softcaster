@@ -16,7 +16,7 @@ public class CounterpartyRestController {
     @Autowired
     private CounterpartyDAO dao;
 
-    @GetMapping("/counterparty/r0")
+    @GetMapping("/counterparty/r01")
     public ResponseEntity findAll() {
         List<Counterparty> listaCounterparty = dao.findAll();
         if (listaCounterparty == null) {
@@ -25,7 +25,7 @@ public class CounterpartyRestController {
         return new ResponseEntity(listaCounterparty, HttpStatus.OK);
     }
 
-    @GetMapping("/counterparty/r1/{id}")
+    @GetMapping("/counterparty/r02/{id}")
     public ResponseEntity findByIdCounterparty(@PathVariable("id") Integer idCounterparty) {
         Counterparty counterparty = dao.findByIdCounterparty(idCounterparty);
         if (counterparty == null) {

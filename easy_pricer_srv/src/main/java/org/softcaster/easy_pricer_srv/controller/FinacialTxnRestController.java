@@ -3,6 +3,7 @@ package org.softcaster.easy_pricer_srv.controller;
 import java.util.List;
 import org.softcaster.easy_pricer_core.data.FinacialTxn;
 import org.softcaster.easy_pricer_core.data.FinacialTxnDAO;
+import org.softcaster.easy_pricer_core.data.TxnStatusDAO;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,8 +20,10 @@ public class FinacialTxnRestController {
 
     @Autowired
     private FinacialTxnDAO dao;
+    @Autowired
+    private TxnStatusDAO txnStatusDAO;
 
-    @GetMapping("/finacial_txn/r0")
+    @GetMapping("/finacial_txn/r01")
     public ResponseEntity findAll() {
         List<FinacialTxn> listaFinacialTxn = dao.findAll();
         if (listaFinacialTxn == null) {
@@ -29,7 +32,7 @@ public class FinacialTxnRestController {
         return new ResponseEntity(listaFinacialTxn, HttpStatus.OK);
     }
 
-    @GetMapping("/finacial_txn/r1/{id}")
+    @GetMapping("/finacial_txn/r02/{id}")
     public ResponseEntity findByIdFinacialTxn(@PathVariable("id") Integer idFinacialTxn) {
         FinacialTxn finacialTxn = dao.findByIdFinacialTxn(idFinacialTxn);
         if (finacialTxn == null) {
@@ -44,6 +47,7 @@ public class FinacialTxnRestController {
         try {
             if (finacialTxn.getIdFinacialTxn()== 0) {
                 finacialTxn.setIdFinacialTxn(null);
+                finacialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
             }
 
             finacialTxn = dao.saveOrUpdate(finacialTxn);
@@ -54,7 +58,7 @@ public class FinacialTxnRestController {
     }
     
     // delete record
-    @DeleteMapping("/finacial_txn/d1/{id}")
+    @DeleteMapping("/finacial_txn/d01/{id}")
     public ResponseEntity delete(@PathVariable("id") Integer idFinacialTxn) {
         FinacialTxn finacialTxn = dao.findByIdFinacialTxn(idFinacialTxn);
         if (finacialTxn != null) {

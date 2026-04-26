@@ -18,6 +18,11 @@ public class TxnStatusDAO {
     public TxnStatus findByIdTxnStatus(Integer idTxnStatus) {
         return repository.findByIdTxnStatus(idTxnStatus);
     }
+    
+    @Transactional(readOnly = true)
+    public TxnStatus findByCode(String code) {
+        return repository.findByCode(code);
+    }
 
     @Transactional(readOnly = true)
     public List<TxnStatus> findAll() {

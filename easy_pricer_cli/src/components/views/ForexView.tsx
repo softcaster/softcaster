@@ -5,8 +5,8 @@ import { ForexForm } from '../fragments/ForexForm';
 import { ForexTable } from '../fragments/ForexTable';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { useActions } from '../../context/ActionContext';
-import { fetchForexMasterData, fetchPositionMasterData } from '../services/services';
-import type { ForexMasterData, PositionMasterData,FinacialTxn, Counterparty, TxnStatus} from '../data/schema';
+import { fetchForexMasterData, fetchPositionMasterData, fetchCounterparty, saveFinacialTxn, fetchFinacialTxn } from '../services/services';
+import type { ForexMasterData, PositionMasterData, FinacialTxn, Counterparty, TxnStatus } from '../data/schema';
 
 const DEFAULT_TXN: FinacialTxn = {
     idFinacialTxn: 0,
@@ -25,6 +25,7 @@ const DEFAULT_TXN: FinacialTxn = {
 const ForexView: React.FC = () => {
     const [fxMasterDataList, setFxMasterDataList] = useState<ForexMasterData[]>([]);
     const [positionMasterDataList, setPositionMasterDataList] = useState<PositionMasterData[]>([]);
+    const [counterpartyList, setCounterpartyList] = useState<Counterparty[]>([]);
     const [trades, setTrades] = useState<FinacialTxn[]>([/* dati iniziali */]);
     // Stato condiviso
     const [selectedTrade, setSelectedTrade] = useState<FinacialTxn>(DEFAULT_TXN);
@@ -34,28 +35,43 @@ const ForexView: React.FC = () => {
         // Carichiamo le currency pair
         fetchForexMasterData().then(data => {
             setFxMasterDataList(data);
-        }).catch(err => console.error("Errore caricamento divise", err));
+        }).catch(err => console.error("Error loading currency pairs", err));
         // Carichiamo le posizioni
         fetchPositionMasterData().then(data => {
             setPositionMasterDataList(data);
-        }).catch(err => console.error("Errore caricamento posizioni", err));
+        }).catch(err => console.error("Error loading positions", err));
+        // Carichiamo le controparti
+        fetchCounterparty().then(data => {
+            setCounterpartyList(data);
+        }).catch(err => console.error("Error loading counterparties", err));
+        fetchFinacialTxn().then(data => {
+            setTrades(data);
+        }).catch(err => console.error("Error loading counterparties", err));
     }, []);
 
     // Funzione specifica per il Forex
-    const handleSave = () => {
+    const handleSave = async () => {
         // 1. Validazione minima
         if (selectedTrade.price <= 0) return;
 
-        // 2. Simulazione salvataggio (qui andrebbe la chiamata API fetch/axios)
-        const newTrade = { ...selectedTrade, id: Math.random().toString(36).substr(2, 9) };
+        selectedTrade.settlement = selectedTrade.tradeDate;
 
-        // 3. Aggiornamento Tabella
-        setTrades([...trades, newTrade]);
+        try {
+            // 2. Aspettiamo che il salvataggio finisca
+            const newTrade = await saveFinacialTxn(selectedTrade);
+            console.log("Saved ID: " + newTrade?.idFinacialTxn);
 
-        // 4. Reset del form ai valori di default
-        setSelectedTrade(DEFAULT_TXN);
+            // 3. Solo dopo il salvataggio Aggiornamento Tabella
+            fetchFinacialTxn().then(data => setTrades(data));
 
-        alert("Deal salvato con successo!");
+            // 4. Reset del form ai valori di default
+            setSelectedTrade(DEFAULT_TXN);
+
+            alert("Deal salvato con successo!");
+        } catch (err) {
+            console.log(err);
+        }
+
     };
 
     const handleNew = () => {
@@ -75,6 +91,7 @@ const ForexView: React.FC = () => {
                     data={selectedTrade}
                     currencies={fxMasterDataList}
                     positions={positionMasterDataList}
+                    counterparties={counterpartyList}
                     onChange={setSelectedTrade}
                 />
             </SplitterPanel>

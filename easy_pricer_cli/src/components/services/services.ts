@@ -1300,7 +1300,6 @@ export const deleteTxnStatus = async (id: number): Promise<TxnStatus | null> => 
     }
 };
 
-
 export const fetchFinacialTxn = async (): Promise<FinacialTxn[]> => {
     try {
         return await apiRequest<FinacialTxn[]>('/finacial_txn/r01', 'GET');

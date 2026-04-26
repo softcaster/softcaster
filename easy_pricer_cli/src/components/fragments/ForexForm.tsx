@@ -3,18 +3,19 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
-import type { ForexMasterData, PositionMasterData, FinacialTxn } from '../data/schema';
+import type { ForexMasterData, PositionMasterData, FinacialTxn, Counterparty } from '../data/schema';
 import { SideSelector } from './SideSelector';
 
 interface ForexFormProps {
     data: FinacialTxn | null;
     currencies: ForexMasterData[];
     positions: PositionMasterData[],
+    counterparties: Counterparty[],
     onChange: (data: FinacialTxn) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop
-export const ForexForm = ({ data, currencies, positions, onChange }: ForexFormProps) => {
+export const ForexForm = ({ data, currencies, positions, counterparties, onChange }: ForexFormProps) => {
     return (
         <div className="surface-ground p-3 border-bottom-1 surface-border">
             <div className="grid p-fluid">
@@ -33,6 +34,7 @@ export const ForexForm = ({ data, currencies, positions, onChange }: ForexFormPr
                                 onChange({ ...data, masterData: e.value });
                             }
                         }}
+                        placeholder="Select Currency Pair"
                         className="w-full"
                         filter
 
@@ -56,14 +58,15 @@ export const ForexForm = ({ data, currencies, positions, onChange }: ForexFormPr
                 </div>
 
                 <div className="col-12 md:col-3">
-                    <SideSelector
+                    <label className="text-sm font-bold block mb-2">Side</label>
+                    <SideSelector                   
                         value={data?.txnSide ?? null}
                         onChange={(val: number) => onChange({ ...data!, txnSide: val })}
                     />
                 </div>
 
                 <div className="col-12 md:col-3">
-                    <label className="text-sm font-bold block mb-2">Positions</label>
+                    <label className="text-sm font-bold block mb-2">Position</label>
                     <Dropdown
                         value={data?.positionMd}
                         options={positions} // La lista di ForexMasterData caricata dal server
@@ -74,6 +77,42 @@ export const ForexForm = ({ data, currencies, positions, onChange }: ForexFormPr
                             }
                         }}
                         placeholder="Select Position"
+                        filter
+                        className="w-full"
+
+                        // 1. Cosa mostrare quando la combo è chiusa (elemento selezionato)
+                        valueTemplate={(option, props) => {
+                            if (option) {
+                                return <span>{option.code} - {option.description}</span>;
+                            }
+                            return <span>{props.placeholder}</span>;
+                        }}
+
+                        // 2. Cosa mostrare nelle righe della lista quando è aperta
+                        itemTemplate={(option) => {
+                            return (
+                                <div className="flex flex-column">
+                                    <span className="font-bold">{option.code}</span>
+                                    <small className="text-500">{option.description}</small>
+                                </div>
+                            );
+                        }}
+
+                    />
+                </div>
+
+                <div className="col-12 md:col-3">
+                    <label className="text-sm font-bold block mb-2">Counterparty</label>
+                    <Dropdown
+                        value={data?.counterparty}
+                        options={counterparties} // La lista di ForexMasterData caricata dal server
+                        dataKey="idCounterparty"
+                        onChange={(e) => {
+                            if (data) {
+                                onChange({ ...data, counterparty: e.value });
+                            }
+                        }}
+                        placeholder="Select Counterparty"
                         filter
                         className="w-full"
 
@@ -127,8 +166,8 @@ export const ForexForm = ({ data, currencies, positions, onChange }: ForexFormPr
                         className="w-full" />
                 </div>
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">Value Date</label>
-                    <Calendar value={data?.tradeDate}
+                    <label className="block mb-2 font-bold text-sm">Settlement</label>
+                    <Calendar value={data?.tradeDate ? new Date(data.tradeDate) : null}
                         onChange={(e) => {
                             // Verifichiamo che data non sia null prima di chiamare onChange
                             if (data) {
@@ -138,15 +177,15 @@ export const ForexForm = ({ data, currencies, positions, onChange }: ForexFormPr
                         showIcon dateFormat="dd/mm/yy" />
                 </div>
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">Reference</label>
+                    <label className="block mb-2 font-bold text-sm">Description</label>
                     <InputText value={data?.description || ''}
                         onChange={(e) => {
                             // Verifichiamo che data non sia null prima di chiamare onChange
                             if (data) {
-                                onChange({ ...data, description: e.target.value ?? 0 });
+                                onChange({ ...data, description: e.target.value ?? '---' });
                             }
                         }}
-                        placeholder="Trade ID..." />
+                        placeholder="Short description..." />
 
                 </div>
             </div>
