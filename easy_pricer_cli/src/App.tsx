@@ -1,7 +1,6 @@
 import { useState, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Tree } from 'primereact/tree';
-//import type { TreeSelectionEvent } from 'primereact/tree';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import type { TreeExpandedKeysType } from 'primereact/tree';
 import { Toolbar } from 'primereact/toolbar';
@@ -10,7 +9,7 @@ import { ActionProvider, useActions } from './context/ActionContext';
 import { navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView } from './config/navigation.config';
 
 const ToolbarWrapper = () => {
-  const { onSave, onNew } = useActions(); // Hook che abbiamo creato prima
+  const { onSave, onNew, onDel } = useActions(); // Hook che abbiamo creato prima
 
   const leftContents = (
     <div className="flex gap-2">
@@ -27,6 +26,13 @@ const ToolbarWrapper = () => {
         onClick={() => onSave?.()}
         disabled={!onSave}
         tooltip="Save"
+      />
+      <Button
+        icon="pi pi-trash"
+        className="p-button-text p-button-plain p-1"
+        onClick={() => onDel?.()}
+        disabled={!onDel}
+        tooltip="Delete"
       />
       <span className="border-left-1 surface-border mx-2"></span>
       <Button icon="pi pi-print" className="p-button-text p-button-plain p-1" tooltip="Print" />

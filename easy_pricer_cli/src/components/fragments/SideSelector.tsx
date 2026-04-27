@@ -10,7 +10,7 @@ export const getSideLabel = (value: number | null) => {
 
 // Trasforma il lato nel moltiplicatore (1 o -1)
 export const getSideMultiplier = (value: number | null) => value || 1;
-
+    
 interface SideSelectorProps {
     value: number | null;
     onChange: (value: number) => void;

@@ -32,21 +32,27 @@ const ForexView: React.FC = () => {
     const { setAction } = useActions();
 
     useEffect(() => {
-        // Carichiamo le currency pair
-        fetchForexMasterData().then(data => {
-            setFxMasterDataList(data);
-        }).catch(err => console.error("Error loading currency pairs", err));
-        // Carichiamo le posizioni
-        fetchPositionMasterData().then(data => {
-            setPositionMasterDataList(data);
-        }).catch(err => console.error("Error loading positions", err));
-        // Carichiamo le controparti
-        fetchCounterparty().then(data => {
-            setCounterpartyList(data);
-        }).catch(err => console.error("Error loading counterparties", err));
-        fetchFinacialTxn().then(data => {
-            setTrades(data);
-        }).catch(err => console.error("Error loading counterparties", err));
+        const loadData = async () => {
+            try {
+                // Partono tutte insieme, aspettiamo che finiscano tutte
+                const [fxData, posData, cpData, txData] = await Promise.all([
+                    fetchForexMasterData(),
+                    fetchPositionMasterData(),
+                    fetchCounterparty(),
+                    fetchFinacialTxn()
+                ]);
+
+                // Aggiorna gli stati
+                setFxMasterDataList(fxData);
+                setPositionMasterDataList(posData);
+                setCounterpartyList(cpData);
+                setTrades(txData);
+            } catch (err) {
+                console.error("Errore loading data:", err);
+            }
+        };
+
+        loadData();
     }, []);
 
     // Funzione specifica per il Forex
@@ -78,10 +84,14 @@ const ForexView: React.FC = () => {
         setSelectedTrade(DEFAULT_TXN);
     };
 
+    const handleDel = () => {
+        console.log(selectedTrade.idFinacialTxn);
+    };
+
     // Registriamo queste funzioni nel Context globale
     useEffect(() => {
-        setAction({ save: handleSave, new: handleNew });
-    }, [selectedTrade]); // Aggiorna il riferimento così Save legge sempre i dati aggiornati 
+        setAction({ save: handleSave, new: handleNew, del: handleDel });
+    }, [selectedTrade]); // Aggiorna il riferimento così Save/Del leggono sempre i dati aggiornati 
 
     return (
         <Splitter layout="vertical" style={{ height: '100%' }} className="border-none">

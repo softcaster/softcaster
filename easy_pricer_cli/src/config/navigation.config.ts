@@ -3,18 +3,9 @@ import type { TreeNode } from 'primereact/treenode';
 
 // 1. Definiamo i Lazy Components (le importazioni rimangono qui)
 export const ForexView = lazy(() => import('../components/views/ForexView'));
-export const FxFutureView = lazy(() => import('../components/views/FxFuture'));
+export const FxFutureView = lazy(() => import('../components/views/FxFutureView'));
 export const HomeView  = lazy(() => import('../components/views/HomeView'));
 export const PlaceholderView  = lazy(() => import('../components/views/PlaceholderView'));
-
-// 2. Mappa dei componenti (old style)
-/*
-import type { LazyExoticComponent, ComponentType } from 'react';
-export const viewMap: Record<string, LazyExoticComponent<ComponentType<any>>> = {
-    'forex-key': ForexView,
-    'fxfuture-key': FxFutureView,
-};
-*/
 
 export const navigationNodes: TreeNode[] = [
   {
