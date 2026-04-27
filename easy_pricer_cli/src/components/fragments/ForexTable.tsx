@@ -33,10 +33,11 @@ export const ForexTable = ({ data, selection, onSelectionChange }: ForexTablePro
             scrollable
             scrollHeight="flex"
         >
+            <Column field="idFinacialTxn" header="Trade Id" body={(rowData: FinacialTxn) => rowData.idFinacialTxn.toString().padStart(5, '0')} sortable />
             <Column field="txnSide" header="Side" body={sideBodyTemplate} sortable />
             <Column field="price" style={{ textAlign: 'right' }} header="Price" sortable />
             <Column field="quantity" style={{ textAlign: 'right' }} header="Units" sortable />
-            <Column field="tradeDate" header="Date" body={(r) => r.tradeDate} />
+            <Column field="tradeDate" header="Trade Date" body={(r) => r.tradeDate} />
         </DataTable>
     );
 };

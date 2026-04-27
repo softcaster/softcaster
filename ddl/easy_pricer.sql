@@ -736,6 +736,7 @@ CREATE TABLE position_detail
     id_position_detail INTEGER NOT NULL
     , position_md INTEGER NOT NULL -- posizione
     , master_data  INTEGER NOT NULL -- identificativo strumento (ogni strumento lavora con la propria divisa)
+    , counterparty INTEGER NOT NULL
     , realized_pnl NUMERIC(15,5) NOT NULL  
     , unrealized_pnl NUMERIC(15,5) NOT NULL  
     , buy_qty      NUMERIC(15,5) NOT NULL  -- quantita acquistata (incrementale)
@@ -750,6 +751,8 @@ CREATE TABLE position_detail
     , market_price NUMERIC(15,5) NOT NULL  -- prezzo di mercato a cui potrei vendere (sempre bid)
     , CONSTRAINT fk_master_data FOREIGN KEY (master_data)
         REFERENCES master_data(id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_counterparty FOREIGN KEY (counterparty)
+        REFERENCES counterparty(id_counterparty) ON DELETE NO ACTION ON UPDATE NO ACTION
     , CONSTRAINT fk_position_md FOREIGN KEY (position_md)
         REFERENCES position_master_data(id_position) ON DELETE NO ACTION ON UPDATE NO ACTION
     , PRIMARY KEY (id_position_detail)

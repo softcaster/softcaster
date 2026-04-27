@@ -29,6 +29,9 @@ public class PositionDetail implements Serializable {
     @Column(name = "master_data")
     private Integer masterData;
 
+    @Column(name = "counterparty")
+    private Integer counterparty;
+
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "realized_pnl")
     private Double realizedPnl;
@@ -272,6 +275,20 @@ public class PositionDetail implements Serializable {
      */
     public void setSellTaxes(Double sellTaxes) {
         this.sellTaxes = sellTaxes;
+    }
+
+    /**
+     * @return the counterparty
+     */
+    public Integer getCounterparty() {
+        return counterparty;
+    }
+
+    /**
+     * @param counterparty the counterparty to set
+     */
+    public void setCounterparty(Integer counterparty) {
+        this.counterparty = counterparty;
     }
 
 }
