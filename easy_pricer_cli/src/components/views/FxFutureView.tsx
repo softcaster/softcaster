@@ -2,12 +2,13 @@ import React from 'react';
 import { useActions } from '../../context/ActionContext';
 import { useState, useEffect } from 'react';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
-import { fetchFxFutureMasterData, fetchPositionMasterData, fetchCounterparty, saveFinacialTxn, fetchFinacialTxn } from '../services/services';
-import type { FxFutureMasterData,ForexMasterData, PositionMasterData, FinacialTxn, Counterparty, TxnStatus } from '../data/schema';
+import { fetchFxFutureMasterData, fetchPositionMasterData, fetchCounterparty, /*saveFinancialTxn,*/ fetchFinancialTxn } from '../services/services';
+import type { FxFutureMasterData,ForexMasterData, PositionMasterData, FinancialTxn, Counterparty, TxnStatus } from '../data/schema';
 import { FxFutureForm } from '../fragments/FxFutureForm';
+import { FxFutureTable } from '../fragments/FxFutureTable';
 
-const DEFAULT_TXN: FinacialTxn = {
-    idFinacialTxn: 0,
+const DEFAULT_TXN: FinancialTxn = {
+    idFinancialTxn: 0,
     counterparty: {} as Counterparty,
     positionMd: {} as PositionMasterData,
     masterData: { code: '' } as ForexMasterData, // Inizializzato come ForexMD
@@ -24,9 +25,9 @@ const FxFutureView: React.FC = () => {
      const [fxFutMasterDataList, setFxFutMasterDataList] = useState<FxFutureMasterData[]>([]);
      const [positionMasterDataList, setPositionMasterDataList] = useState<PositionMasterData[]>([]);
      const [counterpartyList, setCounterpartyList] = useState<Counterparty[]>([]);
-     const [trades, setTrades] = useState<FinacialTxn[]>([/* dati iniziali */]);
+     const [trades, setTrades] = useState<FinancialTxn[]>([/* dati iniziali */]);
     // Stato condiviso
-    const [selectedTrade, setSelectedTrade] = useState<FinacialTxn>(DEFAULT_TXN);
+    const [selectedTrade, setSelectedTrade] = useState<FinancialTxn>(DEFAULT_TXN);
     const { setAction } = useActions();
 
 useEffect(() => {
@@ -37,7 +38,7 @@ useEffect(() => {
                     fetchFxFutureMasterData(),
                     fetchPositionMasterData(),
                     fetchCounterparty(),
-                    fetchFinacialTxn()
+                    fetchFinancialTxn()
                 ]);
 
                 // Aggiorna gli stati
@@ -81,6 +82,14 @@ return (
                     onChange={setSelectedTrade}
                 />
             </SplitterPanel>
+                {/* PANNELLO INFERIORE: TABELLA */}
+                <SplitterPanel size={70} minSize={30} className="p-3 flex flex-column">
+                    <FxFutureTable
+                        data={trades}
+                        selection={selectedTrade}
+                        onSelectionChange={(val) => setSelectedTrade(val ?? DEFAULT_TXN)}
+                    />
+                </SplitterPanel>
         </Splitter>
     );
 };

@@ -5,11 +5,11 @@ import { ForexForm } from '../fragments/ForexForm';
 import { ForexTable } from '../fragments/ForexTable';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { useActions } from '../../context/ActionContext';
-import { fetchForexMasterData, fetchPositionMasterData, fetchCounterparty, saveFinacialTxn, fetchFinacialTxn } from '../services/services';
-import type { ForexMasterData, PositionMasterData, FinacialTxn, Counterparty, TxnStatus } from '../data/schema';
+import { fetchForexMasterData, fetchPositionMasterData, fetchCounterparty, saveFinancialTxn, fetchFinancialTxn } from '../services/services';
+import type { ForexMasterData, PositionMasterData, FinancialTxn, Counterparty, TxnStatus } from '../data/schema';
 
-const DEFAULT_TXN: FinacialTxn = {
-    idFinacialTxn: 0,
+const DEFAULT_TXN: FinancialTxn = {
+    idFinancialTxn: 0,
     counterparty: {} as Counterparty,
     positionMd: {} as PositionMasterData,
     masterData: { code: '' } as ForexMasterData, // Inizializzato come ForexMD
@@ -26,9 +26,9 @@ const ForexView: React.FC = () => {
     const [fxMasterDataList, setFxMasterDataList] = useState<ForexMasterData[]>([]);
     const [positionMasterDataList, setPositionMasterDataList] = useState<PositionMasterData[]>([]);
     const [counterpartyList, setCounterpartyList] = useState<Counterparty[]>([]);
-    const [trades, setTrades] = useState<FinacialTxn[]>([/* dati iniziali */]);
+    const [trades, setTrades] = useState<FinancialTxn[]>([/* dati iniziali */]);
     // Stato condiviso
-    const [selectedTrade, setSelectedTrade] = useState<FinacialTxn>(DEFAULT_TXN);
+    const [selectedTrade, setSelectedTrade] = useState<FinancialTxn>(DEFAULT_TXN);
     const { setAction } = useActions();
 
     useEffect(() => {
@@ -39,7 +39,7 @@ const ForexView: React.FC = () => {
                     fetchForexMasterData(),
                     fetchPositionMasterData(),
                     fetchCounterparty(),
-                    fetchFinacialTxn()
+                    fetchFinancialTxn()
                 ]);
 
                 // Aggiorna gli stati
@@ -64,11 +64,11 @@ const ForexView: React.FC = () => {
 
         try {
             // 2. Aspettiamo che il salvataggio finisca
-            const newTrade = await saveFinacialTxn(selectedTrade);
-            console.log("Saved ID: " + newTrade?.idFinacialTxn);
+            const newTrade = await saveFinancialTxn(selectedTrade);
+            console.log("Saved ID: " + newTrade?.idFinancialTxn);
 
             // 3. Solo dopo il salvataggio Aggiornamento Tabella
-            fetchFinacialTxn().then(data => setTrades(data));
+            fetchFinancialTxn().then(data => setTrades(data));
 
             // 4. Reset del form ai valori di default
             setSelectedTrade(DEFAULT_TXN);
@@ -85,7 +85,7 @@ const ForexView: React.FC = () => {
     };
 
     const handleDel = () => {
-        console.log(selectedTrade.idFinacialTxn);
+        console.log(selectedTrade.idFinancialTxn);
     };
 
     // Registriamo queste funzioni nel Context globale

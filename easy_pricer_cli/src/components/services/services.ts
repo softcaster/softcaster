@@ -4,7 +4,7 @@ import type {
     Calendar, Holiday, Currency, Country, Issuer, SuperClass, AssetClass, MasterData, LoanMasterData, SecurityMasterData, CashFlowItem,
     CashFlowReset, SettlementType, FutureMasterData, BondFutureMasterData, DeliverableBonds, FxFutureMasterData, MmFutureMasterData,
     InstrumentQuote, InstrumentQuoteHist, ForexMasterData, CounterpartyType, Counterparty, PortfolioMasterData, PositionMasterData,
-    PositionDetail, TxnStatus, FinacialTxn, YieldCurve, YieldCurveItem
+    PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem
 } from '../data/schema'
 
 export const fetchDaycount = async (): Promise<Daycount[]> => {
@@ -1300,38 +1300,38 @@ export const deleteTxnStatus = async (id: number): Promise<TxnStatus | null> => 
     }
 };
 
-export const fetchFinacialTxn = async (): Promise<FinacialTxn[]> => {
+export const fetchFinancialTxn = async (): Promise<FinancialTxn[]> => {
     try {
-        return await apiRequest<FinacialTxn[]>('/finacial_txn/r01', 'GET');
+        return await apiRequest<FinancialTxn[]>('/financial_txn/r01', 'GET');
     } catch (error) {
-        console.error('Failed to fetch finacial_txn:', error);
+        console.error('Failed to fetch financial_txn:', error);
         return [];
     }
 };
 
-export const fetchFinacialTxnById = async (id: number): Promise<FinacialTxn | null> => {
+export const fetchFinancialTxnById = async (id: number): Promise<FinancialTxn | null> => {
     try {
-        return await apiRequest<FinacialTxn>('/finacial_txn/r02/' + id, 'GET');
+        return await apiRequest<FinancialTxn>('/financial_txn/r02/' + id, 'GET');
     } catch (error) {
-        console.error('Failed to fetch finacial_txn:', error);
+        console.error('Failed to fetch financial_txn:', error);
         return null;
     }
 };
 
-export const saveFinacialTxn = async (finacial_txn: FinacialTxn): Promise<FinacialTxn | null> => {
+export const saveFinancialTxn = async (financial_txn: FinancialTxn): Promise<FinancialTxn | null> => {
     try {
-        return await apiRequest<FinacialTxn>('/finacial_txn', 'POST', finacial_txn);
+        return await apiRequest<FinancialTxn>('/financial_txn', 'POST', financial_txn);
     } catch (error) {
-        console.error('Failed to save finacial_txn:', error);
+        console.error('Failed to save financial_txn:', error);
         return null;
     }
 };
 
-export const deleteFinacialTxn = async (id: number): Promise<FinacialTxn | null> => {
+export const deleteFinancialTxn = async (id: number): Promise<FinancialTxn | null> => {
     try {
-        return await apiRequest<FinacialTxn>('/finacial_txn/d01/' + id, 'DELETE');
+        return await apiRequest<FinancialTxn>('/financial_txn/d01/' + id, 'DELETE');
     } catch (error) {
-        console.error('Failed to delete finacial_txn:', error);
+        console.error('Failed to delete financial_txn:', error);
         return null;
     }
 };

@@ -395,10 +395,10 @@ export interface TxnStatus {
 }
 
 //----------------------------------------------------------------------
-// FinacialTxn
+// FinancialTxn
 //----------------------------------------------------------------------
-export interface FinacialTxn {
-    idFinacialTxn: number;
+export interface FinancialTxn {
+    idFinancialTxn: number;
     counterparty: Counterparty;
     positionMd: PositionMasterData;
     masterData: MasterData;

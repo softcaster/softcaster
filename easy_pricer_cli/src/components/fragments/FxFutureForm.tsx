@@ -3,14 +3,14 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
 import { SideSelector } from './SideSelector';
-import type { FxFutureMasterData, PositionMasterData, FinacialTxn, Counterparty } from '../data/schema';
+import type { FxFutureMasterData, PositionMasterData, FinancialTxn, Counterparty } from '../data/schema';
 
 interface FxFutFormProps {
-    data: FinacialTxn | null;
+    data: FinancialTxn | null;
     fxFutures: FxFutureMasterData[];
     positions: PositionMasterData[],
     counterparties: Counterparty[],
-    onChange: (data: FinacialTxn) => void;
+    onChange: (data: FinancialTxn) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop

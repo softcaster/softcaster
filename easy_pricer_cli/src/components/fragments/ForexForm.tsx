@@ -2,15 +2,15 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
-import type { ForexMasterData, PositionMasterData, FinacialTxn, Counterparty } from '../data/schema';
+import type { ForexMasterData, PositionMasterData, FinancialTxn, Counterparty } from '../data/schema';
 import { SideSelector } from './SideSelector';
 
 interface ForexFormProps {
-    data: FinacialTxn | null;
+    data: FinancialTxn | null;
     currencies: ForexMasterData[];
     positions: PositionMasterData[],
     counterparties: Counterparty[],
-    onChange: (data: FinacialTxn) => void;
+    onChange: (data: FinancialTxn) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop
