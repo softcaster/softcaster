@@ -1,4 +1,8 @@
-ALTER TABLE finacial_txn RENAME COLUMN txn_size TO txn_side;
+ALTER TABLE finacial_txn RENAME to financial_txn;
+ALTER TABLE financial_txn OWNER TO easypricer;
+ALTER TABLE financial_txn RENAME COLUMN id_finacial_txn TO id_financial_txn;
+ALTER SEQUENCE finacial_txn_s RENAME TO financial_txn_s;
+
 ALTER TABLE instrument_quote ADD COLUMN quote provider VARCHAR(50) NOT NULL DEFAULT='EuroNextProvider';
 UPDATE instrument_quote 
 SET code = code || '-MOTX'

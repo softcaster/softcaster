@@ -15,16 +15,16 @@ import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
-@Table(name = "finacial_txn")
+@Table(name = "financial_txn")
 @SuppressWarnings("PersistenceUnitPresent")
 
-public class FinacialTxn implements Serializable {
+public class FinancialTxn implements Serializable {
 
     @Id
-    @SequenceGenerator(name = "finacial_txn_seq", sequenceName = "finacial_txn_s", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "finacial_txn_seq")
-    @Column(name = "id_finacial_txn", columnDefinition = "INTEGER")
-    private Integer idFinacialTxn;
+    @SequenceGenerator(name = "financial_txn_seq", sequenceName = "financial_txn_s", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "financial_txn_seq")
+    @Column(name = "id_financial_txn", columnDefinition = "INTEGER")
+    private Integer idFinancialTxn;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "counterparty", nullable = true)
@@ -62,12 +62,12 @@ public class FinacialTxn implements Serializable {
     @Column(name = "price")
     private Double price;
 
-    public Integer getIdFinacialTxn() {
-        return idFinacialTxn;
+    public Integer getIdFinancialTxn() {
+        return idFinancialTxn;
     }
 
-    public void setIdFinacialTxn(Integer idFinacialTxn) {
-        this.idFinacialTxn = idFinacialTxn;
+    public void setIdFinancialTxn(Integer idFinancialTxn) {
+        this.idFinancialTxn = idFinancialTxn;
     }
 
     public Short getTxnSide() {
@@ -123,16 +123,16 @@ public class FinacialTxn implements Serializable {
         if (this == obj) {
             return true;
         }
-        if (getIdFinacialTxn() == null || obj == null || getClass() != obj.getClass()) {
+        if (getIdFinancialTxn() == null || obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        FinacialTxn that = (FinacialTxn) obj;
-        return getIdFinacialTxn().equals(that.getIdFinacialTxn());
+        FinancialTxn that = (FinancialTxn) obj;
+        return getIdFinancialTxn().equals(that.getIdFinancialTxn());
     }
 
     @Override
     public int hashCode() {
-        return getIdFinacialTxn() == null ? 0 : idFinacialTxn.hashCode();
+        return getIdFinancialTxn() == null ? 0 : idFinancialTxn.hashCode();
     }
 
     /**

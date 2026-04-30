@@ -1,4 +1,3 @@
-// src/components/ForexForm.tsx
 import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
@@ -30,7 +29,7 @@ export const ForexForm = ({ data, currencies, positions, counterparties, onChang
                         optionLabel="code"
                         onChange={(e) => {
                             if (data) {
-                                console.log("Nuovo MasterData selezionato:", e.value); // Verifica cosa arriva qui
+                                //console.log("New MasterData selected:", e.value); // Verifica cosa arriva qui
                                 onChange({ ...data, masterData: e.value });
                             }
                         }}

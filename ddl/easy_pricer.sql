@@ -779,11 +779,11 @@ CREATE SEQUENCE txn_status_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE txn_status_s OWNER TO easypricer;
 
 -- ----------------------------------------------------------------------------
--- finacial_txn - transazione finanziaria
+-- financial_txn - transazione finanziaria
 -- ----------------------------------------------------------------------------
-CREATE TABLE finacial_txn
+CREATE TABLE financial_txn
 (
-    id_finacial_txn INTEGER NOT NULL
+    id_financial_txn INTEGER NOT NULL
     , counterparty  INTEGER NOT NULL
     , position_md  INTEGER NOT NULL -- position
     , master_data  INTEGER NOT NULL -- identificativo strumento
@@ -794,7 +794,7 @@ CREATE TABLE finacial_txn
     , settlement DATE NOT NULL -- valuta
     , quantity NUMERIC(15,5) NOT NULL  
     , price NUMERIC(15,5) NOT NULL  
-    , PRIMARY KEY (id_finacial_txn)
+    , PRIMARY KEY (id_financial_txn)
     , CONSTRAINT fk_counterparty FOREIGN KEY (counterparty)
         REFERENCES counterparty(id_counterparty) ON DELETE NO ACTION ON UPDATE NO ACTION
     , CONSTRAINT fk_position_md FOREIGN KEY (position_md)
@@ -804,10 +804,10 @@ CREATE TABLE finacial_txn
     , CONSTRAINT fk_txn_status FOREIGN KEY (txn_status)
         REFERENCES txn_status(id_txn_status) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-ALTER TABLE finacial_txn OWNER TO easypricer;
+ALTER TABLE financial_txn OWNER TO easypricer;
 -- Creo sequenza
-CREATE SEQUENCE finacial_txn_s START WITH 1 INCREMENT BY 1; 
-ALTER SEQUENCE finacial_txn_s OWNER TO easypricer;
+CREATE SEQUENCE financial_txn_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE financial_txn_s OWNER TO easypricer;
 
 
 ---------------------------------------------------------------------

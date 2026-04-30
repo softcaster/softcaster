@@ -16,7 +16,7 @@ import org.softcaster.marketdataprovider.euronext.EuroNextProvider;
  * @author ep
  */
 public class EuroNextProviderTest {
-    
+
     public static void main(String[] args) {
 
         // Inizializzazione Logger
@@ -33,7 +33,7 @@ public class EuroNextProviderTest {
         param.extraParams.add("IT0001086567");
         param.extraParams.add("-MOTX.html?lang=en"); //-DMIL future -ETLX equity
         param.market = MARKETS.BONDS;
-        */
+         */
         param.baseUrl = "https://live.euronext.com/en";
         param.extraParams.add("IT0001086567");
         param.extraParams.add("-MOTX");
@@ -57,4 +57,5 @@ public class EuroNextProviderTest {
             System.out.println(node.getRic() + "\t" + "\t" + node.getBid());
         }
 
-    }}
+    }
+}

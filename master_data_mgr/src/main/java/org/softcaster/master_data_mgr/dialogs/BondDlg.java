@@ -1069,6 +1069,9 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setNominalValue(Converter.toDouble(txtNominalValue.getText(), false));
             smd.setFirstCouponPaymentDate(new Date(txtFirstCpMaturity.getText()).sqlDate());
             smd.setFirstCouponRate(Converter.toDouble(txtFirstCpRate.getText(), false) / 100.);
+            smd.setCfiCode(txtCfiCode.getText());
+            smd.setFisn(txtFisn.getText());
+            smd.setLei(txtLei.getText());
             masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(smd);
 
             return true;
