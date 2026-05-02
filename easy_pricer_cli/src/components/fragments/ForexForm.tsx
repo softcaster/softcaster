@@ -1,140 +1,49 @@
 import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
-import { Dropdown } from 'primereact/dropdown';
-import type { ForexMasterData, PositionMasterData, FinancialTxn, Counterparty } from '../data/schema';
 import { SideSelector } from './SideSelector';
-
-interface ForexFormProps {
-    data: FinancialTxn | null;
-    currencies: ForexMasterData[];
-    positions: PositionMasterData[],
-    counterparties: Counterparty[],
-    onChange: (data: FinancialTxn) => void;
-}
+import { InstrumentField, CounterpartyField, PositionField } from './FormFields';
 
 //Il modulo riceve l'oggetto trade come prop
-export const ForexForm = ({ data, currencies, positions, counterparties, onChange }: ForexFormProps) => {
+export const ForexForm = ({ data, masterDataList, positions, counterparties, onChange }: any) => {
+
+    // Funzione helper per aggiornare solo un pezzo del deal
+    const updateField = (field: string, value: any) => {
+        if (data) onChange({ ...data, [field]: value });
+    };
+
     return (
         <div className="surface-ground p-3 border-bottom-1 surface-border">
-            <div className="grid p-fluid">
+            <div className="grid p-fluid align-items-end">
 
-                <div className="col-12 md:col-3">
-                    <label className="text-sm font-bold block mb-2">Currency Pair</label>
-
-                    <Dropdown
-                        value={data?.masterData}
-                        options={currencies}
-                        dataKey="idMasterData" // Indispensabile per confrontare gli oggetti
-                        optionLabel="code"
-                        onChange={(e) => {
-                            if (data) {
-                                //console.log("New MasterData selected:", e.value); // Verifica cosa arriva qui
-                                onChange({ ...data, masterData: e.value });
-                            }
-                        }}
-                        placeholder="Select Currency Pair"
-                        className="w-full"
-                        filter
-
-                        // 1. Cosa mostrare quando la combo è chiusa (elemento selezionato)
-                        valueTemplate={(option, props) => {
-                            if (option) {
-                                return <span>{option.code}</span>;
-                            }
-                            return <span>{props.placeholder}</span>;
-                        }}
-
-                        // 2. Cosa mostrare nelle righe della lista quando è aperta
-                        itemTemplate={(option) => {
-                            return (
-                                <div className="flex flex-column">
-                                    <span className="font-bold">{option.code}</span>
-                                </div>
-                            );
-                        }}
-                    />
-                </div>
+                {/* 1. Anagrafica (Dinamica) */}
+                <InstrumentField
+                    label="Currency Pairs"
+                    value={data?.masterData}
+                    options={masterDataList}
+                    onChange={(val) => updateField('masterData', val)}
+                />
 
                 <div className="col-12 md:col-3">
                     <label className="text-sm font-bold block mb-2">Side</label>
-                    <SideSelector                   
+                    <SideSelector
                         value={data?.txnSide ?? null}
                         onChange={(val: number) => onChange({ ...data!, txnSide: val })}
                     />
                 </div>
 
-                <div className="col-12 md:col-3">
-                    <label className="text-sm font-bold block mb-2">Position</label>
-                    <Dropdown
-                        value={data?.positionMd}
-                        options={positions} // La lista di ForexMasterData caricata dal server
-                        dataKey="idPosition"
-                        onChange={(e) => {
-                            if (data) {
-                                onChange({ ...data, positionMd: e.value });
-                            }
-                        }}
-                        placeholder="Select Position"
-                        filter
-                        className="w-full"
+                {/* 3. Campi standard riutilizzabili */}
+                <CounterpartyField
+                    value={data?.counterparty}
+                    options={counterparties}
+                    onChange={(val) => updateField('counterparty', val)}
+                />
 
-                        // 1. Cosa mostrare quando la combo è chiusa (elemento selezionato)
-                        valueTemplate={(option, props) => {
-                            if (option) {
-                                return <span>{option.code} - {option.description}</span>;
-                            }
-                            return <span>{props.placeholder}</span>;
-                        }}
-
-                        // 2. Cosa mostrare nelle righe della lista quando è aperta
-                        itemTemplate={(option) => {
-                            return (
-                                <div className="flex flex-column">
-                                    <span className="font-bold">{option.code}</span>
-                                    <small className="text-500">{option.description}</small>
-                                </div>
-                            );
-                        }}
-
-                    />
-                </div>
-
-                <div className="col-12 md:col-3">
-                    <label className="text-sm font-bold block mb-2">Counterparty</label>
-                    <Dropdown
-                        value={data?.counterparty}
-                        options={counterparties} // La lista di ForexMasterData caricata dal server
-                        dataKey="idCounterparty"
-                        onChange={(e) => {
-                            if (data) {
-                                onChange({ ...data, counterparty: e.value });
-                            }
-                        }}
-                        placeholder="Select Counterparty"
-                        filter
-                        className="w-full"
-
-                        // 1. Cosa mostrare quando la combo è chiusa (elemento selezionato)
-                        valueTemplate={(option, props) => {
-                            if (option) {
-                                return <span>{option.code} - {option.description}</span>;
-                            }
-                            return <span>{props.placeholder}</span>;
-                        }}
-
-                        // 2. Cosa mostrare nelle righe della lista quando è aperta
-                        itemTemplate={(option) => {
-                            return (
-                                <div className="flex flex-column">
-                                    <span className="font-bold">{option.code}</span>
-                                    <small className="text-500">{option.description}</small>
-                                </div>
-                            );
-                        }}
-
-                    />
-                </div>
+                <PositionField
+                    value={data?.positionMd}
+                    options={positions}
+                    onChange={(val) => updateField('positionMd', val)}
+                />
 
                 <div className="col-12 md:col-3">
                     <label className="block mb-2 font-bold text-sm">Price</label>

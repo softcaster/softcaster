@@ -6,10 +6,14 @@ import type { TreeExpandedKeysType } from 'primereact/tree';
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
 import { ActionProvider, useActions } from './context/ActionContext';
-import { navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView } from './config/navigation.config';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView, BondView, XNoteView } from './config/navigation.config';
+import { LoginDialog } from './components/fragments/LoginDialog';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 const ToolbarWrapper = () => {
-  const { onSave, onNew, onDel } = useActions(); // Hook che abbiamo creato prima
+  const { onSave, onNew, onDel, onExport, isExporting } = useActions(); // Hook che abbiamo creato prima
+  const { user, logout } = useAuth();
 
   const leftContents = (
     <div className="flex gap-2">
@@ -29,21 +33,46 @@ const ToolbarWrapper = () => {
       />
       <Button
         icon="pi pi-trash"
-        className="p-button-text p-button-plain p-1"
-        onClick={() => onDel?.()}
+        className="p-button-text p-button-danger p-1"
+        onClick={() => {
+          confirmDialog({
+            message: 'Are you sure you want to delete this transaction?',
+            header: 'Confirm Deletion',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-danger',
+            accept: () => onDel?.(), // Esegue onDel solo se l'utente accetta
+          });
+        }}
         disabled={!onDel}
         tooltip="Delete"
       />
+
       <span className="border-left-1 surface-border mx-2"></span>
       <Button icon="pi pi-print" className="p-button-text p-button-plain p-1" tooltip="Print" />
-      <Button icon="pi pi-download" className="p-button-text p-button-plain p-1" tooltip="Export" />
+      <Button
+        icon={isExporting ? "pi pi-spin pi-spinner" : "pi pi-download"}
+        className="p-button-text p-button-plain p-1"
+        loading={isExporting}
+        onClick={() => onExport?.()}
+        disabled={!onExport || isExporting}
+        tooltip="Export CSV" />
     </div>
   );
 
   const rightContents = (
-    <div className="flex align-items-center gap-2">
-      <i className="pi pi-search text-400"></i>
-      <span className="text-sm text-500">Search...</span>
+    <div className="flex align-items-center gap-3">
+      {/* Mostriamo il nome utente e il tasto Logout */}
+      <div className="flex align-items-center gap-2 mr-2">
+        <i className="pi pi-user text-400 text-xs"></i>
+        <span className="text-sm font-medium text-600">{user?.username}</span>
+      </div>
+
+      <Button
+        icon="pi pi-sign-out"
+        className="p-button-text p-button-danger p-1"
+        onClick={logout} // <--- Chiama la funzione logout del context
+        tooltip="Logout"
+      />
     </div>
   );
 
@@ -89,6 +118,26 @@ const MainLayout = () => {
           expandedKeys={expandedKeys}
           onToggle={(e) => setExpandedKeys(e.value)}
           className="w-full border-none bg-transparent"
+
+          nodeTemplate={(node, options) => {
+            const isFolder = !!(node.children && node.children.length > 0);
+            const icon = isFolder
+              ? (options.expanded ? 'pi pi-folder-open' : 'pi pi-folder')
+              : (node.icon || 'pi pi-file');
+
+            return (
+              <div className="flex align-items-center py-1">
+                <i className={`${icon} mr-2 text-sm`}
+                  style={{ color: isFolder ? '#f39c12' : '#ffffff' }}>
+                </i>
+                {/* Forza il colore del testo a bianco o grigio chiaro */}
+                <span style={{ color: '#ecf0f1', fontSize: '13px' }}>
+                  {node.label}
+                </span>
+              </div>
+            );
+          }}
+
         />
       </div>
 
@@ -106,12 +155,14 @@ const MainLayout = () => {
               <Route path="/" element={<HomeView />} />
               <Route path="/forex" element={<ForexView />} />
               <Route path="/fxfuture" element={<FxFutureView />} />
+              <Route path="/bond" element={<BondView />} />
+              <Route path="/xnote" element={<XNoteView />} />
 
               {/* Tutte le altre sezioni caricano il placeholder */}
-              <Route path="/bond" element={<PlaceholderView />} />
               <Route path="/bondfuture" element={<PlaceholderView />} />
               <Route path="/user" element={<PlaceholderView />} />
               <Route path="/log" element={<PlaceholderView />} />
+              <Route path="/bond-p" element={<PlaceholderView />} />
 
               {/* Pagina generica per URL inesistenti */}
               <Route path="*" element={<div>404 - Not Found</div>} />
@@ -127,9 +178,36 @@ const MainLayout = () => {
 export default function App() {
   return (
     <BrowserRouter>
-      <ActionProvider>
-        <MainLayout />
-      </ActionProvider>
+      {/* AuthProvider deve avvolgere tutto ciò che usa useAuth */}
+      <AuthProvider>
+        <ActionProvider>
+          <AppContent />
+        </ActionProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
+
+// Creiamo un piccolo componente interno per gestire la logica di visualizzazione
+const AppContent = () => {
+  const { user, login } = useAuth(); // Recuperiamo lo stato dal Context
+
+  const handleLogin = (credentials: any) => {
+    // Qui puoi aggiungere logica extra se serve, 
+    // ma l'importante è chiamare il login del Context
+    login(credentials.username);
+  };
+
+  return (
+    <>
+      {/* Il componente "ascoltatore" per le conferme */}
+      <ConfirmDialog />
+
+      {/* Mostriamo il Login se l'utente NON esiste nel context */}
+      <LoginDialog visible={!user} onLogin={handleLogin} />
+
+      {/* Mostriamo il Layout solo se l'utente è loggato */}
+      {user && <MainLayout />}
+    </>
+  );
+};

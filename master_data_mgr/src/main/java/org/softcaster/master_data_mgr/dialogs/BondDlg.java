@@ -891,7 +891,7 @@ public class BondDlg extends javax.swing.JDialog {
             isInsert = false;
             txtIsin.setText(bean.getSecurityMasterData().getIsin());
             txtIsin.setEditable(false);
-            txtDescription.setText(bean.getSecurityMasterData().getIssueDescription());
+            txtDescription.setText(bean.getSecurityMasterData().getDescription());
             txtIssuePrice.setText(Converter.fromDouble(bean.getSecurityMasterData().getIssuePrice()));
             txtRedempionPrice.setText(Converter.fromDouble(bean.getSecurityMasterData().getRedempionPrice()));
             txtCoupon.setText(Converter.fromDouble(bean.getSecurityMasterData().getInterestRate() * 100.));
@@ -1049,7 +1049,7 @@ public class BondDlg extends javax.swing.JDialog {
 
             smd.setIsin(txtIsin.getText());
             smd.setCode(txtIsin.getText());
-            smd.setIssueDescription(txtDescription.getText());
+            smd.setDescription(txtDescription.getText());
             smd.setIssuePrice(Converter.toDouble(txtIssuePrice.getText(), false));
             smd.setRedempionPrice(Converter.toDouble(txtRedempionPrice.getText(), false));
             smd.setInterestRate(Converter.toDouble(txtCoupon.getText(), false) / 100.);

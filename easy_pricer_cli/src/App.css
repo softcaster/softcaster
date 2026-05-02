@@ -146,3 +146,163 @@ body {
 .animate-pulse {
     animation: pulse 2s infinite ease-in-out;
 }
+
+/* --- LOGIN DIALOG CUSTOM STYLE --- */
+.login-dialog-custom .p-dialog-header {
+    background-color: #2c3e50 !important; /* Stesso blu della sidebar */
+    color: #bdc3c7 !important;
+    padding: 1.5rem !important;
+}
+
+.login-dialog-custom .p-dialog-header .p-dialog-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.login-dialog-custom .p-dialog-content {
+    padding-top: 2rem !important;
+}
+
+/* Rende i bordi degli input coerenti (senza arrotondamenti) */
+.login-dialog-custom .p-inputtext {
+    border-radius: 0 !important;
+}
+
+/* Colore del testo base per i nodi del tree */
+.custom-sidebar .p-treenode-label {
+    color: #ecf0f1 !important; /* Bianco platino */
+}
+
+/* Colore del testo quando passi il mouse (Hover) */
+.custom-sidebar .p-treenode-content:hover .p-treenode-label {
+    color: #ffffff !important;
+}
+
+/* Colore del testo quando la voce è selezionata */
+.custom-sidebar .p-treenode-content.p-highlight .p-treenode-label {
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+/* Colore delle freccette (toggler) */
+.custom-sidebar .p-tree-toggler {
+    color: #bdc3c7 !important;
+}
+
+/* --- OTTIMIZZAZIONE FORM --- */
+.p-fluid .field label, 
+.p-fluid label {
+    font-size: 0.75rem !important; /* Circa 11-12px */
+    color: #666;
+    margin-bottom: 0.25rem !important;
+}
+
+.p-inputtext, .p-dropdown, .p-calendar {
+    font-size: 0.85rem !important; /* Circa 13px */
+    padding: 0.4rem 0.6rem !important; /* Più sottili */
+}
+
+/* --- OTTIMIZZAZIONE TABELLA --- */
+.p-datatable {
+    font-size: 0.85rem !important;
+}
+
+/* Riduce l'altezza delle righe (modalità compatta manuale) */
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.4rem 0.5rem !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+    padding: 0.5rem !important;
+    font-size: 0.8rem;
+}
+/* --- OTTIMIZZAZIONE DROPDOWN --- */
+
+/* Riduce l'altezza del contenitore principale */
+.p-dropdown {
+    height: 34px !important; /* Forza un'altezza compatta */
+    align-items: center;
+}
+
+/* Riduce il padding del testo all'interno della combo */
+.p-dropdown .p-dropdown-label {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.85rem !important;
+}
+
+/* Riduce la dimensione dell'icona (la freccetta) per proporzione */
+.p-dropdown .p-dropdown-trigger {
+    width: 2.5rem !important;
+}
+
+/* Riduce il padding degli elementi nella lista quando la apri */
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.85rem !important;
+}
+
+/* Allineamento per i campi Calendar e InputNumber per uniformarli */
+.p-calendar .p-inputtext, 
+.p-inputnumber .p-inputtext {
+    height: 34px !important;
+    padding: 0.35rem 0.6rem !important;
+}
+
+/* Allineamento SideSelector */
+.p-selectbutton .p-button {
+    height: 34px !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.85rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Rende le icone Buy/Sell un po' più piccole per stare nei 34px */
+.p-selectbutton .p-button i {
+    font-size: 0.9rem !important;
+}
+
+/* Allineamento Calendar con Icona */
+.p-calendar.p-calendar-w-btn .p-inputtext {
+    height: 34px !important;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.p-calendar.p-calendar-w-btn .p-datepicker-trigger {
+    height: 34px !important;
+    width: 34px !important; /* Lo rendiamo quadrato */
+    padding: 0 !important;
+}
+/* Forza l'altezza del contenitore Calendar */
+.p-calendar.p-calendar-w-btn {
+    height: 34px !important;
+}
+
+/* Allineamento perfetto dell'input del calendario */
+.p-calendar.p-calendar-w-btn .p-inputtext {
+    height: 34px !important;
+    padding: 0.35rem 0.6rem !important;
+    border-right: none !important; /* Evita il doppio bordo tra input e bottone */
+}
+
+/* Forza il bottone del calendario a essere un quadrato perfetto di 34px */
+.p-calendar.p-calendar-w-btn .p-datepicker-trigger {
+    height: 34px !important;
+    width: 34px !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Sistema l'icona interna al bottone */
+.p-calendar.p-calendar-w-btn .p-datepicker-trigger span {
+    font-size: 0.9rem !important;
+}
+
+
+
+

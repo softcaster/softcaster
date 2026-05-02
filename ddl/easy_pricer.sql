@@ -366,7 +366,6 @@ CREATE TABLE security_master_data
     , fisn VARCHAR(255) NOT NULL
     , lei VARCHAR(255) NOT NULL
     , issuer INTEGER NOT NULL
-    , issue_description VARCHAR(255) NOT NULL
     , nominal_value NUMERIC(23,10) NOT NULL
     , first_coupon_rate NUMERIC(23,10) NOT NULL
     , first_coupon_payment_date DATE NOT NULL
@@ -486,7 +485,6 @@ CREATE TABLE future_master_data
 (
     id_master_data INTEGER NOT NULL
     , isin VARCHAR(25) NOT NULL -- isin contratto principale
-    , description VARCHAR(255) NOT NULL DEFAULT ''
     , exchange_contract_code VARCHAR(25) NOT NULL DEFAULT ''
     , settlement_type INTEGER NOT NULL
     , CONSTRAINT fk_settlement_type FOREIGN KEY (settlement_type)

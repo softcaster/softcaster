@@ -24,7 +24,7 @@ public class SecurityMasterDataRestController {
     @Autowired
     private ApplicationContext appContext;
 
-    @GetMapping("/security_master_data/r0")
+    @GetMapping("/security_master_data/r01")
     public ResponseEntity findAll() {
         List<SecurityMasterData> listaSecurityMasterData = dao.findAll();
         if (listaSecurityMasterData == null) {
@@ -33,7 +33,7 @@ public class SecurityMasterDataRestController {
         return new ResponseEntity(listaSecurityMasterData, HttpStatus.OK);
     }
 
-    @GetMapping("/security_master_data/r1/{id}")
+    @GetMapping("/security_master_data/r02/{id}")
     public ResponseEntity findByIdMasterData(@PathVariable("id") Integer idMasterData) {
         SecurityMasterData securityMasterData = dao.findByIdMasterData(idMasterData);
         if (securityMasterData == null) {
@@ -42,7 +42,7 @@ public class SecurityMasterDataRestController {
         return new ResponseEntity(securityMasterData, HttpStatus.OK);
     }
 
-    @GetMapping("/security_master_data/r2/{id}")
+    @GetMapping("/security_master_data/r03/{id}")
     public ResponseEntity findByIsin(@PathVariable("id") String isin) {
         SecurityMasterData securityMasterData = dao.findByIsin(isin);
         if (securityMasterData == null) {
@@ -51,7 +51,7 @@ public class SecurityMasterDataRestController {
         return new ResponseEntity(securityMasterData, HttpStatus.OK);
     }
 
-    @GetMapping("/security_master_data/r3/{id}")
+    @GetMapping("/security_master_data/r04/{id}")
     public ResponseEntity findByCurrency(@PathVariable("id") String currencyCode) {
         List<SecurityMasterData> securityMasterDataList = dao.findByCurrency(currencyCode);
         if (securityMasterDataList == null) {
@@ -60,15 +60,24 @@ public class SecurityMasterDataRestController {
         return new ResponseEntity(securityMasterDataList, HttpStatus.OK);
     }
 
-    @GetMapping("/security_master_data/r4/{id}")
-    public ResponseEntity findByIssueDescriptionContaining(@PathVariable("id") String issueDescriptionFragment) {
-        List<SecurityMasterData> securityMasterDataList = dao.findByIssueDescriptionContaining(issueDescriptionFragment);
+    @GetMapping("/security_master_data/r05/{id}")
+    public ResponseEntity findByDescriptionContaining(@PathVariable("id") String issueDescriptionFragment) {
+        List<SecurityMasterData> securityMasterDataList = dao.findByDescriptionContaining(issueDescriptionFragment);
         if (securityMasterDataList == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity(securityMasterDataList, HttpStatus.OK);
     }
 
+    @GetMapping("/security_master_data/r06/{id}")
+    public ResponseEntity findAllByAssetClass(@PathVariable("id") String code) {
+        List<SecurityMasterData> listaSecurityMasterData = dao.findAllByAssetClass(code);
+        if (listaSecurityMasterData == null) {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity(listaSecurityMasterData, HttpStatus.OK);
+    }
+    
     // save/update record
     @PostMapping(value = "/security_master_data")
     public ResponseEntity saveOrUpdate(@RequestBody SecurityMasterData securityMasterData) {
@@ -85,7 +94,7 @@ public class SecurityMasterDataRestController {
     }
 
     // delete record
-    @DeleteMapping("/security_master_data/d1/{id}")
+    @DeleteMapping("/security_master_data/d01/{id}")
     public ResponseEntity delete(@PathVariable("id") Integer idMasterData) {
         SecurityMasterData securityMasterData = dao.findByIdMasterData(idMasterData);
         if (securityMasterData != null) {

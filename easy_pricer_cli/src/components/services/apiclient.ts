@@ -2,6 +2,8 @@ import axios from 'axios';
 import type { AxiosResponse } from 'axios';
 
 // Create an instance of axios with some default configuration
+const BASE_UR = 'http://localhost:8080/';
+
 export const apiClient = axios.create({
     baseURL: 'http://localhost:8080/',
     headers: {
@@ -30,3 +32,9 @@ export const apiRequest = async <T>(url: string, method: 'GET' | 'POST' | 'PUT' 
     return response.data;
 };
 
+export const downloadFinancialTxnCsv = async (assetClass: string): Promise<Blob> => {
+    const response = await axios.get('http://localhost:8080/financial_txn/export/' + assetClass, {
+        responseType: 'blob'       
+    });
+    return response.data;
+};

@@ -1,4 +1,4 @@
-import  { apiRequest } from './apiclient';
+import { apiRequest } from './apiclient';
 import type {
     Daycount, Frequency, Form, RollConvention, TypeOfInterest, AccrualScheduleType, MarketSegment, AmortizationSchedule,
     Calendar, Holiday, Currency, Country, Issuer, SuperClass, AssetClass, MasterData, LoanMasterData, SecurityMasterData, CashFlowItem,
@@ -638,6 +638,23 @@ export const deleteLoanMasterData = async (id: number): Promise<LoanMasterData |
 export const fetchSecurityMasterData = async (): Promise<SecurityMasterData[]> => {
     try {
         return await apiRequest<SecurityMasterData[]>('/security_master_data/r01', 'GET');
+    } catch (error) {
+        console.error('Failed to fetch security_master_data:', error);
+        return [];
+    }
+};
+
+export const findAllSmdByAssetClassXRB = async (): Promise<SecurityMasterData[]> => {
+    return findAllSmdByAssetClass("XRB");
+};
+
+export const findAllSmdByAssetClassXRN = async (): Promise<SecurityMasterData[]> => {
+    return findAllSmdByAssetClass("XRN");
+};
+
+export const findAllSmdByAssetClass = async (code: string): Promise<SecurityMasterData[]> => {
+    try {
+        return await apiRequest<SecurityMasterData[]>('/security_master_data/r06/' + code, 'GET');
     } catch (error) {
         console.error('Failed to fetch security_master_data:', error);
         return [];
@@ -1303,6 +1320,15 @@ export const deleteTxnStatus = async (id: number): Promise<TxnStatus | null> => 
 export const fetchFinancialTxn = async (): Promise<FinancialTxn[]> => {
     try {
         return await apiRequest<FinancialTxn[]>('/financial_txn/r01', 'GET');
+    } catch (error) {
+        console.error('Failed to fetch financial_txn:', error);
+        return [];
+    }
+};
+
+export const findAllByAssetClass = async (code: string): Promise<FinancialTxn[]> => {
+    try {
+        return await apiRequest<FinancialTxn[]>('/financial_txn/r03/' + code, 'GET');
     } catch (error) {
         console.error('Failed to fetch financial_txn:', error);
         return [];

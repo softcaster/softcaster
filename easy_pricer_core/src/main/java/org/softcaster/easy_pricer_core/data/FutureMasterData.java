@@ -16,9 +16,6 @@ public class FutureMasterData extends MasterData {
     @Column(name = "isin")
     private String isin;
 
-    @Column(name = "description")
-    private String description;
-
     @Column(name = "exchange_contract_code")
     private String exchangeContractCode;
 
@@ -46,20 +43,6 @@ public class FutureMasterData extends MasterData {
      */
     public void setSettlementType(SettlementType settlementType) {
         this.settlementType = settlementType;
-    }
-
-    /**
-     * @return the description
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * @param description the description to set
-     */
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     /**

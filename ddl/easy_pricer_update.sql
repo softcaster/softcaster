@@ -1,3 +1,16 @@
+ALTER TABLE master_data 
+ADD COLUMN description VARCHAR(255) DEFAULT '';
+
+UPDATE master_data
+SET description = smd.issue_description
+FROM security_master_data smd
+WHERE master_data.id_master_data = smd.id_master_data;
+
+UPDATE master_data
+SET description = fmd.description
+FROM future_master_data fmd
+WHERE master_data.id_master_data = fmd.id_master_data;
+
 ALTER TABLE finacial_txn RENAME to financial_txn;
 ALTER TABLE financial_txn OWNER TO easypricer;
 ALTER TABLE financial_txn RENAME COLUMN id_finacial_txn TO id_financial_txn;

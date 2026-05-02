@@ -30,7 +30,7 @@ public class BondBean implements IFndtModel, ITrendable {
             case 0 -> {
                 String code = "";
                 if (iQuote.getMasterData() instanceof SecurityMasterData bfmd) {
-                    code = bfmd.getCode() + " - " + bfmd.getIssueDescription();
+                    code = bfmd.getCode() + " - " + bfmd.getDescription();
                 }
                 yield code;
             }

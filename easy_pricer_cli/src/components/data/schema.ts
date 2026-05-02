@@ -159,6 +159,7 @@ export interface AssetClass {
 export interface MasterData {
     idMasterData: number;
     code: string;
+    description: string;
     currency: Currency;
     calendar: Calendar;
     issueDate: Date;
@@ -203,7 +204,6 @@ export interface SecurityMasterData {
     fisn: string;
     lei: string;
     issuer: Issuer;
-    issueDescription: string;
     nominalValue: number;
     firstCouponRate: number;
     firstCouponPaymentDate: Date;
@@ -243,7 +243,6 @@ export interface FutureMasterData {
     idMasterData: number;
     isin: string;
     settlementType: SettlementType;
-    description: string;
     exchangeContractCode: string;
 }
 
@@ -436,3 +435,29 @@ export interface YieldCurveItem {
     ask: number;
 }
 
+export const DEFAULT_TXN: FinancialTxn = {
+    idFinancialTxn: 0,
+    counterparty: {} as Counterparty,
+    positionMd: {} as PositionMasterData,
+    masterData: { code: '' } as ForexMasterData, // Inizializzato come ForexMD
+    txnStatus: {} as TxnStatus,
+    txnSide: 1,
+    description: '',
+    tradeDate: new Date(),
+    settlement: new Date(),
+    quantity: 0,
+    price: 0
+};
+
+export const createDefaultTxn = (): FinancialTxn => ({
+    idFinancialTxn: 0,
+    counterparty: { idCounterparty: 0, description: '' } as Counterparty,
+    positionMd: { idPosition: 0, code: '' } as PositionMasterData,
+    masterData: { idMasterData: 0, code: '' } as any,
+    txnStatus: { idTxnStatus: 0, description: '' } as TxnStatus, txnSide: 1,
+    description: '',
+    tradeDate: new Date(),
+    settlement: new Date(),
+    quantity: 0,
+    price: 0
+});

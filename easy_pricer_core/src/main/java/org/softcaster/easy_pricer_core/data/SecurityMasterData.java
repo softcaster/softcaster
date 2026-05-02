@@ -37,9 +37,6 @@ public class SecurityMasterData extends MasterData {
     @JoinColumn(name = "issuer", nullable = true)
     private Issuer issuer;
 
-    @Column(name = "issue_description")
-    private String issueDescription;
-
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "nominal_value")
     private Double nominalValue;
@@ -86,14 +83,6 @@ public class SecurityMasterData extends MasterData {
 
     public void setLei(String lei) {
         this.lei = lei;
-    }
-
-    public String getIssueDescription() {
-        return issueDescription;
-    }
-
-    public void setIssueDescription(String issueDescription) {
-        this.issueDescription = issueDescription;
     }
 
     public Double getNominalValue() {

@@ -34,6 +34,9 @@ public class MasterData implements Serializable {
     @Column(name = "code")
     private String code;
 
+    @Column(name = "description")
+    private String description;
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "currency", nullable = true)
     private Currency currency;
@@ -315,4 +318,17 @@ public class MasterData implements Serializable {
         this.assetClass = assetClass;
     }
 
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

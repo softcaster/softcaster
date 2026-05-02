@@ -13,7 +13,7 @@ const HomeView: React.FC = () => {
 
             {/* Titolo Principale */}
             <h1 className="text-4xl font-semibold text-800 mb-2">
-                Welcome to Master Data Manager
+                Welcome to Easy Trades ET
             </h1>
 
             {/* Sottotitolo */}

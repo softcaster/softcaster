@@ -25,7 +25,7 @@ public class SecurityBean implements IMasterDataModel {
             case 0 ->
                 smd.getIsin();
             case 1 ->
-                smd.getIssueDescription();
+                smd.getDescription();
             case 2 ->
                 smd.getIssueDate();
             case 3 ->
