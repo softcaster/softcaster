@@ -7,12 +7,15 @@ import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
 import { ActionProvider, useActions } from './context/ActionContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView, BondView, XNoteView } from './config/navigation.config';
+import {
+  navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView,
+  BondView, XNoteView, BondPView
+} from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 const ToolbarWrapper = () => {
-  const { onSave, onNew, onDel, onExport, isExporting } = useActions(); // Hook che abbiamo creato prima
+  const { onSave, onNew, onDel, onExport, isExporting, onCalculate } = useActions(); // Hook che abbiamo creato prima
   const { user, logout } = useAuth();
 
   const leftContents = (
@@ -56,6 +59,13 @@ const ToolbarWrapper = () => {
         onClick={() => onExport?.()}
         disabled={!onExport || isExporting}
         tooltip="Export CSV" />
+
+      <span className="border-left-1 surface-border mx-2"></span>
+      <Button
+        icon={"pi pi-calculator"}
+        className="p-button-text p-button-plain p-1"
+        onClick={() => onCalculate?.()}
+        tooltip="Calculate" />
     </div>
   );
 
@@ -157,12 +167,12 @@ const MainLayout = () => {
               <Route path="/fxfuture" element={<FxFutureView />} />
               <Route path="/bond" element={<BondView />} />
               <Route path="/xnote" element={<XNoteView />} />
+              <Route path="/bond-p" element={<BondPView />} />
 
               {/* Tutte le altre sezioni caricano il placeholder */}
               <Route path="/bondfuture" element={<PlaceholderView />} />
               <Route path="/user" element={<PlaceholderView />} />
               <Route path="/log" element={<PlaceholderView />} />
-              <Route path="/bond-p" element={<PlaceholderView />} />
 
               {/* Pagina generica per URL inesistenti */}
               <Route path="*" element={<div>404 - Not Found</div>} />

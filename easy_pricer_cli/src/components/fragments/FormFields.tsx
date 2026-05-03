@@ -90,7 +90,8 @@ interface InstrumentFieldProps {
 }
 
 // Questo combo gestisce i vari strumenti Forex, FxFuture, Bond ...
-export const InstrumentField = ({ label, value, options, onChange }: InstrumentFieldProps) => (
+export const InstrumentField = ({ label, value, options, onChange
+}: InstrumentFieldProps) => (
     <div className="col-12 md:col-3">
         <label className="text-sm font-bold block mb-2">{label}</label>
         <Dropdown

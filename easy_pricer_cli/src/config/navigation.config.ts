@@ -7,7 +7,8 @@ export const FxFutureView = lazy(() => import('../components/views/FxFutureView'
 export const HomeView = lazy(() => import('../components/views/HomeView'));
 export const PlaceholderView = lazy(() => import('../components/views/PlaceholderView'));
 export const BondView = lazy(() => import('../components/views/BondView.tsx'));
-export const XNoteView = lazy(() => import('../components/views/XNoteView.tsx'));
+export const XNoteView = lazy(() => import('../components/views/XNoteView'));
+export const BondPView = lazy(() => import('../components/views/BondPView'));
 
 export const navigationNodes: TreeNode[] = [
   {
@@ -49,9 +50,18 @@ export const navigationNodes: TreeNode[] = [
   {
     key: 'pricing',
     label: 'Pricing',
-    //icon: 'pi pi-fw pi-calculator',
+
     children: [
-      { key: 'bond-p-key', label: 'Bonds', /*icon: 'pi pi-fw pi-users',*/ data: '/bond-p' },
+      {
+        key: 'fixed-income-p',
+        label: 'Fixed Income',
+        //icon: 'pi pi-fw pi-briefcase',
+        children: [
+          { key: 'bond-p-key', label: 'X Bonds', /*icon: 'pi pi-fw pi-building',*/ data: '/bond-p' },
+          { key: 'xnote-p-key', label: 'X Rate notes', /*icon: 'pi pi-fw pi-building',*/ data: '/xnote' },
+          { key: 'bondfuture-p-key', label: 'Bond Futures', /*icon: 'pi pi-fw pi-building',*/ data: '/bondfuture' }
+        ]
+      }
     ]
   },
   {

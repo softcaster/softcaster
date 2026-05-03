@@ -198,11 +198,6 @@ body {
     margin-bottom: 0.25rem !important;
 }
 
-.p-inputtext, .p-dropdown, .p-calendar {
-    font-size: 0.85rem !important; /* Circa 13px */
-    padding: 0.4rem 0.6rem !important; /* Più sottili */
-}
-
 /* --- OTTIMIZZAZIONE TABELLA --- */
 .p-datatable {
     font-size: 0.85rem !important;
@@ -242,13 +237,6 @@ body {
     font-size: 0.85rem !important;
 }
 
-/* Allineamento per i campi Calendar e InputNumber per uniformarli */
-.p-calendar .p-inputtext, 
-.p-inputnumber .p-inputtext {
-    height: 34px !important;
-    padding: 0.35rem 0.6rem !important;
-}
-
 /* Allineamento SideSelector */
 .p-selectbutton .p-button {
     height: 34px !important;
@@ -264,44 +252,53 @@ body {
     font-size: 0.9rem !important;
 }
 
-/* Allineamento Calendar con Icona */
-.p-calendar.p-calendar-w-btn .p-inputtext {
+/* 1. Reset universale per altezza campi a 34px */
+.p-inputtext, 
+.p-dropdown, 
+.p-calendar .p-inputtext, 
+.p-inputnumber .p-inputtext,
+.p-datepicker-trigger {
     height: 34px !important;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
-.p-calendar.p-calendar-w-btn .p-datepicker-trigger {
-    height: 34px !important;
-    width: 34px !important; /* Lo rendiamo quadrato */
-    padding: 0 !important;
-}
-/* Forza l'altezza del contenitore Calendar */
-.p-calendar.p-calendar-w-btn {
-    height: 34px !important;
-}
-
-/* Allineamento perfetto dell'input del calendario */
-.p-calendar.p-calendar-w-btn .p-inputtext {
-    height: 34px !important;
-    padding: 0.35rem 0.6rem !important;
-    border-right: none !important; /* Evita il doppio bordo tra input e bottone */
-}
-
-/* Forza il bottone del calendario a essere un quadrato perfetto di 34px */
-.p-calendar.p-calendar-w-btn .p-datepicker-trigger {
-    height: 34px !important;
-    width: 34px !important;
-    padding: 0 !important;
+    font-size: 0.85rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
     display: flex;
     align-items: center;
-    justify-content: center;
+    box-sizing: border-box; /* Fondamentale per includere i bordi nell'altezza */
 }
 
-/* Sistema l'icona interna al bottone */
-.p-calendar.p-calendar-w-btn .p-datepicker-trigger span {
+/* 2. Specifico per Calendar con Bottone */
+.p-calendar.p-calendar-w-btn {
+    height: 34px !important;
+    display: flex;
+    align-items: stretch;
+}
+
+.p-calendar.p-calendar-w-btn .p-inputtext {
+    flex: 1 1 auto;
+    width: 1%; /* Forza il ridimensionamento corretto in Flex */
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.p-calendar.p-calendar-w-btn .p-datepicker-trigger {
+    width: 34px !important;
+    min-width: 34px !important;
+    padding: 0 !important;
+    justify-content: center;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    background: #f8f9fa !important;
+    border-color: #ced4da !important;
+    color: #6c757d !important;
+}
+
+/* 3. Correzione icone interne */
+.p-datepicker-trigger span,
+.p-dropdown-trigger span {
     font-size: 0.9rem !important;
 }
+
 
 
 

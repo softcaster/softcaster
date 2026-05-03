@@ -2,8 +2,6 @@ import axios from 'axios';
 import type { AxiosResponse } from 'axios';
 
 // Create an instance of axios with some default configuration
-const BASE_UR = 'http://localhost:8080/';
-
 export const apiClient = axios.create({
     baseURL: 'http://localhost:8080/',
     headers: {

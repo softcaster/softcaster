@@ -6,13 +6,15 @@ interface ActionContextType {
     onDel: (() => void) | null;
     onExport: (() => void) | null;
     isExporting: boolean;
+    onCalculate: (() => void) | null;
 
     setAction: (actions: {
         save?: () => void,
         new?: () => void,
         del?: () => void,
         export?: () => void,
-        isExporting?: boolean
+        isExporting?: boolean,
+        calculate?: () => void
     }) => void;
 }
 
@@ -24,23 +26,26 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [onDel, setOnDel] = useState<(() => void) | null>(null);
     const [onExport, setOnExport] = useState<(() => void) | null>(null);
     const [isExporting, setIsExporting] = useState<boolean>(false);
+    const [onCalculate, setOnCalculate] =  useState<(() => void) | null>(null);
 
     const setAction = (actions: {
         save?: () => void,
         new?: () => void,
         del?: () => void,
         export?: () => void,
-        isExporting?: boolean;
+        isExporting?: boolean,
+        calculate?: () => void,
     }) => {
         setOnSave(() => actions.save || null);
         setOnNew(() => actions.new || null);
         setOnDel(() => actions.del || null);
         setOnExport(() => actions.export || null);
         setIsExporting(actions.isExporting || false);
+        setOnCalculate(() => actions.calculate || null);
     };
 
     return (
-        <ActionContext.Provider value={{ onSave, onNew, onDel, onExport, isExporting, setAction }}>
+        <ActionContext.Provider value={{ onSave, onNew, onDel, onExport, isExporting, onCalculate, setAction }}>
             {children}
         </ActionContext.Provider>
     );
