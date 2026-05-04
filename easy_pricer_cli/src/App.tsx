@@ -201,7 +201,6 @@ export default function App() {
 // Creiamo un piccolo componente interno per gestire la logica di visualizzazione
 const AppContent = () => {
   const { user, login } = useAuth(); // Recuperiamo lo stato dal Context
-
   const handleLogin = (credentials: any) => {
     // Qui puoi aggiungere logica extra se serve, 
     // ma l'importante è chiamare il login del Context
