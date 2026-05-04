@@ -4,8 +4,11 @@
  */
 package org.softcaster.easy_pricer_srv.controller;
 
+import org.softcaster.easy_pricer_srv.calc.BondCalculator;
 import org.softcaster.easy_pricer_srv.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_srv.util.CommonData;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,16 +22,23 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class ValuationRestController {
+
+    @Autowired
+    private BondCalculator bondCalculator;
     
     @PostMapping(value = "/pricing/bond" , produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("unchecked")
     public ResponseEntity<BondPricingResponse> calculateBondPricing(@RequestBody BondPricingRequest request) {
-        
-        BondPricingResponse response = new BondPricingResponse();
-        response.accruedInterest = 0.5;
-        response.modifiedDuration = 1.5;
-        response.yieldToMaturity = 0.04;
-        
-        return new ResponseEntity(response, HttpStatus.OK);
+       
+        if (bondCalculator != null) {
+            BondPricingResponse response = bondCalculator.bondValuation(request);
+            if (response != null) {
+                return new ResponseEntity(response, HttpStatus.OK);
+            } else {
+                return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
+            }
+        } else {
+            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
+        }
     }
 }

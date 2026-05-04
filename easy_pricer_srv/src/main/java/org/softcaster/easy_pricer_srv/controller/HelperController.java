@@ -8,6 +8,8 @@ import java.util.List;
 import org.softcaster.easy_pricer_srv.calc.BondCalculator;
 import org.softcaster.easy_pricer_srv.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_srv.calc.FxForwardCalculator;
+import org.softcaster.easy_pricer_srv.dto.BondPricingRequest;
+import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import ph.alephzero.finance.BondFwdPriceRequest;
-import ph.alephzero.finance.BondPriceRequest;
 import ph.alephzero.finance.ForexFwdPriceRequest;
 import ph.alephzero.finance.products.fixedincome.BondCalcOutputData;
 import ph.alephzero.finance.products.forward.BondForwardOutputData;
@@ -44,7 +45,7 @@ public class HelperController {
     @GetMapping("/helper/bond/quote/{isin}")
     public ResponseEntity getBondIrr(@PathVariable("isin") String isin) {
         if (bondCalculator != null) {
-            BondCalcOutputData output = bondCalculator.bondValuation(isin);
+            BondPricingResponse output = bondCalculator.bondValuation(isin);
             if (output != null) {
                 return new ResponseEntity(output, HttpStatus.OK);
             } else {
@@ -57,9 +58,9 @@ public class HelperController {
 
     @PostMapping(value = "helper/bond/request")
     @SuppressWarnings("unchecked")
-    public ResponseEntity getBondData(@RequestBody BondPriceRequest request) {
+    public ResponseEntity getBondData(@RequestBody BondPricingRequest request) {
         if (bondCalculator != null) {
-            BondCalcOutputData output = bondCalculator.bondValuation(request);
+            BondPricingResponse output = bondCalculator.bondValuation(request);
             if (output != null) {
                 return new ResponseEntity(output, HttpStatus.OK);
             } else {
