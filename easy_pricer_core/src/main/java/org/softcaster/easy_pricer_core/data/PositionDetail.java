@@ -291,4 +291,9 @@ public class PositionDetail implements Serializable {
         this.counterparty = counterparty;
     }
 
+    public void initialize() {
+        realizedPnl = unrealizedPnl = buyQty = notionalValueBuy = buyFees = buyTaxes
+                = sellQty = notionalValueSell = sellFees = sellTaxes = marketPrice = 0.;
+        multiplier = 1.;
+    }
 }

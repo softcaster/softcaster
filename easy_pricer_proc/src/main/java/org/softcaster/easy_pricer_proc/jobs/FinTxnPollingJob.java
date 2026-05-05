@@ -11,6 +11,9 @@ import org.softcaster.easy_pricer_core.data.FinancialTxn;
 import org.softcaster.easy_pricer_core.data.FinancialTxnDAO;
 import org.softcaster.easy_pricer_core.data.PositionDetail;
 import org.softcaster.easy_pricer_core.data.PositionDetailDAO;
+import org.softcaster.easy_pricer_core.data.TxnStatusDAO;
+import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
+import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,13 +32,23 @@ public class FinTxnPollingJob {
     private FinancialTxnDAO financialTxnDAO;
     @Autowired
     private PositionDetailDAO positionRepository;
+    @Autowired
+    private ProcessorDispatcher processorDispatcher;    
+    @Autowired
+    private TxnStatusDAO txnStatusDAO;
 
     /*
     @Autowired
     private EasyPricerEngine engine;
      */
-    protected void elabFinancialTxn(FinancialTxn txn, PositionDetail position) {
-
+    protected boolean elabFinancialTxn(FinancialTxn txn, PositionDetail position) {
+        ITxnProcessor processor = processorDispatcher.dispatch(txn.getMasterData().getAssetClass().getCode());
+        if (processor != null) {
+            processor.process(txn, position);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // Esegue il polling ogni 5 secondi (5000 millisecondi)
@@ -58,15 +71,19 @@ public class FinTxnPollingJob {
                         newPosition.setPositionMd(txn.getPositionMd().getIdPosition());
                         newPosition.setMasterData(txn.getMasterData().getIdMasterData());
                         newPosition.setCounterparty(txn.getCounterparty().getIdCounterparty());
+                        newPosition.initialize();
                         return newPosition;
                     });
 
                     // 2. Elaborazione
                     log.info("### Processing ID: {}", txn.getIdFinancialTxn());
-                    elabFinancialTxn(txn, position);
+                    if(elabFinancialTxn(txn, position)) {
+                        // 3. Salvataggio position e aggiornamento status transazione
+                        positionRepository.saveOrUpdate(position);   
+                        txn.setTxnStatus(txnStatusDAO.findByCode("EXECUTED"));
+                        financialTxnDAO.saveOrUpdate(txn);
+                    }
 
-                    // 3. Salvataggio stato
-                    //tradeRepository.save(trade);
                 } catch (Exception e) {
                     log.error("### ERROR ID {}: {}", txn.getIdFinancialTxn(), e.getMessage());
                 }

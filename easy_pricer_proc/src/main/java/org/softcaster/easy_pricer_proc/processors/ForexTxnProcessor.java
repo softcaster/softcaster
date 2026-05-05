@@ -13,12 +13,24 @@ import org.springframework.stereotype.Component;
  * @author ep
  */
 @Component("FSP")
-public class ForexTxnProcessor implements ITxnProcessor{
-    
-    public ForexTxnProcessor() {       
+public class ForexTxnProcessor implements ITxnProcessor {
+
+    public ForexTxnProcessor() {
     }
-    
+
     @Override
     public void process(FinancialTxn txn, PositionDetail position) {
+        double quantity = txn.getQuantity();
+        double notionalValue = txn.getPrice() * quantity;
+        switch (txn.getTxnSide()) {
+            case 1 -> {
+                position.setBuyQty(position.getBuyQty() + quantity);
+                position.setNotionalValueBuy(position.getNotionalValueBuy() + notionalValue);
+            }
+            case -1 -> {
+                position.setSellQty(position.getSellQty() + quantity);
+                position.setNotionalValueSell(position.getNotionalValueSell() + notionalValue);
+            }
+        }
     }
 }
