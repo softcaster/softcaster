@@ -387,6 +387,7 @@ CREATE TABLE cash_flow_item
     , end_date DATE NOT NULL
     , interest NUMERIC(15,5) NOT NULL  
     , amount NUMERIC(15,5) NOT NULL  
+    , known SMALLINT NOT NULL DEFAULT 1 -- cedola fissata
     , PRIMARY KEY (id_cash_flow_item)
     , CONSTRAINT fk_master_data FOREIGN KEY (master_data)
         REFERENCES master_data(id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
