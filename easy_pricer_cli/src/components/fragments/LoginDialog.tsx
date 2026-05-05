@@ -47,7 +47,7 @@ export const LoginDialog = ({ visible, onLogin }: any) => {
             closable={false}
             className={`login-dialog-custom ${error ? 'shake-error' : ''}`} // Classe dinamica per vibrazione
         >
-            <div className="flex flex-column gap-4 py-2">
+            <div className="flex flex-column gap-5 py-3">
                 <div className="text-center mb-2">
                     <div className="inline-flex align-items-center justify-content-center border-circle bg-blue-50"
                         style={{ width: '80px', height: '80px' }}>
@@ -61,15 +61,15 @@ export const LoginDialog = ({ visible, onLogin }: any) => {
                     <Message severity="error" text="Invalid credentials" className="w-full justify-content-start" />
                 )}
 
-                <div className="p-float-label mt-2">
+                <span className="p-float-label login-field">
                     <InputText id="username" value={username}
                         onChange={(e) => { setUsername(e.target.value); setError(false); }}
                         className={`w-full ${error ? 'p-invalid' : ''}`}
                     />
                     <label htmlFor="username">Username</label>
-                </div>
+                </span>
 
-                <div className="p-float-label">
+                <span className="p-float-label login-field">
                     <Password
                         id="password"
                         value={password}
@@ -80,7 +80,7 @@ export const LoginDialog = ({ visible, onLogin }: any) => {
                         inputClassName={`w-full ${error ? 'p-invalid' : ''}`}
                     />
                     <label htmlFor="password">Password</label>
-                </div>
+                </span>
             </div>
         </Dialog>
     );

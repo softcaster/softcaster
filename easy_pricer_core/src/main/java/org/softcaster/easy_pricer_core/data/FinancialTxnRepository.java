@@ -18,4 +18,6 @@ public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Inte
 
     @Query("SELECT f FROM FinancialTxn f WHERE f.masterData.assetClass.code = :code")
     public List<FinancialTxn> findAllByAssetClass(@Param("code") String code);
+
+    public List<FinancialTxn> findByTxnStatusCode(String code);
 }

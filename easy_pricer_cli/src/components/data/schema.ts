@@ -197,7 +197,7 @@ export interface LoanMasterData {
 //----------------------------------------------------------------------
 // SecurityMasterData
 //----------------------------------------------------------------------
-export interface SecurityMasterData {
+export interface SecurityMasterData extends MasterData {
     idMasterData: number;
     isin: string;
     cfiCode: string;

@@ -1,14 +1,17 @@
 // src/components/views/GenericAssetView.tsx
 import React from 'react';
 import { usePricingView } from '../hooks/usePricingView';
+import {BondDetails} from '../fragments/BondDetails';
 
-interface GenericPricingViewProps<TMaster> {
+// Usando extends, garantisci a TypeScript che qualunque cosa sia , 
+// avrà sicuramente un campo code
+interface GenericPricingViewProps<TMaster extends { code: string }> {
     fetchMasterData: () => Promise<TMaster[]>;
     // Passiamo i componenti come costanti
     FormComponent: React.ComponentType<any>;
 }
 
-export function GenericPricingView<TMaster>({
+export function GenericPricingView<TMaster extends { code: string }>({
     fetchMasterData,
     FormComponent,
 }: GenericPricingViewProps<TMaster>) {
@@ -16,6 +19,8 @@ export function GenericPricingView<TMaster>({
     const {
         masterDataList, request, results, setRequest
     } = usePricingView(fetchMasterData);
+
+    const selectedBond = masterDataList.find(m => m.code === request.isin);
 
     return (
         // Usiamo un contenitore standard invece dello Splitter
@@ -29,10 +34,10 @@ export function GenericPricingView<TMaster>({
                 />
             </div>
 
-            {/* Area sottostante vuota che occupa il resto dello spazio */}
-            <div className="flex-grow-1 surface-ground p-4">
-                {/* Puoi lasciarlo vuoto o mettere un messaggio informativo */}
-                <p className="text-400 text-sm italic">Seleziona un contratto per visualizzare il pricing in tempo reale.</p>
+            {/* Area sottostante vuota che occupa il resto dello spazio. Assicuro che l'area sia scrollabile */}
+            <div className="flex-grow-1 surface-ground p-4 overflow-y-auto">
+                {/* Passiamo il masterData selezionato per popolare le card */}
+                <BondDetails data={selectedBond} />
             </div>
         </div>
     );

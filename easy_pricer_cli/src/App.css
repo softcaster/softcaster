@@ -147,28 +147,6 @@ body {
     animation: pulse 2s infinite ease-in-out;
 }
 
-/* --- LOGIN DIALOG CUSTOM STYLE --- */
-.login-dialog-custom .p-dialog-header {
-    background-color: #2c3e50 !important; /* Stesso blu della sidebar */
-    color: #bdc3c7 !important;
-    padding: 1.5rem !important;
-}
-
-.login-dialog-custom .p-dialog-header .p-dialog-title {
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.login-dialog-custom .p-dialog-content {
-    padding-top: 2rem !important;
-}
-
-/* Rende i bordi degli input coerenti (senza arrotondamenti) */
-.login-dialog-custom .p-inputtext {
-    border-radius: 0 !important;
-}
-
 /* Colore del testo base per i nodi del tree */
 .custom-sidebar .p-treenode-label {
     color: #ecf0f1 !important; /* Bianco platino */
@@ -299,7 +277,65 @@ body {
     font-size: 0.9rem !important;
 }
 
+/* Stile per le Card informative */
+.p-card.border-top-3 {
+    border-radius: 4px;
+}
 
+.p-card .p-card-title {
+    font-size: 0.85rem !important;
+    color: #2c3e50;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
 
+.p-card .p-card-body {
+    padding: 1.25rem !important;
+}
 
+/* --- LOGIN DIALOG CUSTOM STYLE --- */
+.login-dialog-custom .p-dialog-header {
+    background-color: #2c3e50 !important; /* Stesso blu della sidebar */
+    color: #bdc3c7 !important;
+    padding: 1.5rem !important;
+}
 
+.login-dialog-custom .p-dialog-header .p-dialog-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- FIX ATOMICO LARGHEZZA LOGIN --- */
+
+/* 1. Obblighiamo i contenitori a occupare tutto lo spazio orizzontale */
+.login-dialog-custom .p-float-label,
+.login-dialog-custom .p-password,
+.login-dialog-custom .p-inputtext {
+    display: block !important;
+    width: 100% !important;
+}
+
+/* 2. Pareggiamo l'altezza per evitare lo schiacciamento delle label */
+.login-dialog-custom .p-inputtext,
+.login-dialog-custom .p-password input {
+    height: 42px !important;
+    padding: 0.75rem !important;
+}
+
+/* 3. Posizionamento label (corregge il salto visivo) */
+.login-dialog-custom .p-float-label label {
+    margin-top: -10px !important;
+}
+
+.login-dialog-custom .p-float-label input:focus ~ label,
+.login-dialog-custom .p-float-label input.p-filled ~ label,
+.login-dialog-custom .p-float-label .p-inputwrapper-focus ~ label,
+.login-dialog-custom .p-float-label .p-inputwrapper-filled ~ label {
+    margin-top: 0 !important;
+    top: -0.75rem !important;
+    background-color: white;
+    padding: 0 5px;
+}

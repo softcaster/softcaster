@@ -22,6 +22,11 @@ public class FinancialTxnDAO {
     }
 
     @Transactional(readOnly = true)
+    public List<FinancialTxn> findByTxnStatusCode(String code) {
+        return repository.findByTxnStatusCode(code);
+    }
+
+    @Transactional(readOnly = true)
     public List<FinancialTxn> findAllByDaycountCode(String code) {
         return repository.findAllByDaycountCode(code);
     }
