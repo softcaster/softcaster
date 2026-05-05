@@ -23,13 +23,13 @@ public class PositionDetail implements Serializable {
     @Column(name = "id_position_detail", columnDefinition = "INTEGER")
     private Integer idPositionDetail;
 
-    @Column(name = "position_md", insertable = false, updatable = false)
+    @Column(name = "position_md", nullable = false)
     private Integer positionMd;
 
-    @Column(name = "master_data")
+    @Column(name = "master_data", nullable = false)
     private Integer masterData;
 
-    @Column(name = "counterparty")
+    @Column(name = "counterparty", nullable = false)
     private Integer counterparty;
 
     @JdbcTypeCode(Types.NUMERIC)

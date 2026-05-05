@@ -757,6 +757,7 @@ CREATE TABLE position_detail
     , PRIMARY KEY (id_position_detail)
 );
 ALTER TABLE position_detail OWNER TO easypricer;
+CREATE UNIQUE INDEX idx_position_detail_pmc ON position_detail(position_md,master_data,counterparty);
 -- Creo sequenza
 CREATE SEQUENCE position_detail_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE position_detail_s OWNER TO easypricer;
