@@ -1,4 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
+import { Toast } from 'primereact/toast';
+import type { ToastMessage } from 'primereact/toast';
+import { useRef } from 'react';
 
 interface ActionContextType {
     onSave: (() => void) | null;
@@ -7,7 +10,7 @@ interface ActionContextType {
     onExport: (() => void) | null;
     isExporting: boolean;
     onCalculate: (() => void) | null;
-
+    showToast: (message: ToastMessage) => void;
     setAction: (actions: {
         save?: () => void,
         new?: () => void,
@@ -26,7 +29,12 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [onDel, setOnDel] = useState<(() => void) | null>(null);
     const [onExport, setOnExport] = useState<(() => void) | null>(null);
     const [isExporting, setIsExporting] = useState<boolean>(false);
-    const [onCalculate, setOnCalculate] =  useState<(() => void) | null>(null);
+    const [onCalculate, setOnCalculate] = useState<(() => void) | null>(null);
+
+    const toast = useRef<Toast>(null);
+    const showToast = (message: ToastMessage) => {
+        toast.current?.show(message);
+    };
 
     const setAction = (actions: {
         save?: () => void,
@@ -45,7 +53,8 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     return (
-        <ActionContext.Provider value={{ onSave, onNew, onDel, onExport, isExporting, onCalculate, setAction }}>
+        <ActionContext.Provider value={{ onSave, onNew, onDel, onExport, isExporting, onCalculate, showToast, setAction }}>
+            <Toast ref={toast} /> {/* Il Toast vive qui, nel cuore dell'app */}
             {children}
         </ActionContext.Provider>
     );

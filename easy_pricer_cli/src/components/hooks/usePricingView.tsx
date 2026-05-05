@@ -12,12 +12,20 @@ export function usePricingView<TMaster>(
     const [request, setRequest] = useState<BondPricingRequest>(DEFAULT_BOND_PRICING_REQUEST);
     const [results, setResults] = useState<BondPricingResponse>(DEFAULT_BOND_PRICING_RESPONSE);
     const { setAction } = useActions();
+    const { showToast } = useActions(); // Recupero showToast
 
     const handleCalculate = async () => {
         if (!request.isin) return;
         try {
             const data = await calculateBondPricing(request);
             setResults(data);
+            // Notifica di successo
+            showToast({
+                severity: 'success',
+                summary: 'Pricing Updated',
+                detail: `Calculated for ${request.isin}`,
+                life: 3000
+            });
         } catch (err) {
             console.error("Errore calcolo:", err);
         }
