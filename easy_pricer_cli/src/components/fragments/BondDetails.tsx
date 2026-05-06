@@ -37,8 +37,17 @@ export const BondDetails = ({ data }: { data: any }) => {
                 <Card title="TRADING CHARACTERISTICS" className="h-full border-top-3 border-green-500 shadow-2">
                     <InfoRow label="First listing" value={data.issueDate} />
                     <InfoRow label="Price notation" value="In %" />
-                    <InfoRow label="Trading Lot" value={100.} />
+                    <InfoRow label="Trading Lot" value={1000.} />
                     <InfoRow label="Tick size" value={100.} />
+                </Card>
+            </div>
+            {/* 3. TRADING CHARACTERISTICS */}
+            <div className="col-12 md:col-4">
+                <Card title="COUPON" className="h-full border-top-3 border-blue-500 shadow-2">
+                    <InfoRow label="Rate %" value={data.interestRate} />
+                    <InfoRow label="Frequency" value={data.frequency.code} />
+                    <InfoRow label="First coupon date" value={data.firstCouponPaymentDate} />
+                    <InfoRow label="First coupon" value={data.firstCouponRate} />
                 </Card>
             </div>
         </div>

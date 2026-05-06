@@ -28,7 +28,7 @@ public class FinancialTxnRestController {
     private TxnStatusDAO txnStatusDAO;
 
     @GetMapping("/financial_txn/r01")
-    public ResponseEntity findAll() {
+    public ResponseEntity<List<FinancialTxn>> findAll() {
         List<FinancialTxn> listaFinancialTxn = dao.findAll();
         if (listaFinancialTxn == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
@@ -37,7 +37,7 @@ public class FinancialTxnRestController {
     }
 
     @GetMapping("/financial_txn/r02/{id}")
-    public ResponseEntity findByIdFinancialTxn(@PathVariable("id") Integer idFinancialTxn) {
+    public ResponseEntity<FinancialTxn> findByIdFinancialTxn(@PathVariable("id") Integer idFinancialTxn) {
         FinancialTxn financialTxn = dao.findByIdFinancialTxn(idFinancialTxn);
         if (financialTxn == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
@@ -46,7 +46,7 @@ public class FinancialTxnRestController {
     }
 
     @GetMapping("/financial_txn/r03/{code}")
-    public ResponseEntity findAllByAssetClass(@PathVariable("code") String code) {
+    public ResponseEntity<List<FinancialTxn>> findAllByAssetClass(@PathVariable("code") String code) {
         List<FinancialTxn> listaFinancialTxn = dao.findAllByAssetClass(code);
         if (listaFinancialTxn == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
@@ -56,7 +56,7 @@ public class FinancialTxnRestController {
 
     // save/update record
     @PostMapping(value = "/financial_txn")
-    public ResponseEntity saveOrUpdate(@RequestBody FinancialTxn financialTxn) {
+    public ResponseEntity<FinancialTxn> saveOrUpdate(@RequestBody FinancialTxn financialTxn) {
         try {
             if (financialTxn.getIdFinancialTxn() == 0) {
                 financialTxn.setIdFinancialTxn(null);
@@ -72,10 +72,21 @@ public class FinancialTxnRestController {
 
     // delete record
     @DeleteMapping("/financial_txn/d01/{id}")
-    public ResponseEntity delete(@PathVariable("id") Integer idFinancialTxn) {
+    public ResponseEntity<FinancialTxn> delete(@PathVariable("id") Integer idFinancialTxn) {
         FinancialTxn financialTxn = dao.findByIdFinancialTxn(idFinancialTxn);
         if (financialTxn != null) {
             dao.delete(financialTxn);
+            return new ResponseEntity(financialTxn, HttpStatus.OK);
+        } else {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // delete logica del record
+    @DeleteMapping("/financial_txn/d02/{id}")
+    public ResponseEntity<FinancialTxn> logicalDelete(@PathVariable("id") Integer idFinancialTxn) {
+        FinancialTxn financialTxn = dao.logicalDelete(idFinancialTxn);
+        if (financialTxn != null) {
             return new ResponseEntity(financialTxn, HttpStatus.OK);
         } else {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);

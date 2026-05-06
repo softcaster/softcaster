@@ -12,5 +12,9 @@ import org.softcaster.easy_pricer_core.data.PositionDetail;
  * @author ep
  */
 public interface ITxnProcessor {
+
+    public static final int BUY = 1;
+    public static final int SELL = -1;
+
     void process(FinancialTxn txn, PositionDetail position);
 }

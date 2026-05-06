@@ -1362,6 +1362,15 @@ export const deleteFinancialTxn = async (id: number): Promise<FinancialTxn | nul
     }
 };
 
+export const logicalDeleteFinancialTxn = async (id: number): Promise<FinancialTxn | null> => {
+    try {
+        return await apiRequest<FinancialTxn>('/financial_txn/d02/' + id, 'DELETE');
+    } catch (error) {
+        console.error('Failed to delete financial_txn:', error);
+        return null;
+    }
+};
+
 export const fetchYieldCurve = async (): Promise<YieldCurve[]> => {
     try {
         return await apiRequest<YieldCurve[]>('/yield_curve/r01', 'GET');

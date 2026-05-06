@@ -19,7 +19,7 @@ import {
     fetchPositionMasterData,
     fetchCounterparty,
     saveFinancialTxn,
-    deleteFinancialTxn
+    logicalDeleteFinancialTxn
 } from '../services/services';
 
 
@@ -72,7 +72,7 @@ export function useFinancialView<TMaster>(
         if (!selectedTrade.idFinancialTxn) return; // Non cancellare se non c'è ID
 
         try {
-            await deleteFinancialTxn(selectedTrade.idFinancialTxn); // Chiamata API
+            await logicalDeleteFinancialTxn(selectedTrade.idFinancialTxn); // Chiamata API
             await loadAll(); // Ricarica la tabella
             setSelectedTrade(defaultTxn); // Resetta il form
             // Opzionale: mostra un toast di successo

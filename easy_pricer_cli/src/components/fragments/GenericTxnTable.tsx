@@ -2,7 +2,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import type { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
 import type { FinancialTxn } from '../data/schema';
-import  { getSideLabel } from './SideSelector';
+import { getSideLabel } from './SideSelector';
 import { formatPrice, formatUnits } from '../../utils/formatters';
 
 interface GenericTxnTableProps {
@@ -14,7 +14,7 @@ interface GenericTxnTableProps {
 const sideBodyTemplate = (rowData: FinancialTxn) => {
     const label = getSideLabel(rowData.txnSide); // Usi la funzione centralizzata
     const colorClass = rowData.txnSide === 1 ? 'text-green-600' : 'text-red-600';
-    
+
     return <span className={`font-bold ${colorClass}`}>{label}</span>;
 };
 
@@ -22,6 +22,9 @@ export const GenericTxnTable = ({ data, selection, onSelectionChange }: GenericT
     return (
         <DataTable <FinancialTxn[]>
             value={data}
+            rowClassName={(data: FinancialTxn) => ({
+                'font-italic opacity-60': (data.txnStatus?.code === 'CANCELLED' || data.txnStatus?.code === 'CANCELLED_EXECUTED')
+            })}
             dataKey="idFinancialTxn"
             selectionMode="single"
             selection={selection}
@@ -39,8 +42,8 @@ export const GenericTxnTable = ({ data, selection, onSelectionChange }: GenericT
             <Column field="txnSide" header="Side" body={sideBodyTemplate} />
             <Column field="price" style={{ textAlign: 'right' }} header="Price" body={(rowData) => formatPrice(rowData.price)} sortable />
             <Column field="quantity" style={{ textAlign: 'right' }} header="Units" body={(rowData) => formatUnits(rowData.quantity)} sortable />
-            <Column field="counterparty" header="Counterparty" body={(r) => r.counterparty?.description || '-'} sortField="counterparty.description" sortable/>
-            <Column field="tradeDate" header="Trade Date" body={(r) => r.tradeDate} sortable/>
+            <Column field="counterparty" header="Counterparty" body={(r) => r.counterparty?.description || '-'} sortField="counterparty.description" sortable />
+            <Column field="tradeDate" header="Trade Date" body={(r) => r.tradeDate} sortable />
         </DataTable>
     );
 };

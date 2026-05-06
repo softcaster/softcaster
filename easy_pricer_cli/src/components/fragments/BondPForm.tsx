@@ -83,7 +83,7 @@ export const BondPForm = ({ masterDataList , data, results, onChange }: BondPric
                 <div className="col-12 md:col-3">
                     <label className="block mb-2 font-bold text-sm">Gross yield to maturity</label>
                     <InputNumber
-                        value={results.yieldToMaturity}
+                        value={results.yieldToMaturity * 100.}
                         readOnly
                         disabled
                         mode="decimal" minFractionDigits={5} placeholder="0.00000"

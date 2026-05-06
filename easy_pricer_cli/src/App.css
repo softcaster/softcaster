@@ -277,22 +277,32 @@ body {
     font-size: 0.9rem !important;
 }
 
-/* Stile per le Card informative */
+/* Forza la visualizzazione del bordo superiore colorato nelle Card */
 .p-card.border-top-3 {
-    border-radius: 4px;
+    border-top-style: solid !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-radius: 4px !important;
 }
 
+/* Colori specifici (se PrimeFlex non li applica correttamente) */
+.border-blue-500 { border-top-color: #3b82f6 !important; }
+.border-orange-500 { border-top-color: #f97316 !important; }
+.border-green-500 { border-top-color: #22c55e !important; }
+
+/* Rendi il titolo della card più professionale */
 .p-card .p-card-title {
-    font-size: 0.85rem !important;
-    color: #2c3e50;
-    letter-spacing: 1px;
-    border-bottom: 1px solid #e9ecef;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
+    font-size: 0.8rem !important;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
+/* Riduci un po' il padding interno per renderle più compatte */
 .p-card .p-card-body {
-    padding: 1.25rem !important;
+    padding: 1rem !important;
 }
 
 /* --- LOGIN DIALOG CUSTOM STYLE --- */

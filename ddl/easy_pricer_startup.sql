@@ -151,6 +151,8 @@ INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_sta
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'REJECTED','Rejected');
 -- cancellata
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'CANCELLED','Cancelled');
+-- cancellata e processata
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'CANCELLED_EXECUTED','Cancelled and Executed');
 
 -- ----------------------------------------------------------------------------
 -- counterparty_type
