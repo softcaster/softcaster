@@ -51,20 +51,26 @@ public class FinTxnPollingJob {
         }
     }
 
+    protected PositionDetail getPositionDetail(FinancialTxn txn) {
+        PositionDetail position = positionRepository.findByPositionMdAndMasterDataAndCounterparty(
+                txn.getPositionMd().getIdPosition(), txn.getMasterData().getIdMasterData(),
+                txn.getCounterparty().getIdCounterparty()).orElseGet(() -> {
+            PositionDetail newPosition = new PositionDetail();
+            newPosition.setPositionMd(txn.getPositionMd().getIdPosition());
+            newPosition.setMasterData(txn.getMasterData().getIdMasterData());
+            newPosition.setCounterparty(txn.getCounterparty().getIdCounterparty());
+            newPosition.initialize();
+            return newPosition;
+        });
+        
+        return position;
+    }
+
     protected boolean elabFinancialTxnList(List<FinancialTxn> financialTxnList) {
         for (FinancialTxn txn : financialTxnList) {
             try {
                 // 1. Ricerca 
-                PositionDetail position = positionRepository.findByPositionMdAndMasterDataAndCounterparty(
-                        txn.getPositionMd().getIdPosition(), txn.getMasterData().getIdMasterData(),
-                        txn.getCounterparty().getIdCounterparty()).orElseGet(() -> {
-                    PositionDetail newPosition = new PositionDetail();
-                    newPosition.setPositionMd(txn.getPositionMd().getIdPosition());
-                    newPosition.setMasterData(txn.getMasterData().getIdMasterData());
-                    newPosition.setCounterparty(txn.getCounterparty().getIdCounterparty());
-                    newPosition.initialize();
-                    return newPosition;
-                });
+                PositionDetail position = getPositionDetail(txn);
 
                 // 2. Elaborazione
                 log.info("### Processing ID: {}", txn.getIdFinancialTxn());
@@ -73,7 +79,7 @@ public class FinTxnPollingJob {
                     positionRepository.saveOrUpdate(position);
                     if (txn.getTxnStatus().getCode().equalsIgnoreCase("PENDING")) {
                         txn.setTxnStatus(txnStatusDAO.findByCode("EXECUTED"));
-                    } else if(txn.getTxnStatus().getCode().equalsIgnoreCase("CANCELLED")) {
+                    } else if (txn.getTxnStatus().getCode().equalsIgnoreCase("CANCELLED")) {
                         txn.setTxnStatus(txnStatusDAO.findByCode("CANCELLED_EXECUTED"));
                     }
                     financialTxnDAO.saveOrUpdate(txn);
@@ -93,7 +99,7 @@ public class FinTxnPollingJob {
         List<FinancialTxn> pendingTxn = financialTxnDAO.findByTxnStatusCode("PENDING");
 
         if (!pendingTxn.isEmpty()) {
-            log.info("=== [BATCH START] find {} PENDING transaction ===", pendingTxn.size());
+            log.info("=== [BATCH START] find {} PENDING transaction(s) ===", pendingTxn.size());
             elabFinancialTxnList(pendingTxn);
             log.info("=== [BATCH END] Processing completed ===\n");
         }
@@ -104,7 +110,7 @@ public class FinTxnPollingJob {
         List<FinancialTxn> cancelledTxn = financialTxnDAO.findByTxnStatusCode("CANCELLED");
 
         if (!cancelledTxn.isEmpty()) {
-            log.info("=== [BATCH START] find {} CANCELLED transaction ===", cancelledTxn.size());
+            log.info("=== [BATCH START] find {} CANCELLED transaction(s) ===", cancelledTxn.size());
             elabFinancialTxnList(cancelledTxn);
             log.info("=== [BATCH END] Processing completed ===\n");
         }

@@ -2,6 +2,7 @@ package org.softcaster.easy_pricer_srv.controller;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.softcaster.commons.utils.NumberUtils;
 import org.softcaster.easy_pricer_core.data.FinancialTxn;
 import org.softcaster.easy_pricer_core.data.FinancialTxnDAO;
 import org.softcaster.easy_pricer_core.data.TxnStatusDAO;
@@ -54,6 +55,24 @@ public class FinancialTxnRestController {
         return new ResponseEntity(listaFinancialTxn, HttpStatus.OK);
     }
 
+    protected FinancialTxn updateOnly(FinancialTxn newTxn) {
+        // Carico vecchia txn
+        FinancialTxn oldTxn = dao.findByIdFinancialTxn(newTxn.getIdFinancialTxn());
+        if(oldTxn != null) {
+            // Comparo prezzi
+            if(!NumberUtils.isZero(newTxn.getPrice()-oldTxn.getPrice()))
+                return oldTxn;
+            // Comparo quantita
+            if(!NumberUtils.isZero(newTxn.getQuantity()-oldTxn.getQuantity()))
+                return oldTxn;
+            // Comparo controparte
+            if(!newTxn.getCounterparty().getCode().equals(oldTxn.getCounterparty().getCode()))
+                return oldTxn;
+        }
+        
+        return null;
+    }
+    
     // save/update record
     @PostMapping(value = "/financial_txn")
     public ResponseEntity<FinancialTxn> saveOrUpdate(@RequestBody FinancialTxn financialTxn) {
@@ -61,6 +80,19 @@ public class FinancialTxnRestController {
             if (financialTxn.getIdFinancialTxn() == 0) {
                 financialTxn.setIdFinancialTxn(null);
                 financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
+            }
+            // Modifica, marco a CANCELLED vecchia txn
+            if(financialTxn.getTxnStatus().getCode().equals("EXECUTED")) {
+                FinancialTxn oldTxn = updateOnly(financialTxn);
+                if(oldTxn != null)
+                {
+                    // Cancello vecchia transazione
+                    oldTxn.setTxnStatus(txnStatusDAO.findByCode("CANCELLED"));
+                    dao.saveOrUpdate(oldTxn);
+                    // Transazione da riprocessare
+                    financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
+                    financialTxn.setIdFinancialTxn(null);
+                }
             }
 
             financialTxn = dao.saveOrUpdate(financialTxn);

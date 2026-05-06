@@ -36,6 +36,7 @@ public class ForexTxnProcessor implements ITxnProcessor {
                 position.setNotionalValueSell(position.getNotionalValueSell() + notionalValue);
             }
         }
+        
         calcRealizedPnL(position);
     }
     
