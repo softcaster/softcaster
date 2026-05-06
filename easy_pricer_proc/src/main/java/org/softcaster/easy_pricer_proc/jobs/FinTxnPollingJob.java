@@ -44,6 +44,8 @@ public class FinTxnPollingJob {
     protected boolean elabFinancialTxn(FinancialTxn txn, PositionDetail position) {
         ITxnProcessor processor = processorDispatcher.dispatch(txn.getMasterData().getAssetClass().getCode());
         if (processor != null) {
+            // Serve per calcolo unrealizedPnL
+            position.setMarketPrice(txn.getPrice());
             processor.process(txn, position);
             return true;
         } else {

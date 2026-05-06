@@ -36,8 +36,11 @@ public class ForexTxnProcessor implements ITxnProcessor {
                 position.setNotionalValueSell(position.getNotionalValueSell() + notionalValue);
             }
         }
-        
+        // Calcolo realized P&L
         calcRealizedPnL(position);
+        
+        // Calcolo unrealized P&L
+        calcUnRealizedPnL(position);
     }
     
     protected void calcRealizedPnL(PositionDetail position) {
@@ -48,7 +51,20 @@ public class ForexTxnProcessor implements ITxnProcessor {
                 double avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
                 double avgSellPrice = position.getNotionalValueSell() / position.getSellQty();
                 double realizedPnL = (avgSellPrice - avgBuyPrice) * position.getSellQty();
-                position.setRealizedPnl(position.getRealizedPnl() + realizedPnL);
+                position.setRealizedPnl(realizedPnL);
+            }
+        }
+    }
+
+    protected void calcUnRealizedPnL(PositionDetail position) {
+        // Calcolo solo su qty buy rimanente
+        double deltaQty = position.getBuyQty() - position.getSellQty();
+        if (deltaQty > 0.) {
+            // Calcolo prezzo medio buy
+            if (position.getBuyQty() > 0) {
+                double avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
+                double unrealizedPnL = (position.getMarketPrice() - avgBuyPrice) * deltaQty;
+                position.setUnrealizedPnl(unrealizedPnL);
             }
         }
     }
