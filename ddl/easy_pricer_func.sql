@@ -56,18 +56,18 @@ DECLARE
     current_status_code VARCHAR;
 BEGIN
     -- Recuperiamo il codice dello stato per il controllo
-    SELECT code INTO current_status_code FROM TxnStatus WHERE idTxnStatus = NEW.idTxnStatus;
+    SELECT code INTO current_status_code FROM txn_status WHERE id_txn_status = NEW.txn_status;
 
     IF (TG_OP = 'INSERT') THEN
-        -- Se è PENDING e l'utente NON ha messo un refId, usiamo l'ID appena generato
-        IF current_status_code = 'PENDING' AND NEW.refId IS NULL THEN
-            NEW.refId := NEW.idFinancialTxn;
+        -- Se è PENDING e l'utente esiste un refId, usiamo l'ID appena generato
+        IF current_status_code = 'PENDING' AND NEW.ref_id IS NULL THEN
+            NEW.ref_id := NEW.id_financial_txn;
         END IF;
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Se lo stato è PENDING, proteggiamo il campo (l'utente non può forzarlo)
-        IF current_status_code = 'PENDING' THEN
-            NEW.refId := NEW.idFinancialTxn;
+        IF current_status_code = 'PENDING' AND NEW.ref_id IS NULL THEN
+            NEW.ref_id := NEW.id_financial_txn;
         END IF;
         -- Se lo stato NON è PENDING, il trigger non entra nell'IF e 
         -- accetta il valore che l'utente ha messo nel campo refId.
@@ -78,6 +78,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_financial_txn_ref_id
-BEFORE INSERT OR UPDATE ON FinancialTxn
+BEFORE INSERT OR UPDATE ON financial_txn
 FOR EACH ROW
 EXECUTE FUNCTION fn_manage_ref_id();
+ALTER FUNCTION fn_manage_ref_id() OWNER TO easypricer;

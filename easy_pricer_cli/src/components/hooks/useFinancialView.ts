@@ -19,13 +19,14 @@ import {
     fetchPositionMasterData,
     fetchCounterparty,
     saveFinancialTxn,
-    logicalDeleteFinancialTxn
+    logicalDeleteFinancialTxn,
+    fetchFinancialTxnById
 } from '../services/services';
 
 
 import {
     downloadFinancialTxnCsv
-}from '../services/apiclient';
+} from '../services/apiclient';
 
 export function useFinancialView<TMaster>(
     assetClass: string,
@@ -61,6 +62,16 @@ export function useFinancialView<TMaster>(
     const handleSave = async () => {
         if (selectedTrade.price <= 0) return;
         try {
+            // Controllo se lo stato e' cambiato, se id e' > 0 ,
+            // il processamento potrebbe aver cambiato lo stato da
+            // PENDING a EXECUTED, ma la txn, caricata dopo la modifica,
+            // potrebbe essere ancora a pending PENDING
+            if (selectedTrade.idFinancialTxn > 0) {
+                const oldTxn = await fetchFinancialTxnById(selectedTrade.idFinancialTxn);
+                if (oldTxn) {
+                    selectedTrade.txnStatus = oldTxn.txnStatus;
+                }
+            }
             await saveFinancialTxn(selectedTrade);
             await loadAll(); // Ricarica tutto per sicurezza
             setSelectedTrade(defaultTxn);

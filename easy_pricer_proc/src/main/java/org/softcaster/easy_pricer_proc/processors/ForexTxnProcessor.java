@@ -66,6 +66,9 @@ public class ForexTxnProcessor implements ITxnProcessor {
                 double unrealizedPnL = (position.getMarketPrice() - avgBuyPrice) * deltaQty;
                 position.setUnrealizedPnl(unrealizedPnL);
             }
+        } else {
+            // Nessun unrealized, tutto realized
+            position.setUnrealizedPnl(0.);
         }
     }
 }

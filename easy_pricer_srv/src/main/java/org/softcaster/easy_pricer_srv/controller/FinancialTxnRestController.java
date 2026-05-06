@@ -92,6 +92,7 @@ public class FinancialTxnRestController {
                     // Transazione da riprocessare
                     financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
                     financialTxn.setIdFinancialTxn(null);
+                    financialTxn.setRefId(oldTxn.getIdFinancialTxn());
                 }
             }
 

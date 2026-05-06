@@ -16,6 +16,12 @@ ALTER TABLE financial_txn OWNER TO easypricer;
 ALTER TABLE financial_txn RENAME COLUMN id_finacial_txn TO id_financial_txn;
 ALTER SEQUENCE finacial_txn_s RENAME TO financial_txn_s;
 
+ALTER TABLE financial_txn ADD COLUMN ref_id INTEGER;
+-- 2. Popola la colonna con i valori esistenti
+UPDATE financial_txn SET ref_id = id_financial_txn;
+-- 3. Rende la colonna obbligatoria per il futuro
+ALTER TABLE financial_txn ALTER COLUMN ref_id SET NOT NULL;
+
 ALTER TABLE instrument_quote ADD COLUMN quote provider VARCHAR(50) NOT NULL DEFAULT='EuroNextProvider';
 UPDATE instrument_quote 
 SET code = code || '-MOTX'
@@ -84,6 +90,8 @@ INSERT INTO yield_curve(id_yield_curve,code,description,currency,calendar,compou
     (SELECT id_currency FROM currency WHERE iso_code='EUR'),
     (SELECT id_calendar FROM calendar WHERE code='EUR'),1);
 
+delete from position_detail;
+delete from financial_txn;
 
 -- pg_dump -U easypricer -d easypricer > easypricer.pgsql
 -- Get-Content .\easypricer.pgsql | Set-Content -Encoding UTF8 .\easypricer_fixed.pgsql

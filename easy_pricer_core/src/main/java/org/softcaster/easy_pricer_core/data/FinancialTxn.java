@@ -37,10 +37,13 @@ public class FinancialTxn implements Serializable {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "master_data", nullable = true)
     private MasterData masterData;
-    
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "txn_status", nullable = true)
     private TxnStatus txnStatus;
+
+    @Column(name = "ref_id")
+    private Integer refId;
 
     @Column(name = "txn_side")
     private Short txnSide;
@@ -189,5 +192,19 @@ public class FinancialTxn implements Serializable {
      */
     public void setTxnStatus(TxnStatus txnStatus) {
         this.txnStatus = txnStatus;
+    }
+
+    /**
+     * @return the refId
+     */
+    public Integer getRefId() {
+        return refId;
+    }
+
+    /**
+     * @param refId the refId to set
+     */
+    public void setRefId(Integer refId) {
+        this.refId = refId;
     }
 }
