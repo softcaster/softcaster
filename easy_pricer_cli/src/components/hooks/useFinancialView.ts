@@ -19,8 +19,7 @@ import {
     fetchPositionMasterData,
     fetchCounterparty,
     saveFinancialTxn,
-    logicalDeleteFinancialTxn,
-    fetchFinancialTxnById
+    logicalDeleteFinancialTxn
 } from '../services/services';
 
 
@@ -40,6 +39,7 @@ export function useFinancialView<TMaster>(
     const [selectedTrade, setSelectedTrade] = useState<FinancialTxn>(defaultTxn);
     const { setAction } = useActions();
     const [isExporting, setIsExporting] = useState(false);
+    const { showToast } = useActions(); // Recupero showToast
 
     const loadAll = async () => {
         try {
@@ -62,6 +62,7 @@ export function useFinancialView<TMaster>(
     const handleSave = async () => {
         if (selectedTrade.price <= 0) return;
         try {
+            /*
             // Controllo se lo stato e' cambiato, se id e' > 0 ,
             // il processamento potrebbe aver cambiato lo stato da
             // PENDING a EXECUTED, ma la txn, caricata dopo la modifica,
@@ -72,11 +73,15 @@ export function useFinancialView<TMaster>(
                     selectedTrade.txnStatus = oldTxn.txnStatus;
                 }
             }
+            */
             await saveFinancialTxn(selectedTrade);
             await loadAll(); // Ricarica tutto per sicurezza
             setSelectedTrade(defaultTxn);
-            alert("Salvato!");
-        } catch (err) { console.error(err); }
+            showToast({ severity: 'success', summary: 'Saved', detail: 'Transaction registered' });
+        } catch (err) {
+            showToast({ severity: 'error', summary: 'Error', detail: 'Save failed' });
+            console.error(err);
+        }
     };
 
     const handleDelete = async () => {

@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
 
@@ -64,6 +65,9 @@ public class FinancialTxn implements Serializable {
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "price")
     private Double price;
+
+    @Version
+    private Integer version;
 
     public Integer getIdFinancialTxn() {
         return idFinancialTxn;
@@ -206,5 +210,19 @@ public class FinancialTxn implements Serializable {
      */
     public void setRefId(Integer refId) {
         this.refId = refId;
+    }
+
+    /**
+     * @return the version
+     */
+    public Integer getVersion() {
+        return version;
+    }
+
+    /**
+     * @param version the version to set
+     */
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }

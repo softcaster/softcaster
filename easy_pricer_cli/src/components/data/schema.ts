@@ -408,6 +408,7 @@ export interface FinancialTxn {
     settlement: Date | null;
     quantity: number;
     price: number;
+    version: number; 
 }
 
 //----------------------------------------------------------------------
@@ -446,7 +447,8 @@ export const DEFAULT_TXN: FinancialTxn = {
     tradeDate: new Date(),
     settlement: new Date(),
     quantity: 0,
-    price: 0
+    price: 0,
+    version: 0
 };
 
 export const createDefaultTxn = (): FinancialTxn => ({
@@ -459,5 +461,6 @@ export const createDefaultTxn = (): FinancialTxn => ({
     tradeDate: new Date(),
     settlement: new Date(),
     quantity: 0,
-    price: 0
+    price: 0,
+    version: 0
 });

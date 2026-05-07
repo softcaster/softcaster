@@ -55,24 +55,6 @@ public class FinancialTxnRestController {
         return new ResponseEntity(listaFinancialTxn, HttpStatus.OK);
     }
 
-    protected FinancialTxn updateOnly(FinancialTxn newTxn) {
-        // Carico vecchia txn
-        FinancialTxn oldTxn = dao.findByIdFinancialTxn(newTxn.getIdFinancialTxn());
-        if(oldTxn != null) {
-            // Comparo prezzi
-            if(!NumberUtils.isZero(newTxn.getPrice()-oldTxn.getPrice()))
-                return oldTxn;
-            // Comparo quantita
-            if(!NumberUtils.isZero(newTxn.getQuantity()-oldTxn.getQuantity()))
-                return oldTxn;
-            // Comparo controparte
-            if(!newTxn.getCounterparty().getCode().equals(oldTxn.getCounterparty().getCode()))
-                return oldTxn;
-        }
-        
-        return null;
-    }
-    
     // save/update record
     @PostMapping(value = "/financial_txn")
     public ResponseEntity<FinancialTxn> saveOrUpdate(@RequestBody FinancialTxn financialTxn) {
@@ -81,22 +63,9 @@ public class FinancialTxnRestController {
                 financialTxn.setIdFinancialTxn(null);
                 financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
             }
-            // Modifica, marco a CANCELLED vecchia txn
-            if(financialTxn.getTxnStatus().getCode().equals("EXECUTED")) {
-                FinancialTxn oldTxn = updateOnly(financialTxn);
-                if(oldTxn != null)
-                {
-                    // Cancello vecchia transazione
-                    oldTxn.setTxnStatus(txnStatusDAO.findByCode("CANCELLED"));
-                    dao.saveOrUpdate(oldTxn);
-                    // Transazione da riprocessare
-                    financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
-                    financialTxn.setIdFinancialTxn(null);
-                    financialTxn.setRefId(oldTxn.getIdFinancialTxn());
-                }
-            }
 
             financialTxn = dao.saveOrUpdate(financialTxn);
+            
             return new ResponseEntity(financialTxn, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(CommonData.getJsonError(e.getLocalizedMessage()), HttpStatus.NOT_ACCEPTABLE);
@@ -128,13 +97,13 @@ public class FinancialTxnRestController {
 
     @GetMapping("/financial_txn/export/{assetClass}")
     public ResponseEntity<Resource> exportCsv(@PathVariable String assetClass) {
-        
-        try { 
+
+        try {
             Thread.sleep(3000);
         } catch (InterruptedException ex) {
             System.getLogger(FinancialTxnRestController.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
-        
+
         // 1. Generi il contenuto del CSV (come stringa o array di byte)
         String csvContent = "ID;Currency;Price\n1;EURUSD;1.12\n2;GBPUSD;1.25";
         byte[] data = csvContent.getBytes(StandardCharsets.UTF_8);
