@@ -16,7 +16,7 @@ ALTER TABLE financial_txn OWNER TO easypricer;
 ALTER TABLE financial_txn RENAME COLUMN id_finacial_txn TO id_financial_txn;
 ALTER SEQUENCE finacial_txn_s RENAME TO financial_txn_s;
 
-ALTER TABLE financial_txn ADD COLUMN version INTEGER;
+ALTER TABLE financial_txn ADD COLUMN version INTEGER DEFAULT 0;
 
 ALTER TABLE financial_txn ADD COLUMN ref_id INTEGER;
 -- 2. Popola la colonna con i valori esistenti

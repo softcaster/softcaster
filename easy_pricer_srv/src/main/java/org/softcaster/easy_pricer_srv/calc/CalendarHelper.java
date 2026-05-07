@@ -109,8 +109,8 @@ public class CalendarHelper {
                         date = adjustDate(newDate, calendar, rollConvention);
                     }
                     break;
-                default:
                 case "NONE":
+                default:
                     break;
             }
         }

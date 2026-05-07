@@ -795,6 +795,7 @@ CREATE TABLE financial_txn
     , quantity NUMERIC(15,5) NOT NULL  
     , price NUMERIC(15,5) NOT NULL  
     , ref_id INTEGER NOT NULL  
+    , version INTEGER DEFAULT 0
     , PRIMARY KEY (id_financial_txn)
     , CONSTRAINT fk_counterparty FOREIGN KEY (counterparty)
         REFERENCES counterparty(id_counterparty) ON DELETE NO ACTION ON UPDATE NO ACTION
