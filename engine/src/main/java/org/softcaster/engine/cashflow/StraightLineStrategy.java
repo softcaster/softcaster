@@ -7,7 +7,6 @@ package org.softcaster.engine.cashflow;
 import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.engine.enums.DaycountBasis;
-import org.softcaster.engine.enums.Frequency;
 
 public class StraightLineStrategy implements AmortizationStrategy {
 
@@ -19,13 +18,7 @@ public class StraightLineStrategy implements AmortizationStrategy {
         double remainingBalance = totalAmount;
 
         for (PaymentPeriod period : periods) {
-            // Calcolo l'interesse usando la yearFraction che è già nel periodo!
-            // Se non c'è, la calcoliamo al volo con il DCB passato
-            double fraction = (period.yearFraction() != 0)
-                    ? period.yearFraction()
-                    : dcb.calculate(period.accrualStart(), period.accrualEnd(),Frequency.SEMI_ANNUAL);
-
-            double interest = remainingBalance * rate * fraction;
+            double interest = remainingBalance * rate * period.yearFraction();
             remainingBalance -= principalPerPeriod;
 
             // Creazione del CashFlow "legato" al periodo

@@ -4,6 +4,7 @@
  */
 package org.softcaster.engine.cashflow;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import org.softcaster.engine.enums.Frequency;
 
@@ -26,26 +27,24 @@ public class DayCountCalculators {
                 + (end.getMonthValue() - start.getMonthValue()) * 30
                 + (d2 - d1)) / 360.0;
     };
-    
+
     public static final DayCountCalculator ACT_ACT_ICMA = (start, end, freq) -> {
-        if (freq == null || freq == Frequency.NONE) {
-            // Fallback su ISDA se non abbiamo la frequenza
-            return ACT_365.calculate(start, end, freq);
+        if (freq == null || freq.getYearFraction() <= 0) {
+            return ChronoUnit.DAYS.between(start, end) / 365.0;
         }
 
-        // Calcoliamo i giorni effettivi tra le date
+        // 1. Quanti giorni ci sono tra le due date cedolari?
         double actualDays = ChronoUnit.DAYS.between(start, end);
-        
-        // Calcoliamo i giorni teorici del periodo basandoci sulla frequenza
-        // Es: per un semestrale, la durata teorica dell'anno è (giorni del semestre * 2)
-        double daysInYear = actualDays * freq.getYearFraction();
-        
-        // Se il periodo è regolare (es. esattamente 6 mesi), 
-        // il risultato sarà matematicamente 1 / frequenza.
-        // Esempio: 182.5 / (182.5 * 2) = 0.5
-        return actualDays / daysInYear; 
-        
-        // Nota: Questa è una versione semplificata. La versione ufficiale ICMA 
-        // prevede il calcolo sui giorni del "periodo di riferimento".
+
+        // 2. Quanti giorni ci sarebbero stati se il periodo fosse stato "pieno"?
+        // Se il periodo è già pieno (es. 6 mesi su semestrale), coincide con actualDays.
+        // Usiamo la frequenza per determinare la durata del periodo di riferimento.
+        long monthsInPeriod = 12 / freq.getYearFraction();
+        LocalDate theoreticalStart = end.minusMonths(monthsInPeriod);
+        double daysInReferencePeriod = ChronoUnit.DAYS.between(theoreticalStart, end);
+
+        // 3. Formula ICMA:
+        // (Giorni Effettivi / Giorni Periodo Riferimento) / Frequenza
+            return (actualDays / daysInReferencePeriod) / (double) freq.getYearFraction();
     };
 }

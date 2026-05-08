@@ -81,7 +81,7 @@ public final class MathUtil {
 
         while (Math.abs(x1 - x0) > h) {
             x0 = x1;
-            x1 = x0 - function.f(x0,compounding) / differentiateSterling0(function, x0, h);
+            x1 = x0 - function.f(x0, compounding) / differentiateSterling0(function, x0, h);
             iterates++;
             if (iterates > maxIterates) {
                 throw new ArithmeticException("Failed to converge after " + Integer.toString(maxIterates) + " iterations.");

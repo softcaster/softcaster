@@ -38,8 +38,8 @@ public class BackwardScheduleGenerator implements ScheduleGenerator {
 
             // La data di pagamento effettiva segue le regole dei mercati (festivi)
             LocalDate adjustedPayment = bdc.adjust(currentEnd, calendar);
-
-            // Aggiungiamo il periodo (la frazione d'anno verrà calcolata dalla strategia di pricing)
+            
+           // Aggiungiamo il periodo (la frazione d'anno verrà calcolata dalla strategia di pricing)
             periods.add(new PaymentPeriod(actualStart, currentEnd, adjustedPayment, daycount.calculate(actualStart, currentEnd,frequency)));
 
             // Per il ciclo successivo, la fine del periodo diventa l'inizio di quello appena creato
