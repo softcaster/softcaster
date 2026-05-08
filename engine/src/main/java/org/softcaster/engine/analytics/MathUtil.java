@@ -1,6 +1,10 @@
-package ph.alephzero.finance.util;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package org.softcaster.engine.analytics;
 
-import ph.alephzero.finance.Compounding;
+import org.softcaster.engine.enums.Compounding;
 
 public final class MathUtil {
 
