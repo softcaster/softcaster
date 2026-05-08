@@ -5,8 +5,9 @@
 package org.softcaster.engine.cashflow;
 
 import java.time.LocalDate;
+import org.softcaster.engine.enums.Frequency;
 
 @FunctionalInterface
 public interface DayCountCalculator {
-    double calculate(LocalDate start, LocalDate end);
+    double calculate(LocalDate start, LocalDate end, Frequency frequency);
 }

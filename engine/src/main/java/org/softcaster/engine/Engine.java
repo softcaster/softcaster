@@ -32,15 +32,16 @@ public class Engine {
     public static void main(String[] args) {
         
         BackwardScheduleGenerator bsg = new BackwardScheduleGenerator();
-        LocalDate effectiveDate = LocalDate.of(1998,11,1);
+        LocalDate effectiveDate = LocalDate.of(1998,12,1);
         LocalDate terminationDate = LocalDate.of(2029,11,1);
         Frequency freq = EnumUtils.fromId(Frequency.class,2);
         BusinessDayConvention bdc = EnumUtils.fromId(BusinessDayConvention.class, 3);
+        DaycountBasis daycount = EnumUtils.fromId(DaycountBasis.class, 5);
         DummyCaLendar dummy = new DummyCaLendar();
-        List<PaymentPeriod> periods = bsg.generate(effectiveDate, terminationDate, freq, bdc, dummy);
+        List<PaymentPeriod> periods = bsg.generate(effectiveDate, terminationDate, freq, bdc, daycount, dummy);
         
         BulletAmortizationStrategy bas = new BulletAmortizationStrategy();
-        List<CashFlow> cfl = bas.generateCashFlows(100., 0.525, periods, DaycountBasis.ACT_365);
+        List<CashFlow> cfl = bas.generateCashFlows(100., 0.0525, periods, DaycountBasis.ACT_ACT_ICMA);
         for(CashFlow cf: cfl) {
             System.out.println(cf.accrualStart() + " - " + cf.accrualEnd() + " - " + cf.interest() + " - " + cf.principal());
         }

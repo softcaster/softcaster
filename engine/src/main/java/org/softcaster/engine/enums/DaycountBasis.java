@@ -18,7 +18,7 @@ public enum DaycountBasis implements IdentifiableEnum {
     ACT_360(2, "ACT_360", "Actual number of days between dates / 360 days per year. Common in money market instruments", DayCountCalculators.ACT_360),
     ACT_365(3, "ACT_365", "Actual number of days between dates / 365 days per year (Fixed year)", DayCountCalculators.ACT_365),
     ACT_ACT_ISDA(4, "ACT_ACT_ISDA", "Actual/Actual ISDA - Standard for derivatives", null),
-    ACT_ACT_ICMA(5, "ACT_ACT_ICMA", "Actual/Actual ICMA - Standard for government bonds", null),
+    ACT_ACT_ICMA(5, "ACT_ACT_ICMA", "Actual/Actual ICMA - Standard for government bonds", DayCountCalculators.ACT_ACT_ICMA),
     EUR_30_360(6, "EUR_30_360", "30/360 Eurobond\", \"30 days per month / 360 days per year. Following European Bond basis conventions", null);
 
     private final int id;
@@ -51,9 +51,9 @@ public enum DaycountBasis implements IdentifiableEnum {
         return id;
     }
 
-    public double calculate(LocalDate accrualStart, LocalDate accrualEnd) {
+    public double calculate(LocalDate accrualStart, LocalDate accrualEnd, Frequency freq) {
         if (calculator != null) {
-            return calculator.calculate(accrualStart, accrualEnd);
+            return calculator.calculate(accrualStart, accrualEnd, freq);
         } else {
             return 0;
         }

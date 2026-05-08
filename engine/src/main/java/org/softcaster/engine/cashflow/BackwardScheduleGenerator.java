@@ -9,13 +9,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.softcaster.engine.enums.BusinessDayConvention;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 
 public class BackwardScheduleGenerator implements ScheduleGenerator {
 
     @Override
     public List<PaymentPeriod> generate(LocalDate effectiveDate, LocalDate terminationDate,
-            Frequency frequency, BusinessDayConvention bdc,
+            Frequency frequency, BusinessDayConvention bdc,DaycountBasis daycount,
             HolidayCalendar calendar) {
         
         // Non puo generare un cash flow
@@ -39,7 +40,7 @@ public class BackwardScheduleGenerator implements ScheduleGenerator {
             LocalDate adjustedPayment = bdc.adjust(currentEnd, calendar);
 
             // Aggiungiamo il periodo (la frazione d'anno verrà calcolata dalla strategia di pricing)
-            periods.add(new PaymentPeriod(actualStart, currentEnd, adjustedPayment, 0.0));
+            periods.add(new PaymentPeriod(actualStart, currentEnd, adjustedPayment, daycount.calculate(actualStart, currentEnd,frequency)));
 
             // Per il ciclo successivo, la fine del periodo diventa l'inizio di quello appena creato
             currentEnd = actualStart;

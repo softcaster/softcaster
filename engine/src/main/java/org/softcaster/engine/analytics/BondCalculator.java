@@ -9,6 +9,7 @@ import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Frequency;
 
 /**
  *
@@ -34,8 +35,8 @@ public class BondCalculator {
                 .findFirst()
                 .map(cf -> {
                     // Rateo = Cedola Totale * (Giorni trascorsi dall'inizio / Giorni totali del periodo)
-                    double daysFromStart = dcb.calculate(cf.accrualStart(), valuationDate);
-                    double totalDaysInPeriod = dcb.calculate(cf.accrualStart(), cf.accrualEnd());
+                    double daysFromStart = dcb.calculate(cf.accrualStart(), valuationDate, Frequency.SEMI_ANNUAL);
+                    double totalDaysInPeriod = dcb.calculate(cf.accrualStart(), cf.accrualEnd(), Frequency.SEMI_ANNUAL);
 
                     // In alternativa, se hai la cedola annua: nominal * annualRate * dcb.calculate(start, valuationDate)
                     return cf.interest() * (daysFromStart / totalDaysInPeriod);
@@ -61,7 +62,7 @@ public class BondCalculator {
                 .filter(cf -> cf.paymentDate().isAfter(valuationDate))
                 .toList();
 
-        return internalRateOfReturn(futureFlows, dirtyPrice, valuationDate, dcb);
+        return internalRateOfReturn(futureFlows, dirtyPrice, valuationDate, dcb, Compounding.COMPOUNDED);
     }
 
     public static double internalRateOfReturn(
@@ -84,7 +85,7 @@ public class BondCalculator {
             public double f(double rate, Compounding comp) {
                 double pv = 0.0;
                 for (CashFlow cf : cashflows) {
-                    double t = dcb.calculate(valuationDate, cf.paymentDate());
+                    double t = dcb.calculate(valuationDate, cf.paymentDate(), Frequency.SEMI_ANNUAL);
 
                     // Qui gestire i diversi regimi
                     pv += cf.getTotalAmount() / Math.pow(1 + rate, t);

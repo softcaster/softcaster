@@ -12,8 +12,7 @@ public record CashFlow(
         LocalDate paymentDate, // Data effettiva di incasso
         double principal,
         double interest,
-        double outstandingBalance,
-        double yearFraction // Utile salvarlo per ricalcoli veloci
+        double outstandingBalance
         ) {
 
     public double getTotalAmount() {

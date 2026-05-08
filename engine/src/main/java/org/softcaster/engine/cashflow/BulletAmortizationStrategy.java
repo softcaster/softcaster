@@ -36,8 +36,8 @@ public class BulletAmortizationStrategy implements AmortizationStrategy {
                     period.paymentDate(),
                     principal,
                     interest,
-                    outstandingBalance,
-                    period.yearFraction()
+                    outstandingBalance
+                    
             ));
         }
         return flows;
