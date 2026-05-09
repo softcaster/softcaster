@@ -3,9 +3,11 @@
  */
 package org.softcaster.engine;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-import org.softcaster.engine.analytics.BondCalculator;
+import org.softcaster.engine.analytics.BlackAndScholesPricer;
+import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
 import org.softcaster.engine.cashflow.BulletAmortizationStrategy;
 import org.softcaster.engine.cashflow.CashFlow;
@@ -13,11 +15,23 @@ import org.softcaster.engine.cashflow.ForwardScheduleGenerator;
 import org.softcaster.engine.cashflow.FrenchAmortizationStrategy;
 import org.softcaster.engine.cashflow.HolidayCalendar;
 import org.softcaster.engine.cashflow.PaymentPeriod;
+import org.softcaster.engine.config.EngineAutoConfiguration;
+import org.softcaster.engine.dto.OptionCalcInputData;
+import org.softcaster.engine.dto.OptionCalcOutputData;
 import org.softcaster.engine.enums.BusinessDayConvention;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.EnumUtils;
 import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.OptionStyle;
+import org.softcaster.engine.enums.OptionType;
+import org.softcaster.engine.utils.CashFlowExporter;
+import org.softcaster.engine.utils.DateParser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Import;
 
 /**
  *
@@ -31,9 +45,50 @@ class DummyCaLendar implements HolidayCalendar {
     }
 }
 
+@SpringBootApplication
+@Import(EngineAutoConfiguration.class)
 public class Engine {
 
-    private static void testBondCalculator() {
+    @Autowired
+    @Qualifier("btpPricer") // Indica a Spring esattamente QUALE bean usare
+    private BondPricer bondPricer;
+
+    @Autowired
+    @Qualifier("basPricer")
+    private BlackAndScholesPricer blackAndScholesPricer;
+
+    private void testBlackAndScholesPricer() {
+        OptionCalcInputData input = new OptionCalcInputData();
+
+        LocalDate settlement = LocalDate.of(2026, 5, 11);
+        input.setSettlementDate(java.sql.Date.valueOf(settlement));
+
+        LocalDate maturity = LocalDate.of(2027, 5, 11);
+        input.setMaturityDate(java.sql.Date.valueOf(maturity));
+
+        input.setBcyRate(0.03);
+        input.setCcyRate(0.03);
+        input.setOptionStyle(OptionStyle.EUROPEAN);
+        input.setOptionType(OptionType.CALL);
+        input.setSpotPrice(101.);
+        input.setStrike(100);
+        input.setVolatility(0.2);
+        input.setDaycount(DaycountBasis.ACT_365);
+
+        OptionCalcOutputData output = blackAndScholesPricer.priceCall(input);
+        System.out.println(output.getPrice());
+        System.out.println(output.getDelta());
+        double impliedVol = blackAndScholesPricer.calculateImpliedVolatility(input, output.getPrice(), OptionType.CALL);
+        System.out.println(impliedVol);
+    }
+
+    private void testDateParser() {
+        String strDate = "080526";
+        LocalDate dt = DateParser.parse(strDate);
+        System.out.println(dt);
+    }
+
+    private void testBondPricer() {
         BackwardScheduleGenerator bsg = new BackwardScheduleGenerator();
         LocalDate effectiveDate = LocalDate.of(1999, 11, 1);
         LocalDate terminationDate = LocalDate.of(2031, 5, 1);
@@ -48,26 +103,19 @@ public class Engine {
         List<CashFlow> flows = bas.generateCashFlows(100., 0.06, periods, DaycountBasis.ACT_ACT_ICMA);
 
         LocalDate valuationDate = LocalDate.of(2026, 5, 11);
-        BondCalculator calculator = new BondCalculator();
-        double irr = calculator.calculateYtm(flows, 113.39, valuationDate, DaycountBasis.ACT_365, Compounding.COMPOUNDED, freq);
+
+        double irr = bondPricer.calculateYtm(flows, 113.39, valuationDate, DaycountBasis.ACT_365, Compounding.COMPOUNDED, freq);
         System.out.println(irr);
-        /*
-        for (CashFlow cf : flows) {
-            System.out.println(cf.accrualStart() + "," + cf.accrualEnd() + "," + cf.interest() + "," + cf.principal());
-        }
-         */
-        double accruedInterest = calculator.calculateAccruedInterest(flows, valuationDate, DaycountBasis.ACT_365, freq);
+        double accruedInterest = bondPricer.calculateAccruedInterest(flows, valuationDate, DaycountBasis.ACT_365, freq);
         System.out.println(accruedInterest);
-
-        double modifiedDuration = calculator.calculateModifiedDuration(flows, irr, valuationDate, daycount, freq);
+        double modifiedDuration = bondPricer.calculateModifiedDuration(flows, irr, valuationDate, daycount, freq);
         System.out.println(modifiedDuration);
-
     }
 
-    private static void testFrenchAmortizationStrategy() {
+    private void testFrenchAmortizationStrategy() {
         LocalDate effectiveDate = LocalDate.of(2026, 5, 8);
         LocalDate terminationDate = LocalDate.of(2027, 5, 8);
-        Frequency freq = Frequency.MONTHLY;
+        Frequency freq = Frequency.BI_MONTHLY;
         BusinessDayConvention bdc = BusinessDayConvention.FORWARD;
         DaycountBasis daycount = DaycountBasis.ACT_365;
         DummyCaLendar dummy = new DummyCaLendar();
@@ -76,14 +124,35 @@ public class Engine {
         List<PaymentPeriod> periods = fsg.generate(effectiveDate, terminationDate, freq, bdc, daycount, dummy);
 
         FrenchAmortizationStrategy fas = new FrenchAmortizationStrategy();
-        List<CashFlow> flows = fas.generateCashFlows(10000., 0.06, periods, DaycountBasis.ACT_ACT_ICMA);
+        List<CashFlow> flows = fas.generateCashFlows(10000., 0.03, periods, daycount);
 
         for (CashFlow cf : flows) {
             System.out.println(cf.accrualStart() + "," + cf.accrualEnd() + "," + cf.interest() + "," + cf.principal());
         }
+        try {
+            CashFlowExporter.toCsv(flows, "piano_ammortamento.csv", ";");
+            System.out.println("File CSV generato con successo!");
+        } catch (IOException e) {
+            System.err.println("Errore durante la scrittura del file: " + e.getMessage());
+        }
     }
 
     public static void main(String[] args) {
-        Engine.testFrenchAmortizationStrategy();
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+
+        // 1. Registra la configurazione dove hai definito @Bean(name="btpCalculator")
+        context.register(EngineAutoConfiguration.class);
+
+        // 2. Registra la classe Engine stessa per permettere l'autowire dei suoi campi
+        context.register(Engine.class);
+
+        // 3. Refresh del contesto per attivare i bean
+        context.refresh();
+
+        // 4. Recupera Engine e lancia il test
+        Engine engine = context.getBean(Engine.class);
+        //engine.testBondPricer();
+        engine.testBlackAndScholesPricer();
     }
+
 }

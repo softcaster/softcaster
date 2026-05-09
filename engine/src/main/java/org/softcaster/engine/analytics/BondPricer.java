@@ -14,12 +14,13 @@ import static org.softcaster.engine.enums.Compounding.SIMPLE;
 import static org.softcaster.engine.enums.Compounding.SIMPLE_THEN_COMPOUNDED;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.math.MathUtil;
 
 /**
  *
  * @author ep
  */
-public class BondCalculator {
+public class BondPricer {
 
     /**
      * Calcola il Rateo (Accrued Interest) alla data di valutazione.

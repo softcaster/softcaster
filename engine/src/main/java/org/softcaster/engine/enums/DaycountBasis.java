@@ -5,8 +5,8 @@
 package org.softcaster.engine.enums;
 
 import java.time.LocalDate;
-import org.softcaster.engine.cashflow.DayCountCalculator;
-import org.softcaster.engine.cashflow.DayCountCalculators;
+import org.softcaster.engine.utils.DayCountCalculator;
+import org.softcaster.engine.utils.DayCountCalculators;
 
 /**
  *
