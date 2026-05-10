@@ -4,8 +4,6 @@
  */
 package org.softcaster.engine.dto;
 
-import java.time.LocalDate;
-import java.util.Set;
 import org.softcaster.engine.enums.OptionStyle;
 import org.softcaster.engine.enums.OptionType;
 
@@ -13,11 +11,9 @@ import org.softcaster.engine.enums.OptionType;
  *
  * @author softc
  */
-public class FxOptionInputData extends ForwardBaseInputData implements IOptionInputData{
-
+public class BondOptionInputData extends BondForwardInputData implements IOptionInputData {
+    
     private OptionData optionData;
-    // Caso Bermudan
-    private Set<LocalDate> exerciseDates;
 
     /**
      * @return the strike
@@ -56,19 +52,5 @@ public class FxOptionInputData extends ForwardBaseInputData implements IOptionIn
      */
     public void setOptionData(OptionData optionData) {
         this.optionData = optionData;
-    }
-
-    /**
-     * @return the exerciseDates
-     */
-    public Set<LocalDate> getExerciseDates() {
-        return exerciseDates;
-    }
-
-    /**
-     * @param exerciseDates the exerciseDates to set
-     */
-    public void setExerciseDates(Set<LocalDate> exerciseDates) {
-        this.exerciseDates = exerciseDates;
     }
 }

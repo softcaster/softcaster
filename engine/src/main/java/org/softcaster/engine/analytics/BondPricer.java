@@ -10,6 +10,7 @@ import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.math.MathUtil;
 
 /**
  *
@@ -94,4 +95,53 @@ public class BondPricer extends AbstractFixedIncomePricer {
         int k = freq.getYearFraction();
         return macaulayDuration / (1 + (ytm / k));
     }
+
+    // Mentre la Duration ci dice quanto il prezzo varia in modo lineare, 
+    // la Convexity corregge l'errore di questa approssimazione quando i tassi si muovono molto   
+    public double calculateConvexity(List<CashFlow> flows, double ytm, double dirtyPrice, LocalDate valDate, DaycountBasis dcb, Compounding compounding) {
+        double weightedSum = 0.0;
+
+        for (CashFlow cf : flows) {
+            if (cf.paymentDate().isAfter(valDate)) {
+                double t = dcb.calculate(valDate, cf.paymentDate(), null);
+                // PV del flusso scontato allo YTM
+                double pv = cf.getTotalAmount() * MathUtil.getDiscountFactor(compounding, ytm, t);
+
+                // Termine della sommatoria: t * (t + 1) * PV
+                weightedSum += t * (t + 1) * pv;
+            }
+        }
+
+        // Convexity = Sommatoria / (Prezzo * (1 + y)^2)
+        return weightedSum / (dirtyPrice * Math.pow(1 + ytm, 2));
+    }
+    /*
+    public double calculateZSpread(List<CashFlow> flows, double dirtyPrice, LocalDate valDate, 
+                               DaycountBasis dcb, RateCurve curve) {
+    
+    MathUtil.Function1 zFunction = new MathUtil.Function1() {
+        @Override
+        public double f(double z) {
+            double pv = 0.0;
+            for (CashFlow cf : flows) {
+                if (cf.paymentDate().isAfter(valDate)) {
+                    double t = dcb.calculate(valDate, cf.paymentDate(), null);
+                    // Recuperiamo il tasso risk-free per la scadenza t dalla curva
+                    double r = curve.getRate(t); 
+                    // Scontiamo al tasso (r + z)
+                    pv += cf.getTotalAmount() / Math.pow(1 + r + z, t);
+                }
+            }
+            return pv - dirtyPrice;
+        }
+
+        @Override public double f(double x, Compounding c) { return f(x); }
+    };
+
+    // Usiamo Newton-Raphson per trovare lo spread z
+    // Guess iniziale: 0.01 (100 basis points)
+    return MathUtil.rootNewton(zFunction, 0.01);
+}
+
+     */
 }

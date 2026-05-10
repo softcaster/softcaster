@@ -5,11 +5,11 @@
 package org.softcaster.engine.analytics;
 
 import org.softcaster.engine.dto.IOptionInputData;
-import org.softcaster.engine.dto.OptionCalcOutputData;
+import org.softcaster.engine.dto.MarketOutputData;
 
 public interface IOptionPricer<T extends IOptionInputData> {
 
-    OptionCalcOutputData priceCall(T input);
+    MarketOutputData priceCall(T input);
 
-    OptionCalcOutputData pricePut(T input);
+    MarketOutputData pricePut(T input);
 }

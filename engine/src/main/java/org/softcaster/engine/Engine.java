@@ -6,8 +6,12 @@ package org.softcaster.engine;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import static org.softcaster.engine.Test.BOND;
+import static org.softcaster.engine.Test.CRR;
+import static org.softcaster.engine.Test.GAK;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
 import org.softcaster.engine.analytics.BondPricer;
+import org.softcaster.engine.analytics.CRRBinomialPricer;
 import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
 import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
 import org.softcaster.engine.cashflow.BulletAmortizationStrategy;
@@ -17,10 +21,10 @@ import org.softcaster.engine.cashflow.FrenchAmortizationStrategy;
 import org.softcaster.engine.cashflow.HolidayCalendar;
 import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.config.EngineAutoConfiguration;
+import org.softcaster.engine.dto.BondOptionInputData;
 import org.softcaster.engine.dto.FxOptionInputData;
-import org.softcaster.engine.dto.OptionCalcInputData;
-import org.softcaster.engine.dto.OptionCalcOutputData;
 import org.softcaster.engine.dto.OptionData;
+import org.softcaster.engine.dto.OptionOutputData;
 import org.softcaster.engine.enums.BusinessDayConvention;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
@@ -48,6 +52,10 @@ class DummyCaLendar implements HolidayCalendar {
     }
 }
 
+enum Test {
+    BOND, BAS, GAK, LOAN, DATE, CRR
+}
+
 @SpringBootApplication
 @Import(EngineAutoConfiguration.class)
 public class Engine {
@@ -59,13 +67,17 @@ public class Engine {
     @Autowired
     @Qualifier("basPricer")
     private BlackAndScholesPricer blackAndScholesPricer;
-    
+
     @Autowired
-    @Qualifier("ghPricer")
+    @Qualifier("gakPricer")
     private GarmanKohlhagenPricer garmanKohlhagenPricer;
 
+    @Autowired
+    @Qualifier("crrPricer")
+    private CRRBinomialPricer cRRBinomialPricer;
+
     private void testGarmanKohlhagenPricer() {
-         FxOptionInputData input = new FxOptionInputData();
+        FxOptionInputData input = new FxOptionInputData();
 
         LocalDate settlement = LocalDate.of(2026, 5, 11);
         input.setValuationDate(settlement);
@@ -77,34 +89,47 @@ public class Engine {
         input.setForeignRate(0.03);
         input.setSpotPrice(1.1);
         input.setDaycount(DaycountBasis.ACT_365);
-        OptionData od = new OptionData(1.1,0.1,OptionStyle.EUROPEAN,OptionType.CALL);
+        OptionData od = new OptionData(1.1, 0.1, OptionStyle.EUROPEAN, OptionType.CALL);
         input.setOptionData(od);
-        OptionCalcOutputData output = garmanKohlhagenPricer.priceCall(input);
+        OptionOutputData output = garmanKohlhagenPricer.priceCall(input);
         System.out.println(output.getPrice());
         System.out.println(output.getDelta());
         double impliedVol = garmanKohlhagenPricer.calculateImpliedVolatility(input, output.getPrice());
         System.out.println(impliedVol);
-  }
-    
-    private void testBlackAndScholesPricer() {
-        OptionCalcInputData input = new OptionCalcInputData();
+    }
+
+    private void testCRRBinomialPricer() {
+        FxOptionInputData input = new FxOptionInputData();
 
         LocalDate settlement = LocalDate.of(2026, 5, 11);
-        input.setSettlementDate(java.sql.Date.valueOf(settlement));
+        input.setValuationDate(settlement);
 
         LocalDate maturity = LocalDate.of(2027, 5, 11);
-        input.setMaturityDate(java.sql.Date.valueOf(maturity));
+        input.setMaturityDate(maturity);
 
-        //input.setBcyRate(0.03);
-        //input.setCcyRate(0.03);
-        input.setOptionStyle(OptionStyle.EUROPEAN);
-        input.setOptionType(OptionType.CALL);
-        input.setSpotPrice(101.);
-        input.setStrike(100);
-        input.setVolatility(0.2);
+        input.setDomesticRate(0.05);
+        input.setForeignRate(0.);
+        input.setSpotPrice(1.1);
         input.setDaycount(DaycountBasis.ACT_365);
+        OptionData od = new OptionData(1.1, 0.1, OptionStyle.AMERICAN, OptionType.PUT);
+        input.setOptionData(od);
+        OptionOutputData output = cRRBinomialPricer.priceCall(input);
+        System.out.println(output.getPrice());
+    }
 
-        OptionCalcOutputData output = blackAndScholesPricer.priceCall(input);
+    private void testBlackAndScholesPricer() {
+        BondOptionInputData input = new BondOptionInputData();
+
+        LocalDate settlement = LocalDate.of(2026, 5, 11);
+        input.setValuationDate(settlement);
+        LocalDate maturity = LocalDate.of(2027, 5, 11);
+        input.setMaturityDate(maturity);
+        input.setSpotPrice(101.);
+        input.setDaycount(DaycountBasis.ACT_365);
+        OptionData od = new OptionData(100., 0.2, OptionStyle.EUROPEAN, OptionType.CALL);
+        input.setOptionData(od);
+
+        OptionOutputData output = blackAndScholesPricer.priceCall(input);
         System.out.println(output.getPrice());
         System.out.println(output.getDelta());
         double impliedVol = blackAndScholesPricer.calculateImpliedVolatility(input, output.getPrice(), OptionType.CALL);
@@ -139,6 +164,8 @@ public class Engine {
         System.out.println(accruedInterest);
         double modifiedDuration = bondPricer.calculateModifiedDuration(flows, irr, valuationDate, daycount, freq);
         System.out.println(modifiedDuration);
+        double convexity = bondPricer.calculateConvexity(flows, irr, 113.34, valuationDate, daycount, Compounding.COMPOUNDED);
+        System.out.println(convexity);
     }
 
     private void testFrenchAmortizationStrategy() {
@@ -166,6 +193,23 @@ public class Engine {
         }
     }
 
+    private void runTest(Test test) {
+        switch (test) {
+            case BOND ->
+                testBondPricer();
+            case BAS ->
+                testBlackAndScholesPricer();
+            case GAK ->
+                testGarmanKohlhagenPricer();
+            case LOAN ->
+                testFrenchAmortizationStrategy();
+            case DATE ->
+                testDateParser();
+            case CRR ->
+                testCRRBinomialPricer();
+        }
+    }
+
     public static void main(String[] args) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
@@ -180,9 +224,7 @@ public class Engine {
 
         // 4. Recupera Engine e lancia il test
         Engine engine = context.getBean(Engine.class);
-        // engine.testBondPricer();
-        //engine.testBlackAndScholesPricer();
-        engine.testGarmanKohlhagenPricer();
+        engine.runTest(GAK);
+        engine.runTest(CRR);
     }
-
 }

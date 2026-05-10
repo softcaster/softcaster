@@ -10,21 +10,40 @@ package org.softcaster.engine.enums;
  */
 public enum SettlementType implements IdentifiableEnum {
 
-    ;
+    PHYSICAL(1, "PHYSICAL", "Physical Settlement"),
+    CASH(2, "CASH", "Cash Settlement");
 
+    private final int id;
+    private final String code;
+    private final String description;
+
+    SettlementType(int id, String code, String description) {
+        this.id = id;
+        this.code = code;
+        this.description = description;
+    }
+
+    /**
+     * @return the id
+     */
     @Override
     public int getId() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return id;
     }
 
+    /**
+     * @return the code
+     */
     @Override
     public String getCode() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return code;
     }
 
+    /**
+     * @return the description
+     */
     @Override
     public String getDescription() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return description;
     }
-    
 }

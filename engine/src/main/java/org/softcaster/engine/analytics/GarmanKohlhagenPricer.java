@@ -5,8 +5,9 @@
 package org.softcaster.engine.analytics;
 
 import org.softcaster.engine.dto.FxOptionInputData;
-import org.softcaster.engine.dto.OptionCalcOutputData;
+import org.softcaster.engine.dto.MarketOutputData;
 import org.softcaster.engine.dto.OptionData;
+import org.softcaster.engine.dto.OptionOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.OptionType;
 import org.softcaster.engine.math.Gaussian;
@@ -20,8 +21,8 @@ import org.softcaster.engine.math.OptionUtil;
 public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
 
     @Override
-    public OptionCalcOutputData priceCall(FxOptionInputData input) {
-        OptionCalcOutputData output = new OptionCalcOutputData();
+    public OptionOutputData priceCall(FxOptionInputData input) {
+        OptionOutputData output = new OptionOutputData();
         double t = OptionUtil.getTimeToMaturity(input);
         double s = input.getSpotPrice();
         double k = input.getStrike();
@@ -57,8 +58,8 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
     }
 
     @Override
-    public OptionCalcOutputData pricePut(FxOptionInputData input) {
-        OptionCalcOutputData output = new OptionCalcOutputData();
+    public OptionOutputData pricePut(FxOptionInputData input) {
+        OptionOutputData output = new OptionOutputData();
 
         double t = OptionUtil.getTimeToMaturity(input);
         double s = input.getSpotPrice();
@@ -108,7 +109,7 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
                 // Creiamo un clone dell'input per non sporcare l'originale
                 FxOptionInputData tempInput = createInputWithNewVol(input, vol);
                 // Calcoliamo il prezzo in base al tipo (Call o Put)
-                OptionCalcOutputData output = (input.getOptionType() == OptionType.CALL)
+                MarketOutputData output = (input.getOptionType() == OptionType.CALL)
                         ? priceCall(tempInput)
                         : pricePut(tempInput);
 
@@ -132,7 +133,6 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
         }
     }
 
-    // Dentro GarmanKohlhagenPricer o dove calcoli la IV
     private FxOptionInputData createInputWithNewVol(FxOptionInputData original, double newVol) {
         // Creiamo un nuovo record basato su quello vecchio ma con vol diversa
         OptionData newOptionData = new OptionData(

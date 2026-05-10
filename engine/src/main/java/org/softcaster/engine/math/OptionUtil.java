@@ -4,7 +4,7 @@
  */
 package org.softcaster.engine.math;
 
-import org.softcaster.engine.dto.FxOptionInputData;
+import org.softcaster.engine.dto.ForwardBaseInputData;
 
 /**
  *
@@ -12,7 +12,7 @@ import org.softcaster.engine.dto.FxOptionInputData;
  */
 public class OptionUtil {
 
-    public static double getTimeToMaturity(FxOptionInputData input) {
+    public static double getTimeToMaturity(ForwardBaseInputData input) {
         return input.getDaycount().calculate(input.getValuationDate(), input.getMaturityDate(), null);
     }
 }

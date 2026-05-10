@@ -5,6 +5,10 @@
 package org.softcaster.engine.math;
 
 import org.softcaster.engine.enums.Compounding;
+import static org.softcaster.engine.enums.Compounding.COMPOUNDED;
+import static org.softcaster.engine.enums.Compounding.CONTINUOUS;
+import static org.softcaster.engine.enums.Compounding.SIMPLE;
+import static org.softcaster.engine.enums.Compounding.SIMPLE_THEN_COMPOUNDED;
 
 public final class MathUtil {
 
@@ -102,4 +106,25 @@ public final class MathUtil {
         return rootNewton(function, guess, DEFAULT_H, DEFAULT_MAX_ITERATES, compounding);
     }
 
+    public static double getDiscountFactor(Compounding compounding, double rate, double t) {
+        
+        double discountFactor = 0;
+        switch (compounding) {
+            case SIMPLE ->
+                discountFactor = 1. / (1 + rate * t);
+            case COMPOUNDED ->
+                discountFactor = 1. / Math.pow(1 + rate, t);
+            case CONTINUOUS ->
+                discountFactor = Math.exp(rate * -t);
+            case SIMPLE_THEN_COMPOUNDED -> {
+                if (t <= 1) {
+                    discountFactor = 1. / (1 + rate * t);
+                } else {
+                    discountFactor = 1. / Math.pow(1 + rate, t);
+                }
+            }
+        }
+
+        return discountFactor;
+    }
 }

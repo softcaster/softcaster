@@ -6,31 +6,16 @@ package org.softcaster.engine.dto;
 
 /**
  *
- * @author ep
+ * @author softc
  */
-public class OptionCalcOutputData {
-
-    private double price = 0.;
+public class OptionOutputData extends MarketOutputData{
+    
     private double delta = 0.;
     private double gamma = 0.;
     private double vega = 0.;
     private double theta = 0.;
     private double rhoD = 0.;
     private double rhoF = 0.;
-
-    /**
-     * @return the price
-     */
-    public double getPrice() {
-        return price;
-    }
-
-    /**
-     * @param price the price to set
-     */
-    public void setPrice(double price) {
-        this.price = price;
-    }
 
     /**
      * @return the delta
@@ -89,20 +74,6 @@ public class OptionCalcOutputData {
     }
 
     /**
-     * @return the rhoF
-     */
-    public double getRhoF() {
-        return rhoF;
-    }
-
-    /**
-     * @param rhoF the rhoF to set
-     */
-    public void setRhoF(double rhoF) {
-        this.rhoF = rhoF;
-    }
-
-    /**
      * @return the rhoD
      */
     public double getRhoD() {
@@ -116,4 +87,17 @@ public class OptionCalcOutputData {
         this.rhoD = rhoD;
     }
 
+    /**
+     * @return the rhoF
+     */
+    public double getRhoF() {
+        return rhoF;
+    }
+
+    /**
+     * @param rhoF the rhoF to set
+     */
+    public void setRhoF(double rhoF) {
+        this.rhoF = rhoF;
+    }
 }

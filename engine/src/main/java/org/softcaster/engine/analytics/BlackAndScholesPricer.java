@@ -4,8 +4,9 @@
  */
 package org.softcaster.engine.analytics;
 
-import org.softcaster.engine.dto.OptionCalcInputData;
-import org.softcaster.engine.dto.OptionCalcOutputData;
+import org.softcaster.engine.dto.BondOptionInputData;
+import org.softcaster.engine.dto.OptionData;
+import org.softcaster.engine.dto.OptionOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.OptionType;
 import org.softcaster.engine.math.Gaussian;
@@ -16,12 +17,12 @@ import org.softcaster.engine.math.OptionUtil;
  *
  * @author ep
  */
-public class BlackAndScholesPricer implements IOptionPricer<OptionCalcInputData> {
+public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData> {
 
     @Override
-    public OptionCalcOutputData priceCall(OptionCalcInputData input) {
-        OptionCalcOutputData output = new OptionCalcOutputData();
-        double t = 0;//OptionUtil.getTimeToMaturity(input);
+    public OptionOutputData priceCall(BondOptionInputData input) {
+        OptionOutputData output = new OptionOutputData();
+        double t = OptionUtil.getTimeToMaturity(input);
         double s = input.getSpotPrice();
         double k = input.getStrike();
         double r = input.getDomesticRate();
@@ -53,11 +54,11 @@ public class BlackAndScholesPricer implements IOptionPricer<OptionCalcInputData>
     }
 
     @Override
-    public OptionCalcOutputData pricePut(OptionCalcInputData input) {
+    public OptionOutputData pricePut(BondOptionInputData input) {
         // 1. Calcoliamo la Call (che popola Prezzo e Greche della Call)
-        OptionCalcOutputData output = priceCall(input);
+        OptionOutputData output = priceCall(input);
 
-        double t = 0;//OptionUtil.getTimeToMaturity(input);
+        double t = OptionUtil.getTimeToMaturity(input);
         double r = input.getDomesticRate();
         double k = input.getStrike();
         double s = input.getSpotPrice();
@@ -87,7 +88,7 @@ public class BlackAndScholesPricer implements IOptionPricer<OptionCalcInputData>
         return output;
     }
 
-    public double calculateImpliedVolatility(OptionCalcInputData input, double targetPrice, OptionType type) {
+    public double calculateImpliedVolatility(BondOptionInputData input, double targetPrice, OptionType type) {
 
         //double t = OptionUtil.getTimeToMaturity(input);
         double s = input.getSpotPrice();
@@ -98,14 +99,13 @@ public class BlackAndScholesPricer implements IOptionPricer<OptionCalcInputData>
         if (targetPrice <= intrinsicValue) {
             throw new ArbitrageViolationException(targetPrice, intrinsicValue);
         }
-        
+
         MathUtil.Function1 ivFunction = new MathUtil.Function1() {
 
             @Override
             public double f(double vol) {
-                // Creiamo un input temporaneo variando solo la volatilità
-                OptionCalcInputData tempInput = cloneInput(input);
-                tempInput.setVolatility(vol);
+                // Creiamo un clone dell'input per non sporcare l'originale
+                BondOptionInputData tempInput = createInputWithNewVol(input, vol);
 
                 double currentPrice = type == OptionType.CALL
                         ? priceCall(tempInput).getPrice()
@@ -126,14 +126,30 @@ public class BlackAndScholesPricer implements IOptionPricer<OptionCalcInputData>
         return MathUtil.rootNewton(ivFunction, 0.20, Compounding.COMPOUNDED);
     }
 
-    private OptionCalcInputData cloneInput(OptionCalcInputData original) {
-        OptionCalcInputData copy = new OptionCalcInputData();
-        copy.setSpotPrice(original.getSpotPrice());
-        copy.setStrike(original.getStrike());
-        copy.setDomesticRate(original.getDomesticRate());
-        copy.setSettlementDate(original.getSettlementDate());
-        copy.setMaturityDate(original.getMaturityDate());
-        copy.setDaycount(original.getDaycount());
-        return copy;
+    private BondOptionInputData createInputWithNewVol(BondOptionInputData original, double newVol) {
+        // Creiamo un nuovo record basato su quello vecchio ma con vol diversa
+        OptionData newOptionData = new OptionData(
+                original.getOptionData().strike(),
+                newVol, // Nuova volatilità calcolata da Newton
+                original.getOptionData().style(),
+                original.getOptionData().type()
+        );
+
+        // Creiamo un nuovo oggetto di input (o usiamo un costruttore/setter per rimpiazzare il record)
+        BondOptionInputData newInput = cloneInput(original); // Il tuo metodo clone
+        newInput.setOptionData(newOptionData);
+        return newInput;
+    }
+
+    // Metodo di supporto per il cloning dei dati di input
+    private BondOptionInputData cloneInput(BondOptionInputData src) {
+        BondOptionInputData dest = new BondOptionInputData();
+        dest.setSpotPrice(src.getSpotPrice());
+        dest.setOptionData(src.getOptionData());
+        dest.setDomesticRate(src.getDomesticRate());
+        dest.setValuationDate(src.getValuationDate());
+        dest.setMaturityDate(src.getMaturityDate());
+        dest.setDaycount(src.getDaycount());
+        return dest;
     }
 }
