@@ -7,6 +7,7 @@ package org.softcaster.engine.config;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
+import org.softcaster.engine.analytics.LoanPricer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,12 @@ public class EngineAutoConfiguration {
         return new BondPricer();
     }
     
+    @Bean(name = "loanPricer")
+    @ConditionalOnMissingBean // caso in cui qualche libreria volesse creare un proprio bean
+    public LoanPricer loanPricer() {
+        return new LoanPricer();
+    }
+
     @Bean(name = "basPricer")
     @ConditionalOnMissingBean 
     public BlackAndScholesPricer blackAndScholesPricer() {

@@ -13,12 +13,13 @@ import org.softcaster.engine.enums.OptionType;
  *
  * @author ep
  */
-public class OptionCalcInputData implements Serializable {
+public class OptionCalcInputData implements Serializable, IOptionInputData {
 
     private double spotPrice = 0;
     private double strike = 0;
-    private double bcyRate = 0;
-    private double ccyRate = 0;
+    // Caso EUR/USD - EUR bcy USD ccy
+    private double domesticRate = 0; // tasso della divisa ccy
+    private double foreignRate = 0; // tasso della divisa bcy
     private double volatility = 0;
     private OptionStyle optionStyle;
     private OptionType optionType;
@@ -52,34 +53,6 @@ public class OptionCalcInputData implements Serializable {
      */
     public void setStrike(double strike) {
         this.strike = strike;
-    }
-
-    /**
-     * @return the bcyRate
-     */
-    public double getBcyRate() {
-        return bcyRate;
-    }
-
-    /**
-     * @param bcyRate the bcyRate to set
-     */
-    public void setBcyRate(double bcyRate) {
-        this.bcyRate = bcyRate;
-    }
-
-    /**
-     * @return the ccyRate
-     */
-    public double getCcyRate() {
-        return ccyRate;
-    }
-
-    /**
-     * @param ccyRate the ccyRate to set
-     */
-    public void setCcyRate(double ccyRate) {
-        this.ccyRate = ccyRate;
     }
 
     /**
@@ -136,7 +109,7 @@ public class OptionCalcInputData implements Serializable {
      */
     public void setDaycount(DaycountBasis daycount) {
         this.daycount = daycount;
-    }    
+    }
 
     /**
      * @return the optionStyle
@@ -164,5 +137,33 @@ public class OptionCalcInputData implements Serializable {
      */
     public void setOptionType(OptionType optionType) {
         this.optionType = optionType;
+    }
+
+    /**
+     * @return the domesticRate
+     */
+    public double getDomesticRate() {
+        return domesticRate;
+    }
+
+    /**
+     * @param domesticRate the domesticRate to set
+     */
+    public void setDomesticRate(double domesticRate) {
+        this.domesticRate = domesticRate;
+    }
+
+    /**
+     * @return the foreignRate
+     */
+    public double getForeignRate() {
+        return foreignRate;
+    }
+
+    /**
+     * @param foreignRate the foreignRate to set
+     */
+    public void setForeignRate(double foreignRate) {
+        this.foreignRate = foreignRate;
     }
 }

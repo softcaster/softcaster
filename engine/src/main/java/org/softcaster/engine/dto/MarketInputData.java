@@ -1,0 +1,58 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package org.softcaster.engine.dto;
+
+import java.time.LocalDate;
+import org.softcaster.engine.enums.DaycountBasis;
+
+public abstract class MarketInputData implements IMarketInputData{
+
+    private double spotPrice;      // Prezzo attuale (Cambio FX, Stock Price o Bond Clean Price)
+    private LocalDate valuationDate; // Data "As-of"
+    private DaycountBasis daycount;
+
+    /**
+     * @return the spotPrice
+     */
+    public double getSpotPrice() {
+        return spotPrice;
+    }
+
+    /**
+     * @param spotPrice the spotPrice to set
+     */
+    public void setSpotPrice(double spotPrice) {
+        this.spotPrice = spotPrice;
+    }
+
+    /**
+     * @return the valuationDate
+     */
+    public LocalDate getValuationDate() {
+        return valuationDate;
+    }
+
+    /**
+     * @param valuationDate the valuationDate to set
+     */
+    public void setValuationDate(LocalDate valuationDate) {
+        this.valuationDate = valuationDate;
+    }
+
+    /**
+     * @return the daycount
+     */
+    public DaycountBasis getDaycount() {
+        return daycount;
+    }
+
+    /**
+     * @param daycount the daycount to set
+     */
+    public void setDaycount(DaycountBasis daycount) {
+        this.daycount = daycount;
+    }
+    
+}

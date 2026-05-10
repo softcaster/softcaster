@@ -16,15 +16,15 @@ import org.softcaster.engine.math.OptionUtil;
  *
  * @author ep
  */
-public class BlackAndScholesPricer implements IOptionPricer {
+public class BlackAndScholesPricer implements IOptionPricer<OptionCalcInputData> {
 
     @Override
     public OptionCalcOutputData priceCall(OptionCalcInputData input) {
         OptionCalcOutputData output = new OptionCalcOutputData();
-        double t = OptionUtil.getTimeToMaturity(input);
+        double t = 0;//OptionUtil.getTimeToMaturity(input);
         double s = input.getSpotPrice();
         double k = input.getStrike();
-        double r = input.getBcyRate();
+        double r = input.getDomesticRate();
         double vol = input.getVolatility();
 
         // se t è zero, il prezzo dell'opzione è semplicemente il suo valore intrinseco
@@ -57,8 +57,8 @@ public class BlackAndScholesPricer implements IOptionPricer {
         // 1. Calcoliamo la Call (che popola Prezzo e Greche della Call)
         OptionCalcOutputData output = priceCall(input);
 
-        double t = OptionUtil.getTimeToMaturity(input);
-        double r = input.getBcyRate();
+        double t = 0;//OptionUtil.getTimeToMaturity(input);
+        double r = input.getDomesticRate();
         double k = input.getStrike();
         double s = input.getSpotPrice();
 
@@ -89,7 +89,7 @@ public class BlackAndScholesPricer implements IOptionPricer {
 
     public double calculateImpliedVolatility(OptionCalcInputData input, double targetPrice, OptionType type) {
 
-        double t = OptionUtil.getTimeToMaturity(input);
+        //double t = OptionUtil.getTimeToMaturity(input);
         double s = input.getSpotPrice();
         double k = input.getStrike();
         // 1. Validazione finanziaria preventiva
@@ -130,7 +130,7 @@ public class BlackAndScholesPricer implements IOptionPricer {
         OptionCalcInputData copy = new OptionCalcInputData();
         copy.setSpotPrice(original.getSpotPrice());
         copy.setStrike(original.getStrike());
-        copy.setBcyRate(original.getBcyRate());
+        copy.setDomesticRate(original.getDomesticRate());
         copy.setSettlementDate(original.getSettlementDate());
         copy.setMaturityDate(original.getMaturityDate());
         copy.setDaycount(original.getDaycount());

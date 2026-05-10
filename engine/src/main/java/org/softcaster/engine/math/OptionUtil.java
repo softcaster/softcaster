@@ -4,8 +4,7 @@
  */
 package org.softcaster.engine.math;
 
-import java.time.LocalDate;
-import org.softcaster.engine.dto.OptionCalcInputData;
+import org.softcaster.engine.dto.FxOptionInputData;
 
 /**
  *
@@ -13,10 +12,7 @@ import org.softcaster.engine.dto.OptionCalcInputData;
  */
 public class OptionUtil {
 
-    public static double getTimeToMaturity(OptionCalcInputData input) {
-
-        LocalDate settlementDate = input.getSettlementDate().toLocalDate();
-        LocalDate maturityDate = input.getMaturityDate().toLocalDate();
-        return input.getDaycount().calculate(settlementDate, maturityDate, null);
+    public static double getTimeToMaturity(FxOptionInputData input) {
+        return input.getDaycount().calculate(input.getValuationDate(), input.getMaturityDate(), null);
     }
 }

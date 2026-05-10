@@ -8,19 +8,14 @@ import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.enums.Compounding;
-import static org.softcaster.engine.enums.Compounding.COMPOUNDED;
-import static org.softcaster.engine.enums.Compounding.CONTINUOUS;
-import static org.softcaster.engine.enums.Compounding.SIMPLE;
-import static org.softcaster.engine.enums.Compounding.SIMPLE_THEN_COMPOUNDED;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
-import org.softcaster.engine.math.MathUtil;
 
 /**
  *
- * @author ep
+ * @author
  */
-public class BondPricer {
+public class BondPricer extends AbstractFixedIncomePricer {
 
     /**
      * Calcola il Rateo (Accrued Interest) alla data di valutazione.
@@ -67,7 +62,7 @@ public class BondPricer {
                 .filter(cf -> cf.paymentDate().isAfter(valuationDate))
                 .toList();
 
-        return internalRateOfReturn(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency);
+        return solveInternalRateOfReturn(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency);
     }
 
     public double calculateModifiedDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
@@ -98,50 +93,5 @@ public class BondPricer {
         // o legata alla frequenza (k). Per i BTP si usa spesso k=1 o k=frequenza.
         int k = freq.getYearFraction();
         return macaulayDuration / (1 + (ytm / k));
-    }
-
-    public static double internalRateOfReturn(
-            List<CashFlow> cashflows,
-            double dirtyPrice,
-            LocalDate valuationDate, // 
-            DaycountBasis dcb, // Necessario per calcolare i tempi corretti
-            Compounding compounding,
-            Frequency frequency
-    ) {
-
-        MathUtil.Function1 nlpFunction = new MathUtil.Function1() {
-
-            @Override
-            public double f(double rate) {
-                // Possiamo delegare al metodo con compounding usando uno di default
-                return f(rate, compounding);
-            }
-
-            @Override
-            public double f(double rate, Compounding compounding) {
-                double pv = 0.0;
-                for (CashFlow cf : cashflows) {
-                    double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
-                    switch (compounding) {
-                        case SIMPLE ->
-                            pv += cf.getTotalAmount() / (1 + rate * t);
-                        case COMPOUNDED ->
-                            pv += cf.getTotalAmount() / Math.pow(1 + rate, t);
-                        case CONTINUOUS ->
-                            pv += cf.getTotalAmount() * Math.exp(rate * t);
-                        case SIMPLE_THEN_COMPOUNDED -> {
-                            if (t <= 1) {
-                                pv += cf.getTotalAmount() / (1 + rate * t);
-                            } else {
-                                pv += cf.getTotalAmount() / Math.pow(1 + rate, t);
-                            }
-                        }
-                    }
-                }
-                return pv - dirtyPrice;
-            }
-        };
-
-        return MathUtil.rootNewton(nlpFunction, 0.10, compounding);
     }
 }

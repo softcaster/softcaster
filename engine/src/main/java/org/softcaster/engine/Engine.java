@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
 import org.softcaster.engine.analytics.BondPricer;
+import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
 import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
 import org.softcaster.engine.cashflow.BulletAmortizationStrategy;
 import org.softcaster.engine.cashflow.CashFlow;
@@ -16,8 +17,10 @@ import org.softcaster.engine.cashflow.FrenchAmortizationStrategy;
 import org.softcaster.engine.cashflow.HolidayCalendar;
 import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.config.EngineAutoConfiguration;
+import org.softcaster.engine.dto.FxOptionInputData;
 import org.softcaster.engine.dto.OptionCalcInputData;
 import org.softcaster.engine.dto.OptionCalcOutputData;
+import org.softcaster.engine.dto.OptionData;
 import org.softcaster.engine.enums.BusinessDayConvention;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
@@ -56,7 +59,33 @@ public class Engine {
     @Autowired
     @Qualifier("basPricer")
     private BlackAndScholesPricer blackAndScholesPricer;
+    
+    @Autowired
+    @Qualifier("ghPricer")
+    private GarmanKohlhagenPricer garmanKohlhagenPricer;
 
+    private void testGarmanKohlhagenPricer() {
+         FxOptionInputData input = new FxOptionInputData();
+
+        LocalDate settlement = LocalDate.of(2026, 5, 11);
+        input.setValuationDate(settlement);
+
+        LocalDate maturity = LocalDate.of(2027, 5, 11);
+        input.setMaturityDate(maturity);
+
+        input.setDomesticRate(0.05);
+        input.setForeignRate(0.03);
+        input.setSpotPrice(1.1);
+        input.setDaycount(DaycountBasis.ACT_365);
+        OptionData od = new OptionData(1.1,0.1,OptionStyle.EUROPEAN,OptionType.CALL);
+        input.setOptionData(od);
+        OptionCalcOutputData output = garmanKohlhagenPricer.priceCall(input);
+        System.out.println(output.getPrice());
+        System.out.println(output.getDelta());
+        double impliedVol = garmanKohlhagenPricer.calculateImpliedVolatility(input, output.getPrice());
+        System.out.println(impliedVol);
+  }
+    
     private void testBlackAndScholesPricer() {
         OptionCalcInputData input = new OptionCalcInputData();
 
@@ -66,8 +95,8 @@ public class Engine {
         LocalDate maturity = LocalDate.of(2027, 5, 11);
         input.setMaturityDate(java.sql.Date.valueOf(maturity));
 
-        input.setBcyRate(0.03);
-        input.setCcyRate(0.03);
+        //input.setBcyRate(0.03);
+        //input.setCcyRate(0.03);
         input.setOptionStyle(OptionStyle.EUROPEAN);
         input.setOptionType(OptionType.CALL);
         input.setSpotPrice(101.);
@@ -102,9 +131,9 @@ public class Engine {
         BulletAmortizationStrategy bas = new BulletAmortizationStrategy();
         List<CashFlow> flows = bas.generateCashFlows(100., 0.06, periods, DaycountBasis.ACT_ACT_ICMA);
 
-        LocalDate valuationDate = LocalDate.of(2026, 5, 11);
+        LocalDate valuationDate = LocalDate.of(2026, 5, 12);
 
-        double irr = bondPricer.calculateYtm(flows, 113.39, valuationDate, DaycountBasis.ACT_365, Compounding.COMPOUNDED, freq);
+        double irr = bondPricer.calculateYtm(flows, 113.34, valuationDate, DaycountBasis.ACT_365, Compounding.COMPOUNDED, freq);
         System.out.println(irr);
         double accruedInterest = bondPricer.calculateAccruedInterest(flows, valuationDate, DaycountBasis.ACT_365, freq);
         System.out.println(accruedInterest);
@@ -151,8 +180,9 @@ public class Engine {
 
         // 4. Recupera Engine e lancia il test
         Engine engine = context.getBean(Engine.class);
-        //engine.testBondPricer();
-        engine.testBlackAndScholesPricer();
+        // engine.testBondPricer();
+        //engine.testBlackAndScholesPricer();
+        engine.testGarmanKohlhagenPricer();
     }
 
 }
