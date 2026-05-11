@@ -7,6 +7,8 @@ package org.softcaster.engine.analytics;
 import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.dto.BondInputData;
+import org.softcaster.engine.dto.BondOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
@@ -114,6 +116,24 @@ public class BondPricer extends AbstractFixedIncomePricer {
 
         // Convexity = Sommatoria / (Prezzo * (1 + y)^2)
         return weightedSum / (dirtyPrice * Math.pow(1 + ytm, 2));
+    }
+
+    public BondOutputData calculate(BondInputData input) {
+        BondOutputData output = new BondOutputData();
+
+        // ytm
+        output.setYtm(calculateYtm(input.getFlows(), input.getSpotPrice(), input.getValuationDate(),
+                input.getDaycount(), input.getCompounding(), input.getFrequency()));
+
+        // accruals 
+        output.setAccruedInterest(calculateAccruedInterest(input.getFlows(), input.getValuationDate(),
+                input.getDaycount(), input.getFrequency()));
+
+        // mod duration
+        output.setModifiedDuration(calculateModifiedDuration(input.getFlows(), output.getYtm(), input.getValuationDate(),
+                input.getDaycount(), input.getFrequency()));
+
+        return output;
     }
     /*
     public double calculateZSpread(List<CashFlow> flows, double dirtyPrice, LocalDate valDate, 

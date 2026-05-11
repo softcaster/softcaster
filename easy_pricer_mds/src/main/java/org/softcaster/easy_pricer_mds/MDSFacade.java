@@ -33,7 +33,9 @@ import org.softcaster.easy_pricer_core.data.SettlementTypeDAO;
 import org.softcaster.easy_pricer_core.data.TypeOfInterest;
 import org.softcaster.easy_pricer_core.data.TypeOfInterestDAO;
 import org.softcaster.easy_pricer_core.data.YieldCurveDAO;
+import org.softcaster.engine.analytics.BondPricer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 /**
@@ -91,6 +93,10 @@ public class MDSFacade {
     @Autowired
     private CounterpartyTypeDAO counterpartyTypeDAO;
 
+    @Autowired
+    @Qualifier("bondPricer")
+    private BondPricer bondPricer;
+    
     /**
      * @return the securityMasterDataDAO
      */
@@ -271,5 +277,12 @@ public class MDSFacade {
      */
     public MmFutureMasterDataDAO getMmFutureMasterDataDAO() {
         return mmFutureMasterDataDAO;
+    }
+
+    /**
+     * @return the bondPricer
+     */
+    public BondPricer getBondPricer() {
+        return bondPricer;
     }
 }

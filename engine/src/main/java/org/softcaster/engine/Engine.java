@@ -157,8 +157,8 @@ public class Engine {
 
     private void testBondPricer() {
         BackwardScheduleGenerator bsg = new BackwardScheduleGenerator();
-        LocalDate effectiveDate = LocalDate.of(1999, 11, 1);
-        LocalDate terminationDate = LocalDate.of(2031, 5, 1);
+        LocalDate effectiveDate = LocalDate.of(2002, 1, 1);
+        LocalDate terminationDate = LocalDate.of(2033, 1, 2);
         Frequency freq = EnumUtils.fromId(Frequency.class, 2);
 
         BusinessDayConvention bdc = EnumUtils.fromId(BusinessDayConvention.class, 3);
@@ -169,9 +169,9 @@ public class Engine {
         BulletAmortizationStrategy bas = new BulletAmortizationStrategy();
         List<CashFlow> flows = bas.generateCashFlows(100., 0.06, periods, DaycountBasis.ACT_ACT_ICMA);
 
-        LocalDate valuationDate = LocalDate.of(2026, 5, 12);
+        LocalDate valuationDate = LocalDate.of(2026, 5, 13);
 
-        double irr = bondPricer.calculateYtm(flows, 113.34, valuationDate, DaycountBasis.ACT_365, Compounding.COMPOUNDED, freq);
+        double irr = bondPricer.calculateYtm(flows, 114.08, valuationDate, DaycountBasis.ACT_365, Compounding.COMPOUNDED, freq);
         System.out.println(irr);
         double accruedInterest = bondPricer.calculateAccruedInterest(flows, valuationDate, DaycountBasis.ACT_365, freq);
         System.out.println(accruedInterest);
@@ -266,6 +266,6 @@ public class Engine {
 
         // 4. Recupera Engine e lancia il test
         Engine engine = context.getBean(Engine.class);
-        engine.runTest(DATE);
+        engine.runTest(BOND);
     }
 }

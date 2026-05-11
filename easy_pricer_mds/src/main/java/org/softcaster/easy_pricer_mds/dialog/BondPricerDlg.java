@@ -4,21 +4,31 @@
  */
 package org.softcaster.easy_pricer_mds.dialog;
 
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import org.softcaster.commons.ui.dialog.DialogHelper;
+import org.softcaster.commons.utils.Converter;
+import org.softcaster.easy_pricer_core.data.CashFlowItem;
+import org.softcaster.easy_pricer_core.data.MasterData;
+import org.softcaster.easy_pricer_core.data.SecurityMasterData;
+import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
 import org.softcaster.engine.analytics.BondPricer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.softcaster.engine.dto.BondInputData;
+import org.softcaster.engine.dto.BondOutputData;
+import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.utils.DateParser;
 
 /**
  *
  * @author ep
  */
 public class BondPricerDlg extends javax.swing.JDialog {
-    
-    @Autowired
-    @Qualifier("bondPricer")    
-    private BondPricer bondPricer;
-    
+
+    private final MDSFacade mDSFacade;
     private final BondBean bean;
 
     /**
@@ -27,10 +37,12 @@ public class BondPricerDlg extends javax.swing.JDialog {
      * @param parent
      * @param modal
      * @param bean
+     * @param mDSFacade
      */
-    public BondPricerDlg(java.awt.Frame parent, boolean modal, BondBean bean) {
+    public BondPricerDlg(java.awt.Frame parent, boolean modal, BondBean bean,MDSFacade mDSFacade) {
         super(parent, modal);
         this.bean = bean;
+        this.mDSFacade = mDSFacade;
         initComponents();
         postInit();
     }
@@ -55,9 +67,21 @@ public class BondPricerDlg extends javax.swing.JDialog {
         jLabel4 = new javax.swing.JLabel();
         txtRefPrice = new javax.swing.JTextField();
         txtRefDate = new javax.swing.JTextField();
+        resultPanel = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        txtAccrued = new javax.swing.JTextField();
+        txtYield = new javax.swing.JTextField();
+        txtModDuration = new javax.swing.JTextField();
+        btnPanel = new javax.swing.JPanel();
+        btnCalculate = new javax.swing.JButton();
+        btnExit = new javax.swing.JButton();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        getContentPane().setLayout(new java.awt.BorderLayout(10, 10));
+        getContentPane().setLayout(new java.awt.GridBagLayout());
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -124,6 +148,11 @@ public class BondPricerDlg extends javax.swing.JDialog {
 
         txtRefPrice.setColumns(15);
         txtRefPrice.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtRefPrice.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtRefPriceFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -134,6 +163,11 @@ public class BondPricerDlg extends javax.swing.JDialog {
 
         txtRefDate.setColumns(15);
         txtRefDate.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtRefDate.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtRefDateFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -150,23 +184,199 @@ public class BondPricerDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         mainPanel.add(inputPanel, gridBagConstraints);
 
-        getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
+        resultPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel5.setText("Accrued Interest");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(jLabel5, gridBagConstraints);
+
+        jLabel6.setText("Yield to Maturity");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(jLabel6, gridBagConstraints);
+
+        jLabel7.setText("Modified Duration");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(jLabel7, gridBagConstraints);
+
+        txtAccrued.setEditable(false);
+        txtAccrued.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtAccrued.setToolTipText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(txtAccrued, gridBagConstraints);
+
+        txtYield.setEditable(false);
+        txtYield.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtYield.setToolTipText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(txtYield, gridBagConstraints);
+
+        txtModDuration.setEditable(false);
+        txtModDuration.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtModDuration.setToolTipText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(txtModDuration, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        mainPanel.add(resultPanel, gridBagConstraints);
+
+        btnPanel.setLayout(new java.awt.GridBagLayout());
+
+        btnCalculate.setText("Calculate");
+        btnCalculate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCalculateActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        btnPanel.add(btnCalculate, gridBagConstraints);
+
+        btnExit.setText("Exit");
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        btnPanel.add(btnExit, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        btnPanel.add(filler1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        mainPanel.add(btnPanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        getContentPane().add(mainPanel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(filler2, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_btnExitActionPerformed
+
+    private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
+        double refPrice = 0.;
+        try {
+            refPrice = Converter.toDouble(txtRefPrice.getText(), false);
+            LocalDate refDate = DateParser.parse(txtRefDate.getText());
+            BondInputData input = new BondInputData();
+            input.setSpotPrice(refPrice);
+            input.setValuationDate(refDate);
+            input.setFrequency(getFrequency(bean.getInstrumentQuote().getMasterData().getFrequency()));
+            input.setCompounding(Compounding.COMPOUNDED);
+            input.setDaycount(getDaycount(bean.getInstrumentQuote().getMasterData().getDaycount()));
+            input.setFlows(cashFlow(bean.getInstrumentQuote().getMasterData()));
+            
+            BondPricer bondPricer = mDSFacade.getBondPricer();
+            BondOutputData output = bondPricer.calculate(input);
+            txtAccrued.setText(Converter.fromDouble(output.getAccruedInterest()));
+            txtYield.setText(Converter.fromDouble(output.getYtm()));
+            txtModDuration.setText(Converter.fromDouble(output.getModifiedDuration()));
+        } catch (ParseException ex) {
+            System.getLogger(BondPricerDlg.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }//GEN-LAST:event_btnCalculateActionPerformed
+
+    private void txtRefDateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtRefDateFocusLost
+        DialogHelper.textFieldDateFocusLost(txtRefDate);
+    }//GEN-LAST:event_txtRefDateFocusLost
+
+    private void txtRefPriceFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtRefPriceFocusLost
+        DialogHelper.textFieldDoubleFocusLost(txtRefPrice);
+    }//GEN-LAST:event_txtRefPriceFocusLost
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCalculate;
+    private javax.swing.JButton btnExit;
+    private javax.swing.JPanel btnPanel;
+    private javax.swing.Box.Filler filler1;
+    private javax.swing.Box.Filler filler2;
     private javax.swing.JPanel inputPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JPanel resultPanel;
+    private javax.swing.JTextField txtAccrued;
     private javax.swing.JTextField txtDescription;
     private javax.swing.JTextField txtISIN;
+    private javax.swing.JTextField txtModDuration;
     private javax.swing.JTextField txtRefDate;
     private javax.swing.JTextField txtRefPrice;
+    private javax.swing.JTextField txtYield;
     // End of variables declaration//GEN-END:variables
 
     private void postInit() {
@@ -174,5 +384,61 @@ public class BondPricerDlg extends javax.swing.JDialog {
             txtISIN.setText(bean.getInstrumentQuote().getMasterData().getCode());
             txtDescription.setText(bean.getInstrumentQuote().getMasterData().getDescription());
         }
+    }
+
+    private org.softcaster.engine.enums.Frequency getFrequency(org.softcaster.easy_pricer_core.data.Frequency frequency) {
+        org.softcaster.engine.enums.Frequency result = org.softcaster.engine.enums.Frequency.NONE;
+        switch (frequency.getCode()) {
+            case "ANNUAL" ->
+                result = org.softcaster.engine.enums.Frequency.ANNUAL;
+            case "SEMI-ANNUAL" ->
+                result = org.softcaster.engine.enums.Frequency.SEMI_ANNUAL;
+            case "E4M" ->
+                result = org.softcaster.engine.enums.Frequency.E4M;
+            case "QUARTERLY" ->
+                result = org.softcaster.engine.enums.Frequency.QUARTERLY;
+            case "BI-MONTHLY" ->
+                result = org.softcaster.engine.enums.Frequency.BI_MONTHLY;
+            case "MONTHLY" ->
+                result = org.softcaster.engine.enums.Frequency.MONTHLY;
+            default -> {
+            }
+        }
+        return result;
+    }
+
+    private org.softcaster.engine.enums.DaycountBasis getDaycount(org.softcaster.easy_pricer_core.data.Daycount daycount) {
+        org.softcaster.engine.enums.DaycountBasis result = org.softcaster.engine.enums.DaycountBasis.ACT_365;
+        switch (daycount.getCode()) {
+            case "NASD_30_360" ->
+                result = org.softcaster.engine.enums.DaycountBasis.NASD_30_360;
+            case "EUR_30_360" ->
+                result = org.softcaster.engine.enums.DaycountBasis.EUR_30_360;
+            case "ACT_360" ->
+                result = org.softcaster.engine.enums.DaycountBasis.ACT_360;
+            case "ACT_365" ->
+                result = org.softcaster.engine.enums.DaycountBasis.ACT_365;
+            case "ACT_ACT" ->
+                result = org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA;
+            default -> {
+            }
+        }
+        return result;
+    }
+
+    private List<org.softcaster.engine.cashflow.CashFlow> cashFlow(MasterData masterData) {
+        List<org.softcaster.engine.cashflow.CashFlow> flows = new ArrayList<>();
+        if (masterData instanceof SecurityMasterData smd) {
+            org.softcaster.engine.cashflow.CashFlow flow = null;
+            for (CashFlowItem item : smd.getCashFlows()) {
+                flow = new org.softcaster.engine.cashflow.CashFlow(
+                        item.getStartDate().toLocalDate(),item.getEnddate().toLocalDate(),item.getEnddate().toLocalDate(),
+                item.getAmount(),item.getInterest(),item.getAmount());
+                flows.add(flow);
+            }
+            // LocalDate implementa Comparable, l’ordinamento sara' cronologico crescente
+            flows.sort(Comparator.comparing(org.softcaster.engine.cashflow.CashFlow::accrualEnd));
+        }
+        return flows;
     }
 }
