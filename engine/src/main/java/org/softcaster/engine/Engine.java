@@ -8,10 +8,13 @@ import java.time.LocalDate;
 import java.util.List;
 import static org.softcaster.engine.Test.BOND;
 import static org.softcaster.engine.Test.CRR;
+import static org.softcaster.engine.Test.FXFWD;
 import static org.softcaster.engine.Test.GAK;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
+import org.softcaster.engine.analytics.BondForwardPricer;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.analytics.CRRBinomialPricer;
+import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
 import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
 import org.softcaster.engine.cashflow.BulletAmortizationStrategy;
@@ -22,6 +25,7 @@ import org.softcaster.engine.cashflow.HolidayCalendar;
 import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.config.EngineAutoConfiguration;
 import org.softcaster.engine.dto.BondOptionInputData;
+import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.engine.dto.FxOptionInputData;
 import org.softcaster.engine.dto.OptionData;
 import org.softcaster.engine.dto.OptionOutputData;
@@ -53,7 +57,7 @@ class DummyCaLendar implements HolidayCalendar {
 }
 
 enum Test {
-    BOND, BAS, GAK, LOAN, DATE, CRR
+    BOND, BAS, GAK, LOAN, DATE, CRR, FXFWD, BNDFWD
 }
 
 @SpringBootApplication
@@ -61,8 +65,12 @@ enum Test {
 public class Engine {
 
     @Autowired
-    @Qualifier("btpPricer") // Indica a Spring esattamente QUALE bean usare
+    @Qualifier("bondPricer") // Indica a Spring esattamente QUALE bean usare
     private BondPricer bondPricer;
+
+    @Autowired
+    @Qualifier("bondFwdPricer") 
+    private BondForwardPricer bondForwardPricer;
 
     @Autowired
     @Qualifier("basPricer")
@@ -75,6 +83,10 @@ public class Engine {
     @Autowired
     @Qualifier("crrPricer")
     private CRRBinomialPricer cRRBinomialPricer;
+
+    @Autowired
+    @Qualifier("fxFwdPricer")
+    private FxForwardPricer fxForwardPricer;
 
     private void testGarmanKohlhagenPricer() {
         FxOptionInputData input = new FxOptionInputData();
@@ -108,10 +120,10 @@ public class Engine {
         input.setMaturityDate(maturity);
 
         input.setDomesticRate(0.05);
-        input.setForeignRate(0.);
+        input.setForeignRate(0.03);
         input.setSpotPrice(1.1);
         input.setDaycount(DaycountBasis.ACT_365);
-        OptionData od = new OptionData(1.1, 0.1, OptionStyle.AMERICAN, OptionType.PUT);
+        OptionData od = new OptionData(1.1, 0.1, OptionStyle.EUROPEAN, OptionType.CALL);
         input.setOptionData(od);
         OptionOutputData output = cRRBinomialPricer.priceCall(input);
         System.out.println(output.getPrice());
@@ -193,6 +205,31 @@ public class Engine {
         }
     }
 
+    private void testFxForwardPricer() {
+
+        ForwardBaseInputData input = new ForwardBaseInputData();
+
+        LocalDate settlement = LocalDate.of(2026, 5, 11);
+        input.setValuationDate(settlement);
+
+        LocalDate maturity = LocalDate.of(2027, 5, 11);
+        input.setMaturityDate(maturity);
+
+        input.setDomesticRate(0.05);
+        input.setForeignRate(0.03);
+        input.setSpotPrice(1.1);
+        input.setDaycount(DaycountBasis.ACT_365);
+        input.setCompounding(Compounding.SIMPLE);
+
+        double F = fxForwardPricer.forwardPrice(input);
+        System.out.println(F);
+        System.out.println((F - input.getSpotPrice()) * 10000);
+    }
+
+    private void testBondForwardPricer() {
+        
+    }
+    
     private void runTest(Test test) {
         switch (test) {
             case BOND ->
@@ -207,6 +244,10 @@ public class Engine {
                 testDateParser();
             case CRR ->
                 testCRRBinomialPricer();
+            case FXFWD ->
+                testFxForwardPricer();
+            case BNDFWD ->
+                testBondForwardPricer();
         }
     }
 
@@ -224,7 +265,6 @@ public class Engine {
 
         // 4. Recupera Engine e lancia il test
         Engine engine = context.getBean(Engine.class);
-        engine.runTest(GAK);
-        engine.runTest(CRR);
+        engine.runTest(FXFWD);
     }
 }

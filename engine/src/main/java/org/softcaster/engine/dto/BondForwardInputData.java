@@ -6,7 +6,6 @@ package org.softcaster.engine.dto;
 
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
-import org.softcaster.engine.enums.Compounding;
 
 /**
  *
@@ -17,8 +16,6 @@ public class BondForwardInputData extends ForwardBaseInputData {
     // Lista cedole sottostante
     private List<CashFlow> underliyngCashFlows = null;
     
-    private Compounding compounding;
-
     /**
      * @return the underliyngCashFlows
      */
@@ -31,19 +28,5 @@ public class BondForwardInputData extends ForwardBaseInputData {
      */
     public void setUnderliyngCashFlows(List<CashFlow> underliyngCashFlows) {
         this.underliyngCashFlows = underliyngCashFlows;
-    }
-
-    /**
-     * @return the compounding
-     */
-    public Compounding getCompounding() {
-        return compounding;
-    }
-
-    /**
-     * @param compounding the compounding to set
-     */
-    public void setCompounding(Compounding compounding) {
-        this.compounding = compounding;
     }
 }

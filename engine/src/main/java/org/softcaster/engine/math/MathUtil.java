@@ -4,17 +4,20 @@
  */
 package org.softcaster.engine.math;
 
+import java.time.LocalDate;
 import org.softcaster.engine.enums.Compounding;
 import static org.softcaster.engine.enums.Compounding.COMPOUNDED;
 import static org.softcaster.engine.enums.Compounding.CONTINUOUS;
 import static org.softcaster.engine.enums.Compounding.SIMPLE;
 import static org.softcaster.engine.enums.Compounding.SIMPLE_THEN_COMPOUNDED;
+import org.softcaster.engine.enums.DaycountBasis;
 
 public final class MathUtil {
 
     public static final double DEFAULT_H = 0.000001;
     public static final int DEFAULT_MAX_ITERATES = 10000;
-
+    public static final double EPSILON = 1e-11;
+    
     public static interface Function1 {
 
         double f(double x);
@@ -107,7 +110,7 @@ public final class MathUtil {
     }
 
     public static double getDiscountFactor(Compounding compounding, double rate, double t) {
-        
+
         double discountFactor = 0;
         switch (compounding) {
             case SIMPLE ->
@@ -115,7 +118,7 @@ public final class MathUtil {
             case COMPOUNDED ->
                 discountFactor = 1. / Math.pow(1 + rate, t);
             case CONTINUOUS ->
-                discountFactor = Math.exp(rate * -t);
+                discountFactor = Math.exp(-rate * t);
             case SIMPLE_THEN_COMPOUNDED -> {
                 if (t <= 1) {
                     discountFactor = 1. / (1 + rate * t);
@@ -127,4 +130,12 @@ public final class MathUtil {
 
         return discountFactor;
     }
+
+    public static double getTimeToMaturity(DaycountBasis daycount, LocalDate from, LocalDate to) {
+        return daycount.calculate(from, to, null);
+    }
+
+    public static boolean isZero(double x) {
+        return Math.abs(x) < EPSILON;
+    }    
 }

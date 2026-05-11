@@ -4,9 +4,12 @@ package org.softcaster.engine.config;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+import org.softcaster.engine.analytics.Black76Pricer;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
+import org.softcaster.engine.analytics.BondForwardPricer;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.analytics.CRRBinomialPricer;
+import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
 import org.softcaster.engine.analytics.LoanPricer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -20,7 +23,7 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableConfigurationProperties(BinomialProperties.class)
 public class EngineAutoConfiguration {
 
-    @Bean(name = "btpPricer")
+    @Bean(name = "bondPricer")
     @ConditionalOnMissingBean // caso in cui qualche libreria volesse creare un proprio bean
     public BondPricer bondPricer() {
         // Qui hai il controllo totale: puoi passare parametri al costruttore,
@@ -28,10 +31,22 @@ public class EngineAutoConfiguration {
         return new BondPricer();
     }
 
-    @Bean(name = "loanPricer")
+    @Bean(name = "bondFwdPricer")
     @ConditionalOnMissingBean // caso in cui qualche libreria volesse creare un proprio bean
+    public BondForwardPricer bondForwardPricer() {
+        return new BondForwardPricer();
+    }
+
+    @Bean(name = "loanPricer")
+    @ConditionalOnMissingBean 
     public LoanPricer loanPricer() {
         return new LoanPricer();
+    }
+
+    @Bean(name = "fxFwdPricer")
+    @ConditionalOnMissingBean 
+    public FxForwardPricer fxForwardPricer() {
+        return new FxForwardPricer();
     }
 
     @Bean(name = "basPricer")
@@ -49,8 +64,14 @@ public class EngineAutoConfiguration {
     // Cox-Ross-Rubinstein
     @Bean(name = "crrPricer")
     @ConditionalOnMissingBean
-    public CRRBinomialPricer CRRBinomialPricer(BinomialProperties properties) {
-        return new CRRBinomialPricer(properties.getSteps()
-        );
+    public CRRBinomialPricer cRRBinomialPricer(BinomialProperties properties) {
+        return new CRRBinomialPricer(properties.getSteps());
+    }
+
+    // Black-76
+    @Bean(name = "b76Pricer")
+    @ConditionalOnMissingBean
+    public Black76Pricer black76Pricer() {
+        return new Black76Pricer();
     }
 }
