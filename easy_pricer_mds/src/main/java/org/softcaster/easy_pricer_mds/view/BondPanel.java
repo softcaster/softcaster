@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JOptionPane;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
@@ -17,6 +18,7 @@ import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
 import org.softcaster.easy_pricer_mds.dialog.BondIQDlg;
+import org.softcaster.easy_pricer_mds.dialog.BondPricerDlg;
 import org.softcaster.easy_pricer_mds.ui.model.BondTableModel;
 import org.softcaster.marketdataprovider.REQUEST_TYPE;
 
@@ -211,5 +213,31 @@ public class BondPanel extends FndtAbstactPanel {
         }
 
         ftm.setData(bondBeanList);
+    }
+
+    public void calculateAction() {
+        int rowIndex = bondTable.getSelectedRow();
+        if (rowIndex == -1) {
+            JOptionPane.showMessageDialog(null, "Select a row to display the pricing dialog!");
+            return;
+        }
+
+        // 1. CONVERSIONE FONDAMENTALE
+        int modelRow = bondTable.convertRowIndexToModel(rowIndex);
+        BondTableModel model = (BondTableModel) bondTable.getModel();
+        BondBean bean = model.getElementAt(modelRow);
+
+        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+        java.awt.Frame parentFrame = null;
+
+        if (parentWindow instanceof java.awt.Frame frame) {
+            parentFrame = frame;
+        }
+
+        BondPricerDlg dialog = new BondPricerDlg(parentFrame, true, bean);
+        dialog.setSize(425, 250);
+        // Centra la dialog rispetto al pannello
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 }

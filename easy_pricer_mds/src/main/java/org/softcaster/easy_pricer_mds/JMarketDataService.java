@@ -172,7 +172,9 @@ public class JMarketDataService extends javax.swing.JFrame {
         btnExit = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         btnRefresh = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        btnSave = new javax.swing.JButton();
+        jSeparator3 = new javax.swing.JToolBar.Separator();
+        btnCalc = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         itemRefresh = new javax.swing.JMenuItem();
@@ -227,12 +229,25 @@ public class JMarketDataService extends javax.swing.JFrame {
         });
         toolBar.add(btnRefresh);
 
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/save_16dp.png"))); // NOI18N
-        jButton1.setToolTipText("Save");
-        jButton1.setFocusable(false);
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        toolBar.add(jButton1);
+        btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/save_16dp.png"))); // NOI18N
+        btnSave.setToolTipText("Save");
+        btnSave.setFocusable(false);
+        btnSave.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnSave.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBar.add(btnSave);
+        toolBar.add(jSeparator3);
+
+        btnCalc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/analytics_16dp.png"))); // NOI18N
+        btnCalc.setToolTipText("Calculate");
+        btnCalc.setFocusable(false);
+        btnCalc.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnCalc.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnCalc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCalcActionPerformed(evt);
+            }
+        });
+        toolBar.add(btnCalc);
 
         getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
 
@@ -278,16 +293,23 @@ public class JMarketDataService extends javax.swing.JFrame {
         refreshAction();
     }//GEN-LAST:event_btnRefreshActionPerformed
 
+    private void btnCalcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalcActionPerformed
+        // TODO add your handling code here:
+        calculateAction();
+    }//GEN-LAST:event_btnCalcActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCalc;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnRefresh;
+    private javax.swing.JButton btnSave;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem itemExit;
     private javax.swing.JMenuItem itemRefresh;
     private javax.swing.JMenuItem itemSave;
-    private javax.swing.JButton jButton1;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JTree navigator;
@@ -353,5 +375,13 @@ public class JMarketDataService extends javax.swing.JFrame {
             activePanel.refreshAction();
         }
     }
+
+    private void calculateAction() {
+        FndtAbstactPanel activePanel = getActiveCard();
+        if (activePanel != null && activePanel instanceof BondPanel bondPanel) {
+            bondPanel.calculateAction();
+        }
+    }
+
 
 }

@@ -23,7 +23,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
 @ComponentScan(basePackages = {
     "org.softcaster.easy_pricer_mds",
-    "org.softcaster.easy_pricer_core" // Il pacchetto della LIBRERIA
+    "org.softcaster.easy_pricer_core", // Il pacchetto della libreria core
+    "org.softcaster.engine" // Il pacchetto della libreria engine
 })
 @EntityScan("org.softcaster.easy_pricer_core.data")
 @EnableJpaRepositories("org.softcaster.easy_pricer_core.data")

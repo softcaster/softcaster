@@ -5,6 +5,7 @@
 package org.softcaster.engine.dto;
 
 import java.time.LocalDate;
+import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 
 public abstract class MarketInputData implements IMarketInputData{
@@ -12,6 +13,7 @@ public abstract class MarketInputData implements IMarketInputData{
     private double spotPrice;      // Prezzo attuale (Cambio FX, Stock Price o Bond Clean Price)
     private LocalDate valuationDate; // Data "As-of"
     private DaycountBasis daycount;
+    private Compounding compounding;
 
     /**
      * @return the spotPrice
@@ -53,6 +55,20 @@ public abstract class MarketInputData implements IMarketInputData{
      */
     public void setDaycount(DaycountBasis daycount) {
         this.daycount = daycount;
+    }
+
+    /**
+     * @return the compounding
+     */
+    public Compounding getCompounding() {
+        return compounding;
+    }
+
+    /**
+     * @param compounding the compounding to set
+     */
+    public void setCompounding(Compounding compounding) {
+        this.compounding = compounding;
     }
     
 }

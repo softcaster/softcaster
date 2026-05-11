@@ -5,7 +5,6 @@
 package org.softcaster.engine.dto;
 
 import java.time.LocalDate;
-import org.softcaster.engine.enums.Compounding;
 
 /**
  *
@@ -22,8 +21,6 @@ public class ForwardBaseInputData extends MarketInputData {
     // e il tasso dell USD (ccy) il domestic rate
     // 2) Nel caso di equity e' il dividend yield
     private double foreignRate;  
-
-    private Compounding compounding;
     
     private LocalDate maturityDate;
 
@@ -67,19 +64,5 @@ public class ForwardBaseInputData extends MarketInputData {
      */
     public void setForeignRate(double foreignRate) {
         this.foreignRate = foreignRate;
-    }
-
-    /**
-     * @return the compounding
-     */
-    public Compounding getCompounding() {
-        return compounding;
-    }
-
-    /**
-     * @param compounding the compounding to set
-     */
-    public void setCompounding(Compounding compounding) {
-        this.compounding = compounding;
     }
 }
