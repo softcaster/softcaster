@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 import static org.softcaster.engine.Test.BOND;
 import static org.softcaster.engine.Test.CRR;
+import static org.softcaster.engine.Test.DATE;
 import static org.softcaster.engine.Test.FXFWD;
 import static org.softcaster.engine.Test.GAK;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
@@ -149,7 +150,7 @@ public class Engine {
     }
 
     private void testDateParser() {
-        String strDate = "080526";
+        String strDate = "20260511";
         LocalDate dt = DateParser.parse(strDate);
         System.out.println(dt);
     }
@@ -265,6 +266,6 @@ public class Engine {
 
         // 4. Recupera Engine e lancia il test
         Engine engine = context.getBean(Engine.class);
-        engine.runTest(FXFWD);
+        engine.runTest(DATE);
     }
 }

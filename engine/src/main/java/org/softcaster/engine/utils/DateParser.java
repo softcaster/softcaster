@@ -13,6 +13,7 @@ public class DateParser {
 
     // Definiamo il parser con i vari pattern opzionali
     private static final DateTimeFormatter MULTI_FORMATTER = new DateTimeFormatterBuilder()
+            .appendOptional(DateTimeFormatter.ofPattern("yyyyMMdd"))
             .appendOptional(DateTimeFormatter.ofPattern("ddMMyyyy"))
             .appendOptional(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
             .appendOptional(DateTimeFormatter.ofPattern("ddMMyy"))
