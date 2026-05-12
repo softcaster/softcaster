@@ -332,7 +332,9 @@ public class BondPricerDlg extends javax.swing.JDialog {
             input.setValuationDate(refDate);
             input.setFrequency(getFrequency(bean.getInstrumentQuote().getMasterData().getFrequency()));
             input.setCompounding(Compounding.COMPOUNDED);
-            input.setDaycount(getDaycount(bean.getInstrumentQuote().getMasterData().getDaycount()));
+            //input.setDaycount(getDaycount(bean.getInstrumentQuote().getMasterData().getDaycount()));
+            // Daycount di attualizzazione
+            input.setDaycount(org.softcaster.engine.enums.DaycountBasis.ACT_365);
             input.setFlows(cashFlow(bean.getInstrumentQuote().getMasterData()));
             
             BondPricer bondPricer = mDSFacade.getBondPricer();

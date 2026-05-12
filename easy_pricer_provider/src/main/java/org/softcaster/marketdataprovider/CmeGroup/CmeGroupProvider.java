@@ -242,6 +242,9 @@ public class CmeGroupProvider extends AbstractProvider {
     @Override
     public void refresh(ConnectionParam param) throws MarketDataProviderException {
         try {
+            // Cancello tassi/prezzi precedenti
+            rateQuotes.clear();
+            futureQuotes.clear();
             connect(param);
             build(param.today);
         } catch (IOException ex) {
