@@ -14,34 +14,19 @@ import org.softcaster.provider.enums.Market;
  * @author ep
  */
 public class ProviderInfo {
-    
-    // Link alla pagina madre
-    private String baseUrl;
-    
+
+    private List<String> extraParameters = new ArrayList();
     // Link alle varie richieste specifiche
     private List<Request> requests = new ArrayList<>();
 
     public Request getRequest(Market market) {
-        for(Request r: requests) {
-            if(r.market() == market)
+        for (Request r : requests) {
+            if (r.market() == market) {
                 return r;
+            }
         }
-        
-        return null;
-    }
-    
-    /**
-     * @return the baseUrl
-     */
-    public String getBaseUrl() {
-        return baseUrl;
-    }
 
-    /**
-     * @param baseUrl the baseUrl to set
-     */
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
+        return null;
     }
 
     /**
@@ -58,5 +43,17 @@ public class ProviderInfo {
         this.requests = requests;
     }
 
+    /**
+     * @return the extraParameters
+     */
+    public List<String> getExtraParameters() {
+        return extraParameters;
+    }
 
+    /**
+     * @param extraParameters the extraParameters to set
+     */
+    public void setExtraParameters(List<String> extraParameters) {
+        this.extraParameters = extraParameters;
+    }
 }
