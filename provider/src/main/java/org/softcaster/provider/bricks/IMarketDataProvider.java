@@ -2,11 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
  */
-package org.softcaster.provider;
+package org.softcaster.provider.bricks;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.LocalDate;
+import org.softcaster.provider.bricks.ProviderInfo;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.exceptions.MarketDataProviderException;
 

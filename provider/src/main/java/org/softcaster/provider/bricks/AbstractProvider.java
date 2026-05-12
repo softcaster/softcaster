@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.provider;
+package org.softcaster.provider.bricks;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.softcaster.provider.bricks.ProviderInfo;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
 
