@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public class Node {
   
     private final Offset offset;
-    private final Data data;
+    private Data data;
     private final String symbol;
     
     public Node(String symbol, Offset offset, Data data) {
@@ -58,5 +58,12 @@ public class Node {
      */
     public String getSymbol() {
         return symbol;
+    }
+
+    /**
+     * @param data the data to set
+     */
+    public void setData(Data data) {
+        this.data = data;
     }
 }

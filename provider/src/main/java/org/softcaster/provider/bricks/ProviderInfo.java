@@ -6,7 +6,6 @@ package org.softcaster.provider.bricks;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.softcaster.provider.bricks.Request;
 import org.softcaster.provider.enums.Market;
 
 /**

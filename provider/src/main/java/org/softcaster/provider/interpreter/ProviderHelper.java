@@ -53,4 +53,13 @@ public class ProviderHelper implements IProviderHelper {
         }
     }
 
+    @Override
+    public String  getDebugInfo() {
+        if (helper != null) {
+            return helper.getDebugInfo();
+        } else {
+            return "";
+        }
+    }    
+
 }

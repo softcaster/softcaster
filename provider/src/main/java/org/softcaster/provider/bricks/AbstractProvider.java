@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.softcaster.provider.bricks.ProviderInfo;
-import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
 
 /**
@@ -25,6 +23,7 @@ public abstract class AbstractProvider implements IMarketDataProvider {
 
     protected String response = "";
     protected ConcurrentMap<Market, List<Node>> quotes = new ConcurrentHashMap<>();
+    protected ConcurrentMap<RateKey, List<Node>> rates = new ConcurrentHashMap<>();
 
     public void addQuote(Market key, Node element) {
         // computeIfAbsent garantisce che la creazione della lista sia atomica
@@ -32,6 +31,29 @@ public abstract class AbstractProvider implements IMarketDataProvider {
                 .add(element);
     }
 
+    public void addRate(RateKey key, Node element) {
+        // computeIfAbsent garantisce che la creazione della lista sia atomica
+        rates.computeIfAbsent(key, k -> new CopyOnWriteArrayList<>())
+                .add(element);
+    }
+
+    protected List<Node> getQuotes(Market key) {
+        return quotes.get(key);
+    }
+
+    protected Node getQuote(String symbol, Market key) {
+        List<Node> nodes = getQuotes(key);
+        for(Node n: nodes) {
+            if(n.getSymbol().equals(symbol))
+                return n;
+        }
+        return null;
+    }
+
+    protected List<Node> getRates(RateKey key) {
+        return rates.get(key);
+    }
+    
     protected int timeElapsed = 0;
     protected Instant lastUpdate = null;
 

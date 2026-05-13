@@ -11,5 +11,6 @@ import org.softcaster.provider.bricks.Node;
  * @author softc
  */
 public interface IProviderHelper {
-    public List<Node>  getNodeList(String curveId);    
+    public List<Node>  getNodeList(String symbol);    
+    public String  getDebugInfo();    
 }

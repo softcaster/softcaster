@@ -22,8 +22,11 @@ import java.util.List;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.provider.bricks.AbstractProvider;
+import org.softcaster.provider.bricks.Data;
 import org.softcaster.provider.bricks.ProviderInfo;
 import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.bricks.RateKey;
+import org.softcaster.provider.bricks.Request;
 import org.softcaster.provider.enums.Market;
 import static org.softcaster.provider.enums.Market.FUTURES;
 import static org.softcaster.provider.enums.Market.NONE;
@@ -42,6 +45,11 @@ https://www.cmegroup.com/services/term-estr/
  */
 public class CmeGroupProvider extends AbstractProvider {
 
+    private final String baseUrl = "https://www.cmegroup.com";
+    private final String sofrUrl = "https://www.cmegroup.com/services/sofr-strip-rates/";
+    private final String esterUrl = "https://www.cmegroup.com/services/term-estr/";
+    private final String v2Url = "https://www.cmegroup.com/CmeWS/mvc/quotes/v2/";
+
     private static CmeGroupProvider _instance = null;
 
     private CmeGroupProvider() {
@@ -56,7 +64,11 @@ public class CmeGroupProvider extends AbstractProvider {
         return _instance;
     }
 
-    private void parseResponseSofr(Market market) {
+    protected void initialize() {
+
+    }
+
+    private void parseResponseTermSofr() {
         if (response != null && !response.isEmpty()) {
 
             // Sostituisce tutte le chiavi "average..." che hanno valore "-" con "0"
@@ -77,27 +89,30 @@ public class CmeGroupProvider extends AbstractProvider {
 
             ProviderHelper helper = ProviderHelper.getInstance();
             if (sofrRates != null && helper != null) {
-                List<Node> nodes = helper.getNodeList("SOFR");
-                int pos = 0;
-                double value = 0.;
-                for (Node node : nodes) {
-                    try {
-                        value = Converter.toDouble(sofrRates.get(pos).price, false);
-                    } catch (ParseException ex) {
-                        LoggerMgr.logError(ex.getLocalizedMessage());
-                        value = 0.;
+                List<Node> nodes = helper.getNodeList("TERMSOFR");
+                if (nodes != null) {
+                    int pos = 0;
+                    double value = 0.;
+                    RateKey key = new RateKey("TERMSOFR", RATES);
+                    Data data = null;
+                    for (Node node : nodes) {
+                        try {
+                            value = Converter.toDouble(sofrRates.get(pos).price, false);
+                        } catch (ParseException ex) {
+                            LoggerMgr.logError(ex.getLocalizedMessage());
+                            value = 0.;
+                        }
+                        data = new Data(value, value);
+                        node.setData(data);
+                        addRate(key, node);
+                        pos++;
                     }
-                    //node.setBid(value);
-                    //node.setAsk(value);
-                    //rateQuotes.add(node);
-                    addQuote(market, null);
-                    pos++;
                 }
             }
         }
     }
 
-    private void parseResponseEster(Market market) {
+    private void parseResponseTermEster() {
         if (response != null && !response.isEmpty()) {
 
             List<TermESTRRate> esterRates = null;
@@ -111,24 +126,26 @@ public class CmeGroupProvider extends AbstractProvider {
             }
 
             // Tassi a data corrente
-            ArrayList<EsterRate> rates = esterRates.get(0).rates;
+            ArrayList<EsterRate> eRates = esterRates.get(0).rates;
 
             ProviderHelper helper = ProviderHelper.getInstance();
             if (esterRates != null && helper != null) {
-                List<Node> nodes = helper.getNodeList("ESTER");
+                List<Node> nodes = helper.getNodeList("TERMESTR");
                 int pos = 0;
                 double value = 0.;
+                Data data = null;
+                RateKey key = new RateKey("TERMESTR", RATES);
                 for (Node node : nodes) {
                     try {
-                        value = Converter.toDouble(rates.get(pos).price, false);
+                        value = Converter.toDouble(eRates.get(pos).price, false);
                     } catch (ParseException ex) {
                         LoggerMgr.logError(ex.getLocalizedMessage());
                         value = 0.;
                     }
 
-                    //node.setBid(value);
-                    //node.setAsk(value);
-                    //rateQuotes.add(node);
+                    data = new Data(value, value);
+                    node.setData(data);
+                    addRate(key, node);
                     pos++;
                 }
             }
@@ -136,11 +153,11 @@ public class CmeGroupProvider extends AbstractProvider {
 
     }
 
-    private void parseResponseYieldCurve(String idCurve, Market market) {
-        if (idCurve.equals("SOFR")) {
-            parseResponseSofr(market);
-        } else if (idCurve.equals("ESTER")) {
-            parseResponseEster(market);
+    private void parseResponseYieldCurve(String idCurve) {
+        if (idCurve.equals("TERMSOFR")) {
+            parseResponseTermSofr();
+        } else if (idCurve.equals("TERMESTR")) {
+            parseResponseTermEster();
         }
     }
 
@@ -167,17 +184,14 @@ public class CmeGroupProvider extends AbstractProvider {
                 ObjectMapper om = new ObjectMapper();
                 CmeResult root = om.readValue(response, CmeResult.class);
                 Node node = null;
+                Data data = null;
                 for (Quote quote : root.quotes) {
                     try {
                         // TBond future quotano come i TBond, in 32-esimi
                         // il separatore e' l'apostrofo
                         double value = parseQuote(quote.last);
-                        node = new Node("", null, null);
-                        //node.setAsk(value);
-                        //node.setBid(value);
-                        //node.setRic(quote.code);
-                        //futureQuotes.add(node);
-
+                        data = new Data(value, value);
+                        node = new Node(quote.code, null, data);
                         addQuote(FUTURES, node);
                     } catch (ParseException ex) {
                         LoggerMgr.logError(ex.getLocalizedMessage());
@@ -193,7 +207,7 @@ public class CmeGroupProvider extends AbstractProvider {
     protected void parseResponse(ProviderInfo info, Market market) {
         switch (market) {
             case RATES ->
-                parseResponseYieldCurve(info.getExtraParameters().get(0),RATES);
+                parseResponseYieldCurve(info.getExtraParameters().get(0));
             case FUTURES ->
                 parseResponseFuture();
             case CURRENCIES, BONDS, EQUITIES, COMMODITIES ->
@@ -215,19 +229,14 @@ public class CmeGroupProvider extends AbstractProvider {
             Page page = context.newPage();
 
             // Navigazione alla pagina "madre" (serve per ottenere i cookie di autorizzazione)
-            page.navigate(info.getRequest(NONE).url(),
-                    new Page.NavigateOptions().setWaitUntil(WaitUntilState.COMMIT));
+            String url = info.getRequest(NONE).url();
+            page.navigate(url, new Page.NavigateOptions().setWaitUntil(WaitUntilState.COMMIT));
 
-            // Ric, significativo solo per richieste futures
-            String ric = "";
-            if (market == FUTURES) {
-                String[] tokens = info.getExtraParameters().get(0).split("@");
-                ric = tokens[0];
-            }
+            url = info.getRequest(market).url();
             // Chiamata all'url json completo
             // Eseguiamo la fetch dell'URL specifico dall'interno del contesto autorizzato
             response = (String) page.evaluate("async () => {"
-                    + "  const response = await fetch('" + info.getRequest(market) + ric + "');"
+                    + "  const response = await fetch('" + url + "');"
                     + "  return await response.text();"
                     + "}");
 
@@ -237,67 +246,90 @@ public class CmeGroupProvider extends AbstractProvider {
 
     @Override
     public void refresh(ProviderInfo info, Market market) throws MarketDataProviderException {
-        /*
-        try {
-            // Cancello tassi/prezzi precedenti
-            rateQuotes.clear();
-            futureQuotes.clear();
-            connect(param);
-            build(param.today);
-        } catch (IOException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-            throw new MarketDataProviderException(ex.getLocalizedMessage());
-        }
-        */
     }
 
     @Override
     public void build(LocalDate currentDate) throws MarketDataProviderException {
-        /*
-        Date maturity;
-        for (DataNode node : rateQuotes) {
-            if (node instanceof YieldNode yieldNode) {
-                switch (yieldNode.getOffsetType()) {
-                    case DAYS -> {
-                        maturity = new Date(currentDate);
-                        maturity.addDays(yieldNode.getOffset());
-                        yieldNode.setMaturity(maturity);
-                    }
-                    case MOUNTHS -> {
-                        maturity = new Date(currentDate);
-                        maturity.addMonths(yieldNode.getOffset());
-                        yieldNode.setMaturity(maturity);
-                    }
-                    case YEARS -> {
-                        maturity = new Date(currentDate);
-                        maturity.addYears(yieldNode.getOffset());
-                        yieldNode.setMaturity(maturity);
-                    }
-                    default -> {
-                    }
-                }
-            }
-        }
-        */
     }
 
-    /*
-    public List<Node> quotes(MARKETS market) {
-        switch (market) {
-            case FUTURES -> {
-                return futureQuotes;
-            }
-            case YIELDS -> {
-                return rateQuotes;
-            }
-            case CURRENCIES, BONDS, EQUITIES, COMMODITIES -> {
-            }
-        }
-        return null;
-    }
-*/
     @Override
     protected void customConnect(ProviderInfo info, Market market) throws MalformedURLException, IOException {
     }
 
+    public List<Node> getTermSofrRates() {
+        try {
+            ProviderInfo info = new ProviderInfo();
+
+            Request request = new Request(baseUrl, NONE);
+            info.getRequests().add(request);
+
+            request = new Request(sofrUrl, RATES);
+            info.getRequests().add(request);
+
+            info.getExtraParameters().clear();
+            info.getExtraParameters().add("TERMSOFR");
+
+            connect(info, RATES);
+
+            RateKey key = new RateKey("TERMSOFR", RATES);
+            return getRates(key);
+        } catch (IOException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            throw new MarketDataProviderException(ex.getLocalizedMessage());
+        }
+    }
+
+    public List<Node> getFutureSofrRates() {
+        return null;
+    }
+
+    public List<Node> getTermEsterRates() {
+        try {
+            ProviderInfo info = new ProviderInfo();
+
+            Request request = new Request(baseUrl, NONE);
+            info.getRequests().add(request);
+
+            request = new Request(esterUrl, RATES);
+            info.getRequests().add(request);
+
+            info.getExtraParameters().clear();
+            info.getExtraParameters().add("TERMESTR");
+
+            connect(info, RATES);
+
+            RateKey key = new RateKey("TERMESTR", RATES);
+            return getRates(key);
+        } catch (IOException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            throw new MarketDataProviderException(ex.getLocalizedMessage());
+        }
+    }
+
+    public List<Node> getFutureEsterRates() {
+        return null;
+    }
+
+    @Override
+    public Node getQuote(String symbol, Market market) {
+        try {
+            ProviderInfo info = new ProviderInfo();
+
+            Request request = new Request(baseUrl, NONE);
+            info.getRequests().add(request);
+
+            String[] parsedSymbol = symbol.split("@");
+            String ric = parsedSymbol[0];
+            
+            request = new Request(v2Url + ric, market);
+            info.getRequests().add(request);
+
+            connect(info, market);
+
+            return super.getQuote(parsedSymbol[1], market);
+        } catch (IOException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            throw new MarketDataProviderException(ex.getLocalizedMessage());
+        }
+    }
 }
