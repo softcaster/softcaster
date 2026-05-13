@@ -160,11 +160,98 @@ public class BondForwardPricer {
         DaycountBasis daycount = input.getDaycount();
         Compounding compounding = input.getCompounding();
 
-        double forwardPrice = theoreticalPrice(settlement,shortRate,maturity,longRate,underliyngCashFlows,underlyingPrice,daycount,compounding);
+        double forwardPrice = theoreticalPrice(settlement, shortRate, maturity, longRate, underliyngCashFlows, underlyingPrice, daycount, compounding);
         output.setPrice(forwardPrice);
-        
+
         return output;
     }
+
+    /**
+     * Calcola il rateo di cedola esatto di un BTP per una determinata data target
+     * @param cashFlows
+     * @param targetDate
+     * @return 
+     */
+    public double calculateAccrualAtDate(List<CashFlow> cashFlows, LocalDate targetDate) {
+        for (CashFlow cf : cashFlows) {
+            // Trova la cedola che contiene la data target
+            if (!targetDate.isBefore(cf.accrualStart()) && !targetDate.isAfter(cf.accrualEnd())) {
+                long totalDays = ChronoUnit.DAYS.between(cf.accrualStart(), cf.accrualEnd());
+                long accruedDays = ChronoUnit.DAYS.between(cf.accrualStart(), targetDate);
+                return (double) accruedDays / totalDays * cf.interest();
+            }
+        }
+        return 0.0;
+    }
+
+    public double getCapitalizedIntermediateCoupons(List<CashFlow> cashFlows, LocalDate settlement, double shortRate, LocalDate maturity, double longRate, DaycountBasis daycount, Compounding compounding) {
+        double totalCapitalizedCoupons = 0.0;
+
+        // Il DF alla maturity del future ci serve come base per capitalizzare i flussi intermedi
+        //int daysToMaturity = (int) ChronoUnit.DAYS.between(settlement, maturity);
+        //double dfMaturity = curveManager.getDiscountFactor(daysToMaturity);
+        // Montante long
+        double tenorL = MathUtil.getTimeToMaturity(daycount, settlement, maturity);
+        //double accumulationFactorL = 1 / MathUtil.getDiscountFactor(compounding, longRate, tenorL);
+        double dfMaturity = MathUtil.getDiscountFactor(compounding, longRate, tenorL);
+
+        for (CashFlow cf : cashFlows) {
+            LocalDate paymentDate = cf.accrualEnd(); // Data di stacco/pagamento fisica
+
+            // Se la cedola viene pagata DOPO oggi ed ENTRO la scadenza del future
+            if (paymentDate.isAfter(settlement) && !paymentDate.isAfter(maturity)) {
+                //int daysToCoupon = (int) ChronoUnit.DAYS.between(settlement, paymentDate);
+                //double dfCoupon = curveManager.getDiscountFactor(daysToCoupon);
+                double tenorS = MathUtil.getTimeToMaturity(daycount, settlement, cf.accrualEnd());
+                double dfCoupon = MathUtil.getDiscountFactor(compounding, shortRate, tenorS);
+
+                // Capitalizzazione continua della cedola dalla data di stacco alla maturity del future
+                // Finanziariamente equivale a: Cedola * (dfCoupon / dfMaturity)
+                double intermediateCarry = cf.interest() * (dfCoupon / dfMaturity);
+                totalCapitalizedCoupons += intermediateCarry;
+            }
+        }
+        return totalCapitalizedCoupons;
+    }
+
+/**
+     * Calcola il prezzo teorico esatto del BTP Mini-Future 10y
+     * @param settlement
+     * @param maturity
+     * @param cashFlows
+     * @param spotCleanPrice
+     * @param conversionFactor
+     * @return 
+     */
+    public double calculateTheoreticalFuturePrice(
+            LocalDate settlement, 
+            LocalDate maturity, 
+            List<CashFlow> cashFlows, 
+            double spotCleanPrice, 
+            double conversionFactor) {
+
+        int daysToMaturity = (int) ChronoUnit.DAYS.between(settlement, maturity);
+        double dfMaturity = curveManager.getDiscountFactor(daysToMaturity);
+
+        // 1. Calcolo dei Ratei (Spot e Delivery) mappando correttamente i flussi
+        double spotAccrual = calculateAccrualAtDate(cashFlows, settlement);
+        double deliveryAccrual = calculateAccrualAtDate(cashFlows, maturity);
+
+        // 2. Prezzo Dirty Spot (Prezzo Tel Quel iniziale)
+        double dirtyPriceSpot = spotCleanPrice + spotAccrual;
+
+        // 3. Capitalizzazione continua del prezzo Dirty fino alla maturity del future
+        double dirtyPriceForward = dirtyPriceSpot / dfMaturity;
+
+        // 4. Calcolo delle cedole intermedie fisiche capitalizzate alla scadenza
+        double capitalizedCoupons = getCapitalizedIntermediateCoupons(cashFlows, settlement, maturity);
+
+        // 5. Formula istituzionale del Cost of Carry (Forward Clean Price)
+        double forwardCleanPrice = dirtyPriceForward - capitalizedCoupons - deliveryAccrual;
+
+        // 6. Normalizzazione finale per il mercato dei Future (Divisione per il CF)
+        return forwardCleanPrice / conversionFactor;
+    }    
 }
 
 /*
