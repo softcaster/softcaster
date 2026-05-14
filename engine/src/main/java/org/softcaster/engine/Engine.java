@@ -5,11 +5,9 @@ package org.softcaster.engine;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
-import static org.softcaster.engine.Test.BNDFWD;
 import static org.softcaster.engine.Test.BOND;
 import static org.softcaster.engine.Test.CRR;
 import static org.softcaster.engine.Test.CURR;
@@ -262,6 +260,9 @@ public class Engine {
         Currency currency = Currency.getInstance("EUR");
         List<CurveNodeInput> inputs = new ArrayList<>();
         CurveNodeInput node;
+        // 1 Giorno
+        node = new CurveNodeInput(new Offset(1,OffsetType.DAYS),0.01928,DaycountBasis.ACT_360, Compounding.SIMPLE);
+        inputs.add(node);
         // 1 Mese
         node = new CurveNodeInput(new Offset(1,OffsetType.MONTHS),0.02,DaycountBasis.ACT_360, Compounding.SIMPLE);
         inputs.add(node);
@@ -279,9 +280,15 @@ public class Engine {
         inputs.add(node);
         
         YieldCurve curve = new YieldCurve(officialDate, currency, inputs);
+
         LocalDate targetDate = LocalDate.of(2026, 9, 27);
         double df = curve.getDiscountFactor(targetDate);
         System.out.println(df);
+        
+        targetDate = LocalDate.of(2026, 5, 21);
+        df = curve.getDiscountFactor(targetDate);
+        System.out.println(df);
+        
     }
     
     private void runTest(Test test) {
