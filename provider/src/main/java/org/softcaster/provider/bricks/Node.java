@@ -29,7 +29,7 @@ public class Node {
             case DAYS -> {
                 ld = ld.plusDays(offset.step());
             }
-            case MOUNTHS -> {
+            case MONTHS -> {
                 ld = ld.plusMonths(offset.step());
             }
             case YEARS -> {

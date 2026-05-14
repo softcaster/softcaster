@@ -11,6 +11,7 @@ import static org.softcaster.engine.enums.Compounding.CONTINUOUS;
 import static org.softcaster.engine.enums.Compounding.SIMPLE;
 import static org.softcaster.engine.enums.Compounding.SIMPLE_THEN_COMPOUNDED;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Frequency;
 
 public final class MathUtil {
 
@@ -131,8 +132,8 @@ public final class MathUtil {
         return discountFactor;
     }
 
-    public static double getTimeToMaturity(DaycountBasis daycount, LocalDate from, LocalDate to) {
-        return daycount.calculate(from, to, null);
+    public static double getTimeToMaturity(DaycountBasis daycount, Frequency frequency, LocalDate from, LocalDate to) {
+        return daycount.calculate(from, to, frequency);
     }
 
     public static boolean isZero(double x) {

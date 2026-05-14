@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.softcaster.provider.enums;
+package org.softcaster.engine.enums;
 
 /**
  *

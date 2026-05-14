@@ -10,4 +10,8 @@ import org.softcaster.engine.enums.Frequency;
 @FunctionalInterface
 public interface DayCountCalculator {
     double calculate(LocalDate start, LocalDate end, Frequency frequency);
+
+    default double getTime() { // Metodo default
+        return 365;
+    }
 }

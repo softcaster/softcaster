@@ -51,6 +51,15 @@ public enum DaycountBasis implements IdentifiableEnum {
         return id;
     }
 
+    public double getTime() {
+        return switch (this) {
+            case NASD_30_360, ACT_360, EUR_30_360 ->
+                360.;
+            default ->
+                (calculator != null) ? calculator.getTime() : 365.;
+        };
+    }
+
     public double calculate(LocalDate accrualStart, LocalDate accrualEnd, Frequency freq) {
         if (calculator != null) {
             return calculator.calculate(accrualStart, accrualEnd, freq);

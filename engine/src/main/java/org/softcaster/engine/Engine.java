@@ -5,12 +5,18 @@ package org.softcaster.engine;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.Month;
+import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
+import static org.softcaster.engine.Test.BNDFWD;
 import static org.softcaster.engine.Test.BOND;
 import static org.softcaster.engine.Test.CRR;
+import static org.softcaster.engine.Test.CURR;
 import static org.softcaster.engine.Test.DATE;
 import static org.softcaster.engine.Test.FXFWD;
 import static org.softcaster.engine.Test.GAK;
+import static org.softcaster.engine.Test.YCURVE;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
 import org.softcaster.engine.analytics.BondForwardPricer;
 import org.softcaster.engine.analytics.BondPricer;
@@ -25,6 +31,9 @@ import org.softcaster.engine.cashflow.FrenchAmortizationStrategy;
 import org.softcaster.engine.cashflow.HolidayCalendar;
 import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.config.EngineAutoConfiguration;
+import org.softcaster.engine.curve.CurveNodeInput;
+import org.softcaster.engine.curve.Offset;
+import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.BondOptionInputData;
 import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.engine.dto.FxOptionInputData;
@@ -35,6 +44,7 @@ import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.EnumUtils;
 import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.engine.enums.OptionStyle;
 import org.softcaster.engine.enums.OptionType;
 import org.softcaster.engine.utils.CashFlowExporter;
@@ -58,7 +68,7 @@ class DummyCaLendar implements HolidayCalendar {
 }
 
 enum Test {
-    BOND, BAS, GAK, LOAN, DATE, CRR, FXFWD, BNDFWD
+    BOND, BAS, GAK, LOAN, DATE, CRR, FXFWD, BNDFWD, CURR, YCURVE
 }
 
 @SpringBootApplication
@@ -70,7 +80,7 @@ public class Engine {
     private BondPricer bondPricer;
 
     @Autowired
-    @Qualifier("bondFwdPricer") 
+    @Qualifier("bondFwdPricer")
     private BondForwardPricer bondForwardPricer;
 
     @Autowired
@@ -228,7 +238,50 @@ public class Engine {
     }
 
     private void testBondForwardPricer() {
+
+    }
+
+    private void testCurrency() {
+        Currency c1 = Currency.getInstance("USD");
+        System.out.println(c1.getCurrencyCode());
+        System.out.println(c1.getDisplayName());
+        System.out.println(c1.getSymbol());
+        System.out.println(c1.getDefaultFractionDigits());
+
+        System.out.println();
+
+        c1 = Currency.getInstance("JPY");
+        System.out.println(c1.getCurrencyCode());
+        System.out.println(c1.getDisplayName());
+        System.out.println(c1.getSymbol());
+        System.out.println(c1.getDefaultFractionDigits());
+    }
+
+    private void testYieldCurve() {
+        LocalDate officialDate = LocalDate.of(2026, 5, 14);
+        Currency currency = Currency.getInstance("EUR");
+        List<CurveNodeInput> inputs = new ArrayList<>();
+        CurveNodeInput node;
+        // 1 Mese
+        node = new CurveNodeInput(new Offset(1,OffsetType.MONTHS),0.02,DaycountBasis.ACT_360, Compounding.SIMPLE);
+        inputs.add(node);
+        // 3 Mesi
+        node = new CurveNodeInput(new Offset(3,OffsetType.MONTHS),0.03,DaycountBasis.ACT_360, Compounding.SIMPLE);
+        inputs.add(node);
+        // 6 Mesi
+        node = new CurveNodeInput(new Offset(6,OffsetType.MONTHS),0.035,DaycountBasis.ACT_360, Compounding.SIMPLE);
+        inputs.add(node);
+        // 1 Anno
+        node = new CurveNodeInput(new Offset(1,OffsetType.YEARS),0.04,DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        inputs.add(node);
+        // 2 Anni
+        node = new CurveNodeInput(new Offset(2,OffsetType.YEARS),0.045,DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        inputs.add(node);
         
+        YieldCurve curve = new YieldCurve(officialDate, currency, inputs);
+        LocalDate targetDate = LocalDate.of(2026, 9, 27);
+        double df = curve.getDiscountFactor(targetDate);
+        System.out.println(df);
     }
     
     private void runTest(Test test) {
@@ -247,8 +300,10 @@ public class Engine {
                 testCRRBinomialPricer();
             case FXFWD ->
                 testFxForwardPricer();
-            case BNDFWD ->
-                testBondForwardPricer();
+            case CURR ->
+                testCurrency();
+            case YCURVE ->
+                testYieldCurve();
         }
     }
 
@@ -266,6 +321,7 @@ public class Engine {
 
         // 4. Recupera Engine e lancia il test
         Engine engine = context.getBean(Engine.class);
-        engine.runTest(BOND);
+
+        engine.runTest(YCURVE);
     }
 }

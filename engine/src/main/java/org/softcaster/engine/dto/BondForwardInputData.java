@@ -15,6 +15,7 @@ public class BondForwardInputData extends ForwardBaseInputData {
     
     // Lista cedole sottostante
     private List<CashFlow> underliyngCashFlows = null;
+    private double conversionFactor = 1;
     
     /**
      * @return the underliyngCashFlows
@@ -28,5 +29,19 @@ public class BondForwardInputData extends ForwardBaseInputData {
      */
     public void setUnderliyngCashFlows(List<CashFlow> underliyngCashFlows) {
         this.underliyngCashFlows = underliyngCashFlows;
+    }
+
+    /**
+     * @return the conversionFactot
+     */
+    public double getConversionFactor() {
+        return conversionFactor;
+    }
+
+    /**
+     * @param conversionFactot the conversionFactot to set
+     */
+    public void setConversionFactor(double conversionFactor) {
+        this.conversionFactor = conversionFactor;
     }
 }
