@@ -4,7 +4,7 @@
  */
 package org.softcaster.master_data_mgr.models.beans;
 
-import org.softcaster.easy_pricer_core.data.ForexMasterData;
+import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.master_data_mgr.models.IMasterDataModel;
 
 /**

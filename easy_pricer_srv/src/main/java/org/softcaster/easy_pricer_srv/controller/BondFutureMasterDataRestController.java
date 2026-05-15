@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.BondFutureMasterData;
-import org.softcaster.easy_pricer_core.data.BondFutureMasterDataDAO;
+import org.softcaster.core.data.BondFutureMasterData;
+import org.softcaster.core.data.BondFutureMasterDataDAO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

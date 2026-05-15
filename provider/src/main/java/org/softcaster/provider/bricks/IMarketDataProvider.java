@@ -7,6 +7,7 @@ package org.softcaster.provider.bricks;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.LocalDate;
+import java.util.List;
 import org.softcaster.provider.bricks.ProviderInfo;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.exceptions.MarketDataProviderException;
@@ -19,6 +20,14 @@ public interface IMarketDataProvider {
 
     public void connect(ProviderInfo info, Market market) throws MalformedURLException, IOException;
 
+    public Node getMktQuote(String symbol, Market market);
+
+    /**
+     *
+     * @param idCurve
+     * @return
+     */
+    public List<Node>  getYieldCurveNodes(String idCurve);
     /**
      *
      * @param info

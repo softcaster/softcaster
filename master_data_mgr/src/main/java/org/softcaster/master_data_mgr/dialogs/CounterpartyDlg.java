@@ -8,9 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.Counterparty;
-import org.softcaster.easy_pricer_core.data.CounterpartyType;
-import org.softcaster.easy_pricer_core.data.Country;
+import org.softcaster.core.data.Counterparty;
+import org.softcaster.core.data.CounterpartyType;
+import org.softcaster.core.data.Country;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.CounterpartyBean;
 

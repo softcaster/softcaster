@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.YieldCurve;
-import org.softcaster.easy_pricer_core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurve;
+import org.softcaster.core.data.YieldCurveDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

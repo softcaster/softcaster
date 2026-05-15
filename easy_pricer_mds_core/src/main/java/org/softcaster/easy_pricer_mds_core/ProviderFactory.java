@@ -7,13 +7,11 @@ package org.softcaster.easy_pricer_mds_core;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import org.softcaster.marketdataprovider.CmeGroup.CmeGroupProvider;
-import org.softcaster.marketdataprovider.IMarketDataProvider;
-import org.softcaster.marketdataprovider.euribor.EuriborRatesProvider;
-import org.softcaster.marketdataprovider.euronext.EuroNextProvider;
-import org.softcaster.marketdataprovider.investingcom.InvestingComProvider;
-import org.softcaster.marketdataprovider.sole24h.Sole24hProvider;
-
+import org.softcaster.provider.bricks.IMarketDataProvider;
+import org.softcaster.provider.cme.CmeGroupProvider;
+import org.softcaster.provider.euronext.EuroNextProvider;
+import org.softcaster.provider.investing.InvestingComProvider;
+import org.softcaster.provider.sole24h.Sole24hProvider;
 /**
  *
  * @author softc
@@ -29,7 +27,7 @@ public class ProviderFactory {
         REGISTRY.put("CmeGroupProvider", CmeGroupProvider::getInstance);
         REGISTRY.put("InvestingComProvider", InvestingComProvider::getInstance);
         REGISTRY.put("Sole24hProvider", Sole24hProvider::getInstance);
-        REGISTRY.put("EuriborRatesProvider", EuriborRatesProvider::getInstance);
+        //REGISTRY.put("EuriborRatesProvider", EuriborRatesProvider::getInstance);
     }
 
     // Metodo statico per ottenere l'istanza

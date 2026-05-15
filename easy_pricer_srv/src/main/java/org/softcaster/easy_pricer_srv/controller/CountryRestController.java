@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.Country;
-import org.softcaster.easy_pricer_core.data.CountryDAO;
+import org.softcaster.core.data.Country;
+import org.softcaster.core.data.CountryDAO;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

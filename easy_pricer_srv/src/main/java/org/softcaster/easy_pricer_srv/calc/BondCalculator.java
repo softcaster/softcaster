@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.softcaster.easy_pricer_core.data.InstrumentQuote;
-import org.softcaster.easy_pricer_core.data.InstrumentQuoteDAO;
-import org.softcaster.easy_pricer_core.data.SecurityMasterData;
-import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
+import org.softcaster.core.data.InstrumentQuote;
+import org.softcaster.core.data.InstrumentQuoteDAO;
+import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_srv.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
@@ -56,7 +56,7 @@ public class BondCalculator {
                 //dbProvider.refresh(request.getReferenceDate());
                 if (!securityMasterData.getCashFlows().isEmpty()) {
                     List<ph.alephzero.finance.cashflows.CashFlowItem> cashFlows = new ArrayList<>();
-                    for (org.softcaster.easy_pricer_core.data.CashFlowItem item : securityMasterData.getCashFlows()) {
+                    for (org.softcaster.core.data.CashFlowItem item : securityMasterData.getCashFlows()) {
                         ph.alephzero.finance.cashflows.CashFlowItem cashFlowItem = new ph.alephzero.finance.cashflows.CashFlowItem();
                         cashFlowItem.setStart(item.getStartDate());
                         cashFlowItem.setEnd(item.getEnddate());

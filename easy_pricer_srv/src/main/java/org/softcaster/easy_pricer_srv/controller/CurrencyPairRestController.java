@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.CurrencyPair;
-import org.softcaster.easy_pricer_core.data.CurrencyPairDAO;
+import org.softcaster.core.data.CurrencyPair;
+import org.softcaster.core.data.CurrencyPairDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;

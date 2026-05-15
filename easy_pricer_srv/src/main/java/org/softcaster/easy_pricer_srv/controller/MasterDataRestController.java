@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.MasterData;
-import org.softcaster.easy_pricer_core.data.MasterDataDAO;
+import org.softcaster.core.data.MasterData;
+import org.softcaster.core.data.MasterDataDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;

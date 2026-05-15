@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.CounterpartyType;
-import org.softcaster.easy_pricer_core.data.CounterpartyTypeDAO;
+import org.softcaster.core.data.CounterpartyType;
+import org.softcaster.core.data.CounterpartyTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

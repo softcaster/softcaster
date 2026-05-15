@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.CashFlowItem;
-import org.softcaster.easy_pricer_core.data.CashFlowItemDAO;
+import org.softcaster.core.data.CashFlowItem;
+import org.softcaster.core.data.CashFlowItemDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;

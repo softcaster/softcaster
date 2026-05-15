@@ -5,7 +5,7 @@
 package org.softcaster.easy_import;
 
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.marketdataprovider.CmeGroup.CmeGroupProvider;
 import org.softcaster.marketdataprovider.ConnectionParam;
 import org.softcaster.marketdataprovider.MARKETS;

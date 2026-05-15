@@ -263,4 +263,22 @@ public class InvestingComProvider extends AbstractProvider {
             }
         }
     }
+
+    @Override
+    public List<Node> getYieldCurveNodes(String idCurve) {
+        return switch (idCurve) {
+            case "ITYIELD" -> getItYieldCurve();
+            case "USYIELD" -> getUsYieldCurve();
+            default -> null;
+        };
+    }
+
+    @Override
+    public Node getMktQuote(String symbol, Market market) {
+        if(market == CURRENCIES) {
+            return getCurrencyQuote(symbol);
+        } else {
+            return null;
+        }
+    }
 }

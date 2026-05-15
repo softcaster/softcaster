@@ -13,7 +13,7 @@ import org.softcaster.engine.math.MathUtil;
 
 public class YieldCurve {
 
-    private final LocalDate valuationDate; // La tua "officialDate" (T)
+    private final LocalDate valuationDate; // officialDate
     private final Currency currency;       // La divisa della curva (es. EUR, USD)
 
     // Struttura interna core: mappa i giorni dal valuationDate al Discount Factor

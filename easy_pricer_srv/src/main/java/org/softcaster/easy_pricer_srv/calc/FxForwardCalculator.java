@@ -6,9 +6,9 @@ package org.softcaster.easy_pricer_srv.calc;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.Calendar;
-import org.softcaster.easy_pricer_core.data.Currency;
-import org.softcaster.easy_pricer_core.data.CurrencyDAO;
+import org.softcaster.core.data.Calendar;
+import org.softcaster.core.data.Currency;
+import org.softcaster.core.data.CurrencyDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -16,7 +17,6 @@ import org.softcaster.provider.bricks.AbstractProvider;
 import org.softcaster.provider.bricks.Data;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.bricks.ProviderInfo;
-import org.softcaster.provider.bricks.RateKey;
 import org.softcaster.provider.bricks.Request;
 import org.softcaster.provider.enums.Market;
 import static org.softcaster.provider.enums.Market.BONDS;
@@ -49,13 +49,13 @@ public class EuroNextProvider extends AbstractProvider {
             String url = securitiesUrl + symbol + "-MOTX";
             request = new Request(url, BONDS);
             info.getRequests().add(request);
-            
+
             // Key del dato
             info.getExtraParameters().add(symbol);
             connect(info, BONDS);
-            
+
             return getQuote(symbol, BONDS);
-            
+
         } catch (IOException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new MarketDataProviderException(ex.getLocalizedMessage());
@@ -70,23 +70,23 @@ public class EuroNextProvider extends AbstractProvider {
             info.getRequests().add(request);
 
             String[] parsedSymbol = symbol.split("@");
-            
+
             String url = derivativesUrl + parsedSymbol[1];
             request = new Request(url, FUTURES);
             info.getRequests().add(request);
-            
+
             // Key del dato
             info.getExtraParameters().add(parsedSymbol[0]);
             connect(info, FUTURES);
-            
+
             return getQuote(parsedSymbol[0], FUTURES);
-            
+
         } catch (IOException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new MarketDataProviderException(ex.getLocalizedMessage());
         }
     }
-    
+
     public static EuroNextProvider getInstance() {
         if (_instance == null) {
             _instance = new EuroNextProvider();
@@ -111,7 +111,7 @@ public class EuroNextProvider extends AbstractProvider {
                 bidValue = Double.parseDouble(bidStrValue);
             }
 
-            if(!info.getExtraParameters().isEmpty()) {
+            if (!info.getExtraParameters().isEmpty()) {
                 Node node = new Node(info.getExtraParameters().get(0), null, new Data(bidValue, askValue));
                 addQuote(market, node);
             }
@@ -134,7 +134,7 @@ public class EuroNextProvider extends AbstractProvider {
                 bidValue = Double.parseDouble(bidStrValue);
             }
 
-            if(!info.getExtraParameters().isEmpty()) {
+            if (!info.getExtraParameters().isEmpty()) {
                 Node node = new Node(info.getExtraParameters().get(0), null, new Data(bidValue, askValue));
                 addQuote(market, node);
             }
@@ -176,4 +176,25 @@ public class EuroNextProvider extends AbstractProvider {
         }
     }
 
+    @Override
+    public List<Node> getYieldCurveNodes(String idCurve) {
+        return null;
+    }
+
+    @Override
+    public Node getMktQuote(String symbol, Market market) {
+
+        Node node = null;
+
+        switch (market) {
+            case BONDS ->
+                node = getBondQuote(symbol);
+            case FUTURES ->
+                node = getFutureQuote(symbol);
+            default -> {
+                break;
+            }
+        }
+        return node;
+    }
 }

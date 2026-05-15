@@ -41,11 +41,12 @@ public abstract class AbstractProvider implements IMarketDataProvider {
         return quotes.get(key);
     }
 
-    protected Node getQuote(String symbol, Market key) {
+    public Node getQuote(String symbol, Market key) {
         List<Node> nodes = getQuotes(key);
-        for(Node n: nodes) {
-            if(n.getSymbol().equals(symbol))
+        for (Node n : nodes) {
+            if (n.getSymbol().equals(symbol)) {
                 return n;
+            }
         }
         return null;
     }
@@ -53,7 +54,7 @@ public abstract class AbstractProvider implements IMarketDataProvider {
     protected List<Node> getRates(RateKey key) {
         return rates.get(key);
     }
-    
+
     protected int timeElapsed = 0;
     protected Instant lastUpdate = null;
 
@@ -93,7 +94,7 @@ public abstract class AbstractProvider implements IMarketDataProvider {
         getConnection(info, market).getInputStream().close();
 
         // Connessione specifica
-        customConnect(info,market);
+        customConnect(info, market);
     }
 
     protected abstract void parseResponse(ProviderInfo info, Market market);

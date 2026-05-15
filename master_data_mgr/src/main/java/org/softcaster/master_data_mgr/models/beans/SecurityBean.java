@@ -4,7 +4,7 @@
  */
 package org.softcaster.master_data_mgr.models.beans;
 
-import org.softcaster.easy_pricer_core.data.SecurityMasterData;
+import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.master_data_mgr.models.IMasterDataModel;
 
 /**

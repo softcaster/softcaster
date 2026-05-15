@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.Frequency;
-import org.softcaster.easy_pricer_core.data.FrequencyDAO;
+import org.softcaster.core.data.Frequency;
+import org.softcaster.core.data.FrequencyDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

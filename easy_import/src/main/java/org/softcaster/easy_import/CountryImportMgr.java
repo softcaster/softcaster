@@ -11,7 +11,7 @@ import java.util.List;
 import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.Country;
+import org.softcaster.core.data.Country;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -24,11 +24,11 @@ import org.springframework.stereotype.Service;
 public class CountryImportMgr implements IImportMgr {
 
     @Autowired
-    private org.softcaster.easy_pricer_core.data.CountryDAO dao;
+    private org.softcaster.core.data.CountryDAO dao;
     @Autowired
-    private org.softcaster.easy_pricer_core.data.CurrencyDAO currencyDAO;
+    private org.softcaster.core.data.CurrencyDAO currencyDAO;
     @Autowired
-    private org.softcaster.easy_pricer_core.data.CalendarDAO calendarDAO;
+    private org.softcaster.core.data.CalendarDAO calendarDAO;
 
     public CountryImportMgr() {
     }
@@ -45,8 +45,8 @@ public class CountryImportMgr implements IImportMgr {
         config.setStartData(0);
         config.setCharset(StandardCharsets.UTF_8); // utf-8
 
-        org.softcaster.easy_pricer_core.data.Currency currency = currencyDAO.findByIsoCode("EUR");
-        org.softcaster.easy_pricer_core.data.Calendar calendar = calendarDAO.findByCode("EUR");
+        org.softcaster.core.data.Currency currency = currencyDAO.findByIsoCode("EUR");
+        org.softcaster.core.data.Calendar calendar = calendarDAO.findByCode("EUR");
 
         Country country = null;
         try {
@@ -62,7 +62,7 @@ public class CountryImportMgr implements IImportMgr {
                 String alfa3Code = s[4].trim();
                 country = dao.findByAlfa3Code(alfa3Code);
                 if (country == null) {
-                    country = new org.softcaster.easy_pricer_core.data.Country();
+                    country = new org.softcaster.core.data.Country();
                 }
 
                 country.setCountryNumericCode(Integer.valueOf(s[0].trim()).shortValue());

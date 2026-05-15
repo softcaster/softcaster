@@ -320,7 +320,7 @@ public class CmeGroupProvider extends AbstractProvider {
 
             String[] parsedSymbol = symbol.split("@");
             String ric = parsedSymbol[0];
-            
+
             request = new Request(v2Url + ric, market);
             info.getRequests().add(request);
 
@@ -331,5 +331,19 @@ public class CmeGroupProvider extends AbstractProvider {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new MarketDataProviderException(ex.getLocalizedMessage());
         }
+    }
+
+    @Override
+    public List<Node> getYieldCurveNodes(String idCurve) {
+        return switch (idCurve) {
+            case "TERMSOFR" -> getTermSofrRates();
+            case "TERMESTR" -> getTermEsterRates();
+            default -> null;
+        };
+    }
+
+    @Override
+    public Node getMktQuote(String symbol, Market market) {
+        return null;
     }
 }

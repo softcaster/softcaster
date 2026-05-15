@@ -8,9 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.Currency;
-import org.softcaster.easy_pricer_core.data.PortfolioMasterData;
-import org.softcaster.easy_pricer_core.data.PositionMasterData;
+import org.softcaster.core.data.Currency;
+import org.softcaster.core.data.PortfolioMasterData;
+import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.PositionBean;
 

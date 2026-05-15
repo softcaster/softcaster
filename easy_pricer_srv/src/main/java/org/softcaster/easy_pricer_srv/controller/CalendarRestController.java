@@ -1,9 +1,9 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.Calendar;
-import org.softcaster.easy_pricer_core.data.CalendarDAO;
-import org.softcaster.easy_pricer_core.data.Holiday;
+import org.softcaster.core.data.Calendar;
+import org.softcaster.core.data.CalendarDAO;
+import org.softcaster.core.data.Holiday;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +23,7 @@ public class CalendarRestController {
 
     @GetMapping("/calendar/r0")
     public ResponseEntity findAll() {
-        List<org.softcaster.easy_pricer_core.data.Calendar> listaCalendar = dao.findAll();
+        List<org.softcaster.core.data.Calendar> listaCalendar = dao.findAll();
         if (listaCalendar == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
@@ -32,7 +32,7 @@ public class CalendarRestController {
 
     @GetMapping("/calendar/r1/{id}")
     public ResponseEntity findByIdCalendar(@PathVariable("id") Integer idCalendar) {
-        org.softcaster.easy_pricer_core.data.Calendar calendar = dao.findByIdCalendar(idCalendar);
+        org.softcaster.core.data.Calendar calendar = dao.findByIdCalendar(idCalendar);
         if (calendar == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
@@ -50,7 +50,7 @@ public class CalendarRestController {
 
     @GetMapping("/calendar/r2/{id}")
     public ResponseEntity findByCode(@PathVariable("id") String code) {
-        org.softcaster.easy_pricer_core.data.Calendar calendar = dao.findByCode(code);
+        org.softcaster.core.data.Calendar calendar = dao.findByCode(code);
         if (calendar == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }

@@ -5,8 +5,8 @@
 package org.softcaster.easy_pricer_srv.calc;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.Calendar;
-import org.softcaster.easy_pricer_core.data.Holiday;
+import org.softcaster.core.data.Calendar;
+import org.softcaster.core.data.Holiday;
 
 /**
  *

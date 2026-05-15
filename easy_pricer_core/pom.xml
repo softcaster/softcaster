@@ -9,10 +9,10 @@
         <relativePath/> 
     </parent>
 
-    <groupId>org.softcaster</groupId>
-    <artifactId>easy_pricer_core</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <name>easy_pricer_core</name>
+    <groupId>org.softcaster.core.data</groupId>
+    <artifactId>core</artifactId>
+    <version>1.0</version>
+    <name>core</name>
 
     <properties>
         <java.version>17</java.version>

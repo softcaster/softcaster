@@ -142,4 +142,16 @@ public class Sole24hProvider extends AbstractProvider {
         }
     }
 
+    @Override
+    public List<Node> getYieldCurveNodes(String idCurve) {
+        return switch (idCurve) {
+            case "FMIRS" -> getIrsYieldCurve();
+            default -> null;
+        };
+    }
+
+    @Override
+    public Node getMktQuote(String symbol, Market market) {
+        return null;
+    }
 }

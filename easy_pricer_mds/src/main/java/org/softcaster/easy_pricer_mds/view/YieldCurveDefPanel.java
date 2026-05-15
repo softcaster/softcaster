@@ -6,19 +6,15 @@ package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import org.softcaster.commons.types.Date;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.easy_pricer_mds.MDSFacade;
-import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;
 import org.softcaster.easy_pricer_mds.ui.model.MmFutTableModel;
 import org.softcaster.easy_pricer_mds.ui.model.YieldCurveTableModel;
+import org.softcaster.easy_pricer_mds_core.MarketDataService;
 
 /**
  *
@@ -149,7 +145,8 @@ public class YieldCurveDefPanel extends FndtAbstactPanel {
         // Cancella vecchia lista
         ycBeanList.clear();
 
-        MarketDataService mds = MarketDataService.getInstance();
+        MarketDataService mds = new MarketDataService();
+        /*
         mds.updateYieldCurve("SOFR");
 
         YieldCurveBean ycb = null;
@@ -160,5 +157,6 @@ public class YieldCurveDefPanel extends FndtAbstactPanel {
         }
 
         ftm.setData(ycBeanList);
+*/
     }
 }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
-import org.softcaster.easy_pricer_core.data.MmFutureMasterData;
+import org.softcaster.core.data.MmFutureMasterData;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.dialogs.MmFutureDlg;
 import org.softcaster.master_data_mgr.models.MmFutTableModel;

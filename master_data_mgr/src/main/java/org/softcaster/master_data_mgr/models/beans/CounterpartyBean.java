@@ -4,7 +4,7 @@
  */
 package org.softcaster.master_data_mgr.models.beans;
 
-import org.softcaster.easy_pricer_core.data.Counterparty;
+import org.softcaster.core.data.Counterparty;
 import org.softcaster.master_data_mgr.models.IMasterDataModel;
 
 /**

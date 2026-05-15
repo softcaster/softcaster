@@ -6,7 +6,7 @@ package org.softcaster.easy_import;
 
 import java.util.List;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.marketdataprovider.ConnectionParam;
 import org.softcaster.marketdataprovider.DataNode;
 import org.softcaster.marketdataprovider.MARKETS;

@@ -6,7 +6,7 @@ package org.softcaster.master_data_mgr.models.beans;
 
 import org.softcaster.commons.ui.bean.ITrendable;
 import org.softcaster.commons.ui.model.IFndtModel;
-import org.softcaster.easy_pricer_core.data.FxFutureMasterData;
+import org.softcaster.core.data.FxFutureMasterData;
 
 /**
  *

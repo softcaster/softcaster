@@ -4,8 +4,8 @@
  */
 package org.softcaster.master_data_mgr.models.beans;
 
-import org.softcaster.easy_pricer_core.data.PortfolioMasterData;
-import org.softcaster.easy_pricer_core.data.PositionMasterData;
+import org.softcaster.core.data.PortfolioMasterData;
+import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.master_data_mgr.models.IMasterDataModel;
 
 /**

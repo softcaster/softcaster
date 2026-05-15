@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.text.ParseException;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,5 +108,15 @@ public class ECBProvider extends AbstractProvider {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new MarketDataProviderException(ex.getLocalizedMessage());
         }
+    }
+
+    @Override
+    public List<Node> getYieldCurveNodes(String idCurve) {
+        return null;
+    }
+
+    @Override
+    public Node getMktQuote(String symbol, Market market) {
+        return null;
     }
 }

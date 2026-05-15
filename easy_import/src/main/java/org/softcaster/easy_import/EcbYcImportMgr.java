@@ -13,7 +13,7 @@ import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.LoggerMgr;
 import static org.softcaster.easy_import.IImportMgr.IMPORT_PATH;
-import org.softcaster.easy_pricer_core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.marketdataprovider.OFFSET_TYPE;
 import org.softcaster.marketdataprovider.YieldNode;
 

@@ -10,13 +10,13 @@ import java.util.List;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
-import org.softcaster.easy_pricer_core.data.InstrumentQuote;
+import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.easy_pricer_mds.MDSFacade;
-import org.softcaster.easy_pricer_mds.MarketDataService;
 import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
 import org.softcaster.easy_pricer_mds.dialog.CurrPairIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.CurrPairTableModel;
-import org.softcaster.marketdataprovider.REQUEST_TYPE;
+import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.provider.enums.RequestType;
 
 /**
  *
@@ -197,14 +197,14 @@ public class CurrPairPanel extends FndtAbstactPanel {
             tokenList.add(quote.getCode());
         }
 
-        MarketDataService mds = MarketDataService.getInstance();
+        MarketDataService mds = new MarketDataService();
         mds.updateFxPrice(tokenList, "InvestingComProvider", null);
 
         CurrencyPairBean bean = null;
 
         for (InstrumentQuote quote : pairs) {
-            quote.setBid(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.BID));
-            quote.setAsk(mds.getSpotPrice(quote.getCode(), REQUEST_TYPE.ASK));
+            quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
+            quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
             bean = new CurrencyPairBean(quote);
             forexBeanList.add(bean);
         }

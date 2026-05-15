@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.AssetClass;
-import org.softcaster.easy_pricer_core.data.AssetClassDAO;
+import org.softcaster.core.data.AssetClass;
+import org.softcaster.core.data.AssetClassDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

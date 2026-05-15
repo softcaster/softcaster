@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_core.data.Currency;
-import org.softcaster.easy_pricer_core.data.CurrencyDAO;
+import org.softcaster.core.data.Currency;
+import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;

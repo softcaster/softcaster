@@ -11,11 +11,11 @@ import org.softcaster.commons.types.Date;
 import org.softcaster.commons.ui.dialog.DialogHelper;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_core.data.Currency;
-import org.softcaster.easy_pricer_core.data.Daycount;
-import org.softcaster.easy_pricer_core.data.ForexMasterData;
-import org.softcaster.easy_pricer_core.data.FxFutureMasterData;
-import org.softcaster.easy_pricer_core.data.SettlementType;
+import org.softcaster.core.data.Currency;
+import org.softcaster.core.data.Daycount;
+import org.softcaster.core.data.ForexMasterData;
+import org.softcaster.core.data.FxFutureMasterData;
+import org.softcaster.core.data.SettlementType;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.FxFutBean;
 

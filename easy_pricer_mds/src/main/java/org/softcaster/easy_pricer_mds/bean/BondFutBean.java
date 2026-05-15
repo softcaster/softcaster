@@ -6,8 +6,8 @@ package org.softcaster.easy_pricer_mds.bean;
 
 import org.softcaster.commons.ui.bean.ITrendable;
 import org.softcaster.commons.ui.model.IFndtModel;
-import org.softcaster.easy_pricer_core.data.BondFutureMasterData;
-import org.softcaster.easy_pricer_core.data.InstrumentQuote;
+import org.softcaster.core.data.BondFutureMasterData;
+import org.softcaster.core.data.InstrumentQuote;
 
 /**
  *
