@@ -27,6 +27,7 @@ import static org.softcaster.marketdataprovider.MARKETS.EQUITIES;
 import static org.softcaster.marketdataprovider.MARKETS.FUTURES;
 import static org.softcaster.marketdataprovider.MARKETS.YIELDS;
 import org.softcaster.marketdataprovider.MarketDataProviderException;
+import org.softcaster.marketdataprovider.Node;
 import static org.softcaster.marketdataprovider.OFFSET_TYPE.DAYS;
 import static org.softcaster.marketdataprovider.OFFSET_TYPE.MOUNTHS;
 import static org.softcaster.marketdataprovider.OFFSET_TYPE.YEARS;
@@ -50,7 +51,7 @@ public class Sole24hProvider extends AbstractProvider {
 
         return _instance;
     }
-
+    
     private void parseResponseYieldCurve(String idCurve) {
         if (response == null || response.isEmpty()) {
             return;

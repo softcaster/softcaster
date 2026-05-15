@@ -183,6 +183,87 @@ class PyProviderHelper(IProviderHelper):
         return nodes;
 
     #
+    # Tassi Eurirs
+    #
+    def getEurirsNodes(self):
+
+        nodes = list()
+
+        offset = Offset(1,OffsetType.YEARS);
+        node = Node("EUR 01A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(2,OffsetType.YEARS);
+        node = Node("EUR 02A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(3,OffsetType.YEARS);
+        node = Node("EUR 03A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(4,OffsetType.YEARS);
+        node = Node("EUR 04A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(5,OffsetType.YEARS);
+        node = Node("EUR 05A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(6,OffsetType.YEARS);
+        node = Node("EUR 06A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(7,OffsetType.YEARS);
+        node = Node("EUR 07A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(8,OffsetType.YEARS);
+        node = Node("EUR 08A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(9,OffsetType.YEARS);
+        node = Node("EUR 09A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(10,OffsetType.YEARS);
+        node = Node("EUR 10A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(11,OffsetType.YEARS);
+        node = Node("EUR 11A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(12,OffsetType.YEARS);
+        node = Node("EUR 12A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(15,OffsetType.YEARS);
+        node = Node("EUR 15A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(20,OffsetType.YEARS);
+        node = Node("EUR 20A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(25,OffsetType.YEARS);
+        node = Node("EUR 25A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(30,OffsetType.YEARS);
+        node = Node("EUR 30A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(40,OffsetType.YEARS);
+        node = Node("EUR 40A Irs",offset, None);
+        nodes.append(node);
+
+        offset = Offset(50,OffsetType.YEARS);
+        node = Node("EUR 50A Irs",offset, None);
+        nodes.append(node);
+
+        return nodes;
+
+    #
     # Entry Point
     #    
     def getNodeList(self, symbol):
@@ -202,6 +283,8 @@ class PyProviderHelper(IProviderHelper):
             return self.getItYieldNodes()
         elif symbol=='USYIELD':
             return self.getUsYieldNodes()
+        elif symbol=='FMIRS':
+            return self.getEurirsNodes()
         else:
             return None
 
