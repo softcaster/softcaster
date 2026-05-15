@@ -5,6 +5,8 @@
  */
 package org.softcaster.provider.enums;
 
+import org.softcaster.commons.utils.IdentifiableEnum;
+
 /**
  *
  * @author svil

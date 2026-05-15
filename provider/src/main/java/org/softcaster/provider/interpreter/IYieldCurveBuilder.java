@@ -2,18 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
  */
-package org.softcaster.provider.enums;
+package org.softcaster.provider.interpreter;
+
+import java.util.List;
+import org.softcaster.provider.bricks.Node;
 
 /**
  *
  * @author ep
  */
-// Obbliga gli enum ad averela stessa interfaccia
-public interface IdentifiableEnum {
+public interface IYieldCurveBuilder {
 
-    int getId();
-
-    String getCode();
-
-    String getDescription();
+    public List<Node> getNodeList(String curveId);
 }

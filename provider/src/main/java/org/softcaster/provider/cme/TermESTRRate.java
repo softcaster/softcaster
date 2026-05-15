@@ -2,18 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.provider.CmeGroup;
+package org.softcaster.provider.cme;
 
-import java.sql.Date;
+import java.util.ArrayList;
 
 /**
  *
  * @author softc
  */
-public class SofrRatesFixing {
+public class TermESTRRate {
 
-    public String price;
-    public String term;
-    public Date timestamp;
-
+    public String date;
+    public ArrayList<EsterRate> rates;
 }

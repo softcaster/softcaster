@@ -6,17 +6,10 @@ SET description = smd.issue_description
 FROM security_master_data smd
 WHERE master_data.id_master_data = smd.id_master_data;
 
-UPDATE master_data
-SET description = fmd.description
-FROM future_master_data fmd
-WHERE master_data.id_master_data = fmd.id_master_data;
-
 ALTER TABLE finacial_txn RENAME to financial_txn;
 ALTER TABLE financial_txn OWNER TO easypricer;
 ALTER TABLE financial_txn RENAME COLUMN id_finacial_txn TO id_financial_txn;
 ALTER SEQUENCE finacial_txn_s RENAME TO financial_txn_s;
-
-ALTER TABLE financial_txn ADD COLUMN version INTEGER DEFAULT 0;
 
 ALTER TABLE financial_txn ADD COLUMN ref_id INTEGER;
 -- 2. Popola la colonna con i valori esistenti
@@ -47,6 +40,17 @@ ALTER TABLE future_master_data ADD COLUMN exchange_contract_code VARCHAR(25) NOT
 
 select code,id_master_data from master_data where id_master_data not in(SELECT master_data FROM cash_flow_item where amount=100);
 select * from cash_flow_item where master_data=22 order by end_date DESC
+
+
+ALTER TABLE yield_curve_item ADD COLUMN compounding SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE yield_curve_item ADD COLUMN daycount SMALLINT;
+-- 2. Popola la colonna con i valori esistenti
+UPDATE yield_curve_item SET daycount = (SELECT id_daycount FROM daycount WHERE code='ACT_365');
+-- 3. Rende la colonna obbligatoria per il futuro
+ALTER TABLE yield_curve_item ALTER COLUMN daycount SET NOT NULL;
+ALTER TABLE yield_curve_item ADD CONSTRAINT fk_daycount FOREIGN KEY (daycount)
+        REFERENCES daycount(id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
 ------------------------------------------------------------------------------
 -- issuer
 -- ----------------------------------------------------------------------------

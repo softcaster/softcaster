@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.text.ParseException;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +59,7 @@ public class ECBProvider extends AbstractProvider {
             try {
                 String[] parsedResponse = response.split("<td><strong>")[1].split("<");
                 double value = Converter.toDouble(parsedResponse[0], false);
-                Node node = new Node("", new Offset(1, OffsetType.DAYS), new Data(value,value));
+                Node node = new Node("Ovn", new Offset(1, OffsetType.DAYS), new Data(value,value));
                 RateKey key = new RateKey("OVNESTR", RATES);
                 addRate(key, node);
             } catch (ParseException ex) {

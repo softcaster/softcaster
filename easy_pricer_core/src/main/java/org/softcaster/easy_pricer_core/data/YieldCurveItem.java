@@ -43,6 +43,12 @@ public class YieldCurveItem implements Serializable {
     @Column(name = "ask")
     private Double ask;
 
+    @Column(name = "compounding")
+    private Short compounding;
+
+    @Column(name = "daycount")
+    private Short daycount;
+
     public Integer getIdYieldCurveItem() {
         return idYieldCurveItem;
     }
@@ -114,5 +120,33 @@ public class YieldCurveItem implements Serializable {
     @Override
     public int hashCode() {
         return getIdYieldCurveItem() == null ? 0 : idYieldCurveItem.hashCode();
+    }
+
+    /**
+     * @return the compounding
+     */
+    public Short getCompounding() {
+        return compounding;
+    }
+
+    /**
+     * @param compounding the compounding to set
+     */
+    public void setCompounding(Short compounding) {
+        this.compounding = compounding;
+    }
+
+    /**
+     * @return the daycount
+     */
+    public Short getDaycount() {
+        return daycount;
+    }
+
+    /**
+     * @param daycount the daycount to set
+     */
+    public void setDaycount(Short daycount) {
+        this.daycount = daycount;
     }
 }

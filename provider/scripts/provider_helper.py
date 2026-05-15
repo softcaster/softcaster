@@ -20,15 +20,15 @@ class PyProviderHelper(IProviderHelper):
 
         nodes= list()
        
-        offset = Offset(1,OffsetType.MOUNTHS);
+        offset = Offset(1,OffsetType.MONTHS);
         node = Node("1M",offset, None);
         nodes.append(node);
 
-        offset = Offset(3,OffsetType.MOUNTHS);
+        offset = Offset(3,OffsetType.MONTHS);
         node = Node("3M",offset, None);
         nodes.append(node);
 
-        offset = Offset(6,OffsetType.MOUNTHS);
+        offset = Offset(6,OffsetType.MONTHS);
         node = Node("6M",offset, None);
         nodes.append(node);
 

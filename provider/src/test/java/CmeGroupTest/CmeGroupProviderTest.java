@@ -7,7 +7,7 @@ package CmeGroupTest;
 import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.commons.utils.FileUtil;
-import org.softcaster.provider.CmeGroup.CmeGroupProvider;
+import org.softcaster.provider.cme.CmeGroupProvider;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
 

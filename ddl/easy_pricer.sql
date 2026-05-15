@@ -453,9 +453,13 @@ CREATE TABLE yield_curve_item
     , offset_value SMALLINT NOT NULL
     , bid NUMERIC(15,5) NOT NULL  
     , ask NUMERIC(15,5) NOT NULL  
+    , compounding SMALLINT NOT NULL DEFAULT 1;
+    , daycount SMALLINT NOT NULL;
     , PRIMARY KEY (id_yield_curve_item)
     , CONSTRAINT fk_yield_curve FOREIGN KEY (yield_curve)
         REFERENCES yield_curve(id_yield_curve) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_daycount FOREIGN KEY (daycount)
+        REFERENCES daycount(id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 CREATE UNIQUE INDEX idx_yield_curve_item_ric ON yield_curve_item(ric);
 ALTER TABLE yield_curve_item OWNER TO easypricer;

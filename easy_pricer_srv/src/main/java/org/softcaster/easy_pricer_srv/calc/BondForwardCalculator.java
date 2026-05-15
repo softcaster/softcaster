@@ -10,7 +10,7 @@ import org.softcaster.commons.utils.NumberUtils;
 import org.softcaster.easy_pricer_core.data.CashFlowItem;
 import org.softcaster.easy_pricer_core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_core.data.SecurityMasterDataDAO;
-import org.softcaster.marketdataprovider.euronext.EuroNextProvider;
+//import org.softcaster.marketdataprovider.euronext.EuroNextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -46,7 +46,7 @@ public class BondForwardCalculator {
         input.setMaturityDate(request.getMaturityDate());
 
         if (NumberUtils.isZero(request.getReferencePrice())) {
-            EuroNextProvider provider = EuroNextProvider.getInstance();
+            //SEuroNextProvider provider = EuroNextProvider.getInstance();
             input.setSpotPrice(100./*provider.getBondQuote(smd.getIsin(), REQUEST_TYPE.MIDDLE)*/);
         } else {
             input.setSpotPrice(request.getReferencePrice());
