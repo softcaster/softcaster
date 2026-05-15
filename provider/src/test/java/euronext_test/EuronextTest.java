@@ -26,5 +26,8 @@ public class EuronextTest {
         provider = EuroNextProvider.getInstance();
         value = provider.getFutureQuote(symbol).getData().bid();
         System.out.println(value);
+
+        value = provider.getBondQuote("IT0001086567").getData().bid();
+        System.out.println(value);
     }
 }

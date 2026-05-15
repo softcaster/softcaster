@@ -2,6 +2,6 @@
 <params>
     <param>
         <name>PY_DEBUG</name>
-        <value>true</value>
+        <value>false</value>
     </param>
 </params>
