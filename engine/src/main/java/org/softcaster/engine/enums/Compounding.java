@@ -47,5 +47,17 @@ public enum Compounding implements IdentifiableEnum {
     public String getDescription() {
         return description;
     }
+    
+    public static Compounding fromOrdinal(int ordinal) {
+        // Recupera l'array di tutti i valori dell'enum
+        Compounding[] values = Compounding.values();
 
+        // Verifica che l'indice sia valido usando la proprietà .length corretta
+        if (ordinal < 0 || ordinal >= values.length) {
+            throw new IndexOutOfBoundsException("Invalid ordinal: " + ordinal);
+        }
+
+        // Restituisce l'elemento all'indice specificato
+        return values[ordinal];
+    }
 }

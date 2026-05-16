@@ -56,6 +56,25 @@ public class YieldCurve {
     }
 
     /**
+     * Aggiorna i fattori di sconto della curva sostituendo i vecchi valori con
+     * i nuovi input ricevuti dal provider.
+     *
+     * @param newInputs La nuova lista di nodi aggiornati dal provider
+     */
+    public synchronized void updateCurve(List<CurveNodeInput> newInputs) {
+        if (newInputs == null || newInputs.isEmpty()) {
+            throw new IllegalArgumentException("Update failed.");
+        }
+
+        // 1. Svuota la struttura mantenendo solo il punto fermo a T=0
+        this.discountFactors.clear();
+        this.discountFactors.put(0, 1.0);
+
+        // 2. Ricostruisci i fattori di sconto usando la logica esistente
+        this.buildCurve(newInputs);
+    }
+
+    /**
      * Parsing rudimentale ma efficace dell'offset per calcolare la data futura
      */
     private LocalDate parseTenorOffset(LocalDate baseDate, Offset offset) {

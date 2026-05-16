@@ -4,23 +4,19 @@
  */
 package org.softcaster.easy_pricer_mds_core;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.softcaster.commons.imports.CsvImport;
-import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.commons.xml.ParamsMgr;
+import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 import org.softcaster.engine.curve.YieldCurve;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -28,7 +24,9 @@ import org.softcaster.engine.curve.YieldCurve;
  */
 public class MarketDataService {
 
-    private static final String IMPORT_PATH = System.getProperty("user.dir") + "/conf";
+    @Autowired
+    @Qualifier("yieldCurveBuilder")
+    private YieldCurveBuilder yieldCurveBuilder;
 
     private final ConcurrentHashMap<String, SpotPrice> spotPrices = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, YieldCurve> yieldCurves = new ConcurrentHashMap<>();
@@ -37,7 +35,7 @@ public class MarketDataService {
 
     }
 
-     // Aggiorna l'ultimo prezzo di un asset (es. Forex)
+    // Aggiorna l'ultimo prezzo di un asset (es. Forex)
     private void updatePrice(String ticker, double bid, double ask, double middle) {
         spotPrices.put(ticker, new SpotPrice(ticker, bid, ask, middle));
     }
@@ -51,7 +49,7 @@ public class MarketDataService {
             updatePrice(token, bid, bid, (bid + ask) / 2.);
         }
     }
-   
+
     // Recupera il prezzo per il Risk Engine
     private SpotPrice getSpot(String ticker) {
         SpotPrice sp = spotPrices.get(ticker);
@@ -94,45 +92,6 @@ public class MarketDataService {
     public double getYieldCurveRate(String curveName, LocalDate settlement) {
         return yieldCurves.get(curveName).getDiscountFactor(settlement);
     }
-    
-    /*
-    public NavigableMap<org.softcaster.commons.types.Date, Double> getRates(String idCurve) {
-        return yieldCurves.get(idCurve).getRatesMap();
-    }
-    */
-    
-    // Metodo per il refresh dei dati richiesti passati in input
-    public void updateMarketData() {
-        // Refresh prezzi spot titoli,cambi,futures ET
-        updateSpotPrice();
-
-        // Refresh yield curves
-        updateYieldCurves();
-    }
-
-    //
-    // SpotPrice
-    //
-    private void updateSpotPrice() {
-        CsvImport csvImport = new CsvImport();
-        Path path = Paths.get(IMPORT_PATH + "/ticker_link.csv");
-
-        ImportConfig config = new ImportConfig();
-        config.setSeparator(',');
-        config.setFilePath(path);
-        config.setStartData(0);
-        config.setCharset(StandardCharsets.UTF_8); // utf-8
-        try {
-            csvImport.startImport(config);
-            for (String[] s : csvImport.getBuffer()) {
-                addPrice(s);
-            }
-
-        } catch (Exception ex) {
-            String error = "Error reading file: ticker_link.csv [" + ex.getLocalizedMessage() + "]";
-            LoggerMgr.logError(error);
-        }
-    }
 
     public void updateFxPrice(List<String> tokenList, String provider, IProgressInfo progressInfo) {
 
@@ -149,13 +108,12 @@ public class MarketDataService {
             // Legge tutto in un unico blocco
             for (String token : tokenList) {
                 addSpotPrice(token, provider, Market.CURRENCIES);
-                break;
-                /*
+
                 if (progressInfo != null) {
                     progressInfo.setProgress(progress + step * cnt);
                     cnt++;
                 }
-                 */
+
             }
             if (progressInfo != null) {
                 progressInfo.setProgress(100);
@@ -196,94 +154,49 @@ public class MarketDataService {
         }
     }
 
-    public void updateSecurityPrice(IProgressInfo progressInfo) {
-        // Leggo lista di currency pairs
-        ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String securities = paramsMgr.getParamValue("SECURITIES");
-        String provider = paramsMgr.getParamValue("SECURITIES_PROVIDER");
-
-        // 1. Divido la stringa in un array usando la virgola come separatore
-        String[] tokenArray = securities.split(",");
-        // 2. Converto l'array in una List<String>
-        List<String> tokenList = Arrays.asList(tokenArray);
-
-        int progress = tokenList.size() / 10;
-        if (progress < 10) {
-            progress = tokenList.size();
-        } else {
-            progress = 100 / progress;
-        }
-
-        int step = 100 / progress;
-        int cnt = 0;
-        try {
-            for (String token : tokenList) {
-                addSpotPrice(token, provider, Market.BONDS);
-                if (progressInfo != null) {
-                    progressInfo.setProgress(progress + step * cnt);
-                    cnt++;
-                }
-            }
-            progressInfo.setProgress(100);
-        } catch (Exception ex) {
-            String error = "Error reading file: ticker_link.csv [" + ex.getLocalizedMessage() + "]";
-            LoggerMgr.logError(error);
-        }
-    }
-
-    private void addPrice(String[] line) {
-        IMarketDataProvider provider = ProviderFactory.getInstance(line[2]);
-        String token = line[1];
-        if (provider != null) {
-            if (line[3].compareToIgnoreCase("FFU") == 0) {
-                token += "#" + line[0];
-            }
-            addSpotPrice(token, line[2], Market.BONDS);
-        }
-    }
-
     //
     // YieldCurve
     //
-    private void updateYieldCurves() {
-        CsvImport csvImport = new CsvImport();
-        Path path = Paths.get(IMPORT_PATH + "/ycurve_link.csv");
-
-        ImportConfig config = new ImportConfig();
-        config.setSeparator(',');
-        config.setFilePath(path);
-        config.setStartData(0);
-        config.setCharset(StandardCharsets.UTF_8); // utf-8
-        try {
-            csvImport.startImport(config);
-            for (String[] s : csvImport.getBuffer()) {
-                addYieldCurve(s[2]);
-            }
-
-        } catch (Exception ex) {
-            String error = "Error reading file: ycurve_link.csv [" + ex.getLocalizedMessage() + "]";
-            LoggerMgr.logError(error);
+    public void addYieldCurve(String strProvider, String idCurve) {
+        IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
+        if (provider != null && idCurve != null && !idCurve.isBlank()) {
+            YieldCurve yc = yieldCurveBuilder.buildYieldCurve(provider, idCurve, LocalDate.now());
+            yieldCurves.put(idCurve, yc);
         }
     }
 
-    private void addYieldCurve(String strProvider) {
-
-        IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
-        if (provider != null) {
-            switch (strProvider) {
-                case "EuriborRatesProvider" -> {
-                }
-                case "Sole24hProvider" -> {
-                }
-                default -> {
-                }
-            }
+    /**
+     * Aggiorna una curva di rendimento esistente nella cache con i nuovi dati
+     * dal provider.
+     *
+     * @param curveId Identificativo univoco della curva (es. "EUR_OIS")
+     * @param newInputs La nuova lista di nodi aggiornati ricevuta dal provider
+     * @return true se la curva è stata aggiornata, false se non era presente
+     * nella cache
+     */
+    public boolean updateYieldCurveInCache(String curveId, List<CurveNodeInput> newInputs) {
+        if (curveId == null || newInputs == null) {
+            throw new IllegalArgumentException("L'ID curva e i nuovi input non possono essere nulli.");
         }
+
+        // Specifichiamo esplicitamente il tipo atomico restituito dalla mappa
+        // che computeIfPresent usa una lamba function (->), quando esce existingCurve e' 
+        // updateCurve
+        YieldCurve updatedCurve = this.yieldCurves.computeIfPresent(curveId, (id, existingCurve) -> {
+            // Sfrutta il metodo synchronized creato dentro YieldCurve
+            existingCurve.updateCurve(newInputs);
+            return existingCurve;
+        });
+
+        // Se updatedCurve non è null significa che la curva esisteva ed è stata modificata
+        return updatedCurve != null;
     }
 
-    public void updateYieldCurve(String strProvider,String idCurve) {
+    public void updateYieldCurve(String strProvider, String curveId) {
         IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
-        List<Node>  nodes = provider.getYieldCurveNodes(idCurve);
-        //yieldCurves.put(idCurve, new YieldCurve("USD", "USD", nodes));
+        if (provider != null && curveId != null && !curveId.isBlank()) {
+            List<CurveNodeInput> newInput = yieldCurveBuilder.getNewInput(provider, curveId);
+            updateYieldCurveInCache(curveId, newInput);
+        }
     }
 }

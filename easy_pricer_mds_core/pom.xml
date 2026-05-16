@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://apache.org" xmlns:xsi="http://w3.org" xsi:schemaLocation="http://apache.org http://apache.org">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- 1. Aggiungi il Parent di Spring Boot per ereditare le versioni delle dipendenze -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.3</version>
+        <relativePath/> 
+    </parent>
+
     <groupId>org.softcaster.easy_pricer_mds_core</groupId>    
-    <artifactId>easy_pricer_mds_core</artifactId>
+    <artifactId>mds_core</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
+    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <exec.mainClass>org.softcaster.easy_pricer_mds_core.Easy_pricer_mds_core</exec.mainClass>
+        <!-- Con Spring Boot è preferibile usare la proprietà release -->
+        <maven.compiler.release>17</maven.compiler.release>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Dipendenze interne del tuo progetto -->
+        <dependency>
+            <groupId>org.softcaster.core.data</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0</version>
+        </dependency>              
         <dependency>
             <groupId>org.softcaster.commons</groupId>
             <artifactId>foundation</artifactId>
@@ -29,7 +48,24 @@
             <artifactId>engine</artifactId>
             <version>1.0</version>
         </dependency>        
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
     </dependencies>
 
-
+    <build>
+        <plugins>
+            <!-- NOTA BENE: Non inserire il plugin 
+                 spring-boot-maven-plugin con l'operazione 'repackage', altrimenti 
+                 il JAR diventerà un file eseguibile e l'applicazione principale non 
+                 riuscirà più a importare le sue classi. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>

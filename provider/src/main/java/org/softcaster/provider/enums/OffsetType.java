@@ -13,7 +13,7 @@ import org.softcaster.commons.utils.IdentifiableEnum;
  */
 public enum OffsetType implements IdentifiableEnum {
     DAYS(1, "DAYS", "Days"),
-    MONTHS(2, "MOUNTHS", "Mounths"),
+    MONTHS(2, "MONTHS", "Months"),
     YEARS(3, "YEARS", "Years"),
     NONE(4, "NONE", "None");
 
@@ -41,18 +41,17 @@ public enum OffsetType implements IdentifiableEnum {
     public String getDescription() {
         return description;
     }
-}
 
-/*
-    // Cache the values to avoid array cloning on every call
-    private static final Offset[] ENUMS = Offset.values();
+    public static OffsetType fromOrdinal(int ordinal) {
+        // Recupera l'array di tutti i valori dell'enum
+        OffsetType[] values = OffsetType.values();
 
-    public static Offset fromOrdinal(int ordinal) {
-        if (ordinal < 0 || ordinal >= ENUMS.length) {
+        // Verifica che l'indice sia valido usando la proprietà .length corretta
+        if (ordinal < 0 || ordinal >= values.length) {
             throw new IndexOutOfBoundsException("Invalid ordinal: " + ordinal);
         }
-        return ENUMS[ordinal];
+
+        // Restituisce l'elemento all'indice specificato
+        return values[ordinal];
     }
-
-
-*/
+}
