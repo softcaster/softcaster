@@ -102,7 +102,7 @@ public class CmeGroupProvider extends AbstractProvider {
                             LoggerMgr.logError(ex.getLocalizedMessage());
                             value = 0.;
                         }
-                        data = new Data(value, value);
+                        data = new Data(value / 100., value / 100.);
                         node.setData(data);
                         addRate(key, node);
                         pos++;
@@ -143,7 +143,7 @@ public class CmeGroupProvider extends AbstractProvider {
                         value = 0.;
                     }
 
-                    data = new Data(value, value);
+                    data = new Data(value / 100., value / 100.);
                     node.setData(data);
                     addRate(key, node);
                     pos++;
@@ -336,9 +336,12 @@ public class CmeGroupProvider extends AbstractProvider {
     @Override
     public List<Node> getYieldCurveNodes(String idCurve) {
         return switch (idCurve) {
-            case "TERMSOFR" -> getTermSofrRates();
-            case "TERMESTR" -> getTermEsterRates();
-            default -> null;
+            case "TERMSOFR" ->
+                getTermSofrRates();
+            case "TERMESTR" ->
+                getTermEsterRates();
+            default ->
+                null;
         };
     }
 

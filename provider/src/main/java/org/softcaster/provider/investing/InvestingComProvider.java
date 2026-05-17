@@ -130,7 +130,7 @@ public class InvestingComProvider extends AbstractProvider {
                         LoggerMgr.logError(ex.getLocalizedMessage());
                         value = 0.;
                     }
-                    data = new Data(value, value);
+                    data = new Data(value / 100., value / 100.);
                     node.setData(data);
                     addRate(key, node);
                 }
@@ -141,7 +141,7 @@ public class InvestingComProvider extends AbstractProvider {
     private void parseUsYieldCurve() {
         parseYieldCurve("USYIELD");
     }
-    
+
     private void parseItaYieldCurve() {
         parseYieldCurve("ITYIELD");
     }
@@ -267,15 +267,18 @@ public class InvestingComProvider extends AbstractProvider {
     @Override
     public List<Node> getYieldCurveNodes(String idCurve) {
         return switch (idCurve) {
-            case "ITYIELD" -> getItYieldCurve();
-            case "USYIELD" -> getUsYieldCurve();
-            default -> null;
+            case "ITYIELD" ->
+                getItYieldCurve();
+            case "USYIELD" ->
+                getUsYieldCurve();
+            default ->
+                null;
         };
     }
 
     @Override
     public Node getMktQuote(String symbol, Market market) {
-        if(market == CURRENCIES) {
+        if (market == CURRENCIES) {
             return getCurrencyQuote(symbol);
         } else {
             return null;

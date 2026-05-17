@@ -71,7 +71,7 @@ public class Sole24hProvider extends AbstractProvider {
             throw new MarketDataProviderException(ex.getLocalizedMessage());
         }
     }
-    
+
     @Override
     protected void parseResponse(ProviderInfo info, Market market) {
         switch (market) {
@@ -133,7 +133,7 @@ public class Sole24hProvider extends AbstractProvider {
                         LoggerMgr.logError(ex.getLocalizedMessage());
                         value = 0.;
                     }
-                    data = new Data(value, value);
+                    data = new Data(value / 100., value / 100.);
                     node.setData(data);
                     addRate(key, node);
                     cnt++;
@@ -145,8 +145,10 @@ public class Sole24hProvider extends AbstractProvider {
     @Override
     public List<Node> getYieldCurveNodes(String idCurve) {
         return switch (idCurve) {
-            case "FMIRS" -> getIrsYieldCurve();
-            default -> null;
+            case "FMIRS" ->
+                getIrsYieldCurve();
+            default ->
+                null;
         };
     }
 

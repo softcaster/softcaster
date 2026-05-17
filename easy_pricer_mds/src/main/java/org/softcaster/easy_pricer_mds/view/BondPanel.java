@@ -200,14 +200,15 @@ public class BondPanel extends FndtAbstactPanel {
         for (InstrumentQuote quote : iqList) {
             tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
         }
+        /*
         MarketDataService mds = new MarketDataService();
         mds.updateBondPrice(tokenList, null);
-
+*/
         BondBean bean = null;
 
         for (InstrumentQuote quote : iqList) {
-            quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
-            quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
+            //quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
+            //quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
             bean = new BondBean(quote);
             bondBeanList.add(bean);
         }
