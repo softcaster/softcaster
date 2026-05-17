@@ -171,4 +171,8 @@ public class MmFuturePanel extends FndtAbstactPanel {
         }
         ftm.setData(mmFutBeanList);
     }
+
+    @Override
+    protected void updateModel(FndtTableModel model) {
+    }
 }

@@ -1,3 +1,15 @@
+-- codice controllo pre update effettivo
+SELECT 
+    code AS codice_originale, 
+    REPLACE(code, '-MOTX', '') AS codice_pulito
+FROM instrument_quote
+WHERE code LIKE '%-MOTX';
+
+-- update effettivo
+UPDATE instrument_quote
+SET code = REPLACE(code, '-MOTX', '')
+WHERE code LIKE '%-MOTX';
+
 ALTER TABLE master_data 
 ADD COLUMN description VARCHAR(255) DEFAULT '';
 

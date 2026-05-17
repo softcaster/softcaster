@@ -9,6 +9,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.BorderFactory;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellRenderer;
@@ -29,25 +32,28 @@ public abstract class FndtAbstactPanel extends javax.swing.JPanel {
     private javax.swing.JMenuItem acNew;
 
     public abstract void refreshAction();
-    
+
     protected abstract void fillModelList();
 
     protected abstract void refreshModel(FndtTableModel model);
-    
+
+    protected abstract void updateModel(FndtTableModel model);
+
     protected abstract void acNewActionPerformed(java.awt.event.ActionEvent evt);
 
     protected abstract void acModActionPerformed(java.awt.event.ActionEvent evt);
 
     protected abstract void acDelActionPerformed(java.awt.event.ActionEvent evt);
-    
+
     public abstract void downloadAction();
+
     public abstract void filterAction();
 
     protected void postInitComponents(JTable table) {
         initTable(table);
         initPopUp(table);
     }
-    
+
     protected void initPopUp(JTable table) {
         popUp = new javax.swing.JPopupMenu();
         acNew = new javax.swing.JMenuItem();
@@ -68,7 +74,7 @@ public abstract class FndtAbstactPanel extends javax.swing.JPanel {
         acDel.setText("Delete");
         acDel.addActionListener(this::acDelActionPerformed);
         popUp.add(acDel);
-        
+
         table.addMouseListener(new PopupListener(popUp));
     }
 
@@ -134,5 +140,30 @@ public abstract class FndtAbstactPanel extends javax.swing.JPanel {
             // Imposta la larghezza calcolata
             columnModel.getColumn(column).setPreferredWidth(width);
         }
+    }
+
+    public JDialog createLoadingDialog(String messaggio) {
+
+        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+
+        JDialog dialog = new JDialog((java.awt.Frame) parentWindow, "Operation in Progress", true); // true = Modale
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); // Impedisce la chiusura con la 'X'
+
+        // Configura i componenti interni
+        JLabel label = new JLabel(messaggio, JLabel.CENTER);
+        label.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 10, 20));
+
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true); // Barra animata continua
+        progressBar.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 20, 20, 20));
+
+        // Layout della dialog
+        dialog.setLayout(new java.awt.BorderLayout());
+        dialog.add(label, java.awt.BorderLayout.NORTH);
+        dialog.add(progressBar, java.awt.BorderLayout.CENTER);
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(this); // Centra rispetto alla finestra principale
+        return dialog;
     }
 }

@@ -6,7 +6,9 @@ package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
@@ -197,18 +199,23 @@ public class CurrPairPanel extends FndtAbstactPanel {
             tokenList.add(quote.getCode());
         }
 
-        MarketDataService mds = new MarketDataService();
-        mds.updateFxPrice(tokenList, "InvestingComProvider", null);
-
         CurrencyPairBean bean = null;
 
         for (InstrumentQuote quote : pairs) {
-            quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
-            quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
             bean = new CurrencyPairBean(quote);
             forexBeanList.add(bean);
         }
 
         ftm.setData(forexBeanList);
+    }
+
+    @Override
+    protected void updateModel(FndtTableModel model) {
+        Map<String, List<String>> tokenList = new HashMap<>();
+        MarketDataService mds = new MarketDataService();
+        mds.updateBondFutPrice(tokenList, null);
+
+        //quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
+        //quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
     }
 }

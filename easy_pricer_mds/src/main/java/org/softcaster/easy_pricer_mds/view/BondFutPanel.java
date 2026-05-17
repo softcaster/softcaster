@@ -198,18 +198,24 @@ public class BondFutPanel extends FndtAbstactPanel {
         for (InstrumentQuote quote : iqList) {
             tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
         }
-        MarketDataService mds = new MarketDataService();
-        mds.updateBondFutPrice(tokenList, null);
 
         BondFutBean bean = null;
 
         for (InstrumentQuote quote : iqList) {
-            quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
-            quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
             bean = new BondFutBean(quote);
             bondFutBeanList.add(bean);
         }
 
         ftm.setData(bondFutBeanList);
+    }
+
+    @Override
+    protected void updateModel(FndtTableModel model) {
+        Map<String, List<String>> tokenList = new HashMap<>();
+        MarketDataService mds = new MarketDataService();
+        mds.updateBondFutPrice(tokenList, null);
+
+        //quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
+        //quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
     }
 }

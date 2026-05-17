@@ -29,6 +29,7 @@ import org.softcaster.core.data.Issuer;
 import org.softcaster.core.data.RollConvention;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.TypeOfInterest;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
@@ -36,9 +37,6 @@ import org.softcaster.master_data_mgr.models.beans.CashFlowBean;
 import org.softcaster.master_data_mgr.models.beans.SecurityBean;
 import org.softcaster.master_data_mgr.ui.DecimalRenderer;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
-import ph.alephzero.finance.DayCountBasis;
-import ph.alephzero.finance.cashflows.CashFlows;
-import ph.alephzero.finance.products.fixedincome.BondCashFlowGenerator;
 
 /**
  *
@@ -762,8 +760,8 @@ public class BondDlg extends javax.swing.JDialog {
         MDDialogHelper.textFieldDoubleFocusLost(txtNominalValue);
     }//GEN-LAST:event_txtNominalValueFocusLost
 
-    private DayCountBasis getDayCountBasis(String code) {
-        return DayCountBasis.ACT_ACT;
+    private DaycountBasis getDayCountBasis(String code) {
+        return DaycountBasis.fromCode(code);
     }
 
     private void btnGenerateCFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateCFActionPerformed
@@ -779,7 +777,7 @@ public class BondDlg extends javax.swing.JDialog {
                 return;
             }
         }
-
+/*
         CashFlows cf = BondCashFlowGenerator.cashFlowsOddBond(bean.getSecurityMasterData().getIssueDate(),
                 bean.getSecurityMasterData().getIssueDate(),
                 bean.getSecurityMasterData().getMaturityDate(),
@@ -820,6 +818,7 @@ public class BondDlg extends javax.swing.JDialog {
         bean.getSecurityMasterData().setCashFlows(cashFlows);
         MasterDataTableModel<CashFlowBean> model = (MasterDataTableModel<CashFlowBean>) tableCF.getModel();
         refreshModel(model);
+*/
     }//GEN-LAST:event_btnGenerateCFActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -4,8 +4,8 @@
 
 package org.softcaster.master_data_mgr;
 
+import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.marketdataprovider.MarketDataProviderHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,10 +22,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
 @ComponentScan(basePackages = {
     "org.softcaster.master_data_mgr", // Il pacchetto dell'app
-    "org.softcaster.easy_pricer_core" // Il pacchetto della LIBRERIA
+    "org.softcaster.core.data", // Il pacchetto della libreria core
+    "org.softcaster.engine", // Il pacchetto della libreria engine
 })
-@EntityScan("org.softcaster.easy_pricer_core.data")
-@EnableJpaRepositories("org.softcaster.easy_pricer_core.data")
+@EntityScan("org.softcaster.core.data")
+@EnableJpaRepositories("org.softcaster.core.data")
 public class Master_data_mgr  implements CommandLineRunner {
 
     @Autowired
@@ -33,10 +34,10 @@ public class Master_data_mgr  implements CommandLineRunner {
 
     public static void main(String[] args) {
         // Inizializzazione Logger
-        MarketDataProviderHelper.initializeLogger();
+        FileUtil.initializeLogger();
 
         // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
-        MarketDataProviderHelper.initializePython();
+        FileUtil.initializePython();
 
         // Modo corretto per applicazioni Swing + Spring Boot
         SpringApplicationBuilder builder = new SpringApplicationBuilder(Master_data_mgr.class);

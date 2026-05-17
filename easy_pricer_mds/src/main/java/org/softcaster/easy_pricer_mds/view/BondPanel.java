@@ -9,10 +9,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
@@ -181,7 +185,7 @@ public class BondPanel extends FndtAbstactPanel {
     @Override
     public void refreshAction() {
         BondTableModel model = (BondTableModel) bondTable.getModel();
-        this.refreshModel(model);
+        this.updateModel(model);
     }
 
     @Override
@@ -200,15 +204,10 @@ public class BondPanel extends FndtAbstactPanel {
         for (InstrumentQuote quote : iqList) {
             tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
         }
-        /*
-        MarketDataService mds = new MarketDataService();
-        mds.updateBondPrice(tokenList, null);
-*/
+
         BondBean bean = null;
 
         for (InstrumentQuote quote : iqList) {
-            //quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
-            //quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
             bean = new BondBean(quote);
             bondBeanList.add(bean);
         }
@@ -240,5 +239,80 @@ public class BondPanel extends FndtAbstactPanel {
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
+    }
+
+    private void updateTable(FndtTableModel model) {
+        MarketDataService mds = mDSFacade.getMarketDataService();
+        BondBean bondBean = null;
+        List<String> tokenList = new ArrayList<>();
+        for (int i = 1; i < model.getRowCount(); i++) {
+            bondBean = (BondBean) model.getElementAt(i);
+            if (bondBean != null) {
+                tokenList.add(bondBean.getInstrumentQuote().getCode());
+            }
+        }
+
+        mds.updateBondPrice(tokenList, null);
+
+        for (int i = 1; i < model.getRowCount(); i++) {
+            bondBean = (BondBean) model.getElementAt(i);
+            if (bondBean != null) {
+                double bid = mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.BID);
+                double ask = mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.ASK);
+                System.out.println(bondBean.getInstrumentQuote().getCode() + "\t" + bid + "\t" + ask);
+                bondBean.setAsk(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.ASK));
+                bondBean.setBid(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.BID));
+                System.out.println(bondBean.getInstrumentQuote().getCode() + "\t" + bondBean.getBid() + "\t" + bondBean.getAsk());
+                System.out.println();
+            }
+        }
+
+        model.setData(bondBeanList);
+    }
+
+    @Override
+    protected void updateModel(FndtTableModel model) {
+
+        // 1. Crea la dialog di attesa
+        final JDialog loadingDialog = createLoadingDialog("Downloading bond prices ... Please wait.");
+
+        // 2. Crea lo SwingWorker
+        // I parametri generici <Void, Void> indicano: <Tipo di ritorno finale, Tipo di dati intermedi>
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                // Questo metodo gira su un THREAD SEPARATO in background.
+                updateTable(model);
+                //Thread.sleep(5000);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // Questo metodo viene eseguito sull'EDT (Thread Grafico) alla fine del download.
+                try {
+                    // Controlla se ci sono state eccezioni durante il download
+                    get();
+
+                    // Aggiorna i componenti grafici dopo il download (es. ricarica la tabella)
+                    //aggiornaTabellaBonds();
+                    //statusBarLabel.setText("Data retrieved successfully.");
+                } catch (InterruptedException | ExecutionException e) {
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                    java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(BondPanel.this);
+                    javax.swing.JOptionPane.showMessageDialog(parentWindow,
+                            "Error during download: " + e.getLocalizedMessage(),
+                            "Download Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    // Chiude la dialog e sblocca la Card del pannello
+                    loadingDialog.dispose();
+                }
+            }
+        };
+        // 3. Avvia il thread in background
+        worker.execute();
+        // 4. Mostra la dialog (bloccherà solo l'interfaccia, non il thread in background)
+        loadingDialog.setVisible(true);
     }
 }

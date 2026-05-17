@@ -5,6 +5,8 @@
 package org.softcaster.easy_pricer_mds_core;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,7 +48,7 @@ public class MarketDataService {
             Node node = provider.getMktQuote(token, market);
             double bid = node.getData().bid();
             double ask = node.getData().ask();
-            updatePrice(token, bid, bid, (bid + ask) / 2.);
+            updatePrice(token, bid, ask, (bid + ask) / 2.);
         }
     }
 
@@ -139,6 +141,12 @@ public class MarketDataService {
         }
     }
 
+    public void updateBondPrice(List<String> tokenList, IProgressInfo progressInfo) {
+        Map<String, List<String>> localMap = new HashMap<>();
+        localMap.put("EuroNextProvider", tokenList);
+        updateBondPrice(localMap, progressInfo);
+    }
+
     public void updateBondPrice(Map<String, List<String>> tokenList, IProgressInfo progressInfo) {
         try {
             for (Map.Entry<String, List<String>> entry : tokenList.entrySet()) {
@@ -151,6 +159,7 @@ public class MarketDataService {
             }
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
+            throw ex;
         }
     }
 

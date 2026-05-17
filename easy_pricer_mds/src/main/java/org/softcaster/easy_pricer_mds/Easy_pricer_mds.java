@@ -16,12 +16,12 @@ import org.softcaster.commons.utils.FileUtil;
  *
  * @author ep
  */
-// Al momento escludo DB
 //@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 @SpringBootApplication()
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
 @ComponentScan(basePackages = {
     "org.softcaster.easy_pricer_mds",
+    "org.softcaster.easy_pricer_mds_core",
     "org.softcaster.core.data", // Il pacchetto della libreria core
     "org.softcaster.engine" // Il pacchetto della libreria engine
 })

@@ -171,4 +171,8 @@ public class FxFuturePanel extends FndtAbstactPanel {
         }
         ftm.setData(fxFutBeanList);
     }
+
+    @Override
+    protected void updateModel(FndtTableModel model) {
+    }
 }

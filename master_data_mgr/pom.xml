@@ -35,43 +35,21 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.softcaster</groupId>
-            <artifactId>easy_pricer_core</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>        
-       
-        <dependency>
+               <dependency>
             <groupId>org.softcaster.commons</groupId>
             <artifactId>foundation</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>ph.alephzero.finance</groupId>
+            <groupId>org.softcaster.core.data</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0</version>
+        </dependency>              
+        <dependency>
+            <groupId>org.softcaster.engine</groupId>
             <artifactId>engine</artifactId>
             <version>1.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>ph.alephzero</groupId>
-                    <artifactId>foundation</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.softcaster.marketdataprovider</groupId>
-            <artifactId>provider</artifactId>
-            <version>1.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.softcaster</groupId>
-                    <artifactId>engine</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.softcaster</groupId>
-                    <artifactId>foundation</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+        </dependency>        
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

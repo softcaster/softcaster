@@ -295,7 +295,6 @@ public class JMarketDataService extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRefreshActionPerformed
 
     private void btnCalcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalcActionPerformed
-        // TODO add your handling code here:
         calculateAction();
     }//GEN-LAST:event_btnCalcActionPerformed
 
