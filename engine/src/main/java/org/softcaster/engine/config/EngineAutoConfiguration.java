@@ -12,6 +12,7 @@ import org.softcaster.engine.analytics.CRRBinomialPricer;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
 import org.softcaster.engine.analytics.LoanPricer;
+import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,16 +24,22 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableConfigurationProperties(BinomialProperties.class)
 public class EngineAutoConfiguration {
 
-    @Bean(name = "bondPricer")
+    @Bean(name = "backwardScheduleGenerator")
     @ConditionalOnMissingBean // caso in cui qualche libreria volesse creare un proprio bean
-    public BondPricer bondPricer() {
-        // Qui hai il controllo totale: puoi passare parametri al costruttore,
+    public BackwardScheduleGenerator backwardScheduleGenerator() {
+        // Qui si possono passare parametri al costruttore,
         // settare variabili, o loggare l'inizializzazione.
+        return new BackwardScheduleGenerator();
+    }
+
+    @Bean(name = "bondPricer")
+    @ConditionalOnMissingBean 
+    public BondPricer bondPricer() {
         return new BondPricer();
     }
 
     @Bean(name = "bondFwdPricer")
-    @ConditionalOnMissingBean // caso in cui qualche libreria volesse creare un proprio bean
+    @ConditionalOnMissingBean 
     public BondForwardPricer bondForwardPricer() {
         return new BondForwardPricer();
     }

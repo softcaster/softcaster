@@ -24,9 +24,10 @@ import org.softcaster.easy_import.beans.Security_master_dataDAO;
 import org.softcaster.easy_import.xml.BondLoaderMgr;
 import org.softcaster.easy_import.xml.Coupon;
 import org.softcaster.easy_import.xml.ItemBond;
-import ph.alephzero.finance.DayCountBasis;
-import ph.alephzero.finance.cashflows.CashFlows;
-import ph.alephzero.finance.products.fixedincome.BondCashFlowGenerator;
+import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
+import org.softcaster.engine.cashflow.BulletAmortizationStrategy;
+import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.cashflow.PaymentPeriod;
 
 /**
  *
@@ -40,6 +41,8 @@ public class CashFlowImportMgr extends BondImportMgrHelper implements IImportMgr
     Master_data master_data = null;
     private Daycount daycount = null;
     private Frequency frequency = null;
+    private BackwardScheduleGenerator bsg = new BackwardScheduleGenerator();
+    private BulletAmortizationStrategy bas = new BulletAmortizationStrategy();
 
     // DAOs 
     Master_dataDAO master_dataDAO = null;
@@ -104,28 +107,25 @@ public class CashFlowImportMgr extends BondImportMgrHelper implements IImportMgr
             Security_master_data security_master_data = new Security_master_data();
             security_master_data.setIsin(master_data.getCode());
             security_master_dataDAO.loadByIdx(security_master_data);
-            CashFlows cf = BondCashFlowGenerator.cashFlowsOddBond(master_data.getIssue_date(), master_data.getIssue_date(),
-                    master_data.getMaturity_date(), security_master_data.getFirst_coupon_payment_date(), null, master_data.getRedempion_price(),
-                    master_data.getInterest_rate() / 100., frequency.getYear_fraction(), DayCountBasis.ACT_ACT);
 
-            boolean first = true;
-            java.util.Date start = null;
-            java.util.Date end;
-            for (java.util.Date date : cf.getDates()) {
-                if (first) {
-                    start = date;
-                    first = false;
-                } else {
-                    end = date;
-                    Cash_flow_item item = new Cash_flow_item();
-                    item.setMaster_data(master_data.getId_master_data());
-                    item.setStart_date(new java.sql.Date(start.getTime()));
-                    item.setEnd_date(new java.sql.Date(end.getTime()));
-                    item.setInterest(cf.getCashFlow(end, "INTEREST"));
-                    item.setAmount(cf.getCashFlow(end, "PRINCIPAL"));
-                    cashFlows.add(item);
-                    start = end;
-                }
+            List<PaymentPeriod> periods = bsg.generate(master_data.getIssue_date().toLocalDate(),
+                    master_data.getMaturity_date().toLocalDate(),
+                    org.softcaster.engine.enums.Frequency.SEMI_ANNUAL,
+                    org.softcaster.engine.enums.BusinessDayConvention.FORWARD,
+                    org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA,
+                    null);
+
+            List<CashFlow> flows = bas.generateCashFlows(master_data.getIssue_price(), master_data.getInterest_rate(),
+                    periods, org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA);
+
+            for (CashFlow flow : flows) {
+                Cash_flow_item item = new Cash_flow_item();
+                item.setMaster_data(master_data.getId_master_data());
+                item.setStart_date(java.sql.Date.valueOf(flow.accrualStart()));
+                item.setEnd_date(java.sql.Date.valueOf(flow.accrualEnd()));
+                item.setInterest(flow.interest());
+                item.setAmount(flow.principal());
+                cashFlows.add(item);
             }
 
             for (Cash_flow_item item : cashFlows) {

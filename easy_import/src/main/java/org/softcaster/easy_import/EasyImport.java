@@ -5,8 +5,8 @@
 package org.softcaster.easy_import;
 
 import javax.swing.JFrame;
+import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.marketdataprovider.MarketDataProviderHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,10 +23,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
 @ComponentScan(basePackages = {
     "org.softcaster.easy_import", // Il pacchetto dell'app
-    "org.softcaster.easy_pricer_core" // Il pacchetto della LIBRERIA
+    "org.softcaster.core.data" // Il pacchetto della LIBRERIA
 })
-@EntityScan("org.softcaster.easy_pricer_core.data")
-@EnableJpaRepositories("org.softcaster.easy_pricer_core.data")
+@EntityScan("org.softcaster.core.data")
+@EnableJpaRepositories("org.softcaster.core.data")
 public class EasyImport implements CommandLineRunner {
 
     @Autowired
@@ -35,10 +35,10 @@ public class EasyImport implements CommandLineRunner {
     public static void main(String[] args) {
 
         // Inizializzazione Logger
-        MarketDataProviderHelper.initializeLogger();
+        FileUtil.initializeLogger();
 
         // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
-        MarketDataProviderHelper.initializePython();
+        FileUtil.initializePython();
 
         // Modo corretto per applicazioni Swing + Spring Boot
         SpringApplicationBuilder builder = new SpringApplicationBuilder(EasyImport.class);

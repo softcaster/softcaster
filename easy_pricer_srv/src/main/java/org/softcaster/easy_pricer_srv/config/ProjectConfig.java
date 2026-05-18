@@ -6,10 +6,7 @@ package org.softcaster.easy_pricer_srv.config;
  */
 
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import ph.alephzero.finance.products.forward.BondForward;
-import ph.alephzero.finance.products.forward.ForexForward;
 
 /**
  *
@@ -18,14 +15,4 @@ import ph.alephzero.finance.products.forward.ForexForward;
 @Configuration
 public class ProjectConfig {
 
-    @Bean(name = "bondForward") // Il nome qui deve corrispondere al @Qualifier
-    public BondForward bondForward() {
-        return new BondForward();
-    }
-
-    @Bean(name = "forexForward")
-    public ForexForward forexForward() {
-        return new ForexForward();
-    }
- 
 }

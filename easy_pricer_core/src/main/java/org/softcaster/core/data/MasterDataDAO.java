@@ -16,6 +16,11 @@ public class MasterDataDAO {
         return repository.findByIdMasterData(idMasterData);
     }
 
+    @Transactional(readOnly = true)
+    public MasterData findByCode(String code) {
+        return repository.findByCode(code);
+    }
+
     @Transactional
     public MasterData saveOrUpdate(MasterData masterData) {
         return repository.save(masterData);

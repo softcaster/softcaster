@@ -19,11 +19,16 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 // Scansiona tutti i componenti nei package org.softcaster (sia proc che core)
-@ComponentScan(basePackages = "org.softcaster") 
+@ComponentScan(basePackages = {
+    "org.softcaster.easy_pricer_proc",
+    "org.softcaster.easy_pricer_mds_core",
+    "org.softcaster.core.data", // Il pacchetto della libreria core
+    "org.softcaster.engine" // Il pacchetto della libreria engine
+})
 // Attiva i repository JPA definiti nel JAR core
-@EnableJpaRepositories("org.softcaster.easy_pricer_core.data")
+@EnableJpaRepositories("org.softcaster.core.data")
 // Trova le entità (AssetClass, ecc.) nel JAR core
-@EntityScan(basePackages = "org.softcaster.easy_pricer_core.data") 
+@EntityScan(basePackages = "org.softcaster.core.data") 
 public class Easy_pricer_proc {
 
     public static void main(String[] args) {

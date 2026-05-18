@@ -10,7 +10,10 @@ import org.softcaster.easy_pricer_srv.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_srv.calc.FxForwardCalculator;
 import org.softcaster.easy_pricer_srv.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_srv.dto.PricingRequest;
 import org.softcaster.easy_pricer_srv.util.CommonData;
+import org.softcaster.engine.dto.BondOutputData;
+import org.softcaster.engine.dto.MarketOutputData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,11 +22,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import ph.alephzero.finance.BondFwdPriceRequest;
-import ph.alephzero.finance.ForexFwdPriceRequest;
-import ph.alephzero.finance.products.fixedincome.BondCalcOutputData;
-import ph.alephzero.finance.products.forward.BondForwardOutputData;
-import ph.alephzero.finance.products.forward.ForexFwdOutputData;
 
 /**
  *
@@ -75,7 +73,7 @@ public class HelperController {
     @SuppressWarnings("unchecked")
     public ResponseEntity getBondsData() {
         if (bondCalculator != null) {
-            List<BondCalcOutputData> output = bondCalculator.bondsValuation();
+            List<BondOutputData> output = bondCalculator.bondsValuation();
             if (output != null) {
                 return new ResponseEntity(output, HttpStatus.OK);
             } else {
@@ -91,9 +89,9 @@ public class HelperController {
     //
     @PostMapping("/helper/bondfwd/request")
     @SuppressWarnings("unchecked")
-    public ResponseEntity bondFwdValuation(@RequestBody BondFwdPriceRequest request) {
+    public ResponseEntity bondFwdValuation(@RequestBody PricingRequest request) {
         if (bondForwardCalculator != null) {
-            BondForwardOutputData output = bondForwardCalculator.bondFwdValuation(request);
+            MarketOutputData output = bondForwardCalculator.bondFwdValuation(request);
             return new ResponseEntity(output, HttpStatus.OK);
         } else {
             return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
@@ -102,13 +100,16 @@ public class HelperController {
 
     @PostMapping("/helper/fxfwd/request")
     @SuppressWarnings("unchecked")
-    public ResponseEntity forexFwdValuation(@RequestBody ForexFwdPriceRequest request) {
+    public ResponseEntity forexFwdValuation(@RequestBody PricingRequest request) {
+            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
+/*
         if (fxForwardCalculator != null) {
             ForexFwdOutputData output = fxForwardCalculator.forexFwdValuation(request);
             return new ResponseEntity(output, HttpStatus.OK);
         } else {
             return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
         }
+*/
     }
 
 }

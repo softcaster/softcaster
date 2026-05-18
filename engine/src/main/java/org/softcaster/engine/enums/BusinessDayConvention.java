@@ -58,7 +58,7 @@ public enum BusinessDayConvention implements IdentifiableEnum {
      * @return 
      */
     public LocalDate adjust(LocalDate date, HolidayCalendar calendar) {
-        if (this == UNADJUSTED || calendar.isBusinessDay(date)) {
+        if (calendar == null || this == UNADJUSTED || calendar.isBusinessDay(date)) {
             return date;
         }
 
@@ -78,4 +78,5 @@ public enum BusinessDayConvention implements IdentifiableEnum {
             }
         }
         return adjusted;
-    }}
+    }
+}

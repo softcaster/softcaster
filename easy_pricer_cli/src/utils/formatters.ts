@@ -28,5 +28,5 @@ export const formatDate = (value: Date | string | undefined | null): string => {
     const date = typeof value === 'string' ? new Date(value) : value;
     return new Intl.NumberFormat('it-IT').format(date.getTime());
     // Oppure più semplicemente:
-    return date.toLocaleDateString('it-IT');
+    // return date.toLocaleDateString('it-IT');
 };

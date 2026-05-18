@@ -4,20 +4,11 @@
  */
 package org.softcaster.easy_pricer_srv.calc;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.softcaster.core.data.Calendar;
-import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.CurrencyDAO;
+import org.softcaster.engine.analytics.FxForwardPricer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ph.alephzero.finance.Compounding;
-import ph.alephzero.finance.DayCountBasis;
-import ph.alephzero.finance.ForexFwdPriceRequest;
-import ph.alephzero.finance.products.forward.ForexForward;
-import ph.alephzero.finance.products.forward.ForexFwdInputData;
-import ph.alephzero.finance.products.forward.ForexFwdOutputData;
 
 /**
  *
@@ -30,9 +21,10 @@ public class FxForwardCalculator {
     private CurrencyDAO dao;
 
     @Autowired
-    @Qualifier("forexForward")
-    ForexForward calculator;
+    @Qualifier("fxFwdPricer")
+    private FxForwardPricer fxForwardPricer;
 
+    /*
     public ForexFwdOutputData forexFwdValuation(ForexFwdPriceRequest request) {
 
         ForexFwdOutputData output = null;
@@ -62,5 +54,5 @@ public class FxForwardCalculator {
 
         return output;
     }
-
+*/
 }

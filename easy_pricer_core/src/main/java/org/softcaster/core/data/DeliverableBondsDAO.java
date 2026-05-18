@@ -2,6 +2,7 @@ package org.softcaster.core.data;
 
 import java.util.List;
 import jakarta.annotation.Resource;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,11 @@ public class DeliverableBondsDAO {
         return repository.findByIdDeliverableBonds(idDeliverableBonds);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<DeliverableBonds> findByMasterDataAndIsin(Integer masterData, String isin) {
+        return repository.findByMasterDataAndIsin(masterData, isin); 
+    }
+    
     @Transactional(readOnly = true)
     public List<DeliverableBonds> findAll() {
         return repository.findAll();

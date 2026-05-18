@@ -47,14 +47,25 @@ import org.softcaster.easy_import.beans.Type_of_interest;
 import org.softcaster.easy_import.beans.Type_of_interestDAO;
 import org.softcaster.easy_import.xml.BondLoaderMgr;
 import org.softcaster.easy_import.xml.ItemBond;
+import org.springframework.stereotype.Service;
 
-/**
- *
- * @author ep
- */
+@Service("Bonds") 
 public class BondImportMgr implements IImportMgr {
 
-    private static BondImportMgr _instance = null;
+    public BondImportMgr() {
+
+        if (loader == null) {
+            try {
+                loader = BondLoaderMgr.getInstance();
+                createDAOs();
+                createBeans();
+            } catch (FileNotFoundException | XMLStreamException ex) {
+                String error = "Error creating ImportMgr: " + " [" + ex.getLocalizedMessage() + "]";
+                LoggerMgr.logError(error);
+                loader = null;
+            }
+        }
+    }
 
     // Stringa,in formato JSON,  tornata dalla Banca d'Italia
     private String response = "";
@@ -110,21 +121,6 @@ public class BondImportMgr implements IImportMgr {
         rollConv = new Roll_convention();
         ast = new Accrual_schedule_type();
         frequency = new Frequency();
-    }
-
-    private BondImportMgr() {
-
-        if (loader == null) {
-            try {
-                loader = BondLoaderMgr.getInstance();
-                createDAOs();
-                createBeans();
-            } catch (FileNotFoundException | XMLStreamException ex) {
-                String error = "Error creating ImportMgr: " + " [" + ex.getLocalizedMessage() + "]";
-                LoggerMgr.logError(error);
-                loader = null;
-            }
-        }
     }
 
     private HttpURLConnection getConnection(String _url) throws MalformedURLException, IOException {
@@ -419,12 +415,6 @@ public class BondImportMgr implements IImportMgr {
         LoggerMgr.logInfo("Import terminated");
     }
 
-    public static BondImportMgr getInstance() {
-        if (_instance == null) {
-            _instance = new BondImportMgr();
-        }
-        return _instance;
-    }
 }
 //www.borsaitaliana.it/obbligazioni/it0005273013.pdf
 //www.borsaitaliana.it/obbligazioni/it0005634800.pdf

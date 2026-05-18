@@ -4,22 +4,22 @@
  */
 package org.softcaster.easy_pricer_srv.calc;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.softcaster.commons.utils.NumberUtils;
-import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
+import org.softcaster.easy_pricer_srv.dto.PricingRequest;
+import org.softcaster.engine.analytics.BondForwardPricer;
+import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.dto.BondForwardInputData;
+import org.softcaster.engine.dto.MarketOutputData;
+import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.DaycountBasis;
 //import org.softcaster.marketdataprovider.euronext.EuroNextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ph.alephzero.finance.BondFwdPriceRequest;
-import ph.alephzero.finance.Compounding;
-import ph.alephzero.finance.DayCountBasis;
-import ph.alephzero.finance.products.forward.BondForward;
-import ph.alephzero.finance.products.forward.BondForwardInputData;
-import ph.alephzero.finance.products.forward.BondForwardOutputData;
 
 /**
  *
@@ -32,50 +32,52 @@ public class BondForwardCalculator {
     private SecurityMasterDataDAO smdDAO;
 
     @Autowired
-    @Qualifier("bondForward")
-    private BondForward calculator;
+    @Qualifier("bondFwdPricer")
+    private BondForwardPricer bondForwardPricer;
 
-    public BondForwardOutputData bondFwdValuation(BondFwdPriceRequest request) {
+    public MarketOutputData bondFwdValuation(PricingRequest request) {
 
+        MarketOutputData output = null;
         BondForwardInputData input = new BondForwardInputData();
 
-        // Carico anagrafica sottostante
-        SecurityMasterData smd = smdDAO.findByIsin(request.getIsin());
+        String underlyingIsin = getCTD(request.isin);
+        if (!underlyingIsin.isBlank()) {
+            // Carico anagrafica sottostante
+            SecurityMasterData smd = smdDAO.findByIsin(underlyingIsin);
 
-        input.setDaycount(DayCountBasis.ACT_ACT);
-        input.setMaturityDate(request.getMaturityDate());
+            input.setSpotPrice(request.referencePrice);
+            input.setValuationDate(request.referenceDate.toLocalDate());
+            input.setDaycount(DaycountBasis.ACT_365);
+            // Tasso free-risk
+            input.setDomesticRate(0.1);
+            input.setForeignRate(0.1);
+            input.setMaturityDate(LocalDate.MIN);
+            input.setCompounding(Compounding.COMPOUNDED);
+            input.setConversionFactor(1.);
 
-        if (NumberUtils.isZero(request.getReferencePrice())) {
-            //SEuroNextProvider provider = EuroNextProvider.getInstance();
-            input.setSpotPrice(100./*provider.getBondQuote(smd.getIsin(), REQUEST_TYPE.MIDDLE)*/);
-        } else {
-            input.setSpotPrice(request.getReferencePrice());
-        }
-
-        // Tasso free-risk
-        input.setRate(request.getRepoRate());
-
-        input.setCompounding(Compounding.COMPOUNDED);
-        input.setSettlementDate(CalendarHelper.getNextBusinessDate(request.getReferenceDate(),
-                smd.getCalendar(), smd.getBusinessDays()));
-
-        if (!smd.getCashFlows().isEmpty()) {
-            List<ph.alephzero.finance.cashflows.CashFlowItem> cashFlows = new ArrayList<>();
-            for (CashFlowItem item : smd.getCashFlows()) {
-                ph.alephzero.finance.cashflows.CashFlowItem cashFlowItem = new ph.alephzero.finance.cashflows.CashFlowItem();
-                cashFlowItem.setStart(item.getStartDate());
-                cashFlowItem.setEnd(item.getEnddate());
-                cashFlowItem.setInterest(item.getInterest());
-                cashFlowItem.setAmount(item.getAmount());
-                cashFlowItem.setDiscountFactors(request.getRepoRate());
-                cashFlows.add(cashFlowItem);
+            if (!smd.getCashFlows().isEmpty()) {
+                List<CashFlow> flows = new ArrayList<>();
+                for (org.softcaster.core.data.CashFlowItem item : smd.getCashFlows()) {
+                    CashFlow flow = new CashFlow(
+                            item.getStartDate().toLocalDate(),
+                            item.getEnddate().toLocalDate(),
+                            item.getEnddate().toLocalDate(),
+                            item.getAmount(),
+                            item.getInterest(),
+                            0.
+                    );
+                    flows.add(flow);
+                }
+                input.setUnderliyngCashFlows(flows);
             }
-            input.setUnderliyngCashFlows(cashFlows);
+
+            //BondForwardOutputData output = calculator.valuation(input);
         }
-
-        BondForwardOutputData output = calculator.valuation(input);
-
         return output;
+    }
+
+    private String getCTD(String in) {
+        return "";
     }
 
 }
