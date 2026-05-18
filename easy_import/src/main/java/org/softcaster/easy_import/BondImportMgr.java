@@ -341,7 +341,11 @@ public class BondImportMgr implements IImportMgr {
             // Lista Bond 
             List<String> items = getIsinList();
             int progress = items.size() / 10;
-            progress = 100 / progress;
+            if(progress > 0)
+                progress = 100 / progress;
+            else
+                progress = items.size();
+            
             int cnt = 1;
             for (String item : items) {
                 isin = item;
@@ -361,10 +365,13 @@ public class BondImportMgr implements IImportMgr {
         } catch (FileNotFoundException | XMLStreamException ex) {
             String error = "Error importing Bond: " + isin + " [" + ex.getLocalizedMessage() + "]";
             LoggerMgr.logError(error);
-        } catch (IOException ex) {
+            progressInfo.showError(error);
+        } catch (java.lang.ArithmeticException | IOException ex) {
             String error = "Error importing Bond: " + isin + " [" + ex.getLocalizedMessage() + "]";
             LoggerMgr.logError(error);
+            progressInfo.showError(error);
         } finally {
+            progressInfo.updateProgress("Import terminated successfully", 100);
             terminate();
         }
 
