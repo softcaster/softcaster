@@ -16,7 +16,7 @@ public class FutureMasterDataRestController {
     @Autowired
     private FutureMasterDataDAO dao;
 
-    @GetMapping("/future_master_data/r0")
+    @GetMapping("/future_master_data/r01")
     public ResponseEntity findAll() {
         List<FutureMasterData> listaFutureMasterData = dao.findAll();
         if (listaFutureMasterData == null) {
@@ -25,7 +25,7 @@ public class FutureMasterDataRestController {
         return new ResponseEntity(listaFutureMasterData, HttpStatus.OK);
     }
 
-    @GetMapping("/future_master_data/r1/{id}")
+    @GetMapping("/future_master_data/r02/{id}")
     public ResponseEntity findByIdMasterData(@PathVariable("id") Integer idMasterData) {
         FutureMasterData futureMasterData = dao.findByIdMasterData(idMasterData);
         if (futureMasterData == null) {

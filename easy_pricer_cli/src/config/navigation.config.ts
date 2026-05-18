@@ -9,6 +9,7 @@ export const PlaceholderView = lazy(() => import('../components/views/Placeholde
 export const BondView = lazy(() => import('../components/views/BondView.tsx'));
 export const XNoteView = lazy(() => import('../components/views/XNoteView'));
 export const BondPView = lazy(() => import('../components/views/BondPView'));
+export const BondFutureView = lazy(() => import('../components/views/BondFutureView'));
 
 export const navigationNodes: TreeNode[] = [
   {

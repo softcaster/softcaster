@@ -239,8 +239,7 @@ export interface SettlementType {
 //----------------------------------------------------------------------
 // FutureMasterData
 //----------------------------------------------------------------------
-export interface FutureMasterData {
-    idMasterData: number;
+export interface FutureMasterData extends MasterData {
     isin: string;
     settlementType: SettlementType;
     exchangeContractCode: string;
@@ -249,11 +248,11 @@ export interface FutureMasterData {
 //----------------------------------------------------------------------
 // BondFutureMasterData
 //----------------------------------------------------------------------
-export interface BondFutureMasterData {
-    idMasterData: number;
+export interface BondFutureMasterData extends FutureMasterData {
     contractValue: number;
     tickSize: number;
     initialMargin: number;
+    deliverables: DeliverableBonds[];
 }
 
 //----------------------------------------------------------------------
@@ -261,9 +260,9 @@ export interface BondFutureMasterData {
 //----------------------------------------------------------------------
 export interface DeliverableBonds {
     idDeliverableBonds: number;
-    masterData: BondFutureMasterData;
+    masterData: number; // id bond future
     expirationDate: Date;
-    isin: string;
+    isin: string; // isin sottostante
     couponRate: number;
     bondMaturity: Date;
     bondCf: number;

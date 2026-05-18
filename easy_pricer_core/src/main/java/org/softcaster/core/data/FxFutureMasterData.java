@@ -8,7 +8,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.springframework.data.domain.Sort;
 
 @Entity
 @Table(name = "fx_future_master_data")
