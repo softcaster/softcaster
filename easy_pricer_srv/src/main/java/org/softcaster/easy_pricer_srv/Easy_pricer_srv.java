@@ -37,7 +37,7 @@ public class Easy_pricer_srv {
         SpringApplication.run(Easy_pricer_srv.class, args);
         System.out.println("===========================================");
         System.out.println("   EASY PRICER SRV STARTED SUCCESSFULLY    ");
-        System.out.println("   Endpoint: http://localhost:8080         ");
+        System.out.println("   Endpoint: http://localhost:8080/api/v1  ");
         System.out.println("===========================================");
     }
 }

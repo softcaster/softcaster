@@ -47,11 +47,13 @@ public class BondCalculator {
             SecurityMasterData securityMasterData = smdDAO.findByIsin(request.isin);
             if (securityMasterData != null) {
                 BondInputData input = new BondInputData();
-                input.setValuationDate(LocalDate.now()/*CalendarHelper.getNextBusinessDate(request.referenceDate,
-                        securityMasterData.getCalendar(), securityMasterData.getBusinessDays())*/);
+                Calendar calendar = new Calendar(securityMasterData.getCurrency());
+                LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, securityMasterData.getBusinessDays());
+                input.setValuationDate(valuationDate);
                 input.setSpotPrice(request.referencePrice);
                 input.setFrequency(Frequency.fromCode(securityMasterData.getFrequency().getCode()));
-                input.setDaycount(DaycountBasis.fromCode(securityMasterData.getDaycount().getCode()));
+                //input.setDaycount(DaycountBasis.fromCode(securityMasterData.getDaycount().getCode(
+                input.setDaycount(DaycountBasis.ACT_365);
                 input.setCompounding(Compounding.COMPOUNDED);
 
                 //dbProvider.setYcCode(request.getYieldCurve());
