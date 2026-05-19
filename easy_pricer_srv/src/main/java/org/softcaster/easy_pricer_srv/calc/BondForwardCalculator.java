@@ -71,9 +71,9 @@ public class BondForwardCalculator {
 
             output = bondForwardPricer.calculateForwardPrice(input);
         }
-        
+
         BondFwdPricingResponse response = null;
-        if(output != null) {
+        if (output != null) {
             response = new BondFwdPricingResponse();
             response.theoreticalPrice = output.getPrice();
         }
@@ -94,26 +94,26 @@ public class BondForwardCalculator {
             List<CashFlow> underlyingCashFlow = null;
             for (DeliverableBonds deliverable : bfmd.getDeliverables()) {
                 smd = smdDAO.findByIsin(deliverable.getIsin());
-                
+
                 // Titolo non disponibile in anagrafica
-                if(smd == null)
+                if (smd == null) {
                     continue;
-                
+                }
+
                 // 1. Recupero prezzo CLEAN spot dal provider
                 InstrumentQuote instrumentQuote = instrumentQuoteDAO.findByMasterDataCode(deliverable.getIsin());
                 // Prezzo non disponibile
-                if(instrumentQuote == null)
+                if (instrumentQuote == null) {
                     continue;
+                }
                 double cleanSpotPrice = instrumentQuote.getBid();
 
-                System.out.println(deliverable.getIsin() + "\t" + cleanSpotPrice);
-                
                 // Data valuta
                 LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, smd.getBusinessDays());
-                
+
                 // Cash flow sottostante
                 underlyingCashFlow = Utils.covertCashFlow(smd.getCashFlows());
-                
+
                 // Calcolo dei ratei usando i metodi della classe BondForwardPricer
                 DaycountBasis accrualDaycount = Utils.covertDaycount(smd.getAccrualDaycount());
                 Frequency frequency = Utils.covertFrequency(smd.getFrequency());
@@ -148,6 +148,11 @@ public class BondForwardCalculator {
 
                 // NET BASIS esatta
                 double netBasis = dirtySpotPrice + carryCost - capitalizedCoupons - invoicePrice;
+
+                // Calcolo dell'Implied Repo Rate (IRR)
+                double totalReturn = (invoicePrice + capitalizedCoupons) / dirtySpotPrice;
+                double irr = (totalReturn - 1.0) / maturityTenor;
+                System.out.println(deliverable.getIsin() + "\t" + cleanSpotPrice + "\t" + netBasis + "\t" + (irr*100.) + "%");
 
                 if (isFirst) {
                     lastDelta = netBasis;
