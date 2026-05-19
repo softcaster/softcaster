@@ -18,6 +18,7 @@ import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.InstrumentQuote;
+import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
 import org.softcaster.easy_pricer_mds.dialog.BondIQDlg;
@@ -176,6 +177,18 @@ public class BondPanel extends FndtAbstactPanel {
 
     @Override
     public void downloadAction() {
+        InstrumentQuoteDAO dao = mDSFacade.getInstrumentQuoteDAO();
+        if (dao != null) {
+            BondBean bondBean = null;
+            BondTableModel model = (BondTableModel) bondTable.getModel();
+            for (int i = 1; i < model.getRowCount(); i++) {
+                bondBean = (BondBean) model.getElementAt(i);
+                if (bondBean != null) {
+                    dao.saveOrUpdate(bondBean.getInstrumentQuote());
+                }
+            }
+        }
+
     }
 
     @Override

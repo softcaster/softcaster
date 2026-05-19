@@ -34,6 +34,7 @@ class CTDData {
     public LocalDate maturity = null;
     public DaycountBasis accrualDaycount = null;
     public Frequency frequency = null;
+    public double cleanSpotPrice = 0;
 }
 
 @Service("bondForwardCalculator")
@@ -58,7 +59,7 @@ public class BondForwardCalculator {
         if (ctdData != null && !ctdData.underlyingIsin.isBlank()) {
 
             BondForwardInputData input = new BondForwardInputData();
-            input.setSpotPrice(request.referencePrice);
+            input.setSpotPrice(ctdData.cleanSpotPrice);
             input.setValuationDate(request.referenceDate.toLocalDate());
             input.setDaycount(ctdData.accrualDaycount);
             input.setDomesticRate(request.domesticRate);
@@ -105,6 +106,8 @@ public class BondForwardCalculator {
                     continue;
                 double cleanSpotPrice = instrumentQuote.getBid();
 
+                System.out.println(deliverable.getIsin() + "\t" + cleanSpotPrice);
+                
                 // Data valuta
                 LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, smd.getBusinessDays());
                 
@@ -163,6 +166,7 @@ public class BondForwardCalculator {
                     ctdData.accrualDaycount = accrualDaycount;
                     ctdData.frequency = frequency;
                     ctdData.maturity = bfmd.getMaturityDate().toLocalDate();
+                    ctdData.cleanSpotPrice = cleanSpotPrice;
                     updateCtdData = false;
                 }
             }

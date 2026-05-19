@@ -235,6 +235,11 @@ public class JMarketDataService extends javax.swing.JFrame {
         btnSave.setFocusable(false);
         btnSave.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnSave.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
         toolBar.add(btnSave);
         toolBar.add(jSeparator3);
 
@@ -297,6 +302,10 @@ public class JMarketDataService extends javax.swing.JFrame {
     private void btnCalcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalcActionPerformed
         calculateAction();
     }//GEN-LAST:event_btnCalcActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        saveAction();
+    }//GEN-LAST:event_btnSaveActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCalc;
@@ -383,5 +392,11 @@ public class JMarketDataService extends javax.swing.JFrame {
         }
     }
 
+    private void saveAction() {
+        FndtAbstactPanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.downloadAction();
+        }
+    }
 
 }
