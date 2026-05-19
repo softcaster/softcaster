@@ -112,11 +112,11 @@ public class BondForwardCalculator {
                 LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, smd.getBusinessDays());
 
                 // Cash flow sottostante
-                underlyingCashFlow = Utils.covertCashFlow(smd.getCashFlows());
+                underlyingCashFlow = Utils.convertCashFlow(smd.getCashFlows());
 
                 // Calcolo dei ratei usando i metodi della classe BondForwardPricer
-                DaycountBasis accrualDaycount = Utils.covertDaycount(smd.getAccrualDaycount());
-                Frequency frequency = Utils.covertFrequency(smd.getFrequency());
+                DaycountBasis accrualDaycount = Utils.convertDaycount(smd.getAccrualDaycount());
+                Frequency frequency = Utils.convertFrequency(smd.getFrequency());
                 double spotAccrual = bondForwardPricer.calculateAccrualAtDate(underlyingCashFlow,
                         valuationDate,
                         accrualDaycount,
@@ -132,7 +132,7 @@ public class BondForwardCalculator {
                 double invoicePrice = (request.referencePrice * deliverable.getBondCf()) + deliveryAccrual;
 
                 // Calcolo del Cost of Carry (Interessi di finanziamento sul prezzo dirty spot)
-                DaycountBasis fwdDaycount = Utils.covertDaycount(bfmd.getDaycount());
+                DaycountBasis fwdDaycount = Utils.convertDaycount(bfmd.getDaycount());
                 double maturityTenor = fwdDaycount.calculate(valuationDate, bfmd.getMaturityDate().toLocalDate(), null);
                 double carryCost = dirtySpotPrice * request.domesticRate * maturityTenor;
 
@@ -143,7 +143,7 @@ public class BondForwardCalculator {
                         bfmd.getMaturityDate().toLocalDate(),
                         request.domesticRate,
                         fwdDaycount,
-                        Utils.covertCompounding("COMPOUNDED"),
+                        Utils.convertCompounding("COMPOUNDED"),
                         frequency);
 
                 // NET BASIS esatta
@@ -152,7 +152,7 @@ public class BondForwardCalculator {
                 // Calcolo dell'Implied Repo Rate (IRR)
                 double totalReturn = (invoicePrice + capitalizedCoupons) / dirtySpotPrice;
                 double irr = (totalReturn - 1.0) / maturityTenor;
-                System.out.println(deliverable.getIsin() + "\t" + cleanSpotPrice + "\t" + netBasis + "\t" + (irr*100.) + "%");
+                //System.out.println(deliverable.getIsin() + "\t" + cleanSpotPrice + "\t" + netBasis + "\t" + (irr * 100.) + "%");
 
                 if (isFirst) {
                     lastDelta = netBasis;

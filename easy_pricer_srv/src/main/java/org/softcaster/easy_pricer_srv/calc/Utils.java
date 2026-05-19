@@ -19,7 +19,7 @@ import org.softcaster.engine.enums.Frequency;
  */
 public class Utils {
 
-    public static List<CashFlow> covertCashFlow(List<CashFlowItem> dbCashFlow) {
+    public static List<CashFlow> convertCashFlow(List<CashFlowItem> dbCashFlow) {
         List<CashFlow> flows = new ArrayList<>();
 
         for (org.softcaster.core.data.CashFlowItem item : dbCashFlow) {
@@ -36,15 +36,15 @@ public class Utils {
         return flows;
     }
 
-    public static DaycountBasis covertDaycount(Daycount dbDaycount) {
+    public static DaycountBasis convertDaycount(Daycount dbDaycount) {
         return DaycountBasis.fromCode(dbDaycount.getCode());
     }
 
-    public static Frequency covertFrequency(org.softcaster.core.data.Frequency dbFrequency) {
+    public static Frequency convertFrequency(org.softcaster.core.data.Frequency dbFrequency) {
         return Frequency.fromCode(dbFrequency.getCode());
     }
 
-    public static Compounding covertCompounding(String compounding) {
+    public static Compounding convertCompounding(String compounding) {
         return Compounding.fromCode(compounding);
     }
 

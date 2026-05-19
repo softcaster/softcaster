@@ -87,6 +87,6 @@ public enum Frequency implements IdentifiableEnum {
         }
 
         // Lancia un'eccezione se il codice non corrisponde a nessun elemento
-        throw new IllegalArgumentException("Invalid DaycountBasis code: " + code);
+        throw new IllegalArgumentException("Invalid Frequency code: " + code);
     }
 }

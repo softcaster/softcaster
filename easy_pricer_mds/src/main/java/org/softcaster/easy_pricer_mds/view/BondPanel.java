@@ -177,18 +177,52 @@ public class BondPanel extends FndtAbstactPanel {
 
     @Override
     public void downloadAction() {
-        InstrumentQuoteDAO dao = mDSFacade.getInstrumentQuoteDAO();
-        if (dao != null) {
-            BondBean bondBean = null;
-            BondTableModel model = (BondTableModel) bondTable.getModel();
-            for (int i = 1; i < model.getRowCount(); i++) {
-                bondBean = (BondBean) model.getElementAt(i);
-                if (bondBean != null) {
-                    dao.saveOrUpdate(bondBean.getInstrumentQuote());
+        // 1. Crea la dialog di attesa
+        final JDialog loadingDialog = createLoadingDialog("Saving bond prices ... Please wait.");
+
+        // 2. Crea lo SwingWorker
+        // I parametri generici <Void, Void> indicano: <Tipo di ritorno finale, Tipo di dati intermedi>
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                // Questo metodo gira su un THREAD SEPARATO in background.
+                InstrumentQuoteDAO dao = mDSFacade.getInstrumentQuoteDAO();
+                if (dao != null) {
+                    BondBean bondBean = null;
+                    BondTableModel model = (BondTableModel) bondTable.getModel();
+                    for (int i = 1; i < model.getRowCount(); i++) {
+                        bondBean = (BondBean) model.getElementAt(i);
+                        if (bondBean != null) {
+                            dao.saveOrUpdate(bondBean.getInstrumentQuote());
+                        }
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // Questo metodo viene eseguito sull'EDT (Thread Grafico) alla fine del download.
+                try {
+                    // Controlla se ci sono state eccezioni durante il download
+                    get();
+                } catch (InterruptedException | ExecutionException e) {
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                    java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(BondPanel.this);
+                    javax.swing.JOptionPane.showMessageDialog(parentWindow,
+                            "Error during download: " + e.getLocalizedMessage(),
+                            "Download Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    // Chiude la dialog e sblocca la Card del pannello
+                    loadingDialog.dispose();
                 }
             }
-        }
-
+        };
+        // 3. Avvia il thread in background
+        worker.execute();
+        // 4. Mostra la dialog (bloccherà solo l'interfaccia, non il thread in background)
+        loadingDialog.setVisible(true);
     }
 
     @Override
