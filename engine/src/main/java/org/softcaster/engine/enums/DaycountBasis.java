@@ -81,6 +81,15 @@ public enum DaycountBasis implements IdentifiableEnum {
         return values[ordinal];
     }
 
+    public static DaycountBasis fromId(int id) {
+        for (DaycountBasis basis : DaycountBasis.values()) {
+            if (basis.getId() == id) {
+                return basis;
+            }
+        }
+        throw new IllegalArgumentException("Invalid DaycountBasis ID: " + id);
+    }
+
     public static DaycountBasis fromCode(String code) {
         if (code == null) {
             throw new IllegalArgumentException("Code cannot be null");

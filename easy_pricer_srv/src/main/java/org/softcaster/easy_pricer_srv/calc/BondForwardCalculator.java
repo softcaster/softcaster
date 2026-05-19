@@ -149,10 +149,20 @@ public class BondForwardCalculator {
                 // NET BASIS esatta
                 double netBasis = dirtySpotPrice + carryCost - capitalizedCoupons - invoicePrice;
 
-                // Calcolo dell'Implied Repo Rate (IRR)
-                double totalReturn = (invoicePrice + capitalizedCoupons) / dirtySpotPrice;
-                double irr = (totalReturn - 1.0) / maturityTenor;
-                //System.out.println(deliverable.getIsin() + "\t" + cleanSpotPrice + "\t" + netBasis + "\t" + (irr * 100.) + "%");
+                double moneyMarketTenor = DaycountBasis.ACT_360.calculate(valuationDate, bfmd.getMaturityDate().toLocalDate(), null);
+                if (moneyMarketTenor > 0.0) {
+                    // 2. Calcolo del rendimento totale del periodo (Invoice + Cedole fisiche / Dirty Spot)
+                    double totalReturn = (invoicePrice + capitalizedCoupons) / dirtySpotPrice;
+
+                    // 3. Annualizzazione corretta dividendo per la frazione d'anno ACT/360
+                    double irr = (totalReturn - 1.0) / moneyMarketTenor;
+
+                    // Stampa i risultati corretti ed eliminando le distorsioni
+                    System.out.println("ISIN: " + deliverable.getIsin()
+                            + " Clean Price: " + cleanSpotPrice
+                            + " -> Net Basis: " + netBasis
+                            + " | IRR Normalizzato: " + String.format("%.4f", irr * 100) + "%");
+                }
 
                 if (isFirst) {
                     lastDelta = netBasis;
