@@ -10,10 +10,10 @@ import org.softcaster.easy_pricer_srv.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_srv.calc.FxForwardCalculator;
 import org.softcaster.easy_pricer_srv.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_srv.dto.ForwardPricingRequest;
 import org.softcaster.easy_pricer_srv.dto.PricingRequest;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.softcaster.engine.dto.BondOutputData;
-import org.softcaster.engine.dto.MarketOutputData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -89,13 +89,16 @@ public class HelperController {
     //
     @PostMapping("/helper/bondfwd/request")
     @SuppressWarnings("unchecked")
-    public ResponseEntity bondFwdValuation(@RequestBody PricingRequest request) {
+    public ResponseEntity bondFwdValuation(@RequestBody ForwardPricingRequest request) {
+            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
+            /*
         if (bondForwardCalculator != null) {
             MarketOutputData output = bondForwardCalculator.bondFwdValuation(request);
             return new ResponseEntity(output, HttpStatus.OK);
         } else {
             return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
         }
+            */
     }
 
     @PostMapping("/helper/fxfwd/request")

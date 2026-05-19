@@ -20,4 +20,6 @@ public interface InstrumentQuoteRepository extends JpaRepository<InstrumentQuote
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = "DELETE FROM instrument_quote_hist WHERE master_data = :id", nativeQuery = true)
     public void deleteInstrumentQuoteHist(@Param("id") Integer masterData);
+
+    public InstrumentQuote findByMasterDataCode(String code);
 }

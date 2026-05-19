@@ -1,0 +1,15 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package org.softcaster.easy_pricer_srv.dto;
+
+/**
+ *
+ * @author ep
+ */
+public class ForwardPricingRequest extends PricingRequest {
+    
+    public double domesticRate = 0.;
+    public double foreignRate = 0.;
+}

@@ -75,7 +75,7 @@ public class DeliverableBondsImportMgr implements IImportMgr {
             int current = 0;
 
             int idMasterData = 0;
-            for (String[] s : csvImport.getBuffer()) {
+            for (String[] s : rows) {
                 if (s[1].isEmpty()) {
                     System.out.println("Error reading line ");
                     continue;

@@ -64,6 +64,10 @@ public class MasterData implements Serializable {
     private Daycount daycount;
 
     @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "accrual_daycount", nullable = true)
+    private Daycount accrualDaycount;
+
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "frequency", nullable = true)
     private Frequency frequency;
 
@@ -330,5 +334,19 @@ public class MasterData implements Serializable {
      */
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    /**
+     * @return the accrualDaycount
+     */
+    public Daycount getAccrualDaycount() {
+        return accrualDaycount;
+    }
+
+    /**
+     * @param accrualDaycount the accrualDaycount to set
+     */
+    public void setAccrualDaycount(Daycount accrualDaycount) {
+        this.accrualDaycount = accrualDaycount;
     }
 }

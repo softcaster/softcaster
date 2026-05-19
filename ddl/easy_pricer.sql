@@ -290,6 +290,7 @@ CREATE TABLE master_data
     , type_of_interest INTEGER NOT NULL
     , form INTEGER NOT NULL
     , daycount INTEGER NOT NULL
+    , accrual_daycount INTEGER NOT NULL
     , frequency INTEGER NOT NULL
     , roll_convention INTEGER NOT NULL DEFAULT 0
     , accrual_schedule_type INTEGER NOT NULL DEFAULT 0
@@ -301,6 +302,8 @@ CREATE TABLE master_data
     , amortization_schedule INTEGER NOT NULL 
     , PRIMARY KEY (id_master_data)
     , CONSTRAINT fk_daycount FOREIGN KEY (daycount)
+        REFERENCES daycount(id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_accrual_daycount FOREIGN KEY (accrual_daycount)
         REFERENCES daycount(id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION
     , CONSTRAINT fk_frequency FOREIGN KEY (frequency)
         REFERENCES frequency(id_frequency) ON DELETE NO ACTION ON UPDATE NO ACTION

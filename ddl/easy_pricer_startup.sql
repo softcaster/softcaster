@@ -9,7 +9,7 @@ INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'
 INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'EUR_30_360','30/360 EUR');
 INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_360','Actual/360');
 INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_365','Actual/365');
-INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_ACT','Actual/Actual');
+INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_ACT_ICMA','Actual/Actual');
 
 -- ----------------------------------------------------------------------------
 -- roll_convention

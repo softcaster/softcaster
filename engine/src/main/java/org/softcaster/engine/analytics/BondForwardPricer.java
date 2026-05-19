@@ -29,6 +29,7 @@ public class BondForwardPricer {
         double longRate = input.getForeignRate();
         List<CashFlow> underliyngCashFlows = input.getUnderliyngCashFlows();
         DaycountBasis daycount = input.getDaycount();
+        Frequency frequency = input.getFrequency();
         Compounding compounding = input.getCompounding();
         double cleanSpotPrice = input.getSpotPrice();
         double cf = input.getConversionFactor();
@@ -41,7 +42,7 @@ public class BondForwardPricer {
             longRate,
             daycount,
             compounding,
-            null,
+            frequency,
             cleanSpotPrice,
             cf);                
 

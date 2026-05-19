@@ -47,7 +47,7 @@ public enum Compounding implements IdentifiableEnum {
     public String getDescription() {
         return description;
     }
-    
+
     public static Compounding fromOrdinal(int ordinal) {
         // Recupera l'array di tutti i valori dell'enum
         Compounding[] values = Compounding.values();
@@ -59,5 +59,22 @@ public enum Compounding implements IdentifiableEnum {
 
         // Restituisce l'elemento all'indice specificato
         return values[ordinal];
+    }
+
+    public static Compounding fromCode(String code) {
+        if (code == null) {
+            throw new IllegalArgumentException("Code cannot be null");
+        }
+
+        // Scorre tutti i valori dell'enum
+        for (Compounding c : Compounding.values()) {
+            // Usa equalsIgnoreCase se vuoi ignorare maiuscole/minuscole, altrimenti usa .equals()
+            if (c.getCode().equals(code)) {
+                return c;
+            }
+        }
+
+        // Lancia un'eccezione se il codice non corrisponde a nessun elemento
+        throw new IllegalArgumentException("Invalid DaycountBasis code: " + code);
     }
 }

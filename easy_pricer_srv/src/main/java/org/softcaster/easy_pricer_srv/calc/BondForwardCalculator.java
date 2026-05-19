@@ -5,79 +5,170 @@
 package org.softcaster.easy_pricer_srv.calc;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import org.softcaster.core.data.BondFutureMasterData;
+import org.softcaster.core.data.BondFutureMasterDataDAO;
+import org.softcaster.core.data.DeliverableBonds;
+import org.softcaster.core.data.InstrumentQuote;
+import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
-import org.softcaster.easy_pricer_srv.dto.PricingRequest;
+import org.softcaster.easy_pricer_srv.dto.BondFwdPricingResponse;
+import org.softcaster.easy_pricer_srv.dto.ForwardPricingRequest;
 import org.softcaster.engine.analytics.BondForwardPricer;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.dto.BondForwardInputData;
 import org.softcaster.engine.dto.MarketOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
-//import org.softcaster.marketdataprovider.euronext.EuroNextProvider;
+import org.softcaster.engine.enums.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-/**
- *
- * @author ep
- */
+class CTDData {
+
+    public String underlyingIsin = "";
+    public List<CashFlow> underliyngCashFlow = null;
+    public double cf = 0;
+    public LocalDate maturity = null;
+    public DaycountBasis accrualDaycount = null;
+    public Frequency frequency = null;
+}
+
 @Service("bondForwardCalculator")
 public class BondForwardCalculator {
 
     @Autowired
     private SecurityMasterDataDAO smdDAO;
+    @Autowired
+    private BondFutureMasterDataDAO bondFutureMasterDataDAO;
+    @Autowired
+    private InstrumentQuoteDAO instrumentQuoteDAO;
 
     @Autowired
     @Qualifier("bondFwdPricer")
     private BondForwardPricer bondForwardPricer;
 
-    public MarketOutputData bondFwdValuation(PricingRequest request) {
+    public BondFwdPricingResponse bondFwdValuation(ForwardPricingRequest request) {
 
         MarketOutputData output = null;
-        BondForwardInputData input = new BondForwardInputData();
 
-        String underlyingIsin = getCTD(request.isin);
-        if (!underlyingIsin.isBlank()) {
-            // Carico anagrafica sottostante
-            SecurityMasterData smd = smdDAO.findByIsin(underlyingIsin);
+        CTDData ctdData = getCTD(request);
+        if (ctdData != null && !ctdData.underlyingIsin.isBlank()) {
 
+            BondForwardInputData input = new BondForwardInputData();
             input.setSpotPrice(request.referencePrice);
             input.setValuationDate(request.referenceDate.toLocalDate());
-            input.setDaycount(DaycountBasis.ACT_365);
-            // Tasso free-risk
-            input.setDomesticRate(0.1);
-            input.setForeignRate(0.1);
-            input.setMaturityDate(LocalDate.MIN);
+            input.setDaycount(ctdData.accrualDaycount);
+            input.setDomesticRate(request.domesticRate);
+            input.setForeignRate(request.foreignRate);
+            input.setMaturityDate(ctdData.maturity);
             input.setCompounding(Compounding.COMPOUNDED);
-            input.setConversionFactor(1.);
+            input.setConversionFactor(ctdData.cf);
+            input.setUnderliyngCashFlows(ctdData.underliyngCashFlow);
 
-            if (!smd.getCashFlows().isEmpty()) {
-                List<CashFlow> flows = new ArrayList<>();
-                for (org.softcaster.core.data.CashFlowItem item : smd.getCashFlows()) {
-                    CashFlow flow = new CashFlow(
-                            item.getStartDate().toLocalDate(),
-                            item.getEnddate().toLocalDate(),
-                            item.getEnddate().toLocalDate(),
-                            item.getAmount(),
-                            item.getInterest(),
-                            0.
-                    );
-                    flows.add(flow);
-                }
-                input.setUnderliyngCashFlows(flows);
-            }
-
-            //BondForwardOutputData output = calculator.valuation(input);
+            output = bondForwardPricer.calculateForwardPrice(input);
         }
-        return output;
+        
+        BondFwdPricingResponse response = null;
+        if(output != null) {
+            response = new BondFwdPricingResponse();
+            response.theoreticalPrice = output.getPrice();
+        }
+        return response;
     }
 
-    private String getCTD(String in) {
-        return "";
+    private CTDData getCTD(ForwardPricingRequest request) {
+
+        CTDData ctdData = null;
+        BondFutureMasterData bfmd = bondFutureMasterDataDAO.findByIsin(request.isin);
+        if (bfmd != null) {
+            Calendar calendar = new Calendar(bfmd.getCurrency());
+            SecurityMasterData smd = null;
+            ctdData = new CTDData();
+            boolean updateCtdData = true;
+            boolean isFirst = true;
+            double lastDelta = 0.;
+            List<CashFlow> underlyingCashFlow = null;
+            for (DeliverableBonds deliverable : bfmd.getDeliverables()) {
+                smd = smdDAO.findByIsin(deliverable.getIsin());
+                
+                // Titolo non disponibile in anagrafica
+                if(smd == null)
+                    continue;
+                
+                // 1. Recupero prezzo CLEAN spot dal provider
+                InstrumentQuote instrumentQuote = instrumentQuoteDAO.findByMasterDataCode(deliverable.getIsin());
+                // Prezzo non disponibile
+                if(instrumentQuote == null)
+                    continue;
+                double cleanSpotPrice = instrumentQuote.getBid();
+
+                // Data valuta
+                LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, smd.getBusinessDays());
+                
+                // Cash flow sottostante
+                underlyingCashFlow = Utils.covertCashFlow(smd.getCashFlows());
+                
+                // Calcolo dei ratei usando i metodi della classe BondForwardPricer
+                DaycountBasis accrualDaycount = Utils.covertDaycount(smd.getAccrualDaycount());
+                Frequency frequency = Utils.covertFrequency(smd.getFrequency());
+                double spotAccrual = bondForwardPricer.calculateAccrualAtDate(underlyingCashFlow,
+                        valuationDate,
+                        accrualDaycount,
+                        frequency);
+
+                double deliveryAccrual = bondForwardPricer.calculateAccrualAtDate(underlyingCashFlow,
+                        bfmd.getMaturityDate().toLocalDate(),
+                        accrualDaycount,
+                        frequency);
+
+                // Trasformazione in prezzi DIRTY (Prezzi effettivi di scambio monetario)
+                double dirtySpotPrice = cleanSpotPrice + spotAccrual;
+                double invoicePrice = (request.referencePrice * deliverable.getBondCf()) + deliveryAccrual;
+
+                // Calcolo del Cost of Carry (Interessi di finanziamento sul prezzo dirty spot)
+                DaycountBasis fwdDaycount = Utils.covertDaycount(bfmd.getDaycount());
+                double maturityTenor = fwdDaycount.calculate(valuationDate, bfmd.getMaturityDate().toLocalDate(), null);
+                double carryCost = dirtySpotPrice * request.domesticRate * maturityTenor;
+
+                // Calcolo delle eventuali cedole intermedie incassate e capitalizzate
+                double capitalizedCoupons = bondForwardPricer.getCapitalizedIntermediateCoupons(underlyingCashFlow,
+                        valuationDate,
+                        request.domesticRate,
+                        bfmd.getMaturityDate().toLocalDate(),
+                        request.domesticRate,
+                        fwdDaycount,
+                        Utils.covertCompounding("COMPOUNDED"),
+                        frequency);
+
+                // NET BASIS esatta
+                double netBasis = dirtySpotPrice + carryCost - capitalizedCoupons - invoicePrice;
+
+                if (isFirst) {
+                    lastDelta = netBasis;
+                    isFirst = false;
+                } else {
+                    // Il CTD è il titolo che MINIMIZZA la Net Basis (ovvero il valore più basso)
+                    if (netBasis < lastDelta) {
+                        lastDelta = netBasis;
+                        updateCtdData = true;
+                    }
+                }
+                if (updateCtdData) {
+                    ctdData.underlyingIsin = deliverable.getIsin();
+                    ctdData.cf = deliverable.getBondCf();
+                    ctdData.underliyngCashFlow = underlyingCashFlow;
+                    ctdData.accrualDaycount = accrualDaycount;
+                    ctdData.frequency = frequency;
+                    ctdData.maturity = bfmd.getMaturityDate().toLocalDate();
+                    updateCtdData = false;
+                }
+            }
+        }
+
+        return ctdData;
     }
 
 }

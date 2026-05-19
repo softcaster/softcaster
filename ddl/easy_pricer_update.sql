@@ -23,11 +23,11 @@ ALTER TABLE financial_txn OWNER TO easypricer;
 ALTER TABLE financial_txn RENAME COLUMN id_finacial_txn TO id_financial_txn;
 ALTER SEQUENCE finacial_txn_s RENAME TO financial_txn_s;
 
-ALTER TABLE financial_txn ADD COLUMN ref_id INTEGER;
+ALTER TABLE master_data ADD COLUMN accrual_daycount INTEGER;
 -- 2. Popola la colonna con i valori esistenti
-UPDATE financial_txn SET ref_id = id_financial_txn;
+UPDATE master_data SET accrual_daycount = (SELECT id_daycount FROM daycount WHERE code='ACT_365');
 -- 3. Rende la colonna obbligatoria per il futuro
-ALTER TABLE financial_txn ALTER COLUMN ref_id SET NOT NULL;
+ALTER TABLE master_data ALTER COLUMN accrual_daycount SET NOT NULL;
 
 ALTER TABLE instrument_quote ADD COLUMN quote provider VARCHAR(50) NOT NULL DEFAULT='EuroNextProvider';
 UPDATE instrument_quote 

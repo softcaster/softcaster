@@ -7,12 +7,14 @@ package org.softcaster.engine.dto;
 import java.time.LocalDate;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Frequency;
 
 public abstract class MarketInputData implements IMarketInputData{
 
     private double spotPrice;      // Prezzo attuale (Cambio FX, Stock Price o Bond Clean Price)
     private LocalDate valuationDate; // Data "As-of"
     private DaycountBasis daycount;
+    private Frequency Frequency; // Necessaria se daycount ACT_ACT_ICMA
     private Compounding compounding;
 
     /**
@@ -69,6 +71,20 @@ public abstract class MarketInputData implements IMarketInputData{
      */
     public void setCompounding(Compounding compounding) {
         this.compounding = compounding;
+    }
+
+    /**
+     * @return the Frequency
+     */
+    public Frequency getFrequency() {
+        return Frequency;
+    }
+
+    /**
+     * @param Frequency the Frequency to set
+     */
+    public void setFrequency(Frequency Frequency) {
+        this.Frequency = Frequency;
     }
     
 }
