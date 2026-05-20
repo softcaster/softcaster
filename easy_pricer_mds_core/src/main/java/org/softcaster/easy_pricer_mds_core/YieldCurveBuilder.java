@@ -32,6 +32,16 @@ public class YieldCurveBuilder {
     @Autowired
     DaycountDAO daycountDAO;
 
+    public org.softcaster.engine.curve.YieldCurve buildYieldCurve(String idCurve, List<CurveNodeInput> newInputs, LocalDate officialDate) {
+        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
+        if (dbCurve != null) {
+            Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
+            return new org.softcaster.engine.curve.YieldCurve(officialDate, currency, newInputs);
+        } else {
+            return null;
+        }
+    }
+
     public YieldCurve buildYieldCurve(IMarketDataProvider provider, String idCurve, LocalDate officialDate) {
         YieldCurve newYieldCurve = null;
 
@@ -70,7 +80,7 @@ public class YieldCurveBuilder {
         CurveNodeInput cni = null;
         OffsetType offsetType = OffsetType.fromCode(node.getOffset().offsetType().getCode());
         long step = node.getOffset().step();
-        cni = new CurveNodeInput(new Offset(step,offsetType), node.getData().bid(), DaycountBasis.ACT_360, Compounding.SIMPLE);
+        cni = new CurveNodeInput(new Offset(step, offsetType), node.getData().bid(), DaycountBasis.ACT_360, Compounding.SIMPLE);
         return cni;
     }
 

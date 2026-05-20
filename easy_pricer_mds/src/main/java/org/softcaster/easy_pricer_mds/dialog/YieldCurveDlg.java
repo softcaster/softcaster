@@ -4,10 +4,12 @@
  */
 package org.softcaster.easy_pricer_mds.dialog;
 
+import java.util.List;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.engine.curve.OrderedDiscountFactor;
 
 /**
  *
@@ -17,8 +19,10 @@ public class YieldCurveDlg extends javax.swing.JDialog {
 
     private MDSFacade mDSFacade = null;
     private YieldCurveBean bean;
+
     /**
      * Creates new form YieldCurveDlg
+     *
      * @param parent
      * @param modal
      * @param mDSFacade
@@ -151,8 +155,14 @@ public class YieldCurveDlg extends javax.swing.JDialog {
 
     private void fillModel() {
         MarketDataService mds = mDSFacade.getMarketDataService();
-        if(!bean.getYieldCurve().getProvider().isBlank()) {
+        if (!bean.getYieldCurve().getProvider().isBlank()) {
             org.softcaster.engine.curve.YieldCurve yc = mds.getYieldCurve(bean.getYieldCurve().getCode());
+            if (yc != null) {
+                List<OrderedDiscountFactor> discounts = yc.getOrderedDiscountFactors();
+                for (OrderedDiscountFactor odf : discounts) {
+                    System.out.println(odf.date() + "\t" + odf.discountFactor());
+                }
+            }
         }
     }
 }

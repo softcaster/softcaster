@@ -9,6 +9,7 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.Collectors;
 import org.softcaster.engine.math.MathUtil;
 
 public class YieldCurve {
@@ -169,5 +170,23 @@ public class YieldCurve {
 
         // 4. Applica la formula di non arbitraggio dei DF continui: ln(DF_start / DF_end) / Tenor
         return Math.log(dfStart / dfEnd) / forwardTenor365;
+    }
+
+    public List<OrderedDiscountFactor> getOrderedDiscountFactors() {
+        if (valuationDate == null) {
+            throw new IllegalArgumentException("La data ufficiale non può essere nulla.");
+        }
+
+        // Sfruttiamo lo stream della mappa. Essendo una ConcurrentSkipListMap,
+        // l'entrySet() viene già iterato in ordine crescente di giorni (chiave Integer).
+        return discountFactors.entrySet().stream()
+                .map(entry -> {
+                    int daysToAdd = entry.getKey();
+                    // Aggiunge i giorni alla data ufficiale di riferimento
+                    LocalDate calculatedDate = valuationDate.plusDays(daysToAdd);
+
+                    return new OrderedDiscountFactor(calculatedDate, entry.getValue());
+                })
+                .collect(Collectors.toList());
     }
 }

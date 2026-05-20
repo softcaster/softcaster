@@ -187,15 +187,18 @@ public class MarketDataService {
             throw new IllegalArgumentException("L'ID curva e i nuovi input non possono essere nulli.");
         }
 
-        // Specifichiamo esplicitamente il tipo atomico restituito dalla mappa
-        // che computeIfPresent usa una lamba function (->), quando esce existingCurve e' 
-        // updateCurve
-        YieldCurve updatedCurve = this.yieldCurves.computeIfPresent(curveId, (id, existingCurve) -> {
-            // Sfrutta il metodo synchronized creato dentro YieldCurve
-            existingCurve.updateCurve(newInputs);
-            return existingCurve;
+        // compute viene eseguito SEMPRE, sia se la mappa è vuota sia se è piena computeIfPresent 
+        // usa una lamba function (->), quando esce existingCurve e' updateCurve
+        YieldCurve updatedCurve = this.yieldCurves.compute(curveId, (id, existingCurve) -> {
+            if (existingCurve == null) {
+                // Se la curva non c'è in cache, la creiamo ex-novo tramite il builder
+                return yieldCurveBuilder.buildYieldCurve(id, newInputs, LocalDate.now());
+            } else {
+                // Se esiste già, sfruttiamo il metodo synchronized esistente
+                existingCurve.updateCurve(newInputs);
+                return existingCurve;
+            }
         });
-
         // Se updatedCurve non è null significa che la curva esisteva ed è stata modificata
         return updatedCurve != null;
     }
