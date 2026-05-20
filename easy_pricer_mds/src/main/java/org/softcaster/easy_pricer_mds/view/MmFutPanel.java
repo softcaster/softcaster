@@ -18,7 +18,6 @@ import org.softcaster.easy_pricer_mds.bean.MmFutBean;
 import org.softcaster.easy_pricer_mds.dialog.MmFutIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.MmFutTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.provider.enums.RequestType;
 
 /**
  *

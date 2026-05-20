@@ -103,14 +103,17 @@ public class EuroNextProvider extends AbstractProvider {
 
             double bidValue = 0.;
             double askValue = 0.;
-
-            if (!askStrValue.isBlank()) {
-                askValue = Double.parseDouble(askStrValue);
+            try {
+                if (!askStrValue.isBlank()) {
+                    askValue = Double.parseDouble(askStrValue);
+                }
+                if (!bidStrValue.isBlank()) {
+                    bidValue = Double.parseDouble(bidStrValue);
+                }
+            } catch (NumberFormatException ex) {
+                askValue = bidValue = 0.;
+                LoggerMgr.logError(ex.getLocalizedMessage());
             }
-            if (!bidStrValue.isBlank()) {
-                bidValue = Double.parseDouble(bidStrValue);
-            }
-
             if (!info.getExtraParameters().isEmpty()) {
                 Node node = new Node(info.getExtraParameters().get(0), null, new Data(bidValue, askValue));
                 addQuote(market, node);
@@ -127,13 +130,17 @@ public class EuroNextProvider extends AbstractProvider {
             double bidValue = 0.;
             double askValue = 0.;
 
-            if (!askStrValue.isBlank()) {
-                askValue = Double.parseDouble(askStrValue);
+            try {
+                if (!askStrValue.isBlank()) {
+                    askValue = Double.parseDouble(askStrValue);
+                }
+                if (!bidStrValue.isBlank()) {
+                    bidValue = Double.parseDouble(bidStrValue);
+                }
+            } catch (NumberFormatException ex) {
+                askValue = bidValue = 0.;
+                LoggerMgr.logError(ex.getLocalizedMessage());
             }
-            if (!bidStrValue.isBlank()) {
-                bidValue = Double.parseDouble(bidStrValue);
-            }
-
             if (!info.getExtraParameters().isEmpty()) {
                 Node node = new Node(info.getExtraParameters().get(0), null, new Data(bidValue, askValue));
                 addQuote(market, node);

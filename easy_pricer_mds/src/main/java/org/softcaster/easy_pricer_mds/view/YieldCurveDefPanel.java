@@ -13,9 +13,9 @@ import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.easy_pricer_mds.MDSFacade;
-import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;
+import org.softcaster.easy_pricer_mds.bean.YieldCurveNodeBean;
 import org.softcaster.easy_pricer_mds.ui.model.MmFutTableModel;
-import org.softcaster.easy_pricer_mds.ui.model.YieldCurveTableModel;
+import org.softcaster.easy_pricer_mds.ui.model.YieldCurveNodeTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 
 /**
@@ -24,7 +24,7 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
  */
 public class YieldCurveDefPanel extends FndtAbstactPanel {
 
-    private final List<YieldCurveBean> ycBeanList = new ArrayList<>();
+    private final List<YieldCurveNodeBean> ycBeanList = new ArrayList<>();
     private MDSFacade mDSFacade = null;
 
     /**
@@ -108,8 +108,8 @@ public class YieldCurveDefPanel extends FndtAbstactPanel {
     @Override
     protected void fillModelList() {
         // Crea e setta il model
-        YieldCurveBean prototype = new YieldCurveBean(null, 0., 0.);
-        YieldCurveTableModel model = new YieldCurveTableModel(prototype);
+        YieldCurveNodeBean prototype = new YieldCurveNodeBean(null, 0., 0.);
+        YieldCurveNodeTableModel model = new YieldCurveNodeTableModel(prototype);
         yieldCurveTable.setModel(model);
 
         // Popola il model

@@ -51,6 +51,9 @@ public class YieldCurve implements Serializable {
 
     @Column(name = "compounding")
     private Short compounding;
+    
+    @Column(name = "provider")
+    private String provider;    
 
     public Integer getIdYieldCurve() {
         return idYieldCurve;
@@ -152,6 +155,20 @@ public class YieldCurve implements Serializable {
      */
     public void setCompounding(Short compounding) {
         this.compounding = compounding;
+    }
+
+    /**
+     * @return the provider
+     */
+    public String getProvider() {
+        return provider;
+    }
+
+    /**
+     * @param provider the provider to set
+     */
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 
 }

@@ -431,6 +431,7 @@ CREATE TABLE yield_curve
     , currency INTEGER NOT NULL
     , calendar INTEGER NOT NULL
     , compounding SMALLINT NOT NULL DEFAULT 1;
+    , provider VARCHAR(50) NOT NULL DEFAULT '';
     , PRIMARY KEY (id_yield_curve)
     , CONSTRAINT fk_calendar FOREIGN KEY (calendar)
         REFERENCES calendar(id_calendar) ON DELETE NO ACTION ON UPDATE NO ACTION

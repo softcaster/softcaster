@@ -12,7 +12,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import org.softcaster.provider.enums.Market;
 
 /**
@@ -22,37 +21,46 @@ import org.softcaster.provider.enums.Market;
 public abstract class AbstractProvider implements IMarketDataProvider {
 
     protected String response = "";
-    protected ConcurrentMap<Market, List<Node>> quotes = new ConcurrentHashMap<>();
-    protected ConcurrentMap<RateKey, List<Node>> rates = new ConcurrentHashMap<>();
+    protected ConcurrentMap<Market, ConcurrentMap<String, Node>> quotes = new ConcurrentHashMap<>();
+    protected ConcurrentMap<RateKey, ConcurrentMap<String, Node>> rates = new ConcurrentHashMap<>();
 
     public void addQuote(Market key, Node element) {
         // computeIfAbsent garantisce che la creazione della lista sia atomica
-        quotes.computeIfAbsent(key, k -> new CopyOnWriteArrayList<>())
-                .add(element);
-    }
-
-    public void addRate(RateKey key, Node element) {
-        // computeIfAbsent garantisce che la creazione della lista sia atomica
-        rates.computeIfAbsent(key, k -> new CopyOnWriteArrayList<>())
-                .add(element);
+        quotes.computeIfAbsent(key, k -> new ConcurrentHashMap<>())
+                .put(element.getSymbol(), element);
     }
 
     protected List<Node> getQuotes(Market key) {
-        return quotes.get(key);
+        ConcurrentMap<String, Node> marketMap = quotes.get(key);
+        if (marketMap == null || marketMap.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        // Trasforma i valori della mappa interna in una lista istantanea
+        return new java.util.ArrayList<>(marketMap.values());
     }
 
     public Node getQuote(String symbol, Market key) {
-        List<Node> nodes = getQuotes(key);
-        for (Node n : nodes) {
-            if (n.getSymbol().equals(symbol)) {
-                return n;
-            }
+        ConcurrentMap<String, Node> marketMap = quotes.get(key);
+        if (marketMap == null) {
+            return null;
         }
-        return null;
+        // Estrazione diretta senza cicli for: efficienza massima O(1)
+        return marketMap.get(symbol);
+    }
+
+    // RateKey e`un record, java fornisce out-of-the-box i metodi fondamentali equals() e hashCode()
+    public void addRate(RateKey key, Node element) {
+        rates.computeIfAbsent(key, k -> new ConcurrentHashMap<>())
+                .put(element.getSymbol(), element);
     }
 
     protected List<Node> getRates(RateKey key) {
-        return rates.get(key);
+        ConcurrentMap<String, Node> ratesMap = rates.get(key);
+        if (ratesMap == null || ratesMap.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        // Trasforma i valori della mappa interna in una lista istantanea
+        return new java.util.ArrayList<>(ratesMap.values());
     }
 
     protected int timeElapsed = 0;

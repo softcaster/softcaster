@@ -1,3 +1,5 @@
+ALTER TABLE yield_curve ADD COLUMN provider VARCHAR(50) NOT NULL DEFAULT '';
+
 -- codice controllo pre update effettivo
 SELECT 
     code AS codice_originale, 

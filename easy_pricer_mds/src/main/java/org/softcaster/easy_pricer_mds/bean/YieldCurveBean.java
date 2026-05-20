@@ -4,35 +4,37 @@
  */
 package org.softcaster.easy_pricer_mds.bean;
 
-import org.softcaster.commons.types.Date;
-import org.softcaster.commons.ui.bean.ITrendable;
 import org.softcaster.commons.ui.model.IFndtModel;
+import org.softcaster.core.data.YieldCurve;
 
 /**
  *
- * @author softc
+ * @author ep
  */
-public class YieldCurveBean implements IFndtModel, ITrendable {
+public class YieldCurveBean implements IFndtModel {
 
-    private final Date maturity;
-    private final double bid;
-    private final double ask;
+    private final YieldCurve yieldCurve;
 
-    public YieldCurveBean(Date maturity, double bid, double ask) {
-        this.maturity = maturity;
-        this.bid = bid;
-        this.ask = ask;
+    public YieldCurveBean(YieldCurve yieldCurve) {
+        this.yieldCurve = yieldCurve;
     }
 
     @Override
     public Object getValueAt(int columnIndex) {
+        if(yieldCurve == null)
+            return null;
+        
         return switch (columnIndex) {
             case 0 ->
-                maturity;
+                yieldCurve.getDescription();
             case 1 ->
-                bid;
+                yieldCurve.getCode();
             case 2 ->
-                ask;
+                yieldCurve.getCurrency().getIsoCode();
+            case 3 ->
+                yieldCurve.getCalendar().getCode();
+            case 4 ->
+                yieldCurve.getProvider();
             default ->
                 null;
         };
@@ -40,12 +42,10 @@ public class YieldCurveBean implements IFndtModel, ITrendable {
 
     @Override
     public String[] getColumnNames() {
-        return new String[]{"Maturity", "Bid", "Ask"};
+        return new String[]{"Description", "Code", "Currency", "Calendar", "Provider"};
     }
 
-    @Override
-    public int getTrendForColumn(int i) {
-        return 0;
+    public YieldCurve getYieldCurve() {
+        return yieldCurve;
     }
-
 }
