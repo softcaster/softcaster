@@ -1,22 +1,22 @@
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
-import { InstrumentField } from './FormFields';
+import { InstrumentField } from './FormFields.tsx';
 import { useState } from 'react';
-import type { ForwardPricingRequest, BondFwdPricingResponse } from '../services/dto.ts';
+import type { ForwardPricingRequest, ForwardPricingResponse } from '../services/dto.ts';
 import type {
     MasterData
-} from '../data/schema';
+} from '../data/schema.ts';
 
 interface BondFuturePricingFormProps {
     masterDataList: MasterData[];
     data: ForwardPricingRequest;
-    results: BondFwdPricingResponse;
+    results: ForwardPricingResponse;
     onChange: (data: ForwardPricingRequest) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop
-export const BondFuturePForm = ({ masterDataList , data, results, onChange }: BondFuturePricingFormProps) => {
+export const BondFuturePForm = ({ masterDataList, data, results, onChange }: BondFuturePricingFormProps) => {
 
     // Funzione helper per aggiornare Isin e Issue description
     const updateIsin = (field: string, value: any) => {
@@ -24,7 +24,7 @@ export const BondFuturePForm = ({ masterDataList , data, results, onChange }: Bo
         setMasterData(value);
         onChange({ ...data, ['isin']: value.code });
     };
-    
+
     // Funzione helper per aggiornare solo un campo della request
     const updateRequest = (field: string, value: any) => {
         onChange({ ...data, [field]: value });

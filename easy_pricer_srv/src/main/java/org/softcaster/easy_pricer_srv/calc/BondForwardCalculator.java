@@ -70,12 +70,13 @@ public class BondForwardCalculator {
             input.setUnderliyngCashFlows(ctdData.underliyngCashFlow);
 
             output = bondForwardPricer.calculateForwardPrice(input);
-        }
+         }
 
         ForwardPricingResponse response = null;
         if (output != null) {
             response = new ForwardPricingResponse();
             response.theoreticalPrice = output.getPrice();
+            response.ctd = ctdData.underlyingIsin;
         }
         return response;
     }
