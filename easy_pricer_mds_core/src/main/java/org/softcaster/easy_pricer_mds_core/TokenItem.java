@@ -2,8 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.engine.curve;
+package org.softcaster.easy_pricer_mds_core;
 
-import java.time.LocalDate;
+/**
+ *
+ * @author softc
+ */
+public record TokenItem(String symbol, String provider) {
 
-public record OrderedDiscountFactor(LocalDate date, double discountFactor, int days) {}
+}

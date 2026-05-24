@@ -13,22 +13,29 @@ import org.softcaster.engine.curve.OrderedDiscountFactor;
  * @author ep
  */
 public class ODFBean implements IFndtModel, ITrendable {
-    
+
     private final OrderedDiscountFactor odf;
-    
+
     public ODFBean(OrderedDiscountFactor odf) {
         this.odf = odf;
     }
 
     @Override
     public Object getValueAt(int columnIndex) {
-        if(odf == null)
+        if (odf == null || odf.days() == 0) {
             return null;
-        
+        }
+
         return switch (columnIndex) {
-            case 0 -> 
+            case 0 ->
                 odf.date();
-            case 1 ->
+            case 1 -> {
+                double tenor = odf.days() / 360.;
+                double rate = (1 - odf.discountFactor()) / (odf.discountFactor() * tenor);
+                rate *= 100.;
+                yield rate;
+            }
+            case 2 ->
                 odf.discountFactor();
             default ->
                 null;
@@ -37,12 +44,12 @@ public class ODFBean implements IFndtModel, ITrendable {
 
     @Override
     public String[] getColumnNames() {
-        return new String[]{"Maturity", "Discount Factor"};
+        return new String[]{"Maturity", "Rate%", "Discount Factor"};
     }
 
     @Override
     public int getTrendForColumn(int columnIndex) {
         return 0;
     }
-    
+
 }

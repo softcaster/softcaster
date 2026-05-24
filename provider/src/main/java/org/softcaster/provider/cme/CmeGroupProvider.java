@@ -347,6 +347,6 @@ public class CmeGroupProvider extends AbstractProvider {
 
     @Override
     public Node getMktQuote(String symbol, Market market) {
-        return null;
+        return getQuote(symbol, market);
     }
 }

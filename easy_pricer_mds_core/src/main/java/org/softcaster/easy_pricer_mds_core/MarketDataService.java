@@ -5,7 +5,6 @@
 package org.softcaster.easy_pricer_mds_core;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,79 +80,23 @@ public class MarketDataService {
         return price;
     }
 
-    public YieldCurve getYieldCurve(String curveName) {
-        YieldCurve yc = yieldCurves.get(curveName);
-        if (yc != null) {
-            return yc;
-        } else {
-            throw new MarketDataNotFoundException("Yield curve " + curveName + " not found");
+    //
+    // Aggiornamento Prezzi Spot
+    //
+    public void updateSpotPrice(List<TokenItem> tokens, Market market) {
+        for (TokenItem token : tokens) {
+            addSpotPrice(token.symbol(), token.provider(), market);
         }
     }
-
-    public double getYieldCurveRate(String curveName, LocalDate settlement) {
-        return yieldCurves.get(curveName).getDiscountFactor(settlement);
-    }
-
-    public void updateFxPrice(List<String> tokenList, String provider, IProgressInfo progressInfo) {
-
-        int progress = tokenList.size() / 10;
-        if (progress < 10) {
-            progress = tokenList.size();
-        } else {
-            progress = 100 / progress;
-        }
-
-        int step = 100 / progress;
-        int cnt = 0;
-        try {
-            // Legge tutto in un unico blocco
-            for (String token : tokenList) {
-                addSpotPrice(token, provider, Market.CURRENCIES);
-
-                if (progressInfo != null) {
-                    progressInfo.setProgress(progress + step * cnt);
-                    cnt++;
-                }
-
-            }
-            if (progressInfo != null) {
-                progressInfo.setProgress(100);
-            }
-        } catch (Exception ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-        }
-    }
-
-    public void updateBondFutPrice(Map<String, List<String>> tokenList, IProgressInfo progressInfo) {
-
+    
+    public void updateSpotPrice(Map<String, List<String>> tokenList, Market market) {
         try {
             for (Map.Entry<String, List<String>> entry : tokenList.entrySet()) {
                 String provider = entry.getKey();
                 List<String> tokens = entry.getValue();
 
                 for (String token : tokens) {
-                    addSpotPrice(token, provider, Market.FUTURES);
-                }
-            }
-        } catch (Exception ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-        }
-    }
-
-    public void updateBondPrice(List<String> tokenList, IProgressInfo progressInfo) {
-        Map<String, List<String>> localMap = new HashMap<>();
-        localMap.put("EuroNextProvider", tokenList);
-        updateBondPrice(localMap, progressInfo);
-    }
-
-    public void updateBondPrice(Map<String, List<String>> tokenList, IProgressInfo progressInfo) {
-        try {
-            for (Map.Entry<String, List<String>> entry : tokenList.entrySet()) {
-                String provider = entry.getKey();
-                List<String> tokens = entry.getValue();
-
-                for (String token : tokens) {
-                    addSpotPrice(token, provider, Market.BONDS);
+                    addSpotPrice(token, provider, market);
                 }
             }
         } catch (Exception ex) {
@@ -163,7 +106,7 @@ public class MarketDataService {
     }
 
     //
-    // YieldCurve
+    // Aggiornamento YieldCurve
     //
     public void addYieldCurve(String strProvider, String idCurve) {
         IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
@@ -209,5 +152,18 @@ public class MarketDataService {
             List<CurveNodeInput> newInput = yieldCurveBuilder.getNewInput(provider, curveId);
             updateYieldCurveInCache(curveId, newInput);
         }
+    }
+
+    public YieldCurve getYieldCurve(String curveName) {
+        YieldCurve yc = yieldCurves.get(curveName);
+        if (yc != null) {
+            return yc;
+        } else {
+            throw new MarketDataNotFoundException("Yield curve " + curveName + " not found");
+        }
+    }
+
+    public double getYieldCurveRate(String curveName, LocalDate settlement) {
+        return yieldCurves.get(curveName).getDiscountFactor(settlement);
     }
 }

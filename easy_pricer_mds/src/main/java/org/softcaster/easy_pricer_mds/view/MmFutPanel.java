@@ -212,7 +212,7 @@ public class MmFutPanel extends FndtAbstactPanel {
     protected void updateModel(FndtTableModel model) {
         Map<String, List<String>> tokenList = new HashMap<>();
         MarketDataService mds = new MarketDataService();
-        mds.updateBondFutPrice(tokenList, null);
+        //mds.updateBondFutPrice(tokenList, null);
 
         //quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
         //quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));

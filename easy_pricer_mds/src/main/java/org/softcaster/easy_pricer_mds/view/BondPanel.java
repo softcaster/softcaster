@@ -6,9 +6,7 @@ package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -25,6 +23,8 @@ import org.softcaster.easy_pricer_mds.dialog.BondIQDlg;
 import org.softcaster.easy_pricer_mds.dialog.BondPricerDlg;
 import org.softcaster.easy_pricer_mds.ui.model.BondTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 
 /**
@@ -122,7 +122,7 @@ public class BondPanel extends FndtAbstactPanel {
         bondTable.setModel(model);
 
         // Popola il model
-        refreshModel(model);
+        refreshModelFromDb(model);
     }
 
     @Override
@@ -142,7 +142,7 @@ public class BondPanel extends FndtAbstactPanel {
 
         // Post chiusura dialog
         BondTableModel model = (BondTableModel) bondTable.getModel();
-        refreshModel(model);
+        refreshModelFromDb(model);
     }
 
     @Override
@@ -167,7 +167,7 @@ public class BondPanel extends FndtAbstactPanel {
             dialog.setVisible(true);
 
             // Post chiusura dialog
-            refreshModel(model);
+            refreshModelFromDb(model);
         }
     }
 
@@ -232,96 +232,13 @@ public class BondPanel extends FndtAbstactPanel {
     @Override
     public void refreshAction() {
         BondTableModel model = (BondTableModel) bondTable.getModel();
-        this.updateModel(model);
+        refreshModel(model);
     }
 
     @Override
     protected void refreshModel(FndtTableModel ftm) {
-        // Cancella vecchia lista
-        bondBeanList.clear();
-
-        // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("XRB");
-        if (iqList.isEmpty()) {
-            return;
-        }
-
-        // Aggiorno service
-        Map<String, List<String>> tokenList = new HashMap<>();
-        for (InstrumentQuote quote : iqList) {
-            tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
-        }
-
-        BondBean bean = null;
-
-        for (InstrumentQuote quote : iqList) {
-            bean = new BondBean(quote);
-            bondBeanList.add(bean);
-        }
-
-        ftm.setData(bondBeanList);
-    }
-
-    public void calculateAction() {
-        int rowIndex = bondTable.getSelectedRow();
-        if (rowIndex == -1) {
-            JOptionPane.showMessageDialog(null, "Select a row to display the pricing dialog!");
-            return;
-        }
-
-        // 1. CONVERSIONE FONDAMENTALE
-        int modelRow = bondTable.convertRowIndexToModel(rowIndex);
-        BondTableModel model = (BondTableModel) bondTable.getModel();
-        BondBean bean = model.getElementAt(modelRow);
-
-        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
-        java.awt.Frame parentFrame = null;
-
-        if (parentWindow instanceof java.awt.Frame frame) {
-            parentFrame = frame;
-        }
-
-        BondPricerDlg dialog = new BondPricerDlg(parentFrame, true, bean, mDSFacade);
-        dialog.setSize(500, 300);
-        // Centra la dialog rispetto al pannello
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-    }
-
-    private void updateTable(FndtTableModel model) {
-        MarketDataService mds = mDSFacade.getMarketDataService();
-        BondBean bondBean = null;
-        List<String> tokenList = new ArrayList<>();
-        for (int i = 1; i < model.getRowCount(); i++) {
-            bondBean = (BondBean) model.getElementAt(i);
-            if (bondBean != null) {
-                tokenList.add(bondBean.getInstrumentQuote().getCode());
-            }
-        }
-
-        mds.updateBondPrice(tokenList, null);
-
-        for (int i = 1; i < model.getRowCount(); i++) {
-            bondBean = (BondBean) model.getElementAt(i);
-            if (bondBean != null) {
-                double bid = mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.BID);
-                double ask = mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.ASK);
-                System.out.println(bondBean.getInstrumentQuote().getCode() + "\t" + bid + "\t" + ask);
-                bondBean.setAsk(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.ASK));
-                bondBean.setBid(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.BID));
-                System.out.println(bondBean.getInstrumentQuote().getCode() + "\t" + bondBean.getBid() + "\t" + bondBean.getAsk());
-                System.out.println();
-            }
-        }
-
-        model.setData(bondBeanList);
-    }
-
-    @Override
-    protected void updateModel(FndtTableModel model) {
-
         // 1. Crea la dialog di attesa
-        final JDialog loadingDialog = createLoadingDialog("Downloading bond prices ... Please wait.");
+        final JDialog loadingDialog = createLoadingDialog("Downloading Bond prices ... Please wait.");
 
         // 2. Crea lo SwingWorker
         // I parametri generici <Void, Void> indicano: <Tipo di ritorno finale, Tipo di dati intermedi>
@@ -330,7 +247,7 @@ public class BondPanel extends FndtAbstactPanel {
             @Override
             protected Void doInBackground() throws Exception {
                 // Questo metodo gira su un THREAD SEPARATO in background.
-                updateTable(model);
+                updateModel(ftm);
                 //Thread.sleep(5000);
                 return null;
             }
@@ -361,5 +278,76 @@ public class BondPanel extends FndtAbstactPanel {
         worker.execute();
         // 4. Mostra la dialog (bloccherà solo l'interfaccia, non il thread in background)
         loadingDialog.setVisible(true);
+    }
+
+    public void calculateAction() {
+        int rowIndex = bondTable.getSelectedRow();
+        if (rowIndex == -1) {
+            JOptionPane.showMessageDialog(null, "Select a row to display the pricing dialog!");
+            return;
+        }
+
+        // 1. CONVERSIONE FONDAMENTALE
+        int modelRow = bondTable.convertRowIndexToModel(rowIndex);
+        BondTableModel model = (BondTableModel) bondTable.getModel();
+        BondBean bean = model.getElementAt(modelRow);
+
+        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+        java.awt.Frame parentFrame = null;
+
+        if (parentWindow instanceof java.awt.Frame frame) {
+            parentFrame = frame;
+        }
+
+        BondPricerDlg dialog = new BondPricerDlg(parentFrame, true, bean, mDSFacade);
+        dialog.setSize(500, 300);
+        // Centra la dialog rispetto al pannello
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    @Override
+    protected void updateModel(FndtTableModel model) {
+        MarketDataService mds = mDSFacade.getMarketDataService();
+        BondBean bondBean = null;
+        List<TokenItem> tokens = new ArrayList<>();
+        for (int i = 1; i < model.getRowCount(); i++) {
+            bondBean = (BondBean) model.getElementAt(i);
+            if (bondBean != null) {
+                tokens.add(new TokenItem(bondBean.getInstrumentQuote().getCode(),
+                bondBean.getInstrumentQuote().getProvider()));
+            }
+        }
+
+        mds.updateSpotPrice(tokens, Market.BONDS);
+
+        for (int i = 1; i < model.getRowCount(); i++) {
+            bondBean = (BondBean) model.getElementAt(i);
+            if (bondBean != null) {
+                bondBean.setAsk(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.ASK));
+                bondBean.setBid(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.BID));
+            }
+        }
+
+        model.setData(bondBeanList);
+    }
+
+    protected void refreshModelFromDb(FndtTableModel ftm) {
+        // Cancella vecchia lista
+        bondBeanList.clear();
+
+        // Leggo lista pairs anagrafiche
+        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("XRB");
+        if (iqList.isEmpty()) {
+            return;
+        }
+
+        BondBean bean = null;
+        for (InstrumentQuote quote : iqList) {
+            bean = new BondBean(quote);
+            bondBeanList.add(bean);
+        }
+
+        ftm.setData(bondBeanList);
     }
 }

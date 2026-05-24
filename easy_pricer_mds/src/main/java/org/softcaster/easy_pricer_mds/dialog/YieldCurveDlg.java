@@ -172,7 +172,7 @@ public final class YieldCurveDlg extends javax.swing.JDialog {
     protected void postInitComponents(JTable table) {
         initTable(table);
     }
-    
+
     private void fillModelList() {
         // Crea e setta il model
         ODFBean prototype = new ODFBean(null);
@@ -187,6 +187,9 @@ public final class YieldCurveDlg extends javax.swing.JDialog {
             if (yc != null) {
                 List<OrderedDiscountFactor> discounts = yc.getOrderedDiscountFactors();
                 for (OrderedDiscountFactor odf : discounts) {
+                    if (odf.days() == 0) {
+                        continue;
+                    }
                     bean = new ODFBean(odf);
                     oDFBeanList.add(bean);
                 }
@@ -194,7 +197,7 @@ public final class YieldCurveDlg extends javax.swing.JDialog {
             model.setData(oDFBeanList);
         }
     }
-    
+
     protected void initTable(JTable table) {
         table.setFillsViewportHeight(true);
         table.setRowHeight(25);
@@ -235,7 +238,7 @@ public final class YieldCurveDlg extends javax.swing.JDialog {
             autoResizeColumns(table);
         });
     }
-    
+
     protected void autoResizeColumns(JTable table) {
         final TableColumnModel columnModel = table.getColumnModel();
         for (int column = 0; column < table.getColumnCount(); column++) {

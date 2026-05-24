@@ -6,18 +6,23 @@ package org.softcaster.easy_pricer_mds.view;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import javax.swing.JDialog;
+import javax.swing.SwingWorker;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.InstrumentQuote;
+import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.BondFutBean;
 import org.softcaster.easy_pricer_mds.dialog.BondFutIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.BondFutTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 
 /**
@@ -115,7 +120,7 @@ public class BondFutPanel extends FndtAbstactPanel {
         bondFutTable.setModel(model);
 
         // Popola il model
-        refreshModel(model);
+        refreshModelFomDb(model);
     }
 
     @Override
@@ -135,7 +140,7 @@ public class BondFutPanel extends FndtAbstactPanel {
 
         // Post chiusura dialog
         BondFutTableModel model = (BondFutTableModel) bondFutTable.getModel();
-        refreshModel(model);
+        refreshModelFomDb(model);
     }
 
     @Override
@@ -160,7 +165,7 @@ public class BondFutPanel extends FndtAbstactPanel {
             dialog.setVisible(true);
 
             // Post chiusura dialog
-            refreshModel(model);
+            refreshModelFomDb(model);
         }
     }
 
@@ -170,6 +175,52 @@ public class BondFutPanel extends FndtAbstactPanel {
 
     @Override
     public void downloadAction() {
+        // 1. Crea la dialog di attesa
+        final JDialog loadingDialog = createLoadingDialog("Saving Bond Future prices ... Please wait.");
+
+        // 2. Crea lo SwingWorker
+        // I parametri generici <Void, Void> indicano: <Tipo di ritorno finale, Tipo di dati intermedi>
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                // Questo metodo gira su un THREAD SEPARATO in background.
+                InstrumentQuoteDAO dao = mDSFacade.getInstrumentQuoteDAO();
+                if (dao != null) {
+                    BondFutBean bondFutBean = null;
+                    BondFutTableModel model = (BondFutTableModel) bondFutTable.getModel();
+                    for (int i = 0; i < model.getRowCount(); i++) {
+                        bondFutBean = (BondFutBean) model.getElementAt(i);
+                        if (bondFutBean != null) {
+                            dao.saveOrUpdate(bondFutBean.getInstrumentQuote());
+                        }
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // Questo metodo viene eseguito sull'EDT (Thread Grafico) alla fine del download.
+                try {
+                    // Controlla se ci sono state eccezioni durante il download
+                    get();
+                } catch (InterruptedException | ExecutionException e) {
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                    java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(BondFutPanel.this);
+                    javax.swing.JOptionPane.showMessageDialog(parentWindow,
+                            "Error during download: " + e.getLocalizedMessage(),
+                            "Download Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    // Chiude la dialog e sblocca la Card del pannello
+                    loadingDialog.dispose();
+                }
+            }
+        };
+        // 3. Avvia il thread in background
+        worker.execute();
+        // 4. Mostra la dialog (bloccherà solo l'interfaccia, non il thread in background)
+        loadingDialog.setVisible(true);
     }
 
     @Override
@@ -182,8 +233,83 @@ public class BondFutPanel extends FndtAbstactPanel {
         this.refreshModel(model);
     }
 
+    /**
+     *
+     * @param model
+     */
     @Override
-    protected void refreshModel(FndtTableModel ftm) {
+    protected void updateModel(FndtTableModel model) {
+        List<TokenItem> tokens = new ArrayList<>();
+        TokenItem token = null;
+        for (BondFutBean bean : bondFutBeanList) {
+            token = new TokenItem(bean.getInstrumentQuote().getCode(), bean.getInstrumentQuote().getProvider());
+            tokens.add(token);
+        }
+        MarketDataService mds = mDSFacade.getMarketDataService();
+        mds.updateSpotPrice(tokens, Market.FUTURES);
+
+        // Leggo lista pairs anagrafiche
+        List<InstrumentQuote> pairs = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FSP");
+        if (pairs.isEmpty()) {
+            return;
+        }
+
+        // Aggiorno dati in memoria
+        for (BondFutBean bean : bondFutBeanList) {
+            bean.setBid(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.BID));
+            bean.setAsk(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.ASK));
+        }
+
+        model.setData(bondFutBeanList);
+
+    }
+
+    @Override
+    protected void refreshModel(FndtTableModel model) {
+        // 1. Crea la dialog di attesa
+        final JDialog loadingDialog = createLoadingDialog("Downloading Bond Future prices ... Please wait.");
+
+        // 2. Crea lo SwingWorker
+        // I parametri generici <Void, Void> indicano: <Tipo di ritorno finale, Tipo di dati intermedi>
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                // Questo metodo gira su un THREAD SEPARATO in background.
+                updateModel(model);
+                //Thread.sleep(5000);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // Questo metodo viene eseguito sull'EDT (Thread Grafico) alla fine del download.
+                try {
+                    // Controlla se ci sono state eccezioni durante il download
+                    get();
+
+                    // Aggiorna i componenti grafici dopo il download (es. ricarica la tabella)
+                    //aggiornaTabellaBonds();
+                    //statusBarLabel.setText("Data retrieved successfully.");
+                } catch (InterruptedException | ExecutionException e) {
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                    java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(BondFutPanel.this);
+                    javax.swing.JOptionPane.showMessageDialog(parentWindow,
+                            "Error during download: " + e.getLocalizedMessage(),
+                            "Download Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    // Chiude la dialog e sblocca la Card del pannello
+                    loadingDialog.dispose();
+                }
+            }
+        };
+        // 3. Avvia il thread in background
+        worker.execute();
+        // 4. Mostra la dialog (bloccherà solo l'interfaccia, non il thread in background)
+        loadingDialog.setVisible(true);
+    }
+
+    protected void refreshModelFomDb(FndtTableModel ftm) {
         // Cancella vecchia lista
         bondFutBeanList.clear();
 
@@ -191,12 +317,6 @@ public class BondFutPanel extends FndtAbstactPanel {
         List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("BFU");
         if (iqList.isEmpty()) {
             return;
-        }
-
-        // Aggiorno service
-        Map<String, List<String>> tokenList = new HashMap<>();
-        for (InstrumentQuote quote : iqList) {
-            tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
         }
 
         BondFutBean bean = null;
@@ -207,15 +327,5 @@ public class BondFutPanel extends FndtAbstactPanel {
         }
 
         ftm.setData(bondFutBeanList);
-    }
-
-    @Override
-    protected void updateModel(FndtTableModel model) {
-        Map<String, List<String>> tokenList = new HashMap<>();
-        MarketDataService mds = new MarketDataService();
-        mds.updateBondFutPrice(tokenList, null);
-
-        //quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
-        //quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
     }
 }

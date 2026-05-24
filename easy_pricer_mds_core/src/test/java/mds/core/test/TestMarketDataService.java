@@ -13,6 +13,8 @@ import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -62,7 +64,9 @@ public class TestMarketDataService {
     private void testUpdateBondPrice() {
         Map<String, List<String>> tokenList = new HashMap<>();
         tokenList.computeIfAbsent("EuroNextProvider", k -> new ArrayList<>()).add("IT0001086567");
-        marketDataService.updateBondPrice(tokenList, null);
+        List<TokenItem> tokens = new ArrayList<>();
+        tokens.add(new TokenItem("EuroNextProvider","IT0001086567"));
+        marketDataService.updateSpotPrice(tokens,Market.BONDS);
     }
 
     private void testSpotPrice() {

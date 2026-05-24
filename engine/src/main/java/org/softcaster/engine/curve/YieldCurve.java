@@ -185,7 +185,7 @@ public class YieldCurve {
                     // Aggiunge i giorni alla data ufficiale di riferimento
                     LocalDate calculatedDate = valuationDate.plusDays(daysToAdd);
 
-                    return new OrderedDiscountFactor(calculatedDate, entry.getValue());
+                    return new OrderedDiscountFactor(calculatedDate, entry.getValue(), daysToAdd);
                 })
                 .collect(Collectors.toList());
     }

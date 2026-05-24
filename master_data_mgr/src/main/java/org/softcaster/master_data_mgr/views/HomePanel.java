@@ -55,7 +55,7 @@ public class HomePanel extends JPanel {
         // 4. Info di sistema (opzionale)
         gbc.gridy++;
         gbc.insets = new Insets(30, 0, 0, 0);
-        JLabel version = new JLabel("Version 1.0 - Softcaster Finance Engine");
+        JLabel version = new JLabel("Version 1.0 - Softcaster Financial Engineering");
         version.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         add(version, gbc);
     }

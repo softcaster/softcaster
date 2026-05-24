@@ -18,7 +18,6 @@ import org.softcaster.easy_pricer_mds.bean.FxFutBean;
 import org.softcaster.easy_pricer_mds.dialog.FxFutIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.FxFutTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.provider.enums.RequestType;
 
 /**
  *
@@ -182,6 +181,32 @@ public class FxFutPanel extends FndtAbstactPanel {
         this.refreshModel(model);
     }
 
+    private void refreshFromDb(FndtTableModel ftm) {
+        // Cancella vecchia lista
+        fxFutBeanList.clear();
+
+        // Leggo lista pairs anagrafiche
+        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FFU");
+        if (iqList.isEmpty()) {
+            return;
+        }
+
+        // Aggiorno service
+        Map<String, List<String>> tokenList = new HashMap<>();
+        for (InstrumentQuote quote : iqList) {
+            tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
+        }
+        FxFutBean bean = null;
+
+        for (InstrumentQuote quote : iqList) {
+            bean = new FxFutBean(quote);
+            fxFutBeanList.add(bean);
+        }
+
+        ftm.setData(fxFutBeanList);
+
+    }
+
     @Override
     protected void refreshModel(FndtTableModel ftm) {
         // Cancella vecchia lista
@@ -207,12 +232,12 @@ public class FxFutPanel extends FndtAbstactPanel {
 
         ftm.setData(fxFutBeanList);
     }
-    
+
     @Override
     protected void updateModel(FndtTableModel model) {
         Map<String, List<String>> tokenList = new HashMap<>();
         MarketDataService mds = new MarketDataService();
-        mds.updateBondFutPrice(tokenList, null);
+        //mds.updateBondFutPrice(tokenList, null);
 
         //quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
         //quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
