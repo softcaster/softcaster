@@ -9,7 +9,7 @@ import { ActionProvider, useActions } from './context/ActionContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import {
   navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView,
-  BondView, XNoteView, BondPView, BondFutureView
+  BondView, XNoteView, BondPView, BondFutureView,BondFuturePView
 } from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
@@ -169,6 +169,7 @@ const MainLayout = () => {
               <Route path="/xnote" element={<XNoteView />} />
               <Route path="/bond-p" element={<BondPView />} />
               <Route path="/bondfuture" element={<BondFutureView />} />
+              <Route path="/bondfuture-p" element={<BondFuturePView />} />
 
               {/* Tutte le altre sezioni caricano il placeholder */}
               <Route path="/user" element={<PlaceholderView />} />

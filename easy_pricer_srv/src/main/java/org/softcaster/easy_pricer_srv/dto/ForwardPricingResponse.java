@@ -10,7 +10,8 @@ import java.io.Serializable;
  *
  * @author ep
  */
-public class BondFwdPricingResponse implements Serializable {
+public class ForwardPricingResponse implements Serializable {
     
     public double theoreticalPrice = 0.;
+    public String ctd = "";
 }

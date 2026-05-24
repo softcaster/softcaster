@@ -1,12 +1,14 @@
 
 import { GenericPricingView } from './GenericPricingView';
 import { BondPForm } from '../fragments/BondPForm';
+import { BondDetails } from '../fragments/BondDetails';
 import { findAllSmdByAssetClassXRB } from '../services/services';
 
 const BondPView = () => (
     <GenericPricingView
         fetchMasterData={findAllSmdByAssetClassXRB}
         FormComponent={BondPForm}
+        FormDetail={BondDetails}
     />
 );
 

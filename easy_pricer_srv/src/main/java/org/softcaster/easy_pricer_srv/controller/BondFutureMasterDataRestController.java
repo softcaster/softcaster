@@ -34,5 +34,14 @@ public class BondFutureMasterDataRestController {
         }
         return new ResponseEntity(bondFutureMasterData, HttpStatus.OK);
     }
+    @GetMapping("/bond_future_master_data/r03")
+    public ResponseEntity findAllFutByAssetClassBFU() {
+        List<BondFutureMasterData> bfmdList = dao.findAllByAssetClass("BFU");
+        if (bfmdList == null) {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity(bfmdList, HttpStatus.OK);
+    }
+
 
 }

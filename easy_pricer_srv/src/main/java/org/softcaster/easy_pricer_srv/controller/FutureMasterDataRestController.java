@@ -33,5 +33,4 @@ public class FutureMasterDataRestController {
         }
         return new ResponseEntity(futureMasterData, HttpStatus.OK);
     }
-
 }

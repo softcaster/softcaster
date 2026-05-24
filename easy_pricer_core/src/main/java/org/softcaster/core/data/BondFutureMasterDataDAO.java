@@ -15,7 +15,7 @@ public class BondFutureMasterDataDAO {
     private InstrumentQuoteRepository quoteRepository;
 
     private final Sort sortByIsin = Sort.by(Sort.Direction.ASC, "isin");
-    
+
     @Transactional(readOnly = true)
     public BondFutureMasterData findByIdMasterData(Integer idMasterData) {
         return repository.findByIdMasterData(idMasterData);
@@ -44,5 +44,9 @@ public class BondFutureMasterDataDAO {
 
     public BondFutureMasterData findByIsin(String isin) {
         return repository.findByIsin(isin);
+    }
+
+    public List<BondFutureMasterData> findAllByAssetClass(String code) {
+        return repository.findAllByAssetClass(code);
     }
 }

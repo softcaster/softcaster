@@ -6,7 +6,7 @@ package org.softcaster.easy_pricer_srv.controller;
 
 import org.softcaster.easy_pricer_srv.calc.BondCalculator;
 import org.softcaster.easy_pricer_srv.calc.BondForwardCalculator;
-import org.softcaster.easy_pricer_srv.dto.BondFwdPricingResponse;
+import org.softcaster.easy_pricer_srv.dto.ForwardPricingResponse;
 import org.softcaster.easy_pricer_srv.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
 import org.softcaster.easy_pricer_srv.dto.ForwardPricingRequest;
@@ -49,10 +49,10 @@ public class ValuationRestController {
     
     @PostMapping(value = "/pricing/future" , produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("unchecked")
-    public ResponseEntity<BondFwdPricingResponse> calculateBondPricing(@RequestBody ForwardPricingRequest request) {
+    public ResponseEntity<ForwardPricingResponse> calculateBondPricing(@RequestBody ForwardPricingRequest request) {
        
         if (bondForwardCalculator != null) {
-            BondFwdPricingResponse response = bondForwardCalculator.bondFwdValuation(request);
+            ForwardPricingResponse response = bondForwardCalculator.bondFwdValuation(request);
             if (response != null) {
                 return new ResponseEntity(response, HttpStatus.OK);
             } else {

@@ -12,7 +12,16 @@ export interface BondPricingRequest extends PricingRequest {
     fullCalc: boolean;
 }
 
-export interface BondPricingResponse {
+export interface ForwardPricingRequest extends PricingRequest {
+    domesticRate: number;
+    foreignRate: number;
+    maturityDate: Date;
+}
+
+export interface PricingResponse {
+}
+
+export interface BondPricingResponse extends PricingResponse {
     accruedInterest: number;
     yieldToMaturity: number;
     macaulayDuration: number;
@@ -22,7 +31,10 @@ export interface BondPricingResponse {
     yieldToMaturityPV: number;
 }
 
-// src/data/dto.ts
+export interface ForwardPricingResponse extends PricingResponse {
+    theoreticalPrice: number;
+    ctd: string;
+}
 
 export const DEFAULT_BOND_PRICING_REQUEST: BondPricingRequest = {
     isin: '',
@@ -30,6 +42,15 @@ export const DEFAULT_BOND_PRICING_REQUEST: BondPricingRequest = {
     referenceDate: new Date(),
     yieldCurve: '',
     fullCalc: false
+};
+
+export const DEFAULT_FWD_PRICING_REQUEST: ForwardPricingRequest = {
+    isin: '',
+    referencePrice: 100.00,
+    referenceDate: new Date(),
+    domesticRate: 0.01,
+    foreignRate: 0.01,
+    maturityDate: new Date()
 };
 
 export const DEFAULT_BOND_PRICING_RESPONSE: BondPricingResponse = {
@@ -42,8 +63,19 @@ export const DEFAULT_BOND_PRICING_RESPONSE: BondPricingResponse = {
     yieldToMaturityPV: 0
 };
 
+export const DEFAULT_FWD_PRICING_RESPONSE: ForwardPricingResponse = {
+    theoreticalPrice: 0,
+    ctd: ""
+};
+
 export const calculateBondPricing = async (request: BondPricingRequest): Promise<BondPricingResponse> => {
     const response = await axios.post(`${BASE_URL}/pricing/bond`, request);
     return response.data;
 };
+
+export const calculateFwdBondPricing = async (request: ForwardPricingRequest): Promise<ForwardPricingResponse> => {
+    const response = await axios.post(`${BASE_URL}/pricing/future`, request);
+    return response.data;
+};
+
 

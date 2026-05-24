@@ -10,6 +10,7 @@ export const BondView = lazy(() => import('../components/views/BondView.tsx'));
 export const XNoteView = lazy(() => import('../components/views/XNoteView'));
 export const BondPView = lazy(() => import('../components/views/BondPView'));
 export const BondFutureView = lazy(() => import('../components/views/BondFutureView'));
+export const BondFuturePView = lazy(() => import('../components/views/BondFuturePView.tsx'));
 
 export const navigationNodes: TreeNode[] = [
   {
@@ -60,7 +61,7 @@ export const navigationNodes: TreeNode[] = [
         children: [
           { key: 'bond-p-key', label: 'X Bonds', /*icon: 'pi pi-fw pi-building',*/ data: '/bond-p' },
           { key: 'xnote-p-key', label: 'X Rate notes', /*icon: 'pi pi-fw pi-building',*/ data: '/xnote' },
-          { key: 'bondfuture-p-key', label: 'Bond Futures', /*icon: 'pi pi-fw pi-building',*/ data: '/bondfuture' }
+          { key: 'bondfuture-p-key', label: 'Bond Futures', /*icon: 'pi pi-fw pi-building',*/ data: '/bondfuture-p' }
         ]
       }
     ]

@@ -13,7 +13,7 @@ import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
-import org.softcaster.easy_pricer_srv.dto.BondFwdPricingResponse;
+import org.softcaster.easy_pricer_srv.dto.ForwardPricingResponse;
 import org.softcaster.easy_pricer_srv.dto.ForwardPricingRequest;
 import org.softcaster.engine.analytics.BondForwardPricer;
 import org.softcaster.engine.cashflow.CashFlow;
@@ -51,7 +51,7 @@ public class BondForwardCalculator {
     @Qualifier("bondFwdPricer")
     private BondForwardPricer bondForwardPricer;
 
-    public BondFwdPricingResponse bondFwdValuation(ForwardPricingRequest request) {
+    public ForwardPricingResponse bondFwdValuation(ForwardPricingRequest request) {
 
         MarketOutputData output = null;
 
@@ -72,9 +72,9 @@ public class BondForwardCalculator {
             output = bondForwardPricer.calculateForwardPrice(input);
         }
 
-        BondFwdPricingResponse response = null;
+        ForwardPricingResponse response = null;
         if (output != null) {
-            response = new BondFwdPricingResponse();
+            response = new ForwardPricingResponse();
             response.theoreticalPrice = output.getPrice();
         }
         return response;

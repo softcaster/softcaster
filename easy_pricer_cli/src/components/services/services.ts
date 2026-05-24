@@ -836,8 +836,16 @@ export const deleteFutureMasterData = async (id: number): Promise<FutureMasterDa
     }
 };
 
-
 export const fetchBondFutureMasterData = async (): Promise<BondFutureMasterData[]> => {
+    try {
+        return await apiRequest<BondFutureMasterData[]>('/bond_future_master_data/r01', 'GET');
+    } catch (error) {
+        console.error('Failed to fetch bond_future_master_data:', error);
+        return [];
+    }
+};
+
+export const fetchBondFutureMasterDataByAssetClass = async (): Promise<BondFutureMasterData[]> => {
     try {
         return await apiRequest<BondFutureMasterData[]>('/bond_future_master_data/r01', 'GET');
     } catch (error) {
