@@ -203,6 +203,12 @@ public class YieldCurvePanel extends FndtAbstactPanel {
 
     @Override
     public void downloadAction() {
+        for(YieldCurveBean bean: yieldCurveBeanList) {
+            if(bean != null && bean.getYieldCurve() != null && !bean.getYieldCurve().getProvider().isBlank()) {
+                MarketDataService mds = mDSFacade.getMarketDataService();
+                mds.saveOrUpdateCurveRates(bean.getYieldCurve().getCode());
+            }
+        }
     }
 
     @Override
