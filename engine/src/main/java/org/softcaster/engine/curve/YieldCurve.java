@@ -5,11 +5,15 @@
 package org.softcaster.engine.curve;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
+import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.engine.math.MathUtil;
 
 public class YieldCurve {
@@ -19,7 +23,7 @@ public class YieldCurve {
 
     // Struttura interna core: mappa i giorni dal valuationDate al Discount Factor
     // // Struttura thread-safe concorrente e ordinata 
-    private final ConcurrentSkipListMap<Integer, Double> discountFactors = new ConcurrentSkipListMap<>();
+    private final ConcurrentSkipListMap<Integer, CurveNodeInput> discountFactors = new ConcurrentSkipListMap<>();
 
     /**
      * Costruttore della YieldCurve
@@ -27,32 +31,34 @@ public class YieldCurve {
      * @param officialDate Data di valutazione a partire dalla quale calcolare
      * le scadenze
      * @param currency Valuta di riferimento della curva
-     * @param inputs Lista di nodi (tassi + offset) forniti in input
+     * @param rawNodes
      */
-    public YieldCurve(LocalDate officialDate, Currency currency, List<CurveNodeInput> inputs) {
+    public YieldCurve(LocalDate officialDate, Currency currency, List<CurveNodeInput> rawNodes) {
         this.valuationDate = officialDate;
         this.currency = currency;
 
         // Il giorno 0 (oggi) ha sempre un fattore di sconto pari a 1.0
-        this.discountFactors.put(0, 1.0);
+        CurveNodeInput todayInput = new CurveNodeInput("", new Offset(0, OffsetType.DAYS), 0, 1, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        this.discountFactors.put(0, todayInput);
 
         // Costruisci i Discount Factors partendo dagli input
-        buildCurve(inputs);
+        buildCurve(rawNodes);
     }
 
-    private void buildCurve(List<CurveNodeInput> inputs) {
-        for (CurveNodeInput node : inputs) {
+    private void buildCurve(List<CurveNodeInput> rawNodes) {
+        for (CurveNodeInput node : rawNodes) {
             // 1. Calcola la data effettiva del nodo interpretando la stringa di offset (es. "1 MONTH")
             LocalDate maturityDate = parseTenorOffset(this.valuationDate, node.tenorOffset());
 
             // 2. Calcola i giorni effettivi assoluti (ACT) rispetto alla data di valutazione
             int days = (int) java.time.temporal.ChronoUnit.DAYS.between(this.valuationDate, maturityDate);
 
-            // 3. Converti il tasso nel rispettivo Discount Factor in base al suo regime
+            // 3. Converte il tasso nel rispettivo Discount Factor in base al suo regime
             double t = days / node.daycount().getTime();
             double df = MathUtil.getDiscountFactor(node.compounding(), node.rate(), t);
 
-            this.discountFactors.put(days, df);
+            CurveNodeInput finalizedNode = node.withDiscountFactor(df);
+            this.discountFactors.put(days, finalizedNode);
         }
     }
 
@@ -67,9 +73,8 @@ public class YieldCurve {
             throw new IllegalArgumentException("Update failed.");
         }
 
-        // 1. Svuota la struttura mantenendo solo il punto fermo a T=0
+        // 1. Svuota la struttura 
         this.discountFactors.clear();
-        this.discountFactors.put(0, 1.0);
 
         // 2. Ricostruisci i fattori di sconto usando la logica esistente
         this.buildCurve(newInputs);
@@ -107,23 +112,23 @@ public class YieldCurve {
      */
     public double getDiscountFactor(int targetDays) {
         if (discountFactors.containsKey(targetDays)) {
-            return discountFactors.get(targetDays);
+            return discountFactors.get(targetDays).discountFactor();
         }
 
-        Map.Entry<Integer, Double> low = discountFactors.floorEntry(targetDays);
-        Map.Entry<Integer, Double> high = discountFactors.ceilingEntry(targetDays);
+        Map.Entry<Integer, CurveNodeInput> low = discountFactors.floorEntry(targetDays);
+        Map.Entry<Integer, CurveNodeInput> high = discountFactors.ceilingEntry(targetDays);
 
         if (low == null) {
-            return high.getValue();
+            return high.getValue().discountFactor();
         }
         if (high == null) {
-            return low.getValue();
+            return low.getValue().discountFactor();
         }
 
         int t0 = low.getKey();
-        double df0 = low.getValue();
+        double df0 = low.getValue().discountFactor();
         int t1 = high.getKey();
-        double df1 = high.getValue();
+        double df1 = high.getValue().discountFactor();
 
         double weight = (double) (targetDays - t0) / (double) (t1 - t0);
         double logDf = Math.log(df0) + (Math.log(df1) - Math.log(df0)) * weight;
@@ -185,8 +190,13 @@ public class YieldCurve {
                     // Aggiunge i giorni alla data ufficiale di riferimento
                     LocalDate calculatedDate = valuationDate.plusDays(daysToAdd);
 
-                    return new OrderedDiscountFactor(calculatedDate, entry.getValue(), daysToAdd);
+                    return new OrderedDiscountFactor(calculatedDate, entry.getValue().discountFactor(), daysToAdd);
                 })
                 .collect(Collectors.toList());
+    }
+
+    public Collection<CurveNodeInput> getAllNodes() {
+        // Restituisce una vista non modificabile dei valori della ConcurrentSkipListMap
+        return java.util.Collections.unmodifiableCollection(this.discountFactors.values());
     }
 }

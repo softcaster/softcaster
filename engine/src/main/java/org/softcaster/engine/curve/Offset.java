@@ -12,5 +12,4 @@ import org.softcaster.engine.enums.OffsetType;
  * @author svil
  */
 public record Offset(long step, OffsetType offsetType) {
-
 }

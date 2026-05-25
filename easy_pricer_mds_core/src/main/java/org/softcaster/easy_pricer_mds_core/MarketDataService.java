@@ -5,6 +5,7 @@
 package org.softcaster.easy_pricer_mds_core;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -154,16 +155,23 @@ public class MarketDataService {
         }
     }
 
-    public YieldCurve getYieldCurve(String curveName) {
-        YieldCurve yc = yieldCurves.get(curveName);
+    public YieldCurve getYieldCurve(String curveId) {
+        YieldCurve yc = yieldCurves.get(curveId);
         if (yc != null) {
             return yc;
         } else {
-            throw new MarketDataNotFoundException("Yield curve " + curveName + " not found");
+            throw new MarketDataNotFoundException("Yield curve " + curveId + " not found");
         }
     }
 
     public double getYieldCurveRate(String curveName, LocalDate settlement) {
         return yieldCurves.get(curveName).getDiscountFactor(settlement);
+    }
+    
+    public void saveOrUpdateCurveRates(String curveId) {
+        YieldCurve yc = yieldCurves.get(curveId);
+        
+        List<CurveNodeInput> newInputs = new ArrayList<>(yc.getAllNodes());
+        yieldCurveBuilder.saveOrUpdateCurve(curveId, newInputs);
     }
 }

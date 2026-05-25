@@ -261,36 +261,36 @@ public class Engine {
         List<CurveNodeInput> inputs = new ArrayList<>();
         CurveNodeInput node;
         // 1 Giorno
-        node = new CurveNodeInput(new Offset(1,OffsetType.DAYS),0.01928,DaycountBasis.ACT_360, Compounding.SIMPLE);
+        node = new CurveNodeInput("", new Offset(1, OffsetType.DAYS), 0.01928, DaycountBasis.ACT_360, Compounding.SIMPLE);
         inputs.add(node);
         // 1 Mese
-        node = new CurveNodeInput(new Offset(1,OffsetType.MONTHS),0.02,DaycountBasis.ACT_360, Compounding.SIMPLE);
+        node = new CurveNodeInput("", new Offset(1, OffsetType.MONTHS), 0.02, DaycountBasis.ACT_360, Compounding.SIMPLE);
         inputs.add(node);
         // 3 Mesi
-        node = new CurveNodeInput(new Offset(3,OffsetType.MONTHS),0.03,DaycountBasis.ACT_360, Compounding.SIMPLE);
+        node = new CurveNodeInput("", new Offset(3, OffsetType.MONTHS), 0.03, DaycountBasis.ACT_360, Compounding.SIMPLE);
         inputs.add(node);
         // 6 Mesi
-        node = new CurveNodeInput(new Offset(6,OffsetType.MONTHS),0.035,DaycountBasis.ACT_360, Compounding.SIMPLE);
+        node = new CurveNodeInput("", new Offset(6, OffsetType.MONTHS), 0.035, DaycountBasis.ACT_360, Compounding.SIMPLE);
         inputs.add(node);
         // 1 Anno
-        node = new CurveNodeInput(new Offset(1,OffsetType.YEARS),0.04,DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        node = new CurveNodeInput("", new Offset(1, OffsetType.YEARS), 0.04, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
         inputs.add(node);
         // 2 Anni
-        node = new CurveNodeInput(new Offset(2,OffsetType.YEARS),0.045,DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        node = new CurveNodeInput("", new Offset(2, OffsetType.YEARS), 0.045, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
         inputs.add(node);
-        
+
         YieldCurve curve = new YieldCurve(officialDate, currency, inputs);
 
         LocalDate targetDate = LocalDate.of(2026, 9, 27);
         double df = curve.getDiscountFactor(targetDate);
         System.out.println(df);
-        
+
         targetDate = LocalDate.of(2026, 5, 21);
         df = curve.getDiscountFactor(targetDate);
         System.out.println(df);
-        
+
     }
-    
+
     private void runTest(Test test) {
         switch (test) {
             case BOND ->
