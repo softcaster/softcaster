@@ -465,7 +465,7 @@ CREATE TABLE yield_curve_item
     , CONSTRAINT fk_daycount FOREIGN KEY (daycount)
         REFERENCES daycount(id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-CREATE UNIQUE INDEX idx_yield_curve_item_ric ON yield_curve_item(ric);
+CREATE UNIQUE INDEX idx_yield_curve_item_ric ON yield_curve_item(ric,yield_curve);
 ALTER TABLE yield_curve_item OWNER TO easypricer;
 -- Creo sequenza
 CREATE SEQUENCE yield_curve_item_s START WITH 1 INCREMENT BY 1; 

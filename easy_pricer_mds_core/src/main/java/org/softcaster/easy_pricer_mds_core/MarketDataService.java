@@ -89,7 +89,7 @@ public class MarketDataService {
             addSpotPrice(token.symbol(), token.provider(), market);
         }
     }
-    
+
     public void updateSpotPrice(Map<String, List<String>> tokenList, Market market) {
         try {
             for (Map.Entry<String, List<String>> entry : tokenList.entrySet()) {
@@ -103,17 +103,6 @@ public class MarketDataService {
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw ex;
-        }
-    }
-
-    //
-    // Aggiornamento YieldCurve
-    //
-    public void addYieldCurve(String strProvider, String idCurve) {
-        IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
-        if (provider != null && idCurve != null && !idCurve.isBlank()) {
-            YieldCurve yc = yieldCurveBuilder.buildYieldCurve(provider, idCurve, LocalDate.now());
-            yieldCurves.put(idCurve, yc);
         }
     }
 
@@ -131,6 +120,9 @@ public class MarketDataService {
             throw new IllegalArgumentException("L'ID curva e i nuovi input non possono essere nulli.");
         }
 
+        if(newInputs.isEmpty()) {
+            return false;
+        }
         // compute viene eseguito SEMPRE, sia se la mappa è vuota sia se è piena computeIfPresent 
         // usa una lamba function (->), quando esce existingCurve e' updateCurve
         YieldCurve updatedCurve = this.yieldCurves.compute(curveId, (id, existingCurve) -> {
@@ -167,11 +159,16 @@ public class MarketDataService {
     public double getYieldCurveRate(String curveName, LocalDate settlement) {
         return yieldCurves.get(curveName).getDiscountFactor(settlement);
     }
-    
+
     public void saveOrUpdateCurveRates(String curveId) {
         YieldCurve yc = yieldCurves.get(curveId);
-        
+
         List<CurveNodeInput> newInputs = new ArrayList<>(yc.getAllNodes());
         yieldCurveBuilder.saveOrUpdateCurve(curveId, newInputs);
+    }
+
+    public void loadCurveCurveRates(String curveId) {
+        List<CurveNodeInput> newInput = yieldCurveBuilder.getNewInput(curveId);
+        updateYieldCurveInCache(curveId, newInput);
     }
 }

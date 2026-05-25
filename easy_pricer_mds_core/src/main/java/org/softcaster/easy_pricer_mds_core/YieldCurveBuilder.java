@@ -16,7 +16,6 @@ import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.core.data.YieldCurveItem;
 import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.engine.curve.Offset;
-import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.OffsetType;
@@ -42,29 +41,6 @@ public class YieldCurveBuilder {
         } else {
             return null;
         }
-    }
-
-    public YieldCurve buildYieldCurve(IMarketDataProvider provider, String idCurve, LocalDate officialDate) {
-        YieldCurve newYieldCurve = null;
-
-        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
-        if (dbCurve != null) {
-            Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
-            List<CurveNodeInput> input = new ArrayList<>();
-            CurveNodeInput node = null;
-            List<org.softcaster.core.data.YieldCurveItem> ycItems = dbCurve.getItems();
-            if (ycItems != null) {
-                for (org.softcaster.core.data.YieldCurveItem item : ycItems) {
-                    node = getNode(item);
-                    if (node != null) {
-                        input.add(node);
-                    }
-                }
-                newYieldCurve = new YieldCurve(officialDate, currency, input);
-            }
-        }
-
-        return newYieldCurve;
     }
 
     private CurveNodeInput getNode(YieldCurveItem item) {
@@ -102,6 +78,24 @@ public class YieldCurveBuilder {
         return newInput;
     }
 
+    List<CurveNodeInput> getNewInput(String curveId) {
+        List<CurveNodeInput> newInput = null;
+        // Recupero yield curve
+        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
+        if (dbCurve != null && dbCurve.getItems() != null) {
+            List<YieldCurveItem> existingDbItems = dbCurve.getItems();
+            newInput = new ArrayList<>();
+            CurveNodeInput cni;
+            for (YieldCurveItem item : existingDbItems) {
+                cni = getNode(item);
+                if (cni != null) {
+                    newInput.add(cni);
+                }
+            }
+        }
+        return newInput;
+    }
+
     public void saveOrUpdateCurve(String curveId, List<CurveNodeInput> newInputs) {
 
         if (newInputs == null || newInputs.isEmpty()) {
@@ -116,15 +110,16 @@ public class YieldCurveBuilder {
             // Usiamo come chiave la combinazione "step_code" (es. "3_MONTHS")
             Map<String, YieldCurveItem> existingDbItems = dbCurve.getItems().stream()
                     .collect(Collectors.toMap(
-                            item -> item.getOffsetValue() + "_" + OffsetType.fromId(item.getOffsetType()),
+                            item -> item.getRic(),
                             item -> item
                     ));
 
             List<YieldCurveItem> updatedItems = new ArrayList<>();
 
             // 3. Allinea i dati finanziari con le entità DB
+            org.softcaster.core.data.Daycount daycount = null;
             for (CurveNodeInput node : newInputs) {
-                String key = node.tenorOffset().step() + "_" + node.tenorOffset().offsetType().getCode();
+                String key = node.symbol();
 
                 if (existingDbItems.containsKey(key)) {
                     // Il nodo esiste già a DB: aggiorna solo tasso e discount factor (UPDATE)
@@ -135,12 +130,15 @@ public class YieldCurveBuilder {
                 } else {
                     // Il nodo è nuovo: crea una nuova entità (INSERT)
                     YieldCurveItem newItem = new YieldCurveItem();
-                    newItem.setOffsetValue((short)node.tenorOffset().step());
-                    newItem.setOffsetType((short)node.tenorOffset().offsetType().getId());
+                    newItem.setRic(node.symbol());
+                    newItem.setYieldCurve(dbCurve.getIdYieldCurve());
+                    newItem.setOffsetValue((short) node.tenorOffset().step());
+                    newItem.setOffsetType((short) node.tenorOffset().offsetType().getId());
                     newItem.setAsk(node.rate());
                     newItem.setBid(node.rate());
-                    newItem.setDaycount((short)node.daycount().getId());       
-                    newItem.setCompounding((short)node.compounding().getId()); 
+                    daycount = daycountDAO.findByCode(node.daycount().getCode());
+                    newItem.setDaycount(daycount.getIdDaycount().shortValue());
+                    newItem.setCompounding((short) node.compounding().getId());
                     updatedItems.add(newItem);
                 }
             }
@@ -148,7 +146,16 @@ public class YieldCurveBuilder {
             // 4. Applica la lista aggiornata per gestire le eventuali cancellazioni (Orphan Removal)
             dbCurve.getItems().clear();
             dbCurve.getItems().addAll(updatedItems);
+            yieldCurveDAO.saveOrUpdate(dbCurve);
         }
 
+    }
+
+    void loadCurveRates(String curveId) {
+        // Recupero yield curve
+        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
+        if (dbCurve != null && dbCurve.getItems() != null) {
+
+        }
     }
 }
