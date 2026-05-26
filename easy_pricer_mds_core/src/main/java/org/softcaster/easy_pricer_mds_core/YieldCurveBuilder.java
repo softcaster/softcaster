@@ -43,13 +43,13 @@ public class YieldCurveBuilder {
         }
     }
 
-    private CurveNodeInput getNode(YieldCurveItem item) {
+    private CurveNodeInput getCNI(YieldCurveItem item) {
 
         OffsetType offsetType = OffsetType.fromId(item.getOffsetType());
         Offset offset = new Offset(item.getOffsetValue(), offsetType);
         Daycount daycount = daycountDAO.findByIdDaycount(item.getDaycount().intValue());
         DaycountBasis daycount_ = DaycountBasis.fromCode(daycount.getCode());
-        Compounding compounding = Compounding.fromOrdinal(item.getCompounding());
+        Compounding compounding = Compounding.fromId(item.getCompounding());
         CurveNodeInput cni = new CurveNodeInput(item.getRic(), offset, item.getBid(), daycount_, compounding);
         return cni;
     }
@@ -87,7 +87,7 @@ public class YieldCurveBuilder {
             newInput = new ArrayList<>();
             CurveNodeInput cni;
             for (YieldCurveItem item : existingDbItems) {
-                cni = getNode(item);
+                cni = getCNI(item);
                 if (cni != null) {
                     newInput.add(cni);
                 }

@@ -77,4 +77,13 @@ public enum Compounding implements IdentifiableEnum {
         // Lancia un'eccezione se il codice non corrisponde a nessun elemento
         throw new IllegalArgumentException("Invalid DaycountBasis code: " + code);
     }
+
+    public static Compounding fromId(int id) {
+        for (Compounding c : Compounding.values()) {
+            if (c.getId() == id) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException("Invalid Compounding ID: " + id);
+    }
 }
