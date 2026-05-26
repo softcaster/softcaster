@@ -13,13 +13,17 @@ import java.time.LocalDate;
 public class Node {
   
     private final Offset offset;
-    private Data data;
     private final String symbol;
+    private final String daycount;
+    private final String compounding;
+    private Data data;
     
-    public Node(String symbol, Offset offset, Data data) {
+    public Node(String symbol, Offset offset, Data data, String daycount, String compounding) {
         this.offset = offset;
         this.data = data;
         this.symbol = symbol;
+        this.compounding = compounding;
+        this.daycount = daycount;
     }
 
     public LocalDate maturity(LocalDate officialDate) {
@@ -65,5 +69,19 @@ public class Node {
      */
     public void setData(Data data) {
         this.data = data;
+    }
+
+    /**
+     * @return the daycount
+     */
+    public String getDaycount() {
+        return daycount;
+    }
+
+    /**
+     * @return the compounding
+     */
+    public String getCompounding() {
+        return compounding;
     }
 }

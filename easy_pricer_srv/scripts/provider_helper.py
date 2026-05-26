@@ -5,444 +5,268 @@ import sys
 if "__pyclasspath__/Lib" not in sys.path:
     sys.path.append("__pyclasspath__/Lib")
 
-from org.softcaster.marketdataprovider.interpreter import IProviderHelper
-from org.softcaster.marketdataprovider import YieldNode
-from org.softcaster.marketdataprovider import OFFSET_TYPE
+from org.softcaster.provider.interpreter import IProviderHelper
+from org.softcaster.provider.bricks import Data
+from org.softcaster.provider.bricks import Offset
+from org.softcaster.provider.bricks import Node
+from org.softcaster.provider.enums import OffsetType
 
 class PyProviderHelper(IProviderHelper):
     
     #
-    # Gov Bond ITA
+    # Italy Yield Curve
     #
-    def getNodeListITA(self):
-        nodeList = list()
+    def getItYieldNodes(self):
+        nodes= list()
+       
+        offset = Offset(1,OffsetType.MONTHS);
+        node = Node("Italy 1M",offset, None, "ACT_365", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(1);
-        node.setRic("Italy 1M");
-        nodeList.append(node);
-        
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(3);
-        node.setRic("Italy 3M");
-        nodeList.append(node);
+        offset = Offset(3,OffsetType.MONTHS);
+        node = Node("Italy 3M",offset, None, "ACT_365", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(6);
-        node.setRic("Italy 6M");
-        nodeList.append(node);
+        offset = Offset(6,OffsetType.MONTHS);
+        node = Node("Italy 6M",offset, None, "ACT_365", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(9);
-        node.setRic("Italy 9M");
-        nodeList.append(node);
+        offset = Offset(9,OffsetType.MONTHS);
+        node = Node("Italy 9M",offset, None, "ACT_365", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(1);
-        node.setRic("Italy 1Y");
-        nodeList.append(node);
+        offset = Offset(1,OffsetType.YEARS);
+        node = Node("Italy 1Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(2);
-        node.setRic("Italy 2Y");
-        nodeList.append(node);
-        node = YieldNode()
-        
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(3);
-        node.setRic("Italy 3Y");
-        nodeList.append(node);
+        offset = Offset(2,OffsetType.YEARS);
+        node = Node("Italy 2Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(4);
-        node.setRic("Italy 4Y");
-        nodeList.append(node);
+        offset = Offset(3,OffsetType.YEARS);
+        node = Node("Italy 3Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(5);
-        node.setRic("Italy 5Y");
-        nodeList.append(node);
+        offset = Offset(4,OffsetType.YEARS);
+        node = Node("Italy 4Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(6);
-        node.setRic("Italy 6Y");
-        nodeList.append(node);
+        offset = Offset(5,OffsetType.YEARS);
+        node = Node("Italy 5Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(7);
-        node.setRic("Italy 7Y");
-        nodeList.append(node);
+        offset = Offset(6,OffsetType.YEARS);
+        node = Node("Italy 6Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(8);
-        node.setRic("Italy 8Y");
-        nodeList.append(node);
+        offset = Offset(7,OffsetType.YEARS);
+        node = Node("Italy 7Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(9);
-        node.setRic("Italy 9Y");
-        nodeList.append(node);
+        offset = Offset(8,OffsetType.YEARS);
+        node = Node("Italy 8Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(10);
-        node.setRic("Italy 10Y");
-        nodeList.append(node);
+        offset = Offset(9,OffsetType.YEARS);
+        node = Node("Italy 9Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(15);
-        node.setRic("Italy 15Y");
-        nodeList.append(node);
+        offset = Offset(10,OffsetType.YEARS);
+        node = Node("Italy 10Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(20);
-        node.setRic("Italy 20Y");
-        nodeList.append(node);
+        offset = Offset(15,OffsetType.YEARS);
+        node = Node("Italy 15Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(25);
-        node.setRic("Italy 25Y");
-        nodeList.append(node);
+        offset = Offset(20,OffsetType.YEARS);
+        node = Node("Italy 20Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(30);
-        node.setRic("Italy 30Y");
-        nodeList.append(node);
+        offset = Offset(25,OffsetType.YEARS);
+        node = Node("Italy 25Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(50);
-        node.setRic("Italy 50Y");
-        nodeList.append(node);
+        offset = Offset(30,OffsetType.YEARS);
+        node = Node("Italy 30Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        return nodeList;
+        offset = Offset(50,OffsetType.YEARS);
+        node = Node("Italy 50Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
+
+        return nodes;
 
     #
-    # Gov Bond USD
+    # United States Yield Curve
     #
-    def getNodeListUSD(self):
+    def getUsYieldNodes(self):
+        nodes= list()
+       
+        offset = Offset(1,OffsetType.MONTHS);
+        node = Node("U.S. 1M",offset, None, "ACT_365", "SIMPLE");
+        nodes.append(node);
 
-        nodeList = list()
+        offset = Offset(2,OffsetType.MONTHS);
+        node = Node("U.S. 2M",offset, None, "ACT_365", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(1);
-        node.setRic("U.S. 1M");
-        nodeList.append(node);
+        offset = Offset(3,OffsetType.MONTHS);
+        node = Node("U.S. 3M",offset, None, "ACT_365", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(2);
-        node.setRic("U.S. 2M");
-        nodeList.append(node);
+        offset = Offset(4,OffsetType.MONTHS);
+        node = Node("U.S. 4M",offset, None, "ACT_365", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(3);
-        node.setRic("U.S. 3M");
-        nodeList.append(node);
+        offset = Offset(6,OffsetType.MONTHS);
+        node = Node("U.S. 6M",offset, None, "ACT_365", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(4);
-        node.setRic("U.S. 4M");
-        nodeList.append(node);
+        offset = Offset(1,OffsetType.YEARS);
+        node = Node("U.S. 1Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(6);
-        node.setRic("U.S. 6M");
-        nodeList.append(node);
+        offset = Offset(2,OffsetType.YEARS);
+        node = Node("U.S. 2Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(1);
-        node.setRic("U.S. 1Y");
-        nodeList.append(node);
+        offset = Offset(3,OffsetType.YEARS);
+        node = Node("U.S. 3Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(2);
-        node.setRic("U.S. 2Y");
-        nodeList.append(node);
+        offset = Offset(5,OffsetType.YEARS);
+        node = Node("U.S. 5Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(3);
-        node.setRic("U.S. 3Y");
-        nodeList.append(node);
+        offset = Offset(7,OffsetType.YEARS);
+        node = Node("U.S. 7Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(5);
-        node.setRic("U.S. 5Y");
-        nodeList.append(node);
+        offset = Offset(10,OffsetType.YEARS);
+        node = Node("U.S. 10Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(7);
-        node.setRic("U.S. 7Y");
-        nodeList.append(node);
+        offset = Offset(20,OffsetType.YEARS);
+        node = Node("U.S. 20Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(10);
-        node.setRic("U.S. 10Y");
-        nodeList.append(node);
+        offset = Offset(30,OffsetType.YEARS);
+        node = Node("U.S. 30Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(20);
-        node.setRic("U.S. 20Y");
-        nodeList.append(node);
-
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(30);
-        node.setRic("U.S. 30Y");
-        nodeList.append(node);
-        return nodeList;
+        return nodes;
 
     #
-    # Tassi Euribor
+    # Tassi Term Sofr/Estr
     #
-    def getNodeListEuribor(self):
+    def getCmeTermNodes(self):
 
-        nodeList = list()
+        nodes= list()
+       
+        offset = Offset(1,OffsetType.MONTHS);
+        node = Node("1M",offset, None, "ACT_360", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.DAYS);
-        node.setOffset(7);
-        node.setRic("EURIBOR 1W");
-        nodeList.append(node);
+        offset = Offset(3,OffsetType.MONTHS);
+        node = Node("3M",offset, None, "ACT_360", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(1);
-        node.setRic("EURIBOR 1M");
-        nodeList.append(node);
+        offset = Offset(6,OffsetType.MONTHS);
+        node = Node("6M",offset, None, "ACT_360", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(3);
-        node.setRic("EURIBOR 3M");
-        nodeList.append(node);
+        offset = Offset(1,OffsetType.YEARS);
+        node = Node("1Y",offset, None, "ACT_360", "SIMPLE");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(6);
-        node.setRic("EURIBOR 6M");
-        nodeList.append(node);
+        return nodes;
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(1);
-        node.setRic("EURIBOR 1Y");
-        nodeList.append(node);
-        return nodeList;
-                
     #
     # Tassi Eurirs
     #
-    def getNodeListEurirs(self):
+    def getEurirsNodes(self):
 
-        nodeList = list()
+        nodes = list()
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(1);
-        node.setRic("EUR 01A Irs");
-        nodeList.append(node);
+        offset = Offset(1,OffsetType.YEARS);
+        node = Node("EUR 01A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(2);
-        node.setRic("EUR 02A Irs");
-        nodeList.append(node);
+        offset = Offset(2,OffsetType.YEARS);
+        node = Node("EUR 02A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(3);
-        node.setRic("EUR 03A Irs");
-        nodeList.append(node);
+        offset = Offset(3,OffsetType.YEARS);
+        node = Node("EUR 03A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(4);
-        node.setRic("EUR 04A Irs");
-        nodeList.append(node);
+        offset = Offset(4,OffsetType.YEARS);
+        node = Node("EUR 04A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(5);
-        node.setRic("EUR 05A Irs");
-        nodeList.append(node);
+        offset = Offset(5,OffsetType.YEARS);
+        node = Node("EUR 05A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(6);
-        node.setRic("EUR 06A Irs");
-        nodeList.append(node);
+        offset = Offset(6,OffsetType.YEARS);
+        node = Node("EUR 06A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(7);
-        node.setRic("EUR 07A Irs");
-        nodeList.append(node);
+        offset = Offset(7,OffsetType.YEARS);
+        node = Node("EUR 07A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(8);
-        node.setRic("EUR 08A Irs");
-        nodeList.append(node);
+        offset = Offset(8,OffsetType.YEARS);
+        node = Node("EUR 08A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(9);
-        node.setRic("EUR 09A Irs");
-        nodeList.append(node);
+        offset = Offset(9,OffsetType.YEARS);
+        node = Node("EUR 09A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(10);
-        node.setRic("EUR 10A Irs");
-        nodeList.append(node);
+        offset = Offset(10,OffsetType.YEARS);
+        node = Node("EUR 10A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(11);
-        node.setRic("EUR 11A Irs");
-        nodeList.append(node);
+        offset = Offset(11,OffsetType.YEARS);
+        node = Node("EUR 11A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(12);
-        node.setRic("EUR 12A Irs");
-        nodeList.append(node);
+        offset = Offset(12,OffsetType.YEARS);
+        node = Node("EUR 12A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(15);
-        node.setRic("EUR 15A Irs");
-        nodeList.append(node);
+        offset = Offset(15,OffsetType.YEARS);
+        node = Node("EUR 15A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(20);
-        node.setRic("EUR 20A Irs");
-        nodeList.append(node);
+        offset = Offset(20,OffsetType.YEARS);
+        node = Node("EUR 20A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(25);
-        node.setRic("EUR 25A Irs");
-        nodeList.append(node);
+        offset = Offset(25,OffsetType.YEARS);
+        node = Node("EUR 25A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(30);
-        node.setRic("EUR 30A Irs");
-        nodeList.append(node);
+        offset = Offset(30,OffsetType.YEARS);
+        node = Node("EUR 30A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(40);
-        node.setRic("EUR 40A Irs");
-        nodeList.append(node);
+        offset = Offset(40,OffsetType.YEARS);
+        node = Node("EUR 40A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(50);
-        node.setRic("EUR 50A Irs");
-        nodeList.append(node);
+        offset = Offset(50,OffsetType.YEARS);
+        node = Node("EUR 50A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
 
-        return nodeList;
-
-    #
-    # Tassi Sofr
-    #
-    def getNodeListSofr(self):
-
-        nodeList = list()
-
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(1);
-        node.setRic("SOFR 1M");
-        nodeList.append(node);
-
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(3);
-        node.setRic("SOFR 3M");
-        nodeList.append(node);
-
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(6);
-        node.setRic("SOFR 6M");
-        nodeList.append(node);
-
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(1);
-        node.setRic("SOFR 1Y");
-        nodeList.append(node);
-        return nodeList;
-
-    #
-    # Tassi Ester
-    #
-    def getNodeListEster(self):
-
-        nodeList = list()
-
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(1);
-        node.setRic("ESTER 1M");
-        nodeList.append(node);
-
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(3);
-        node.setRic("ESTER 3M");
-        nodeList.append(node);
-
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.MOUNTHS);
-        node.setOffset(6);
-        node.setRic("ESTER 6M");
-        nodeList.append(node);
-
-        node = YieldNode()
-        node.setOffsetType(OFFSET_TYPE.YEARS);
-        node.setOffset(1);
-        node.setRic("ESTER 1Y");
-        nodeList.append(node);
-        return nodeList;
+        return nodes;
 
     #
     # Entry Point
     #    
-    def getNodeList(self, curveId):
+    def getNodeList(self, symbol):
 
         if sys.registry.getProperty("python.debug") == "true":
             import pdb
@@ -451,20 +275,22 @@ class PyProviderHelper(IProviderHelper):
             py_in = FileUtil.wrap(sys.stdin, 'r', 0)
             pdb.Pdb(stdin=py_in, stdout=sys.stdout).set_trace()        
         
-        if curveId=='ITA':
-            return self.getNodeListITA()
-        elif curveId=='USD':    
-            return self.getNodeListUSD()
-        elif curveId=='EURIBOR':    
-            return self.getNodeListEuribor()
-        elif curveId=='EURIRS':    
-            return self.getNodeListEurirs()
-        elif curveId=='SOFR':    
-            return self.getNodeListSofr()
-        elif curveId=='ESTER':    
-            return self.getNodeListEster()
+        if symbol=='TERMSOFR':
+            return self.getCmeTermNodes()
+        elif symbol=='TERMESTR':
+            return self.getCmeTermNodes()
+        elif symbol=='ITYIELD':
+            return self.getItYieldNodes()
+        elif symbol=='USYIELD':
+            return self.getUsYieldNodes()
+        elif symbol=='FMIRS':
+            return self.getEurirsNodes()
         else:
             return None
+
+    def getDebugInfo(self):
+        return "Debug is: " + sys.registry.getProperty("python.debug")
+        
        
 
     

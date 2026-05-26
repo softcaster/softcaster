@@ -50,7 +50,8 @@ public class YieldCurveBuilder {
         Daycount daycount = daycountDAO.findByIdDaycount(item.getDaycount().intValue());
         DaycountBasis daycount_ = DaycountBasis.fromCode(daycount.getCode());
         Compounding compounding = Compounding.fromId(item.getCompounding());
-        CurveNodeInput cni = new CurveNodeInput(item.getRic(), offset, item.getBid(), daycount_, compounding);
+        CurveNodeInput cni = new CurveNodeInput(item.getRic(), offset, item.getBid(),
+                daycount_, compounding);
         return cni;
     }
 
@@ -58,7 +59,8 @@ public class YieldCurveBuilder {
         CurveNodeInput cni = null;
         OffsetType offsetType = OffsetType.fromCode(node.getOffset().offsetType().getCode());
         long step = node.getOffset().step();
-        cni = new CurveNodeInput(node.getSymbol(), new Offset(step, offsetType), node.getData().bid(), DaycountBasis.ACT_360, Compounding.SIMPLE);
+        cni = new CurveNodeInput(node.getSymbol(), new Offset(step, offsetType), node.getData().bid(), 
+                DaycountBasis.fromCode(node.getDaycount()), Compounding.fromCode(node.getCompounding()));
         return cni;
     }
 
@@ -151,7 +153,7 @@ public class YieldCurveBuilder {
 
     }
 
-    void loadCurveRates(String curveId) {
+    public void loadCurveRates(String curveId) {
         // Recupero yield curve
         org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
         if (dbCurve != null && dbCurve.getItems() != null) {

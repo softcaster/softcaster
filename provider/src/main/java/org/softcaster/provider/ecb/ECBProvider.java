@@ -60,7 +60,9 @@ public class ECBProvider extends AbstractProvider {
             try {
                 String[] parsedResponse = response.split("<td><strong>")[1].split("<");
                 double value = Converter.toDouble(parsedResponse[0], false);
-                Node node = new Node("Ovn", new Offset(1, OffsetType.DAYS), new Data(value,value));
+                Node node = new Node("Ovn", 
+                        new Offset(1, OffsetType.DAYS), 
+                        new Data(value,value),"ACT_360", "SIMPLE");
                 RateKey key = new RateKey("OVNESTR", RATES);
                 addRate(key, node);
             } catch (ParseException ex) {

@@ -123,7 +123,7 @@ public class CmeGroupProvider extends AbstractProvider {
                         value = root.get("dailyRate").asDouble();
                         data = new Data(value / 100., value / 100.);
                         Offset offset = new Offset(1, OffsetType.DAYS);
-                        Node nodeOvn = new Node("Ovn", offset, data);
+                        Node nodeOvn = new Node("Ovn", offset, data, "ACT_360", "SIMPLE");
                         addRate(key, nodeOvn);
                     } catch (IOException ex) {
                         LoggerMgr.logError(ex.getLocalizedMessage());
@@ -178,7 +178,7 @@ public class CmeGroupProvider extends AbstractProvider {
                     EsterOvn esterOvn = om.readValue(jsonResponse, EsterOvn.class);
                     data = new Data(esterOvn.value / 100., esterOvn.value / 100.);
                     Offset offset = new Offset(1, OffsetType.DAYS);
-                    Node nodeOvn = new Node("Ovn", offset, data);
+                    Node nodeOvn = new Node("Ovn", offset, data,"ACT_360", "SIMPLE");
                     addRate(key, nodeOvn);
                 } catch (IOException ex) {
                     LoggerMgr.logError(ex.getLocalizedMessage());
@@ -226,7 +226,7 @@ public class CmeGroupProvider extends AbstractProvider {
                         // il separatore e' l'apostrofo
                         double value = parseQuote(quote.last);
                         data = new Data(value, value);
-                        node = new Node(quote.code, null, data);
+                        node = new Node(quote.code, null, data,"", "");
                         addQuote(FUTURES, node);
                     } catch (ParseException ex) {
                         LoggerMgr.logError(ex.getLocalizedMessage());

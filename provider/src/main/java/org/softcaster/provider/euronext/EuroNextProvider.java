@@ -115,7 +115,7 @@ public class EuroNextProvider extends AbstractProvider {
                 LoggerMgr.logError(ex.getLocalizedMessage());
             }
             if (!info.getExtraParameters().isEmpty()) {
-                Node node = new Node(info.getExtraParameters().get(0), null, new Data(bidValue, askValue));
+                Node node = new Node(info.getExtraParameters().get(0), null, new Data(bidValue, askValue), "", "");
                 addQuote(market, node);
             }
         }
@@ -142,7 +142,7 @@ public class EuroNextProvider extends AbstractProvider {
                 LoggerMgr.logError(ex.getLocalizedMessage());
             }
             if (!info.getExtraParameters().isEmpty()) {
-                Node node = new Node(info.getExtraParameters().get(0), null, new Data(bidValue, askValue));
+                Node node = new Node(info.getExtraParameters().get(0), null, new Data(bidValue, askValue), "", "");
                 addQuote(market, node);
             }
         }
