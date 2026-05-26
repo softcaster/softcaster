@@ -5,6 +5,7 @@
 package org.softcaster.provider.cme;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
@@ -19,18 +20,21 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.jsoup.Jsoup;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.provider.bricks.AbstractProvider;
 import org.softcaster.provider.bricks.Data;
 import org.softcaster.provider.bricks.ProviderInfo;
 import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.bricks.Offset;
 import org.softcaster.provider.bricks.RateKey;
 import org.softcaster.provider.bricks.Request;
 import org.softcaster.provider.enums.Market;
 import static org.softcaster.provider.enums.Market.FUTURES;
 import static org.softcaster.provider.enums.Market.NONE;
 import static org.softcaster.provider.enums.Market.RATES;
+import org.softcaster.provider.enums.OffsetType;
 import org.softcaster.provider.exceptions.MarketDataProviderException;
 import org.softcaster.provider.interpreter.ProviderHelper;
 
@@ -77,9 +81,9 @@ public class CmeGroupProvider extends AbstractProvider {
             // Includere anche "index" e "overnight" nella sostituzione:
             cleanResponse = cleanResponse.replaceAll("(\"(index|overnight)\"\\s*:\\s*)\"-\"", "$1\"0\"");
 
+            ObjectMapper om = new ObjectMapper();
             List<SofrRatesFixing> sofrRates = null;
             try {
-                ObjectMapper om = new ObjectMapper();
                 SofrRoot root = om.readValue(cleanResponse, SofrRoot.class);
                 sofrRates = root.resultsStrip.get(0).rates.sofrRatesFixing;
             } catch (JsonProcessingException ex) {
@@ -91,21 +95,38 @@ public class CmeGroupProvider extends AbstractProvider {
             if (sofrRates != null && helper != null) {
                 List<Node> nodes = helper.getNodeList("TERMSOFR");
                 if (nodes != null) {
-                    int pos = 0;
-                    double value = 0.;
-                    RateKey key = new RateKey("TERMSOFR", RATES);
-                    Data data = null;
-                    for (Node node : nodes) {
-                        try {
-                            value = Converter.toDouble(sofrRates.get(pos).price, false);
-                        } catch (ParseException ex) {
-                            LoggerMgr.logError(ex.getLocalizedMessage());
-                            value = 0.;
+                    try {
+                        int pos = 0;
+                        double value = 0.;
+                        RateKey key = new RateKey("TERMSOFR", RATES);
+                        Data data = null;
+                        for (Node node : nodes) {
+                            try {
+                                value = Converter.toDouble(sofrRates.get(pos).price, false);
+                            } catch (ParseException ex) {
+                                LoggerMgr.logError(ex.getLocalizedMessage());
+                                value = 0.;
+                            }
+                            data = new Data(value / 100., value / 100.);
+                            node.setData(data);
+                            addRate(key, node);
+                            pos++;
                         }
+                        // Aggiungo tasso ester ovn
+                        String jsonResponse = Jsoup.connect("https://markets.newyorkfed.org/read?productCode=50&eventCodes=520&limit=1")
+                                .ignoreContentType(true) // Obbligatorio per evitare errori con MIME type JSON
+                                .execute()
+                                .body();
+                        SofrOvn sofrOvn = om.readValue(jsonResponse, SofrOvn.class);
+                        String jsonData = sofrOvn.data.get(0).data;
+                        JsonNode root = om.readTree(jsonData);
+                        value = root.get("dailyRate").asDouble();
                         data = new Data(value / 100., value / 100.);
-                        node.setData(data);
-                        addRate(key, node);
-                        pos++;
+                        Offset offset = new Offset(1, OffsetType.DAYS);
+                        Node nodeOvn = new Node("Ovn", offset, data);
+                        addRate(key, nodeOvn);
+                    } catch (IOException ex) {
+                        LoggerMgr.logError(ex.getLocalizedMessage());
                     }
                 }
             }
@@ -115,9 +136,9 @@ public class CmeGroupProvider extends AbstractProvider {
     private void parseResponseTermEster() {
         if (response != null && !response.isEmpty()) {
 
+            ObjectMapper om = new ObjectMapper();
             List<TermESTRRate> esterRates = null;
             try {
-                ObjectMapper om = new ObjectMapper();
                 EsterRoot root = om.readValue(response, EsterRoot.class);
                 esterRates = root.termESTRRates;
             } catch (JsonProcessingException ex) {
@@ -130,23 +151,37 @@ public class CmeGroupProvider extends AbstractProvider {
 
             ProviderHelper helper = ProviderHelper.getInstance();
             if (esterRates != null && helper != null) {
-                List<Node> nodes = helper.getNodeList("TERMESTR");
-                int pos = 0;
-                double value = 0.;
-                Data data = null;
-                RateKey key = new RateKey("TERMESTR", RATES);
-                for (Node node : nodes) {
-                    try {
-                        value = Converter.toDouble(eRates.get(pos).price, false);
-                    } catch (ParseException ex) {
-                        LoggerMgr.logError(ex.getLocalizedMessage());
-                        value = 0.;
-                    }
+                try {
+                    List<Node> nodes = helper.getNodeList("TERMESTR");
+                    int pos = 0;
+                    double value = 0.;
+                    Data data = null;
+                    RateKey key = new RateKey("TERMESTR", RATES);
+                    for (Node node : nodes) {
+                        try {
+                            value = Converter.toDouble(eRates.get(pos).price, false);
+                        } catch (ParseException ex) {
+                            LoggerMgr.logError(ex.getLocalizedMessage());
+                            value = 0.;
+                        }
 
-                    data = new Data(value / 100., value / 100.);
-                    node.setData(data);
-                    addRate(key, node);
-                    pos++;
+                        data = new Data(value / 100., value / 100.);
+                        node.setData(data);
+                        addRate(key, node);
+                        pos++;
+                    }
+                    // Aggiungo tasso ester ovn
+                    String jsonResponse = Jsoup.connect("https://api.estr.dev/latest")
+                            .ignoreContentType(true) // Obbligatorio per evitare errori con MIME type JSON
+                            .execute()
+                            .body();
+                    EsterOvn esterOvn = om.readValue(jsonResponse, EsterOvn.class);
+                    data = new Data(esterOvn.value / 100., esterOvn.value / 100.);
+                    Offset offset = new Offset(1, OffsetType.DAYS);
+                    Node nodeOvn = new Node("Ovn", offset, data);
+                    addRate(key, nodeOvn);
+                } catch (IOException ex) {
+                    LoggerMgr.logError(ex.getLocalizedMessage());
                 }
             }
         }

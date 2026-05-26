@@ -43,7 +43,7 @@ public class CmeGroupProviderTest {
 */
         System.out.println("========== TERM ESTR ==========");
         LocalDate today = LocalDate.now();
-        List<Node> nodes = provider.getTermEsterRates();
+        List<Node> nodes = provider.getTermSofrRates();
         if (nodes != null) {
             for (Node n : nodes) {
                 System.out.println(n.getSymbol() + "\t" + n.maturity(today) + "\t" + n.getData().bid());
