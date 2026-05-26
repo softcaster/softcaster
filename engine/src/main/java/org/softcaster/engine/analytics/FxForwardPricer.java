@@ -26,4 +26,15 @@ public class FxForwardPricer {
         double F = S * (foreignDF / domesticDF);
         return F;
     }
+
+    public double forwardPrice2(ForwardBaseInputData input) {
+        double domesticDF = input.getDomesticRateCurve().getDiscountFactor(input.getMaturityDate());
+        double foreignDF = input.getForeignRateCurve().getDiscountFactor(input.getMaturityDate());
+
+        // Nota che con i DF domestic e foreign si invertono rispetto alla formulazione classica
+        // F = S*[(1+ domesticRate * t) / (1+ foreignRate * t)]
+        double F = input.getSpotPrice() * (foreignDF / domesticDF);
+        return F;
+    }
+
 }

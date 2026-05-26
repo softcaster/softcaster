@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.InstrumentQuote;
+import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.provider.bricks.Node;
@@ -29,6 +31,9 @@ public class MarketDataService {
     @Qualifier("yieldCurveBuilder")
     private YieldCurveBuilder yieldCurveBuilder;
 
+    @Autowired
+    InstrumentQuoteDAO instrumentQuoteDAO;
+            
     private final ConcurrentHashMap<String, SpotPrice> spotPrices = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, YieldCurve> yieldCurves = new ConcurrentHashMap<>();
 
@@ -106,6 +111,18 @@ public class MarketDataService {
         }
     }
 
+    public void loadSpotPrice() {
+        // Leggo lista quotazioni
+        List<InstrumentQuote> iqList = instrumentQuoteDAO.findAll();
+        if (iqList.isEmpty()) {
+            return;
+        }
+
+        for (InstrumentQuote quote : iqList) {
+            updatePrice(quote.getCode(), quote.getBid(), quote.getAsk(), (quote.getBid() + quote.getAsk()) / 2.);
+        }
+    }
+    
     /**
      * Aggiorna una curva di rendimento esistente nella cache con i nuovi dati
      * dal provider.

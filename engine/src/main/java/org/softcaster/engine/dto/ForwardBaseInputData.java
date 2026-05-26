@@ -5,6 +5,7 @@
 package org.softcaster.engine.dto;
 
 import java.time.LocalDate;
+import org.softcaster.engine.curve.YieldCurve;
 
 /**
  *
@@ -14,6 +15,7 @@ public class ForwardBaseInputData extends MarketInputData {
     // 1) in generale tasso free-risk
     // 2) In caso di fx, rappresenta il tasso free-risk della ccy
     private double domesticRate = 0; 
+    private YieldCurve domesticRateCurve; 
 
     // 1) Nel Forex domesticRate è il tasso della ccy e
     // foreignRate il tasso della bcy.
@@ -21,6 +23,7 @@ public class ForwardBaseInputData extends MarketInputData {
     // e il tasso dell USD (ccy) il domestic rate
     // 2) Nel caso di equity e' il dividend yield
     private double foreignRate;  
+    private YieldCurve foreignRateCurve; 
     
     private LocalDate maturityDate;
 
@@ -64,5 +67,33 @@ public class ForwardBaseInputData extends MarketInputData {
      */
     public void setForeignRate(double foreignRate) {
         this.foreignRate = foreignRate;
+    }
+
+    /**
+     * @return the domesticRateCurve
+     */
+    public YieldCurve getDomesticRateCurve() {
+        return domesticRateCurve;
+    }
+
+    /**
+     * @param domesticRateCurve the domesticRateCurve to set
+     */
+    public void setDomesticRateCurve(YieldCurve domesticRateCurve) {
+        this.domesticRateCurve = domesticRateCurve;
+    }
+
+    /**
+     * @return the foreignRateCurve
+     */
+    public YieldCurve getForeignRateCurve() {
+        return foreignRateCurve;
+    }
+
+    /**
+     * @param foreignRateCurve the foreignRateCurve to set
+     */
+    public void setForeignRateCurve(YieldCurve foreignRateCurve) {
+        this.foreignRateCurve = foreignRateCurve;
     }
 }

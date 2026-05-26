@@ -5,6 +5,7 @@
 package mds.core.test;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,8 @@ import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.engine.analytics.FxForwardPricer;
+import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +51,24 @@ public class TestMarketDataService {
     YieldCurveDAO yieldCurveDAO;
 
     private void testYieldCurve() {
+        
+        marketDataService.loadCurveCurveRates("TERMSOFR");
+        marketDataService.loadCurveCurveRates("TERMESTR");
+        marketDataService.loadSpotPrice();
+        
+        org.softcaster.engine.curve.YieldCurve domesticYC = marketDataService.getYieldCurve("TERMSOFR");
+        org.softcaster.engine.curve.YieldCurve foreignYC = marketDataService.getYieldCurve("TERMESTR");
+        
+        ForwardBaseInputData input = new ForwardBaseInputData();
+        input.setForeignRateCurve(foreignYC);
+        input.setDomesticRateCurve(domesticYC);
+        input.setSpotPrice(marketDataService.getSpotPrice("EURUSD", RequestType.BID));
+        input.setValuationDate(LocalDate.now());
+        input.setMaturityDate(LocalDate.of(2026, 06, 05));
+        
+        FxForwardPricer pricer = new FxForwardPricer();
+        double f = pricer.forwardPrice2(input);
+        System.out.println(f);
     }
 
     private void testUpdateBondPrice() {
