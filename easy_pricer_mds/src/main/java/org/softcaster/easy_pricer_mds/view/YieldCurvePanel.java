@@ -104,18 +104,20 @@ public class YieldCurvePanel extends FndtAbstactPanel {
         yieldCurveBeanList.clear();
         YieldCurveDAO dao = mDSFacade.getYieldCurveDAO();
         List<YieldCurve> curves = dao.findAll();
+        MarketDataService mds = mDSFacade.getMarketDataService();
         YieldCurveBean bean = null;
         for (YieldCurve yc : curves) {
             bean = new YieldCurveBean(yc);
             yieldCurveBeanList.add(bean);
+            mds.loadCurveCurveRates(yc.getCode());
         }
 
         model.setData(yieldCurveBeanList);
     }
 
     private void updateTable(FndtTableModel model) {
-        for(YieldCurveBean bean: yieldCurveBeanList) {
-            if(bean != null && bean.getYieldCurve() != null && !bean.getYieldCurve().getProvider().isBlank()) {
+        for (YieldCurveBean bean : yieldCurveBeanList) {
+            if (bean != null && bean.getYieldCurve() != null && !bean.getYieldCurve().getProvider().isBlank()) {
                 MarketDataService mds = mDSFacade.getMarketDataService();
                 mds.updateYieldCurve(bean.getYieldCurve().getProvider(), bean.getYieldCurve().getCode());
             }
@@ -203,8 +205,8 @@ public class YieldCurvePanel extends FndtAbstactPanel {
 
     @Override
     public void downloadAction() {
-        for(YieldCurveBean bean: yieldCurveBeanList) {
-            if(bean != null && bean.getYieldCurve() != null && !bean.getYieldCurve().getProvider().isBlank()) {
+        for (YieldCurveBean bean : yieldCurveBeanList) {
+            if (bean != null && bean.getYieldCurve() != null && !bean.getYieldCurve().getProvider().isBlank()) {
                 MarketDataService mds = mDSFacade.getMarketDataService();
                 mds.saveOrUpdateCurveRates(bean.getYieldCurve().getCode());
             }

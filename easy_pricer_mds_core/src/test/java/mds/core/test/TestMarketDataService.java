@@ -48,17 +48,6 @@ public class TestMarketDataService {
     YieldCurveDAO yieldCurveDAO;
 
     private void testYieldCurve() {
-        // 1) Creazione curva
-        marketDataService.addYieldCurve("CmeGroupProvider", "TERMSOFR");
-        
-        // 2) Update
-        marketDataService.updateYieldCurve("CmeGroupProvider", "TERMSOFR");
-        
-        // 3) Richiesta tasso
-        LocalDate today = LocalDate.now();
-        LocalDate settlement = today.plusDays(42);
-        double rate = marketDataService.getYieldCurveRate("TERMSOFR", settlement);
-        System.out.println(rate);
     }
 
     private void testUpdateBondPrice() {
