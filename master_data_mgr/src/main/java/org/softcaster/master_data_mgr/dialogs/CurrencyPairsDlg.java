@@ -345,7 +345,6 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
         Currency bcy = (Currency) cbBcy.getSelectedItem();
         bean.getForexMasterData().setCurrency(bcy);
         bean.getForexMasterData().setDaycount(bcy.getDaycount());
-        bean.getForexMasterData().setCalendar(bcy.getCalendar());
         Currency ccy = (Currency) cbCcy.getSelectedItem();
         String code = bcy.getIsoCode()+ccy.getIsoCode();
         bean.getForexMasterData().setCode(code);

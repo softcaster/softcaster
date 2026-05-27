@@ -686,7 +686,6 @@ public class MmFutureDlg extends javax.swing.JDialog {
             mfmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             mfmd.setCurrency(currency);
-            mfmd.setCalendar(currency.getCalendar());
             mfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
             mfmd.setDaycount((Daycount) cbDaycount.getSelectedItem());
             mfmd.setUnderlying((ForexMasterData) cbUnderlying.getSelectedItem());

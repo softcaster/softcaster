@@ -1056,7 +1056,6 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             smd.setCurrency(currency);
-            smd.setCalendar(currency.getCalendar());
             smd.setDaycount((Daycount) cbDaycount.getSelectedItem());
             smd.setAccrualScheduleType(100);
             smd.setAmortizationSchedule((AmortizationSchedule) cbAmortSched.getSelectedItem());

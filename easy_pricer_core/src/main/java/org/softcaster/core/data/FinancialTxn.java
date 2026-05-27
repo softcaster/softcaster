@@ -27,15 +27,15 @@ public class FinancialTxn implements Serializable {
     @Column(name = "id_financial_txn", columnDefinition = "INTEGER")
     private Integer idFinancialTxn;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "counterparty", nullable = true)
     private Counterparty counterparty;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "position_md", nullable = true)
     private PositionMasterData positionMd;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "master_data", nullable = true)
     private MasterData masterData;
 

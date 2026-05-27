@@ -8,15 +8,20 @@ import org.springframework.data.repository.query.Param;
 public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Integer> {
 
     public FinancialTxn findByIdFinancialTxn(Integer idFinancialTxn);
-    
+
     // Il nome riflette il percorso: MasterData -> Daycount -> Code
     // List<FinancialTxn> findAllByMasterData_Daycount_Code(String code);    
-    
-    // Query JPQL esplicita
-    @Query("SELECT f FROM FinancialTxn f WHERE f.masterData.daycount.code = :code")
+
+    // Ottimizzato con JOIN FETCH: carica la transazione e il MasterData in un solo colpo
+    @Query("SELECT f FROM FinancialTxn f "
+            + "JOIN FETCH f.masterData m "
+            + "WHERE m.daycount.code = :code")
     public List<FinancialTxn> findAllByDaycountCode(@Param("code") String code);
 
-    @Query("SELECT f FROM FinancialTxn f WHERE f.masterData.assetClass.code = :code")
+    // Ottimizzato con JOIN FETCH
+    @Query("SELECT f FROM FinancialTxn f "
+            + "JOIN FETCH f.masterData m "
+            + "WHERE m.assetClass.code = :code")
     public List<FinancialTxn> findAllByAssetClass(@Param("code") String code);
 
     public List<FinancialTxn> findByTxnStatusCode(String code);

@@ -18,6 +18,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
     "org.softcaster.easy_pricer_srv",
     "org.softcaster.easy_pricer_mds_core",
     "org.softcaster.core.data", // Il pacchetto della libreria core
+    "org.softcaster.core.dto", // Il pacchetto della libreria core
     "org.softcaster.engine" // Il pacchetto della libreria engine
 })
 // Attiva i repository JPA definiti nel JAR core

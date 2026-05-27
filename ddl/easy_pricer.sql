@@ -819,7 +819,6 @@ ALTER TABLE financial_txn OWNER TO easypricer;
 CREATE SEQUENCE financial_txn_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE financial_txn_s OWNER TO easypricer;
 
-
 ---------------------------------------------------------------------
 -- Tabelle obsolete
 ---------------------------------------------------------------------

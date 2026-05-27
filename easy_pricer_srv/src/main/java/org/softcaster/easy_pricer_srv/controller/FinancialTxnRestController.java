@@ -2,10 +2,11 @@ package org.softcaster.easy_pricer_srv.controller;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.softcaster.commons.utils.NumberUtils;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.TxnStatusDAO;
+import org.softcaster.core.dto.FinancialTxnDto;
+import org.softcaster.core.dto.FinancialTxnMapper;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -27,6 +28,8 @@ public class FinancialTxnRestController {
     private FinancialTxnDAO dao;
     @Autowired
     private TxnStatusDAO txnStatusDAO;
+    @Autowired
+    FinancialTxnMapper mapper;
 
     @GetMapping("/financial_txn/r01")
     public ResponseEntity<List<FinancialTxn>> findAll() {
@@ -35,6 +38,19 @@ public class FinancialTxnRestController {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity(listaFinancialTxn, HttpStatus.OK);
+    }
+
+    @GetMapping("/financial_txn/r10")
+    public ResponseEntity<List<FinancialTxnDto>> findAllDto() {
+        List<FinancialTxn> transactions = dao.findAll();
+        if (transactions == null) {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+        // Conversione massiva in DTO
+        List<FinancialTxnDto> dtoTransactions = transactions.stream()
+                .map(entity -> mapper.toDto(entity))
+                .toList();
+        return new ResponseEntity(dtoTransactions, HttpStatus.OK);
     }
 
     @GetMapping("/financial_txn/r02/{id}")
@@ -47,6 +63,19 @@ public class FinancialTxnRestController {
     }
 
     @GetMapping("/financial_txn/r03/{code}")
+    public ResponseEntity<List<FinancialTxnDto>> findAllByAssetClass(@PathVariable("code") String code) {
+        List<FinancialTxn> transactions = dao.findAllByAssetClass(code);
+        if (transactions == null) {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+        List<FinancialTxnDto> dtoTransactions = transactions.stream()
+                .map(entity -> mapper.toDto(entity))
+                .toList();
+        return new ResponseEntity(dtoTransactions, HttpStatus.OK);
+    }
+    
+/*
+    @GetMapping("/financial_txn/r03/{code}")
     public ResponseEntity<List<FinancialTxn>> findAllByAssetClass(@PathVariable("code") String code) {
         List<FinancialTxn> listaFinancialTxn = dao.findAllByAssetClass(code);
         if (listaFinancialTxn == null) {
@@ -54,7 +83,7 @@ public class FinancialTxnRestController {
         }
         return new ResponseEntity(listaFinancialTxn, HttpStatus.OK);
     }
-
+*/
     // save/update record
     @PostMapping(value = "/financial_txn")
     public ResponseEntity<FinancialTxn> saveOrUpdate(@RequestBody FinancialTxn financialTxn) {
@@ -65,7 +94,7 @@ public class FinancialTxnRestController {
             }
 
             financialTxn = dao.saveOrUpdate(financialTxn);
-            
+
             return new ResponseEntity(financialTxn, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(CommonData.getJsonError(e.getLocalizedMessage()), HttpStatus.NOT_ACCEPTABLE);

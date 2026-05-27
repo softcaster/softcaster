@@ -621,7 +621,6 @@ public class BondFutureDlg extends javax.swing.JDialog {
             bfmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             bfmd.setCurrency(currency);
-            bfmd.setCalendar(currency.getCalendar());
             bfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
             bfmd.setDaycount((Daycount) cbDaycount.getSelectedItem());
             masterDataFacade.getBondFutureMasterDataDAO().saveOrUpdate(bfmd);

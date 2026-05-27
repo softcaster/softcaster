@@ -1,4 +1,5 @@
 ALTER TABLE yield_curve ADD COLUMN provider VARCHAR(50) NOT NULL DEFAULT '';
+ALTER TABLE master_data DROP COLUMN calendar;
 
 -- codice controllo pre update effettivo
 SELECT 

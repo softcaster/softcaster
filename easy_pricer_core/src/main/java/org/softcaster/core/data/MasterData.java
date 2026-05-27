@@ -41,10 +41,6 @@ public class MasterData implements Serializable {
     @JoinColumn(name = "currency", nullable = true)
     private Currency currency;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "calendar", nullable = true)
-    private Calendar calendar;
-
     @Column(name = "issue_date")
     private java.sql.Date issueDate;
 
@@ -194,20 +190,6 @@ public class MasterData implements Serializable {
      */
     public void setCurrency(Currency currency) {
         this.currency = currency;
-    }
-
-    /**
-     * @return the calendar
-     */
-    public Calendar getCalendar() {
-        return calendar;
-    }
-
-    /**
-     * @param calendar the calendar to set
-     */
-    public void setCalendar(Calendar calendar) {
-        this.calendar = calendar;
     }
 
     /**

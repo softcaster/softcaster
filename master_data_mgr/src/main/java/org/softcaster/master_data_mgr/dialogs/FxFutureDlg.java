@@ -685,7 +685,6 @@ public class FxFutureDlg extends javax.swing.JDialog {
             ffmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             ffmd.setCurrency(currency);
-            ffmd.setCalendar(currency.getCalendar());
             ffmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
             ffmd.setDaycount((Daycount) cbDaycount.getSelectedItem());
             ffmd.setUnderlying((ForexMasterData) cbUnderlying.getSelectedItem());
