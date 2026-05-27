@@ -6,6 +6,9 @@ import type {
     InstrumentQuote, InstrumentQuoteHist, ForexMasterData, CounterpartyType, Counterparty, PortfolioMasterData, PositionMasterData,
     PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem
 } from '../data/schema'
+import type {
+    FinancialTxnDto
+} from '../services/dto';
 
 export const fetchDaycount = async (): Promise<Daycount[]> => {
     try {
@@ -1334,27 +1337,27 @@ export const fetchFinancialTxn = async (): Promise<FinancialTxn[]> => {
     }
 };
 
-export const findAllByAssetClass = async (code: string): Promise<FinancialTxn[]> => {
+export const findAllByAssetClass = async (code: string): Promise<FinancialTxnDto[]> => {
     try {
-        return await apiRequest<FinancialTxn[]>('/financial_txn/r03/' + code, 'GET');
+        return await apiRequest<FinancialTxnDto[]>('/financial_txn/r03/' + code, 'GET');
     } catch (error) {
         console.error('Failed to fetch financial_txn:', error);
         return [];
     }
 };
 
-export const fetchFinancialTxnById = async (id: number): Promise<FinancialTxn | null> => {
+export const fetchFinancialTxnById = async (id: number): Promise<FinancialTxnDto | null> => {
     try {
-        return await apiRequest<FinancialTxn>('/financial_txn/r02/' + id, 'GET');
+        return await apiRequest<FinancialTxnDto>('/financial_txn/r02/' + id, 'GET');
     } catch (error) {
         console.error('Failed to fetch financial_txn:', error);
         return null;
     }
 };
 
-export const saveFinancialTxn = async (financial_txn: FinancialTxn): Promise<FinancialTxn | null> => {
+export const saveFinancialTxn = async (financial_txn: FinancialTxnDto): Promise<FinancialTxnDto | null> => {
     try {
-        return await apiRequest<FinancialTxn>('/financial_txn', 'POST', financial_txn);
+        return await apiRequest<FinancialTxnDto>('/financial_txn', 'POST', financial_txn);
     } catch (error) {
         console.error('Failed to save financial_txn:', error);
         return null;

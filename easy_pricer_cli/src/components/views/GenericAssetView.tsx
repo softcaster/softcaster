@@ -33,7 +33,12 @@ export function GenericAssetView<TMaster>({
                     masterDataList={masterDataList} // Nome generico per l'anagrafica
                     positions={positionList}
                     counterparties={counterpartyList}
-                    onChange={setSelectedTrade}
+                    /* 
+                       Invece di passare direttamente setSelectedTrade, creiamo un arrow function 
+                       che esegue lo scompattamento ({ ...val }). Questo notifica a React che l'oggetto 
+                       è cambiato, forzando il ri-rendering istantaneo del campo di testo della descrizione.
+                    */
+                    onChange={(val: any) => setSelectedTrade(val ? { ...val } : null)}
                 />
             </SplitterPanel>
             

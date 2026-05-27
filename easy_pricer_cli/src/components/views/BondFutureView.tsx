@@ -2,13 +2,13 @@ import { GenericAssetView } from './GenericAssetView';
 import { BondFutureForm } from '../fragments/BondFutureForm';
 import { GenericTxnTable } from '../fragments/GenericTxnTable';
 import { fetchBondFutureMasterData } from '../services/services';
-import { DEFAULT_TXN } from '../data/schema';
+import { DEFAULT_TXN_DTO } from '../services/dto';
 
 const BondFutureView = () => (
     <GenericAssetView
         assetClass="FFU"
         fetchMasterData={fetchBondFutureMasterData}
-        defaultTxn={DEFAULT_TXN}
+        defaultTxn={DEFAULT_TXN_DTO}
         FormComponent={BondFutureForm}
         TableComponent={GenericTxnTable}
     />

@@ -12,6 +12,7 @@ import org.softcaster.core.data.TxnStatus;
  */
 public record FinancialTxnDto(
         Integer financialTxnId,
+        String description,
         // Controparte
         Integer counterpartyId,
         String counterpartyCode,
@@ -29,4 +30,6 @@ public record FinancialTxnDto(
         java.sql.Date tradeDate,
         java.sql.Date settlement,
         Double quantity,
-        Double price) {}
+        Double price) {
+
+}

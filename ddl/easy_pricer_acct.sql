@@ -3,41 +3,67 @@
 ---------------------------------------------------------------------
 -- LIVELLO 0A: Tabella Anagrafica dei Tipi di Rendiconto Finanziario
 CREATE TABLE financial_statement_types (
-    statement_type_id VARCHAR(20) PRIMARY KEY, -- 'BALANCE_SHEET', 'INCOME_STATEMENT', 'OFF_BALANCE_SHEET'
-    description_en VARCHAR(100) NOT NULL,
-    description_it VARCHAR(100) NOT NULL
+    statement_type_id INTEGER NOT NULL
+    , description VARCHAR(25) NOT NULL -- 'BALANCE_SHEET', 'INCOME_STATEMENT', 'OFF_BALANCE_SHEET'
+    , PRIMARY KEY (statement_type_id)
 );
+ALTER TABLE financial_statement_types OWNER TO easypricer;
+-- Creo sequenza
+CREATE SEQUENCE financial_statement_types_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE financial_statement_types_s OWNER TO easypricer;
 
 -- LIVELLO 0B: Tabella Anagrafica della Natura del Conto
 CREATE TABLE account_natures (
-    nature_id VARCHAR(20) PRIMARY KEY, -- 'ASSET', 'LIABILITY', 'INCOME', 'EXPENSE', 'MEMORANDUM'
-    description_en VARCHAR(100) NOT NULL,
-    description_it VARCHAR(100) NOT NULL
+    nature_id INTEGER NOT NULL 
+    , description VARCHAR(25) NOT NULL -- 'ASSET', 'LIABILITY', 'INCOME', 'EXPENSE', 'MEMORANDUM'
+    , PRIMARY KEY (nature_id)
 );
+ALTER TABLE account_natures OWNER TO easypricer;
+-- Creo sequenza
+CREATE SEQUENCE account_natures_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE account_natures_s OWNER TO easypricer;
 
 -- LIVELLO 0C: Tabella Anagrafica del Segno Algebrico Naturale (Sezione Contabile)
 CREATE TABLE normal_balances (
-    balance_id VARCHAR(6) PRIMARY KEY, -- 'DEBIT', 'CREDIT'
-    description_en VARCHAR(100) NOT NULL,
-    description_it VARCHAR(100) NOT NULL
+    balance_id INTEGER NOT NULL 
+    , description VARCHAR(25) NOT NULL  -- 'DEBIT', 'CREDIT'
+    , PRIMARY KEY (balance_id)
 );
+ALTER TABLE normal_balances OWNER TO easypricer;
+-- Creo sequenza
+CREATE SEQUENCE normal_balances_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE normal_balances_s OWNER TO easypricer;
 
--- LIVELLO 1: Macro-classi di Bilancio (Ora punta a ben 3 tabelle anagrafiche tramite FK)
+-- LIVELLO 1: Macro-classi di Bilancio 
 CREATE TABLE account_macro_classes (
-    macro_id CHAR(1) PRIMARY KEY, -- '1' = Assets, '2' = Liabilities, ecc.
-    macro_name VARCHAR(50) NOT NULL,
-    statement_type_id VARCHAR(20) NOT NULL REFERENCES financial_statement_types(statement_type_id),
-    nature_id VARCHAR(20) NOT NULL REFERENCES account_natures(nature_id),
-    balance_id VARCHAR(6) NOT NULL REFERENCES normal_balances(balance_id)
+    macro_id INTEGER NOT NULL  .
+    , macro_code CHAR(1) NOT NULL -- '1' = Assets, '2' = Liabilities, ecc
+    , macro_name VARCHAR(50) NOT NULL
+    , statement_type INTEGER NOT NULL REFERENCES financial_statement_types(statement_type_id)
+    . nature INTEGER NOT NULL REFERENCES account_natures(nature_id)
+    . balance  INTEGER NOT NULL REFERENCES normal_balances(balance_id)
+    , PRIMARY KEY (macro_id)
 );
+CREATE UNIQUE INDEX idx_macro_code ON account_macro_classes(macro_code);
+ALTER TABLE account_macro_classes OWNER TO easypricer;
+-- Creo sequenza
+CREATE SEQUENCE account_macro_classes_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE account_macro_classes_s OWNER TO easypricer;
 
 -- LIVELLO 2: Categorie / Sotto-classi (Invariata)
 CREATE TABLE account_categories (
-    category_id VARCHAR(2) PRIMARY KEY, 
-    macro_id CHAR(1) NOT NULL REFERENCES account_macro_classes(macro_id),
-    category_name VARCHAR(100) NOT NULL,
-    CONSTRAINT chk_category_prefix CHECK (LEFT(category_id, 1) = macro_id)
+    category_id INTEGER NOT NULL
+    , category_code VARCHAR(2) NOT NULL 
+    , macro INTEGER NOT NULL REFERENCES account_macro_classes(macro_id)
+    , category_name VARCHAR(50) NOT NULL
+    , CONSTRAINT chk_category_prefix CHECK (LEFT(category_code, 1) = macro_id)
+    , PRIMARY KEY (macro_id)
 );
+CREATE UNIQUE INDEX idx_category_code ON account_categories(category_code);
+ALTER TABLE account_categories OWNER TO easypricer;
+-- Creo sequenza
+CREATE SEQUENCE account_categories_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE account_categories_s OWNER TO easypricer;
 
 -- LIVELLO 3: Conti Operativi di Dettaglio (Invariata)
 CREATE TABLE chart_of_accounts (
@@ -117,3 +143,28 @@ ALTER TABLE journal_lines
 ADD COLUMN cost_center_id VARCHAR(10) REFERENCES cost_centers(cost_center_id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
+-- Inserimento Livello 1 (Macro-classi)
+INSERT INTO account_macro_classes (macro_id, macro_name, statement_type) VALUES
+('1', 'Assets', 'BALANCE_SHEET'),
+('2', 'Liabilities', 'BALANCE_SHEET'),
+('7', 'Financial Income', 'INCOME_STATEMENT'),
+('9', 'Memorandum Accounts', 'OFF_BALANCE_SHEET');
+
+-- Inserimento Livello 2 (Categorie)
+INSERT INTO account_categories (category_id, macro_id, category_name) VALUES
+('10', '1', 'Cash and Cash Equivalents'),
+('12', '1', 'Margin Accounts and Broker Receivables'),
+('24', '2', 'Financial Derivatives and Settlement Liabilities'),
+('70', '7', 'Gains on Financial Derivatives'),
+('90', '9', 'Financial Commitments');
+
+-- Inserimento Livello 3 (Conti operativi finali)
+INSERT INTO chart_of_accounts (account_id, category_id, account_name, currency) VALUES
+('1010', '10', 'Cash and Cash Equivalents - EUR', 'EUR'),
+('1015', '10', 'Cash and Cash Equivalents - USD Account', 'USD'),
+('1255', '12', 'Margin Account with Broker - USD', 'USD'),
+('2410', '24', 'Financial Derivatives - Liability (Forward Forex)', 'EUR'),
+('7010', '70', 'Realized Gain on Financial Derivatives', 'EUR'),
+('9010', '90', 'Financial Commitments - Long Futures', 'USD');
+           <Column field="idFinancialTxn" header="Trade Id" body={(rowData: FinancialTxnDto) => rowData.idFinancialTxn.toString().padStart(5, '0')} sortable />
+ 

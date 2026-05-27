@@ -1,18 +1,18 @@
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import type { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
-import type { FinancialTxn } from '../data/schema';
+import type { FinancialTxnDto } from '../services/dto';
 import { getSideLabel } from './SideSelector';
 import { formatPrice, formatUnits } from '../../utils/formatters';
 
 interface GenericTxnTableProps {
-    data: FinancialTxn[];
-    selection: FinancialTxn | null;
-    onSelectionChange: (value: FinancialTxn) => void;
+    data: FinancialTxnDto[];
+    selection: FinancialTxnDto | null;
+    onSelectionChange: (value: FinancialTxnDto | null) => void;
 }
 
-const sideBodyTemplate = (rowData: FinancialTxn) => {
-    const label = getSideLabel(rowData.txnSide); // Usi la funzione centralizzata
+const sideBodyTemplate = (rowData: FinancialTxnDto) => {
+    const label = getSideLabel(rowData.txnSide); 
     const colorClass = rowData.txnSide === 1 ? 'text-green-600' : 'text-red-600';
 
     return <span className={`font-bold ${colorClass}`}>{label}</span>;
@@ -20,16 +20,16 @@ const sideBodyTemplate = (rowData: FinancialTxn) => {
 
 export const GenericTxnTable = ({ data, selection, onSelectionChange }: GenericTxnTableProps) => {
     return (
-        <DataTable <FinancialTxn[]>
+        <DataTable
             value={data}
-            rowClassName={(data: FinancialTxn) => ({
-                'font-italic opacity-60': (data.txnStatus?.code === 'CANCELLED' || data.txnStatus?.code === 'CANCELLED_EXECUTED')
+            rowClassName={(rowData: FinancialTxnDto) => ({
+                'font-italic opacity-60': (rowData.txnStatus?.code === 'CANCELLED' || rowData.txnStatus?.code === 'CANCELLED_EXECUTED')
             })}
-            dataKey="idFinancialTxn"
+            // 1. Allineato alla chiave primaria definita nella export interface
+            dataKey="financialTxnId" 
             selectionMode="single"
             selection={selection}
-            onSelectionChange={(e: DataTableSelectionSingleChangeEvent<FinancialTxn[]>) =>
-                onSelectionChange(e.value)}
+            onSelectionChange={(e: DataTableSelectionSingleChangeEvent<any>) => onSelectionChange(e.value)}
             stripedRows
             showGridlines
             className="p-datatable-sm shadow-2 w-full"
@@ -37,13 +37,39 @@ export const GenericTxnTable = ({ data, selection, onSelectionChange }: GenericT
             scrollable
             scrollHeight="flex"
         >
-            <Column field="idFinancialTxn" header="Trade Id" body={(rowData: FinancialTxn) => rowData.idFinancialTxn.toString().padStart(5, '0')} sortable />
-            <Column field="code" header="Code" body={(rowData: FinancialTxn) => rowData.masterData.code} sortable />
+            {/* 2. Gestione sicura del padStart nel caso in cui financialTxnId sia temporaneamente null o 0 */}
+            <Column 
+                field="financialTxnId" 
+                header="Trade Id" 
+                body={(rowData: FinancialTxnDto) => {
+                    if (!rowData.financialTxnId) return '-';
+                    return String(rowData.financialTxnId).padStart(5, '0');
+                }} 
+                sortable 
+            />
+            
+            <Column field="masterDataCode" header="Code" body={(rowData: FinancialTxnDto) => rowData.masterDataCode || '-'} sortable />
+            
             <Column field="txnSide" header="Side" body={sideBodyTemplate} />
-            <Column field="price" style={{ textAlign: 'right' }} header="Price" body={(rowData) => formatPrice(rowData.price)} sortable />
-            <Column field="quantity" style={{ textAlign: 'right' }} header="Units" body={(rowData) => formatUnits(rowData.quantity)} sortable />
-            <Column field="counterparty" header="Counterparty" body={(r) => r.counterparty?.description || '-'} sortField="counterparty.description" sortable />
-            <Column field="tradeDate" header="Trade Date" body={(r) => r.tradeDate} sortable />
+            
+            <Column field="price" style={{ textAlign: 'right' }} header="Price" body={(rowData: FinancialTxnDto) => formatPrice(rowData.price)} sortable />
+            
+            <Column field="quantity" style={{ textAlign: 'right' }} header="Units" body={(rowData: FinancialTxnDto) => formatUnits(rowData.quantity)} sortable />
+            
+            {/* 3.  Allineato a counterpartyDesc come definito nelDTO */}
+            <Column field="counterpartyDesc" header="Counterparty" body={(rowData: FinancialTxnDto) => rowData.counterpartyDesc || '-'} sortable />
+            
+            {/* 4. Forza la conversione a stringa o testo leggibile per evitare il crash del tipo Date/String di Jackson */}
+            <Column 
+                field="tradeDate" 
+                header="Trade Date" 
+                body={(rowData: FinancialTxnDto) => {
+                    if (!rowData.tradeDate) return '-';
+                    // Se a runtime è un oggetto Date reale usa toISOString, altrimenti stampa la stringa così com'è
+                    return rowData.tradeDate instanceof Date ? rowData.tradeDate.toLocaleDateString() : String(rowData.tradeDate);
+                }} 
+                sortable 
+            />
         </DataTable>
     );
 };

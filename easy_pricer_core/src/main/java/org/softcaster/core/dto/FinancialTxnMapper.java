@@ -23,9 +23,10 @@ public class FinancialTxnMapper {
         if (entity == null) {
             return null;
         }
-
+        
         return new FinancialTxnDto(
                 entity.getIdFinancialTxn(),
+                entity.getDescription(),
                 entity.getCounterparty() != null ? entity.getCounterparty().getIdCounterparty() : null,
                 entity.getCounterparty() != null ? entity.getCounterparty().getCode() : null,
                 entity.getCounterparty() != null ? entity.getCounterparty().getDescription() : null,

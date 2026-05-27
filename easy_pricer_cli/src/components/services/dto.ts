@@ -1,4 +1,7 @@
 import axios from 'axios';
+import type { TxnStatus } from '../data/schema';
+
+
 const BASE_URL = 'http://localhost:8080/api/v1';
 
 export interface PricingRequest {
@@ -79,3 +82,63 @@ export const calculateFwdBondPricing = async (request: ForwardPricingRequest): P
 };
 
 
+// Rappresenta il DTO principale FinancialTxnDto
+export interface FinancialTxnDto {
+    financialTxnId: number;
+    description: string;
+    counterpartyId: number | null;
+    counterpartyCode: string | null;
+    counterpartyDesc: string | null;
+    positionMdId: number | null;
+    positionMdCode: string | null;
+    masterDataId: number | null;
+    masterDataCode: string | null;
+    masterDataDesc: string | null;
+    txnStatus: TxnStatus | null; // Mappato come oggetto reale coerentemente con il backend
+    refId: number;
+    txnSide: number;
+    tradeDate: Date;
+    settlement: Date;
+    quantity: number;
+    price: number;
+};
+
+export const DEFAULT_TXN_DTO: FinancialTxnDto = {
+    financialTxnId: 0,
+    description: '',
+    counterpartyId: 0,
+    counterpartyCode: '',
+    counterpartyDesc: '',
+    positionMdId: 0,
+    positionMdCode: '',
+    masterDataId: 0,
+    masterDataCode: '',
+    masterDataDesc: '',
+    txnStatus: {} as TxnStatus,
+    refId: 0,
+    txnSide: 1,
+    tradeDate: new Date,
+    settlement: new Date,
+    quantity: 0,
+    price: 0
+};
+
+export const createDefaultTxnDto = (): FinancialTxnDto => ({
+    financialTxnId: 0,
+    description: '',
+    counterpartyId: 0,
+    counterpartyCode: '',
+    counterpartyDesc: '',
+    positionMdId: 0,
+    positionMdCode: '',
+    masterDataId: 0,
+    masterDataCode: '',
+    masterDataDesc: '',
+    txnStatus: { idTxnStatus: 0, description: '' } as TxnStatus,
+    refId: 0,
+    txnSide: 1,
+    tradeDate: new Date,
+    settlement: new Date,
+    quantity: 0,
+    price: 0
+});

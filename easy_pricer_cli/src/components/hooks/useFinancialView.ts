@@ -4,14 +4,17 @@ import { useActions } from '../../context/ActionContext';
 
 // Importa solo i tipi comuni a TUTTE le viste
 import type {
-    FinancialTxn,
     PositionMasterData,
     Counterparty
 } from '../data/schema';
 
+import type {
+    FinancialTxnDto
+} from '../services/dto';
+
 import {
-    createDefaultTxn
-} from '../data/schema';
+    createDefaultTxnDto
+} from '../services/dto';
 
 // Importa le funzioni API generiche
 import {
@@ -30,13 +33,13 @@ import {
 export function useFinancialView<TMaster>(
     assetClass: string,
     fetchMasterData: () => Promise<TMaster[]>,
-    defaultTxn: FinancialTxn
+    defaultTxn: FinancialTxnDto
 ) {
     const [masterDataList, setMasterDataList] = useState<TMaster[]>([]);
     const [positionList, setPositionList] = useState<PositionMasterData[]>([]);
     const [counterpartyList, setCounterpartyList] = useState<Counterparty[]>([]);
-    const [trades, setTrades] = useState<FinancialTxn[]>([]);
-    const [selectedTrade, setSelectedTrade] = useState<FinancialTxn>(defaultTxn);
+    const [trades, setTrades] = useState<FinancialTxnDto[]>([]);
+    const [selectedTrade, setSelectedTrade] = useState<FinancialTxnDto>(defaultTxn);
     const { setAction } = useActions();
     const [isExporting, setIsExporting] = useState(false);
     const { showToast } = useActions(); // Recupero showToast
@@ -85,10 +88,10 @@ export function useFinancialView<TMaster>(
     };
 
     const handleDelete = async () => {
-        if (!selectedTrade.idFinancialTxn) return; // Non cancellare se non c'è ID
+        if (!selectedTrade.financialTxnId) return; // Non cancellare se non c'è ID
 
         try {
-            await logicalDeleteFinancialTxn(selectedTrade.idFinancialTxn); // Chiamata API
+            await logicalDeleteFinancialTxn(selectedTrade.financialTxnId); // Chiamata API
             await loadAll(); // Ricarica la tabella
             setSelectedTrade(defaultTxn); // Resetta il form
             // Opzionale: mostra un toast di successo
@@ -147,11 +150,11 @@ export function useFinancialView<TMaster>(
         const isSaveable = selectedTrade.price > 0 && selectedTrade.quantity !== 0;
 
         // Un trade è "eliminabile" solo se esiste già nel database (ID > 0)
-        const isDeletable = selectedTrade.idFinancialTxn > 0
+        const isDeletable = selectedTrade.financialTxnId > 0
 
         setAction({
             save: isSaveable ? handleSave : undefined,
-            new: () => setSelectedTrade(createDefaultTxn()), // Crea un oggetto nuovo ogni volta
+            new: () => setSelectedTrade(createDefaultTxnDto()), // Crea un oggetto nuovo ogni volta
             del: isDeletable ? handleDelete : undefined,
             export: handleExport,
             isExporting: isExporting // <--- Passiamo anche lo stato al Context

@@ -3,14 +3,25 @@ import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
 import { SideSelector } from './SideSelector';
 import { InstrumentField, CounterpartyField, PositionField } from './FormFields';
+import type { FinancialTxnDto } from '../services/dto';
+
+interface ForexFormProps {
+    data: FinancialTxnDto | null;
+    masterDataList: any[]; // Lista di ForexMasterData[]
+    positions: any[];
+    counterparties: any[];
+    onChange: (value: FinancialTxnDto) => void;
+}
 
 //Il modulo riceve l'oggetto trade come prop
-export const ForexForm = ({ data, masterDataList, positions, counterparties, onChange }: any) => {
+export const ForexForm = ({ data, masterDataList, positions, counterparties, onChange }: ForexFormProps) => {
 
-    // Funzione helper per aggiornare solo un pezzo del deal
-    const updateField = (field: string, value: any) => {
-        if (data) onChange({ ...data, [field]: value });
-    };
+    if (!data) return null;
+
+    // 1. ADATTATORI IN LETTURA: Trovano l'oggetto intero nelle liste usando gli ID del DTO
+    const currentInstrument = masterDataList.find(m => m.idMasterData === data.masterDataId) || null;
+    const currentCounterparty = counterparties.find(c => c.idCounterparty === data.counterpartyId) || null;
+    const currentPosition = positions.find(p => p.idPosition === data.positionMdId) || null;
 
     return (
         <div className="surface-ground p-3 border-bottom-1 surface-border">
@@ -19,9 +30,17 @@ export const ForexForm = ({ data, masterDataList, positions, counterparties, onC
                 {/* 1. Anagrafica (Dinamica) */}
                 <InstrumentField
                     label="Currency Pairs"
-                    value={data?.masterData}
+                    value={currentInstrument} // <-- Passa l'intero oggetto ForexMasterData trovato
                     options={masterDataList}
-                    onChange={(val) => updateField('masterData', val)}
+                    onChange={(selectedInstrument: any) => {
+                        // Sincronizza l'ID e i campi descrittivi ibridi nel DTO
+                        onChange({
+                            ...data,
+                            masterDataId: selectedInstrument ? selectedInstrument.idMasterData : null,
+                            masterDataCode: selectedInstrument ? selectedInstrument.code : null,
+                            masterDataDesc: selectedInstrument ? selectedInstrument.description : null
+                        });
+                    }}
                 />
 
                 <div className="col-12 md:col-3">
@@ -32,17 +51,30 @@ export const ForexForm = ({ data, masterDataList, positions, counterparties, onC
                     />
                 </div>
 
-                {/* 3. Campi standard riutilizzabili */}
+                {/* 3. Campi standard riutilizzabili con adattamento bidirezionale */}
                 <CounterpartyField
-                    value={data?.counterparty}
+                    value={currentCounterparty} // <-- Passa l'oggetto Counterparty intero
                     options={counterparties}
-                    onChange={(val) => updateField('counterparty', val)}
+                    onChange={(selectedCounterparty: any) => {
+                        onChange({
+                            ...data,
+                            counterpartyId: selectedCounterparty ? selectedCounterparty.idCounterparty : null,
+                            counterpartyCode: selectedCounterparty ? selectedCounterparty.code : null,
+                            counterpartyDesc: selectedCounterparty ? selectedCounterparty.description : null
+                        });
+                    }}
                 />
 
                 <PositionField
-                    value={data?.positionMd}
+                    value={currentPosition} // <-- Passa l'oggetto PositionMasterData intero
                     options={positions}
-                    onChange={(val) => updateField('positionMd', val)}
+                    onChange={(selectedPosition: any) => {
+                        onChange({
+                            ...data,
+                            positionMdId: selectedPosition ? selectedPosition.idPosition : null,
+                            positionMdCode: selectedPosition ? selectedPosition.code : null
+                        });
+                    }}
                 />
 
                 <div className="col-12 md:col-3">
@@ -79,7 +111,7 @@ export const ForexForm = ({ data, masterDataList, positions, counterparties, onC
                         onChange={(e) => {
                             // Verifichiamo che data non sia null prima di chiamare onChange
                             if (data) {
-                                onChange({ ...data, tradeDate: e.value as Date | null });
+                                onChange({ ...data, tradeDate: (e.value as Date) ?? new Date() });
                             }
                         }}
                         showIcon dateFormat="dd/mm/yy" />
@@ -97,7 +129,8 @@ export const ForexForm = ({ data, masterDataList, positions, counterparties, onC
 
                 </div>
 
-                <div className="col-12 md:col-6 mt-3"> {/* md:col-6 lo rende lungo il doppio */}
+{/*
+                <div className="col-12 md:col-6 mt-3">
                     <label className="text-sm font-bold block mb-2 text-600 uppercase">Notes / Description</label>
                     <InputText
                         value={data?.description || 'Nessuna nota'}
@@ -105,6 +138,7 @@ export const ForexForm = ({ data, masterDataList, positions, counterparties, onC
                         className="surface-100"
                     />
                 </div>
+                 */}
             </div>
         </div>
     );
