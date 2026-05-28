@@ -1,12 +1,15 @@
 package org.softcaster.core.data;
 
 import java.util.List;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Integer> {
 
+    // FORZA IL FETCH: Carica la transazione, lo strumento e l'asset class in una sola JOIN
+    @EntityGraph(attributePaths = {"masterData", "masterData.assetClass"})    
     public FinancialTxn findByIdFinancialTxn(Integer idFinancialTxn);
 
     // Il nome riflette il percorso: MasterData -> Daycount -> Code

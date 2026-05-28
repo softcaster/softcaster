@@ -73,29 +73,24 @@ public class FinancialTxnRestController {
                 .toList();
         return new ResponseEntity(dtoTransactions, HttpStatus.OK);
     }
-    
-/*
-    @GetMapping("/financial_txn/r03/{code}")
-    public ResponseEntity<List<FinancialTxn>> findAllByAssetClass(@PathVariable("code") String code) {
-        List<FinancialTxn> listaFinancialTxn = dao.findAllByAssetClass(code);
-        if (listaFinancialTxn == null) {
-            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity(listaFinancialTxn, HttpStatus.OK);
-    }
-*/
+
     // save/update record
     @PostMapping(value = "/financial_txn")
-    public ResponseEntity<FinancialTxn> saveOrUpdate(@RequestBody FinancialTxn financialTxn) {
+    public ResponseEntity<FinancialTxnDto> saveOrUpdate(@RequestBody FinancialTxnDto financialTxnDto) {
         try {
-            if (financialTxn.getIdFinancialTxn() == 0) {
-                financialTxn.setIdFinancialTxn(null);
-                financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
+            FinancialTxn financialTxn = mapper.fromDto(financialTxnDto);
+            if (financialTxn != null) {
+                if (financialTxn.getIdFinancialTxn() == 0) {
+                    financialTxn.setIdFinancialTxn(null);
+                    financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
+                }
+
+                financialTxn = dao.saveOrUpdate(financialTxn);
+
+                return new ResponseEntity(financialTxnDto, HttpStatus.OK);
+            } else {
+                return new ResponseEntity(CommonData.getJsonError("Null Transaction"), HttpStatus.NOT_ACCEPTABLE);
             }
-
-            financialTxn = dao.saveOrUpdate(financialTxn);
-
-            return new ResponseEntity(financialTxn, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(CommonData.getJsonError(e.getLocalizedMessage()), HttpStatus.NOT_ACCEPTABLE);
         }

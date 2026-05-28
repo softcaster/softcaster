@@ -34,46 +34,94 @@ ALTER TABLE normal_balances OWNER TO easypricer;
 CREATE SEQUENCE normal_balances_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE normal_balances_s OWNER TO easypricer;
 
--- LIVELLO 1: Macro-classi di Bilancio 
+-- =========================================================================
+-- LIVELLO 1: MACRO-CLASSI
+-- =========================================================================
 CREATE TABLE account_macro_classes (
-    macro_id INTEGER NOT NULL  .
-    , macro_code CHAR(1) NOT NULL -- '1' = Assets, '2' = Liabilities, ecc
+    macro_id INTEGER NOT NULL
+    , macro_code CHAR(1) NOT NULL -- '1' = Assets, '2' = Liabilities, ecc.
     , macro_name VARCHAR(50) NOT NULL
-    , statement_type INTEGER NOT NULL REFERENCES financial_statement_types(statement_type_id)
-    . nature INTEGER NOT NULL REFERENCES account_natures(nature_id)
-    . balance  INTEGER NOT NULL REFERENCES normal_balances(balance_id)
+    , statement_type INTEGER NOT NULL 
+    , nature INTEGER NOT NULL 
+    , balance INTEGER NOT NULL 
     , PRIMARY KEY (macro_id)
+    , CONSTRAINT fk_statement_type FOREIGN KEY (statement_type)
+              REFERENCES statement_type(statement_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_nature FOREIGN KEY (nature)
+              REFERENCES account_natures(nature_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_balance FOREIGN KEY (balance)
+              REFERENCES normal_balances(balance_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 CREATE UNIQUE INDEX idx_macro_code ON account_macro_classes(macro_code);
 ALTER TABLE account_macro_classes OWNER TO easypricer;
--- Creo sequenza
+
 CREATE SEQUENCE account_macro_classes_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE account_macro_classes_s OWNER TO easypricer;
 
--- LIVELLO 2: Categorie / Sotto-classi (Invariata)
+
+-- =========================================================================
+-- LIVELLO 2: CATEGORIE (Controlla che la 1ª cifra del codice sia uguale alla macro)
+-- =========================================================================
+CREATE OR REPLACE FUNCTION check_category_prefix_matches_macro(p_macro_id INTEGER, p_category_code VARCHAR)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN (SELECT LEFT(p_category_code, 1) = macro_code 
+            FROM account_macro_classes 
+            WHERE macro_id = p_macro_id);
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
 CREATE TABLE account_categories (
     category_id INTEGER NOT NULL
-    , category_code VARCHAR(2) NOT NULL 
-    , macro INTEGER NOT NULL REFERENCES account_macro_classes(macro_id)
+    , category_code VARCHAR(2) NOT NULL -- Es: '10' (Cash), '12' (Margins)
+    , macro INTEGER NOT NULL 
     , category_name VARCHAR(50) NOT NULL
-    , CONSTRAINT chk_category_prefix CHECK (LEFT(category_code, 1) = macro_id)
-    , PRIMARY KEY (macro_id)
+    , PRIMARY KEY (category_id)
+    , CONSTRAINT fk_macro FOREIGN KEY (macro)
+              REFERENCES account_macro_classes(macro_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT chk_category_prefix CHECK (check_category_prefix_matches_macro(macro, category_code))
 );
 CREATE UNIQUE INDEX idx_category_code ON account_categories(category_code);
 ALTER TABLE account_categories OWNER TO easypricer;
--- Creo sequenza
+
 CREATE SEQUENCE account_categories_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE account_categories_s OWNER TO easypricer;
 
--- LIVELLO 3: Conti Operativi di Dettaglio (Invariata)
+
+-- =========================================================================
+-- LIVELLO 3: PIANO DEI CONTI (Controlla che le prime 2 cifre siano uguali alla categoria)
+-- =========================================================================
+CREATE OR REPLACE FUNCTION check_account_prefix_matches_category(p_category_id INTEGER, p_account_code VARCHAR)
+RETURNS BOOLEAN AS $$
+BEGIN
+    -- Isola i primi due caratteri del codice a 6 cifre e verifica la corrispondenza con la categoria
+    RETURN (SELECT LEFT(p_account_code, 2) = category_code 
+            FROM account_categories 
+            WHERE category_id = p_category_id);
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
 CREATE TABLE chart_of_accounts (
-    account_id VARCHAR(4) PRIMARY KEY, 
-    category_id VARCHAR(2) NOT NULL REFERENCES account_categories(category_id),
-    account_name VARCHAR(100) NOT NULL,
-    currency CHAR(3) NOT NULL DEFAULT 'EUR',
-    is_active BOOLEAN DEFAULT TRUE,
-    CONSTRAINT chk_account_prefix CHECK (LEFT(account_id, 2) = category_id)
+    account_id INTEGER NOT NULL
+    , account_code VARCHAR(6) NOT NULL -- (Es: '100015' per Cassa USD)
+    , category INTEGER NOT NULL 
+    , account_name VARCHAR(100) NOT NULL
+    , currency INTEGER NOT NULL
+    , is_active BOOLEAN DEFAULT TRUE
+    , PRIMARY KEY (account_id)
+    , CONSTRAINT fk_currency FOREIGN KEY (currency)
+              REFERENCES currency(id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_category FOREIGN KEY (category)
+              REFERENCES account_categories(category_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT chk_account_prefix CHECK (check_account_prefix_matches_category(category, account_code))
 );
+CREATE UNIQUE INDEX idx_account_code ON chart_of_accounts(account_code);
+ALTER TABLE chart_of_accounts OWNER TO easypricer;
+
+CREATE SEQUENCE chart_of_accounts_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE chart_of_accounts_s OWNER TO easypricer;
+
+
 
 -- TABELLA ANAGRAFICA: Centri di Costo / Profitto (Cost Centers / Profit Centers)
 CREATE TABLE cost_centers (
@@ -82,15 +130,6 @@ CREATE TABLE cost_centers (
     department VARCHAR(50), -- Reparto di afferenza (es: 'Front Office', 'Operations')
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 1. Tabella dei Conti (Chart of Accounts)
-CREATE TABLE chart_of_accounts (
-    account_id VARCHAR(10) PRIMARY KEY, -- Es: '1015', '7010'
-    account_name VARCHAR(100) NOT NULL,
-    account_type VARCHAR(20) NOT NULL, -- 'Asset', 'Liability', 'Income', 'Expense', 'Memorandum'
-    currency CHAR(3) NOT NULL DEFAULT 'EUR', -- Valuta nativa del conto ('EUR', 'USD')
-    is_active BOOLEAN DEFAULT TRUE
 );
 
 -- 2. Tabella delle Testate delle Scritture (Accounting Entries Vouchers)
@@ -143,11 +182,98 @@ ALTER TABLE journal_lines
 ADD COLUMN cost_center_id VARCHAR(10) REFERENCES cost_centers(cost_center_id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
+
+-------------------------------------------------------------------------------
+Categoria 10: Cash and Cash Equivalents (Liquidità immediate e banche)
+├── 100010 - Cash and Cash Equivalents - Base Currency (EUR)
+├── 100015 - Cash and Cash Equivalents - Foreign Currency (USD)
+└── 100020 - Petty Cash (Cassa contanti interna)
+
+Categoria 11: Short-Term Deposits (Depositi monetari vincolati)
+├── 110010 - Short-Term Time Deposits - EUR
+└── 110015 - Short-Term Time Deposits - USD
+
+Categoria 12: Margin Accounts and Broker Receivables (Conti di marginatura e crediti vs broker)
+├── 120050 - Initial Margin Deposit - EUR
+├── 120055 - Initial Margin Deposit - USD  <-- [Uso: Deposito cauzionale iniziale per Future ZNM6]
+├── 120060 - Variation Margin Account - EUR
+└── 120065 - Variation Margin Account - USD  <-- [Uso: Accredito/Addebito Mark-to-Market giornaliero]
+
+Categoria 13: Financial Assets at FVTPL (Titoli detenuti per trading)
+├── 130010 - Debt Securities - Sovereign Bonds (EUR)
+├── 130015 - Debt Securities - U.S. Treasuries (USD) <-- [Uso: Acquisto bond fisico sottostante o CTD]
+├── 130020 - Equity Securities - Domestic Shares (EUR)
+└── 130025 - Equity Securities - International Shares (USD)
+
+Categoria 14: Financial Derivatives - Assets (Derivati attivi con Fair Value positivo)
+├── 140010 - FX Forward Contracts - Asset  <-- [Uso: Fair Value positivo fine mese contratti a termine]
+└── 140020 - Options Premium Purchased (Opzioni comprate - valore di mercato)
+
+Categoria 19: Accruals and Receivables (Ratei e crediti commerciali/finanziari)
+├── 190010 - Accrued Interest Receivable - Debt Securities <-- [Uso: Rateo attivo cedole bond in maturazione]
+└── 190020 - Dividends Receivable (Dividendi deliberati da incassare)
+
+Categoria 21: Short-Term Borrowings (Finanziamenti e scoperti a breve termine)
+├── 210010 - Bank Overdrafts - EUR (Scoperti di conto corrente)
+├── 210015 - Bank Overdrafts - USD
+└── 210020 - Short-Term Repo Loans (Finanziamenti da operazioni Pronti contro Termine)
+
+Categoria 24: Financial Derivatives & Settlement Liabilities (Derivati passivi e debiti tecnici)
+├── 240010 - FX Forward Contracts - Liability <-- [Uso: Fair Value negativo fine mese contratti a termine]
+├── 240020 - Options Premium Written (Opzioni vendute/scoperte)
+└── 240050 - Due to Brokers / Settlement Liabilities <-- [Uso: Debiti tecnici vs broker per transazioni T+2]
+
+Categoria 30: Capital and Reserves (Capitale sociale e riserve)
+├── 300010 - Share Capital (Capitale sociale)
+├── 300050 - Retained Earnings (Utili/Perdite portati a nuovo dagli esercizi precedenti)
+└── 300080 - FX Translation Reserve (Riserva da conversione per utili/perdite latenti di bilancio)
+
+Categoria 70: Gains on Financial Derivatives (Utili e profitti da strumenti derivati)
+├── 700010 - Realized Gain on Financial Derivatives <-- [Uso: Chiusura Future o Forward in profitto]
+└── 700020 - Unrealized Gain on Financial Derivatives <-- [Uso: Stima Fair Value positivo fine anno]
+
+Categoria 71: Foreign Exchange Gains (Profitti sui cambi valutari)
+├── 710010 - Realized Foreign Exchange Gains <-- [Uso: Guadagno effettivo da conversione fisica USD -> EUR]
+└── 710020 - Unrealized Foreign Exchange Gains <-- [Uso: Rivalutazione saldi dei conti liquidi USD a fine mese]
+
+Categoria 72: Interest and Dividend Income (Interessi attivi e cedole)
+├── 720010 - Interest Income - Bank & Short-Term Deposits
+├── 720020 - Interest Income - Sovereign Debt (Coupons) <-- [Uso: Cedole incassate su Bond/Treasuries]
+├── 720050 - Realized Gain on Debt Securities (Utili da compravendita Bond/Treasuries)
+└── 720060 - Realized Gain on Equity Securities (Utili da compravendita Azioni/ETF)
+
+Categoria 80: Losses on Financial Derivatives (Perdite subite su strumenti derivati)
+├── 800010 - Realized Loss on Financial Derivatives <-- [Uso: Chiusura Future o Forward in perdita]
+└── 800020 - Unrealized Loss on Financial Derivatives <-- [Uso: Stima Fair Value negativo fine anno]
+
+Categoria 81: Foreign Exchange Losses (Perdite sui cambi valutari)
+├── 810010 - Realized Foreign Exchange Losses <-- [Uso: Perdita effettiva da conversione fisica USD -> EUR]
+└── 810020 - Unrealized Foreign Exchange Losses <-- [Uso: Svalutazione saldi dei conti liquidi USD a fine mese]
+
+Categoria 82: Interest Expenses and Trading Losses (Interessi passivi e perdite su titoli)
+├── 820010 - Interest Expense on Borrowings / Repo
+├── 820050 - Realized Loss on Debt Securities (Perdite da compravendita Bond/Treasuries)
+└── 820060 - Realized Loss on Equity Securities (Perdite da compravendita Azioni/ETF)
+
+Categoria 88: Trading Fees and Execution Costs (Commissioni e spese di negoziazione)
+├── 880010 - Brokerage and Execution Fees <-- [Uso: Costo vivo di apertura/chiusura contratti ZNM6]
+├── 880020 - Clearing and Exchange Fees (Spese di regolamento della Cassa di Compensazione / CME)
+└── 880030 - Custody and Safe-Keeping Fees (Spese di custodia dei titoli di Stato fisici)
+
+Categoria 90: Financial Commitments (Tracciabilità del valore nozionale aperto sul mercato)
+├── 900010 - Financial Commitments - Long Futures <-- [Uso: Valore nozionale contratti Future acquistati]
+├── 900015 - Financial Commitments - Short Futures (Valore nozionale contratti Future venduti)
+├── 900020 - Financial Commitments - Forward Currency Purchase <-- [Uso: Nozionale contratti Forward Forex]
+└── 990030 - Counterpart for Financial Commitments <-- [Uso: Contropartita tecnica obbligatoria per far quadrare il pacchetto 9xxx a zero]
+
+
+
 -- Inserimento Livello 1 (Macro-classi)
 INSERT INTO account_macro_classes (macro_id, macro_name, statement_type) VALUES
 ('1', 'Assets', 'BALANCE_SHEET'),
 ('2', 'Liabilities', 'BALANCE_SHEET'),
 ('7', 'Financial Income', 'INCOME_STATEMENT'),
+('7', 'Financial Expenses', 'INCOME_STATEMENT'),
 ('9', 'Memorandum Accounts', 'OFF_BALANCE_SHEET');
 
 -- Inserimento Livello 2 (Categorie)
@@ -166,5 +292,4 @@ INSERT INTO chart_of_accounts (account_id, category_id, account_name, currency) 
 ('2410', '24', 'Financial Derivatives - Liability (Forward Forex)', 'EUR'),
 ('7010', '70', 'Realized Gain on Financial Derivatives', 'EUR'),
 ('9010', '90', 'Financial Commitments - Long Futures', 'USD');
-           <Column field="idFinancialTxn" header="Trade Id" body={(rowData: FinancialTxnDto) => rowData.idFinancialTxn.toString().padStart(5, '0')} sortable />
  

@@ -25,7 +25,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
-        <!-- Database Relazionale (PostgreSQL) per Transazioni e Anagrafica -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -35,6 +34,11 @@
             <artifactId>mds_core</artifactId>
             <version>1.0</version>
         </dependency>        
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-jsr223</artifactId> 
+            <version>4.0.21</version> <!-- Versione stabile per Spring Boot 3 -->
+        </dependency>
     </dependencies>
     
     <build>

@@ -4,9 +4,18 @@
  */
 package org.softcaster.easy_pricer_proc.jobs;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import javax.script.Bindings;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.PositionDetail;
@@ -36,12 +45,23 @@ public class FinTxnPollingJob {
     private ProcessorDispatcher processorDispatcher;
     @Autowired
     private TxnStatusDAO txnStatusDAO;
+    @Autowired
+    private ScriptEngine groovyEngine;
 
     /*
+    @Value("${app.scripts.path}")
+    private String scriptsPath;
+
+    
     @Autowired
     private EasyPricerEngine engine;
      */
     protected boolean elabFinancialTxn(FinancialTxn txn, PositionDetail position) {
+
+        if (!preElabFinancialTxn(txn)) {
+            return false;
+        }
+
         ITxnProcessor processor = processorDispatcher.dispatch(txn.getMasterData().getAssetClass().getCode());
         if (processor != null) {
             // Serve per calcolo unrealizedPnL
@@ -64,7 +84,7 @@ public class FinTxnPollingJob {
             newPosition.initialize();
             return newPosition;
         });
-        
+
         return position;
     }
 
@@ -127,5 +147,37 @@ public class FinTxnPollingJob {
 
         // 2. Elabora le transazioni CANCELLED
         pollCancelledTrades();
+    }
+
+    private boolean preElabFinancialTxn(FinancialTxn txn) {
+        try {
+            String userDir = System.getProperty("user.dir");
+            Path scriptPath;
+            log.info("=== [BATCH START] preElabFinancialTxn ===");
+
+            // Se l'IDE si trova già dentro "easy_pricer_proc", il percorso parte da "./scripts/"
+            if (userDir.endsWith("easy_pricer_proc")) {
+                scriptPath = Paths.get(userDir, "scripts", "accounting_rules.groovy");
+            } else {
+                // Se l'IDE è avviato dalla radice globale, aggiungiamo il nome del sotto-modulo
+                scriptPath = Paths.get(userDir, "easy_pricer_proc", "scripts", "accounting_rules.groovy");
+            }
+
+            log.info("Processing instrument: " + txn.getMasterData().getDescription());
+            // Usiamo il motore globale, ma isoliamo i dati della transazione corrente
+            // in un oggetto Bindings locale al thread di esecuzione.
+            Bindings bindings = new SimpleBindings();
+            bindings.put("txn", txn);
+
+            Object result;
+            result = groovyEngine.eval(new FileReader(scriptPath.toFile()), bindings);
+            log.info("Risultato script: " + result);
+
+            return true;
+
+        } catch (FileNotFoundException | ScriptException ex) { 
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            return false;
+        }
     }
 }
