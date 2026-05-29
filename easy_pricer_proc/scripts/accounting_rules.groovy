@@ -1,3 +1,4 @@
-// 1. Estrae la valuta dal DTO (es: "USD")
-print "Stampo Id anagrafico!"
-return txn.getMasterData().getDescription()
+if(txn.getMasterData().getAssetClass().getCode().equals("FSP"))
+    return "FSP";
+else
+    return "#OTHER: " + txn.getMasterData().getAssetClass().getCode();
