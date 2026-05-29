@@ -1,6 +1,10 @@
 ALTER TABLE yield_curve ADD COLUMN provider VARCHAR(50) NOT NULL DEFAULT '';
 ALTER TABLE master_data DROP COLUMN calendar;
 
+ALTER TABLE financial_txn ADD COLUMN value_date DATE;
+UPDATE financial_txn SET value_date = settlement;
+ALTER TABLE financial_txn ALTER COLUMN value_date SET NOT NULL;
+
 -- codice controllo pre update effettivo
 SELECT 
     code AS codice_originale, 

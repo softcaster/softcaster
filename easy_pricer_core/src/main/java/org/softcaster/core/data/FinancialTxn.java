@@ -53,10 +53,13 @@ public class FinancialTxn implements Serializable {
     private String description;
 
     @Column(name = "trade_date")
-    private java.sql.Date tradeDate;
+    private java.sql.Date tradeDate; // Esecuzione deal
+
+    @Column(name = "value_date")
+    private java.sql.Date valueDate; // Data valuta cash
 
     @Column(name = "settlement")
-    private java.sql.Date settlement;
+    private java.sql.Date settlement; // Regolamento contabilizzazione
 
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "quantity")
@@ -224,5 +227,19 @@ public class FinancialTxn implements Serializable {
      */
     public void setVersion(Integer version) {
         this.version = version;
+    }
+
+    /**
+     * @return the valueDate
+     */
+    public java.sql.Date getValueDate() {
+        return valueDate;
+    }
+
+    /**
+     * @param valueDate the valueDate to set
+     */
+    public void setValueDate(java.sql.Date valueDate) {
+        this.valueDate = valueDate;
     }
 }

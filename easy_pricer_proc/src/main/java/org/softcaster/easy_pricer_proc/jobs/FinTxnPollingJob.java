@@ -21,6 +21,8 @@ import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.TxnStatusDAO;
+import org.softcaster.easy_pricer_proc.accounting.context.AccountingContext;
+import org.softcaster.easy_pricer_proc.accounting.context.JournalDsl;
 import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,10 +59,6 @@ public class FinTxnPollingJob {
     private EasyPricerEngine engine;
      */
     protected boolean elabFinancialTxn(FinancialTxn txn, PositionDetail position) {
-
-        if (!preElabFinancialTxn(txn)) {
-            return false;
-        }
 
         ITxnProcessor processor = processorDispatcher.dispatch(txn.getMasterData().getAssetClass().getCode());
         if (processor != null) {
@@ -105,6 +103,7 @@ public class FinTxnPollingJob {
                         txn.setTxnStatus(txnStatusDAO.findByCode("CANCELLED_EXECUTED"));
                     }
                     financialTxnDAO.saveOrUpdate(txn);
+                    postElabFinancialTxn(txn);
                 }
 
             } catch (Exception e) {
@@ -149,7 +148,7 @@ public class FinTxnPollingJob {
         pollCancelledTrades();
     }
 
-    private boolean preElabFinancialTxn(FinancialTxn txn) {
+    private boolean postElabFinancialTxn(FinancialTxn txn) {
         try {
             String userDir = System.getProperty("user.dir");
             Path scriptPath;
@@ -166,8 +165,11 @@ public class FinTxnPollingJob {
             log.info("Processing instrument: " + txn.getMasterData().getDescription());
             // Usiamo il motore globale, ma isoliamo i dati della transazione corrente
             // in un oggetto Bindings locale al thread di esecuzione.
+            
+            JournalDsl dsl = new JournalDsl();
+            AccountingContext ctx = new AccountingContext(txn,dsl);
             Bindings bindings = new SimpleBindings();
-            bindings.put("txn", txn);
+            bindings.put("ctx", ctx);
 
             Object result;
             result = groovyEngine.eval(new FileReader(scriptPath.toFile()), bindings);

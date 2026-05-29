@@ -798,8 +798,9 @@ CREATE TABLE financial_txn
     , txn_status  INTEGER NOT NULL -- stato transazione
     , txn_side SMALLINT NOT NULL -- (Buy/Sell)
     , description VARCHAR(255) NOT NULL 
-    , trade_date DATE NOT NULL DEFAULT NOW()
-    , settlement DATE NOT NULL -- valuta
+    , trade_date DATE NOT NULL DEFAULT NOW() -- esecuzione deal 
+    , value_date DATE NOT NULL -- data valuta cash
+    , settlement DATE NOT NULL -- regolamento/contabilizzazione
     , quantity NUMERIC(15,5) NOT NULL  
     , price NUMERIC(15,5) NOT NULL  
     , ref_id INTEGER NOT NULL  
