@@ -787,6 +787,22 @@ CREATE SEQUENCE txn_status_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE txn_status_s OWNER TO easypricer;
 
 -- ----------------------------------------------------------------------------
+-- accounting_status - stato contabile
+-- ----------------------------------------------------------------------------
+CREATE TABLE accounting_status
+(
+    accounting_status_id INTEGER NOT NULL
+    , code VARCHAR(25) NOT NULL 
+    , description VARCHAR(255) NOT NULL 
+    , PRIMARY KEY (accounting_status_id)
+);
+CREATE UNIQUE INDEX idx_acct_status_code ON accounting_status(code);
+ALTER TABLE accounting_status OWNER TO easypricer;
+-- Creo sequenza
+CREATE SEQUENCE accounting_status_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE accounting_status_s OWNER TO easypricer;
+
+-- ----------------------------------------------------------------------------
 -- financial_txn - transazione finanziaria
 -- ----------------------------------------------------------------------------
 CREATE TABLE financial_txn

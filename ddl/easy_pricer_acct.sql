@@ -1,10 +1,11 @@
 ---------------------------------------------------------------------
 -- Tabelle modulo contabile
 ---------------------------------------------------------------------
--- LIVELLO 0A: Tabella Anagrafica dei Tipi di Rendiconto Finanziario
+-- Tabella Anagrafica dei Tipi di Rendiconto Finanziario
 CREATE TABLE financial_statement_types (
     statement_type_id INTEGER NOT NULL
-    , description VARCHAR(25) NOT NULL -- 'BALANCE_SHEET', 'INCOME_STATEMENT', 'OFF_BALANCE_SHEET'
+    , code VARCHAR(25) NOT NULL -- 'BALANCE_SHEET', 'INCOME_STATEMENT', 'OFF_BALANCE_SHEET'
+    , description VARCHAR(50) NOT NULL DEFAULT ''
     , PRIMARY KEY (statement_type_id)
 );
 ALTER TABLE financial_statement_types OWNER TO easypricer;
@@ -12,10 +13,11 @@ ALTER TABLE financial_statement_types OWNER TO easypricer;
 CREATE SEQUENCE financial_statement_types_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE financial_statement_types_s OWNER TO easypricer;
 
--- LIVELLO 0B: Tabella Anagrafica della Natura del Conto
+-- Tabella Anagrafica della Natura del Conto
 CREATE TABLE account_natures (
     nature_id INTEGER NOT NULL 
-    , description VARCHAR(25) NOT NULL -- 'ASSET', 'LIABILITY', 'INCOME', 'EXPENSE', 'MEMORANDUM'
+    , code VARCHAR(25) NOT NULL -- 'ASSET', 'LIABILITY', 'INCOME', 'EXPENSE', 'MEMORANDUM'
+    , description VARCHAR(50) NOT NULL DEFAULT ''
     , PRIMARY KEY (nature_id)
 );
 ALTER TABLE account_natures OWNER TO easypricer;
@@ -23,16 +25,85 @@ ALTER TABLE account_natures OWNER TO easypricer;
 CREATE SEQUENCE account_natures_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE account_natures_s OWNER TO easypricer;
 
--- LIVELLO 0C: Tabella Anagrafica del Segno Algebrico Naturale (Sezione Contabile)
+-- Tabella Anagrafica del Segno Algebrico Naturale (Sezione Contabile)
 CREATE TABLE normal_balances (
     balance_id INTEGER NOT NULL 
-    , description VARCHAR(25) NOT NULL  -- 'DEBIT', 'CREDIT'
+    , code VARCHAR(25) NOT NULL  -- 'DEBIT', 'CREDIT'
+    , description VARCHAR(50) NOT NULL DEFAULT ''
     , PRIMARY KEY (balance_id)
 );
 ALTER TABLE normal_balances OWNER TO easypricer;
 -- Creo sequenza
 CREATE SEQUENCE normal_balances_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE normal_balances_s OWNER TO easypricer;
+
+-- Tabella Anagrafica Chart Of Accounts
+CREATE TABLE gl_accounts (
+    account_id INTEGER NOT NULL 
+    , parent INTEGER NULL
+    , code VARCHAR(50) NOT NULL UNIQUE
+    , description VARCHAR(150) NOT NULL DEFAULT ''
+    , is_postable BOOLEAN NOT NULL DEFAULT FALSE
+    , currency INTEGER NULL
+    , statement_type INTEGER NOT NULL
+    , nature INTEGER NOT NULL
+    , balance INTEGER NOT NULL
+    , created_at TIMESTAMP NOT NULL DEFAULT now()
+    , updated_at TIMESTAMP NOT NULL DEFAULT now()
+    , PRIMARY KEY (account_id)
+    , CONSTRAINT fk_parent FOREIGN KEY (parent)
+              REFERENCES gl_accounts(account_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_statement_type FOREIGN KEY (statement_type)
+              REFERENCES financial_statement_types(statement_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_nature FOREIGN KEY (nature)
+              REFERENCES account_natures(nature_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_balance FOREIGN KEY (balance)
+              REFERENCES normal_balances(balance_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_currency FOREIGN KEY (currency)
+              REFERENCES currency(id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+CREATE UNIQUE INDEX idx_account_code ON gl_accounts(code);
+ALTER TABLE gl_accounts OWNER TO easypricer;
+
+CREATE SEQUENCE gl_accounts_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE gl_accounts_s OWNER TO easypricer;
+
+
+accounting_event
+event_id
+event_type -- TRADE_EXECUTION TRADE_CANCEL MTM COUPON ACCRUAL SETTLEMENT MATURITY FX_REVALUATION
+event_status -- NEW PROCESSED FAILED
+
+source_type -- TRADE INSTRUMENT POSITION_DETAIL(caso MTM)->  id_position_detail
+source_id -- txn 12345
+
+generated_by -- POSITION_ENGINE/LAYER (FinTxnPollingJob) / SCHEDULER_ENGINE, VALUATION_ENGINE
+generated_ref -- batch_20260530_01
+
+created_at
+processed_at
+
+
+event_type=MTM
+
+source_type=POSITION_DETAIL
+source_id=position_77
+
+generated_by=VALUATION_LAYER
+generated_ref=valuation_run_20260530
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- =========================================================================
 -- LIVELLO 1: MACRO-CLASSI
@@ -181,10 +252,31 @@ CREATE INDEX idx_journal_lines_ticker ON journal_lines(instrument_ticker);
 ALTER TABLE journal_lines 
 ADD COLUMN cost_center_id VARCHAR(10) REFERENCES cost_centers(cost_center_id) ON UPDATE CASCADE ON DELETE SET NULL;
 
+accounting_event
+event_id
+event_type -- TRADE_EXECUTION TRADE_CANCEL MTM COUPON ACCRUAL SETTLEMENT MATURITY FX_REVALUATION
+event_status -- NEW PROCESSED FAILED
+
+source_type -- TRADE INSTRUMENT POSITION_DETAIL(caso MTM)->  id_position_detail
+source_id -- txn 12345
+
+generated_by -- POSITION_ENGINE/LAYER (FinTxnPollingJob) / SCHEDULER_ENGINE, VALUATION_ENGINE
+generated_ref -- batch_20260530_01
+
+created_at
+processed_at
 
 
+event_type=MTM
+
+source_type=POSITION_DETAIL
+source_id=position_77
+
+generated_by=VALUATION_LAYER
+generated_ref=valuation_run_20260530
 -------------------------------------------------------------------------------
-Categoria 10: Cash and Cash Equivalents (Liquidità immediate e banche)
+Asset 1
+Cash 10: Cash and Cash Equivalents (cash and banks)
 ├── 100010 - Cash and Cash Equivalents - Base Currency (EUR)
 ├── 100015 - Cash and Cash Equivalents - Foreign Currency (USD)
 └── 100020 - Petty Cash (Cassa contanti interna)

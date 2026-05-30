@@ -5,7 +5,7 @@
 package org.softcaster.easy_pricer_proc.accounting.context;
 
 import org.softcaster.core.data.FinancialTxn;
-import org.softcaster.easy_pricer_proc.accounting.AccountingEvent;
+import org.softcaster.easy_pricer_proc.accounting.enums.AccountingEvent;
 
 /**
  *

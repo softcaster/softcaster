@@ -155,6 +155,13 @@ INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_sta
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'CANCELLED_EXECUTED','Cancelled and Executed');
 
 -- ----------------------------------------------------------------------------
+-- accounting_status - stato contabile
+-- ----------------------------------------------------------------------------
+INSERT INTO accounting_status(accounting_status_id,code, description) VALUES (nextval('accounting_status_s'),'NONE','None');
+INSERT INTO accounting_status(accounting_status_id,code, description) VALUES (nextval('accounting_status_s'),'MEMO_BOOKED','Memo Booked');
+INSERT INTO accounting_status(accounting_status_id,code, description) VALUES (nextval('accounting_status_s'),'POSTED','Posted');
+
+-- ----------------------------------------------------------------------------
 -- counterparty_type
 -- ----------------------------------------------------------------------------
 -- Persone fisiche

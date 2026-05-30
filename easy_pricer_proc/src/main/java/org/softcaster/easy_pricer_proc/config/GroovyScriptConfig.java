@@ -4,7 +4,6 @@
  */
 package org.softcaster.easy_pricer_proc.config;
 
-import java.io.PrintWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import javax.script.ScriptEngine;
@@ -23,11 +22,6 @@ public class GroovyScriptConfig {
         if (engine == null) {
             throw new IllegalStateException("Can't start Groovy!");
         }
-        
-        // Collega i flussi di Output e di Errore dello script alla console Java 
-        //PrintWriter writer = new PrintWriter(System.out, true);
-        //engine.getContext().setWriter(writer);
-        //engine.getContext().setErrorWriter(writer);
         
         return engine;
     }
