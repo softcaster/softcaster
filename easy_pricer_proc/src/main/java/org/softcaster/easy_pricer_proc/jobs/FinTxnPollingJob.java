@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_proc.jobs;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.easy_pricer_proc.services.FinTxnExecutionService;
@@ -39,9 +40,10 @@ public class FinTxnPollingJob {
     protected boolean elabFinancialTxnList(List<FinancialTxn> financialTxnList) {
         for (FinancialTxn txn : financialTxnList) {
             try {
-                finTxnExecutionService.executeTxn(txn);
+                finTxnExecutionService.executeTxn(txn.getIdFinancialTxn());
             } catch (Exception e) {
                 log.error("### ERROR ID {}: {}", txn.getIdFinancialTxn(), e.getMessage());
+                LoggerMgr.logError(e.getLocalizedMessage());
                 return false;
             }
         }

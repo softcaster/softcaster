@@ -29,6 +29,7 @@ import org.softcaster.core.data.account.GlAccountDAO;
 import org.softcaster.easy_pricer_proc.accounting.context.AccountingContext;
 import org.softcaster.easy_pricer_proc.accounting.context.JournalDsl;
 import org.softcaster.easy_pricer_proc.accounting.enums.AccountingEvent;
+import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,22 +57,41 @@ public class FinTxnExecutionService {
     @Autowired
     private GlAccountDAO glAccountDAO;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void executeTxn(FinancialTxn txn) {
+    public void executeTxn(Integer txnId) {
 
         GlAccount glAccount = glAccountDAO.findByAccountId(2);
-        PositionDetail position
-                = getPositionDetail(txn);
 
-        if (elabFinancialTxn(txn, position)) {
-            positionRepository.saveOrUpdate(position);
-            if (txn.getTxnStatus().getCode().equalsIgnoreCase("PENDING")) {
-                txn.setTxnStatus(txnStatusDAO.findByCode("EXECUTED"));
-            } else if (txn.getTxnStatus().getCode().equalsIgnoreCase("CANCELLED")) {
-                txn.setTxnStatus(txnStatusDAO.findByCode("CANCELLED_EXECUTED"));
-            }
-            financialTxnDAO.saveOrUpdate(txn);
+        FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
+        try {
+            processBusiness(txnId);
+            updateStatus(txnId, "EXECUTED");
+
+        } catch (TxnProcessingException e) {
+            LoggerMgr.logError(e.getLocalizedMessage());
+            updateStatus(txnId, "REJECTED");
+        } catch (Exception e) {
+            LoggerMgr.logError(e.getLocalizedMessage());
+            updateStatus(txnId, "REJECTED");
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void updateStatus(Integer txnId, String status) {
+
+        FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
+        txn.setTxnStatus(txnStatusDAO.findByCode(status));
+        financialTxnDAO.saveOrUpdate(txn);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void processBusiness(Integer txnId) {
+
+        FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
+        PositionDetail position = getPositionDetail(txn);
+
+        elabFinancialTxn(txn, position);
+
+        positionRepository.saveOrUpdate(position);
     }
 
     protected PositionDetail getPositionDetail(FinancialTxn txn) {
@@ -89,7 +109,7 @@ public class FinTxnExecutionService {
         return position;
     }
 
-    protected boolean elabFinancialTxn(FinancialTxn txn, PositionDetail position) {
+    protected void elabFinancialTxn(FinancialTxn txn, PositionDetail position) {
 
         postElabFinancialTxn(txn);
 
@@ -98,9 +118,8 @@ public class FinTxnExecutionService {
             // Serve per calcolo unrealizedPnL
             position.setMarketPrice(txn.getPrice());
             processor.process(txn, position);
-            return true;
         } else {
-            return false;
+            throw new TxnProcessingException("Invalid ITxnProcessor");
         }
     }
 

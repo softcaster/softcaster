@@ -40,49 +40,9 @@ public class FinancialTxnDAO {
         return repository.findAllByAssetClass(code);
     }
 
-    protected boolean updateOnly(FinancialTxn oldTxn, FinancialTxn newTxn) {
-
-        if (oldTxn != null && newTxn != null) {
-            // Comparo prezzi
-            if (Double.compare(newTxn.getPrice(), oldTxn.getPrice()) != 0) {
-                return false;
-            }
-            // Comparo quantita
-            if (Double.compare(newTxn.getQuantity(), oldTxn.getQuantity()) != 0) {
-                return false;
-            }
-            // Comparo controparte
-            if (!newTxn.getCounterparty().getCode().equals(oldTxn.getCounterparty().getCode())) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     @Transactional
     public FinancialTxn saveOrUpdate(FinancialTxn financialTxn) {
-        // Controllo se sono in update
-        if (financialTxn.getIdFinancialTxn() != null && financialTxn.getIdFinancialTxn() > 0) {
-            // Recupero txn da db per allineare lo stato
-            FinancialTxn oldTxn = findByIdFinancialTxn(financialTxn.getIdFinancialTxn());
-            financialTxn.setTxnStatus(oldTxn.getTxnStatus());
-            if (financialTxn.getTxnStatus().getCode().equals("EXECUTED")) {
-                // controllo se modifica che comporta cancellazione e nuovo
-                // inserimento
-                if (!updateOnly(oldTxn, financialTxn)) {
-                    // Marco la vecchia txn come cancellata
-                    oldTxn.setTxnStatus(txnStatusDAO.findByCode("CANCELLED"));
-                    repository.save(oldTxn);
-                    // Creo una nuova txn
-                    financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
-                    financialTxn.setIdFinancialTxn(null);
-                    financialTxn.setRefId(oldTxn.getIdFinancialTxn());
-                }
-            }
-
-        }
-        return repository.save(financialTxn);
+       return repository.save(financialTxn);
     }
 
     @Transactional

@@ -68,129 +68,37 @@ ALTER TABLE gl_accounts OWNER TO easypricer;
 CREATE SEQUENCE gl_accounts_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE gl_accounts_s OWNER TO easypricer;
 
-
-accounting_event
-event_id
-event_type -- TRADE_EXECUTION TRADE_CANCEL MTM COUPON ACCRUAL SETTLEMENT MATURITY FX_REVALUATION
-event_status -- NEW PROCESSED FAILED
-
-source_type -- TRADE INSTRUMENT POSITION_DETAIL(caso MTM)->  id_position_detail
-source_id -- txn 12345
-
-generated_by -- POSITION_ENGINE/LAYER (FinTxnPollingJob) / SCHEDULER_ENGINE, VALUATION_ENGINE
-generated_ref -- batch_20260530_01
-
-created_at
-processed_at
-
-
-event_type=MTM
-
-source_type=POSITION_DETAIL
-source_id=position_77
-
-generated_by=VALUATION_LAYER
-generated_ref=valuation_run_20260530
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- =========================================================================
--- LIVELLO 1: MACRO-CLASSI
--- =========================================================================
-CREATE TABLE account_macro_classes (
-    macro_id INTEGER NOT NULL
-    , macro_code CHAR(1) NOT NULL -- '1' = Assets, '2' = Liabilities, ecc.
-    , macro_name VARCHAR(50) NOT NULL
-    , statement_type INTEGER NOT NULL 
-    , nature INTEGER NOT NULL 
-    , balance INTEGER NOT NULL 
-    , PRIMARY KEY (macro_id)
-    , CONSTRAINT fk_statement_type FOREIGN KEY (statement_type)
-              REFERENCES statement_type(statement_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
-    , CONSTRAINT fk_nature FOREIGN KEY (nature)
-              REFERENCES account_natures(nature_id) ON DELETE NO ACTION ON UPDATE NO ACTION
-    , CONSTRAINT fk_balance FOREIGN KEY (balance)
-              REFERENCES normal_balances(balance_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+-- Tabella evento contabile
+CREATE TABLE accounting_events (
+    event_id INTEGER NOT NULL 
+    , event_type INTEGER NOT NULL-- TRADE_EXECUTION TRADE_CANCEL MTM COUPON ACCRUAL SETTLEMENT MATURITY FX_REVALUATION
+    , event_status INTEGER NOT NULL -- NEW IN_PROGRESS PROCESSED FAILED
+    , source_type INTEGER NOT NULL -- TRADE INSTRUMENT POSITION_DETAIL(caso MTM)->  id_position_detail
+    , source_id INTEGER NOT NULL -- 12345 (txn)
+    , event_key VARCHAR(100) NOT NULL -- es 'TRADE_EXECUTION:txn12345' garantisce idemponenza
+    , generated_by INTEGER NOT NULL -- POSITION_ENGINE/LAYER (FinTxnPollingJob) / SCHEDULER_ENGINE, VALUATION_ENGINE
+    , generated_ref VARCHAR (100) -- batch_20260530_01
+    , created_at TIMESTAMP NOT NULL DEFAULT now()
+    , processed_at TIMESTAMP NULL -- null fino a quando event nonè processato
+    , CONSTRAINT fk_event_type FOREIGN KEY (event_type)
+              REFERENCES accounting_event_types(event_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_event_status FOREIGN KEY (event_status)
+              REFERENCES accounting_event_status(event_status_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    , CONSTRAINT fk_source_type FOREIGN KEY (source_type)
+              REFERENCES accounting_source_type(source_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
-CREATE UNIQUE INDEX idx_macro_code ON account_macro_classes(macro_code);
-ALTER TABLE account_macro_classes OWNER TO easypricer;
+-- Per garantire idemponenza (1 event_key per record)
+CREATE UNIQUE INDEX idx_event_key ON accounting_events(event_key);
+-- Per query tipo: SELECT * FROM accounting_events WHERE event_status = NEW ORDER BY created_at
+CREATE INDEX idx_event_status_created ON accounting_events(event_status, created_at);
+-- Per query tipo: SELECT * FROM accounting_events WHERE event_status = NEW AND event_type = ?
+CREATE INDEX idx_event_status_type ON accounting_events(event_status, event_type);
+-- Per tracciamento source: SELECT * FROM accounting_events WHERE source_type = ? AND source_id = ?; 
+CREATE INDEX idx_source ON accounting_events(source_type, source_id);
+ALTER TABLE accounting_events OWNER TO easypricer;
 
-CREATE SEQUENCE account_macro_classes_s START WITH 1 INCREMENT BY 1; 
-ALTER SEQUENCE account_macro_classes_s OWNER TO easypricer;
-
-
--- =========================================================================
--- LIVELLO 2: CATEGORIE (Controlla che la 1ª cifra del codice sia uguale alla macro)
--- =========================================================================
-CREATE OR REPLACE FUNCTION check_category_prefix_matches_macro(p_macro_id INTEGER, p_category_code VARCHAR)
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN (SELECT LEFT(p_category_code, 1) = macro_code 
-            FROM account_macro_classes 
-            WHERE macro_id = p_macro_id);
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
-
-CREATE TABLE account_categories (
-    category_id INTEGER NOT NULL
-    , category_code VARCHAR(2) NOT NULL -- Es: '10' (Cash), '12' (Margins)
-    , macro INTEGER NOT NULL 
-    , category_name VARCHAR(50) NOT NULL
-    , PRIMARY KEY (category_id)
-    , CONSTRAINT fk_macro FOREIGN KEY (macro)
-              REFERENCES account_macro_classes(macro_id) ON DELETE NO ACTION ON UPDATE NO ACTION
-    , CONSTRAINT chk_category_prefix CHECK (check_category_prefix_matches_macro(macro, category_code))
-);
-CREATE UNIQUE INDEX idx_category_code ON account_categories(category_code);
-ALTER TABLE account_categories OWNER TO easypricer;
-
-CREATE SEQUENCE account_categories_s START WITH 1 INCREMENT BY 1; 
-ALTER SEQUENCE account_categories_s OWNER TO easypricer;
-
-
--- =========================================================================
--- LIVELLO 3: PIANO DEI CONTI (Controlla che le prime 2 cifre siano uguali alla categoria)
--- =========================================================================
-CREATE OR REPLACE FUNCTION check_account_prefix_matches_category(p_category_id INTEGER, p_account_code VARCHAR)
-RETURNS BOOLEAN AS $$
-BEGIN
-    -- Isola i primi due caratteri del codice a 6 cifre e verifica la corrispondenza con la categoria
-    RETURN (SELECT LEFT(p_account_code, 2) = category_code 
-            FROM account_categories 
-            WHERE category_id = p_category_id);
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
-
-CREATE TABLE chart_of_accounts (
-    account_id INTEGER NOT NULL
-    , account_code VARCHAR(6) NOT NULL -- (Es: '100015' per Cassa USD)
-    , category INTEGER NOT NULL 
-    , account_name VARCHAR(100) NOT NULL
-    , currency INTEGER NOT NULL
-    , is_active BOOLEAN DEFAULT TRUE
-    , PRIMARY KEY (account_id)
-    , CONSTRAINT fk_currency FOREIGN KEY (currency)
-              REFERENCES currency(id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
-    , CONSTRAINT fk_category FOREIGN KEY (category)
-              REFERENCES account_categories(category_id) ON DELETE NO ACTION ON UPDATE NO ACTION
-    CONSTRAINT chk_account_prefix CHECK (check_account_prefix_matches_category(category, account_code))
-);
-CREATE UNIQUE INDEX idx_account_code ON chart_of_accounts(account_code);
-ALTER TABLE chart_of_accounts OWNER TO easypricer;
-
-CREATE SEQUENCE chart_of_accounts_s START WITH 1 INCREMENT BY 1; 
-ALTER SEQUENCE chart_of_accounts_s OWNER TO easypricer;
+CREATE SEQUENCE accounting_events_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE accounting_events_s OWNER TO easypricer;
 
 
 
