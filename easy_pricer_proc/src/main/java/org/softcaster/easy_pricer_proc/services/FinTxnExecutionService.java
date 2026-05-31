@@ -24,11 +24,10 @@ import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.TxnStatusDAO;
-import org.softcaster.core.data.account.GlAccount;
-import org.softcaster.core.data.account.GlAccountDAO;
 import org.softcaster.easy_pricer_proc.accounting.context.AccountingContext;
 import org.softcaster.easy_pricer_proc.accounting.context.JournalDsl;
 import org.softcaster.easy_pricer_proc.accounting.enums.AccountingEvent;
+import org.softcaster.easy_pricer_proc.accounting.enums.TxnStatus;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
@@ -54,32 +53,44 @@ public class FinTxnExecutionService {
     private TxnStatusDAO txnStatusDAO;
     @Autowired
     private ScriptEngine groovyEngine;
-    @Autowired
-    private GlAccountDAO glAccountDAO;
 
     public void executeTxn(Integer txnId) {
-
-        GlAccount glAccount = glAccountDAO.findByAccountId(2);
-
         FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
+
+        // Determino nuovo stato "potenziale"
+        TxnStatus oldStatus = TxnStatus.fromCode(txn.getTxnStatus().getCode());
+        TxnStatus newStatus = TxnStatus.REJECTED;
+        switch (oldStatus) {
+            case PENDING, RESTARTING ->
+                newStatus = TxnStatus.EXECUTED;
+            case CANCELLED ->
+                newStatus = TxnStatus.AMENDED;
+            default -> {
+            }
+        }
+
+        if (newStatus == TxnStatus.REJECTED) {
+            throw new TxnProcessingException("Invalid Status");
+        }
+
         try {
             processBusiness(txnId);
-            updateStatus(txnId, "EXECUTED");
+            updateStatus(txnId, newStatus);
 
         } catch (TxnProcessingException e) {
             LoggerMgr.logError(e.getLocalizedMessage());
-            updateStatus(txnId, "REJECTED");
+            updateStatus(txnId, TxnStatus.REJECTED);
         } catch (Exception e) {
             LoggerMgr.logError(e.getLocalizedMessage());
-            updateStatus(txnId, "REJECTED");
+            updateStatus(txnId, TxnStatus.REJECTED);
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void updateStatus(Integer txnId, String status) {
+    protected void updateStatus(Integer txnId, TxnStatus status) {
 
         FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
-        txn.setTxnStatus(txnStatusDAO.findByCode(status));
+        txn.setTxnStatus(txnStatusDAO.findByCode(status.getCode()));
         financialTxnDAO.saveOrUpdate(txn);
     }
 

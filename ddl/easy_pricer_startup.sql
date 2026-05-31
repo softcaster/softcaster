@@ -155,6 +155,8 @@ INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_sta
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'CANCELLED_EXECUTED','Cancelled and Executed');
 -- restart transazione rejected
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'RESTARTING','Restartin');
+-- transazione modificata
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'AMENDED','Amended');
 
 -- ----------------------------------------------------------------------------
 -- accounting_status - stato contabile

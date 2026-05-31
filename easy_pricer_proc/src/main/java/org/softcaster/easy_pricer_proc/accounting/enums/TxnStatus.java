@@ -18,7 +18,9 @@ public enum TxnStatus implements IdentifiableEnum {
     SETTLED(4, "SETTLED", ""),
     REJECTED(5, "REJECTED", ""),
     CANCELLED(6, "CANCELLED", ""),
-    CANCELLED_EXECUTED(7, "CANCELLED_EXECUTED", "");
+    CANCELLED_EXECUTED(7, "CANCELLED_EXECUTED", ""),
+    RESTARTING(8, "RESTARTING", ""),
+    AMENDED(9, "AMENDED", "");
 
     private final int id;
     private final String code;
