@@ -21,6 +21,11 @@ public class FinancialTxnDAO {
     }
 
     @Transactional(readOnly = true)
+    public FinancialTxn findByIdWithMasterData(Integer idFinancialTxn) {
+        return repository.findByIdWithMasterData(idFinancialTxn);
+    }
+
+    @Transactional(readOnly = true)
     public List<FinancialTxn> findAll() {
         return repository.findAll();
     }
@@ -42,7 +47,7 @@ public class FinancialTxnDAO {
 
     @Transactional
     public FinancialTxn saveOrUpdate(FinancialTxn financialTxn) {
-       return repository.save(financialTxn);
+        return repository.save(financialTxn);
     }
 
     @Transactional

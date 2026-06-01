@@ -13,7 +13,6 @@ public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Inte
 
     // Il nome riflette il percorso: MasterData -> Daycount -> Code
     // List<FinancialTxn> findAllByMasterData_Daycount_Code(String code);    
-
     // Ottimizzato con JOIN FETCH: carica la transazione e il MasterData in un solo colpo
     @Query("SELECT f FROM FinancialTxn f "
             + "JOIN FETCH f.masterData m "
@@ -27,4 +26,13 @@ public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Inte
     public List<FinancialTxn> findAllByAssetClass(@Param("code") String code);
 
     public List<FinancialTxn> findByTxnStatusCode(String code);
+
+    @Query("""
+        select t
+        from FinancialTxn t
+        join fetch t.masterData md
+        join fetch md.assetClass ac
+        where t.idFinancialTxn = :id
+    """)
+    public FinancialTxn findByIdWithMasterData( @Param("id") Integer idFinancialTxn);
 }

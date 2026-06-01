@@ -104,6 +104,7 @@ public class FinancialTxnRestController {
                 if (financialTxn.getIdFinancialTxn() == 0) {
                     financialTxn.setIdFinancialTxn(null);
                     financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
+                    financialTxn.setValueDate(financialTxn.getTradeDate());
                 } // caso modifica
                 else {
                     // Recupero txn 

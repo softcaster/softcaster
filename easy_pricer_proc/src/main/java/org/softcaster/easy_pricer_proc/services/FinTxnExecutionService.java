@@ -97,7 +97,7 @@ public class FinTxnExecutionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void processBusiness(Integer txnId) {
 
-        FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
+        FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
         PositionDetail position = getPositionDetail(txn);
 
         elabFinancialTxn(txn, position);
