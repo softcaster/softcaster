@@ -77,12 +77,9 @@ public class FinTxnExecutionService {
             processBusiness(txnId);
             updateStatus(txnId, newStatus);
 
-        } catch (TxnProcessingException e) {
-            LoggerMgr.logError(e.getLocalizedMessage());
-            updateStatus(txnId, TxnStatus.REJECTED);
         } catch (Exception e) {
-            LoggerMgr.logError(e.getLocalizedMessage());
             updateStatus(txnId, TxnStatus.REJECTED);
+            throw e;
         }
     }
 
