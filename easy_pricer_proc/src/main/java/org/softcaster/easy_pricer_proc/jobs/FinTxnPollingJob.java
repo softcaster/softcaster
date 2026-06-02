@@ -14,6 +14,7 @@ import org.softcaster.easy_pricer_proc.services.FinTxnExecutionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -51,6 +52,7 @@ public class FinTxnPollingJob {
         return true;
     }
 
+    @Transactional
     protected void pollPendingTrades() {
         // 1. Cerca le transazioni PENDING
         List<FinancialTxn> pendingTxn = financialTxnDAO.findByTxnStatusCode("PENDING");
@@ -62,6 +64,7 @@ public class FinTxnPollingJob {
         }
     }
 
+    @Transactional
     protected void pollToAmendTrades() {
         // 1. Cerca le transazioni PENDING
         List<FinancialTxn> pendingTxn = financialTxnDAO.findByTxnStatusCode("TO_AMEND");
@@ -73,6 +76,7 @@ public class FinTxnPollingJob {
         }
     }
 
+    @Transactional
     protected void pollToCancelTrades() {
         // 1. Cerca le transazioni TO_CANCELL
         List<FinancialTxn> cancelledTxn = financialTxnDAO.findByTxnStatusCode("TO_CANCEL");
@@ -87,14 +91,14 @@ public class FinTxnPollingJob {
     // Esegue il polling ogni 15 secondi (15000 millisecondi)
     @Scheduled(fixedDelay = 15000)
     public void pollTrades() {
-        
+
         // 1. Elabora le transazioni TO_AMEND
         pollToAmendTrades();
 
         // 2. Elabora le transazioni TO_CANCEL
         pollToCancelTrades();
-        
-        // 3. Elabora le transazioni PENDING (nuove)s
+
+        // 3. Elabora le transazioni PENDING (nuove)
         pollPendingTrades();
     }
 }

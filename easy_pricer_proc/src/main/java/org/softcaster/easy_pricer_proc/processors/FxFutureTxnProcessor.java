@@ -5,44 +5,38 @@
 package org.softcaster.easy_pricer_proc.processors;
 
 import org.softcaster.core.data.FinancialTxn;
+import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.PositionDetail;
-import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.springframework.stereotype.Component;
 
 /**
  *
- * @author ep
+ * @author softc
  */
-@Component("XRB")
-public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
+@Component("FFU")
+public class FxFutureTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
+
+    @Override
+    protected boolean shortSellEnabled() {
+        return true;
+    }
 
     @Override
     public void process(FinancialTxn txn, PositionDetail position) {
 
-        SecurityMasterData smd = null;
-        if (txn.getMasterData() instanceof SecurityMasterData bond) {
-            smd = bond;
-        }
-        if (smd == null) {
+        FxFutureMasterData ffmd = (FxFutureMasterData) txn.getMasterData();
+        if (ffmd == null) {
             throw new TxnProcessingException("Invalid processor");
         }
-        double accruedInterest = calculateAccruedInterest(smd);
+
         ProcInputData input = new ProcInputData();
-        input.setPrice((txn.getPrice() + accruedInterest) * smd.getMultiplier());
-        input.setQuantity(txn.getQuantity());
+        input.setPrice(txn.getPrice() * ffmd.getMultiplier());
+        input.setQuantity(txn.getQuantity() * ffmd.getContractValue());
         input.setSide(txn.getTxnSide());
         input.setStatus(txn.getTxnStatus().getCode());
 
         super.process(input, position);
     }
 
-    @Override
-    protected boolean shortSellEnabled() {
-        return false;
-    }
-
-    protected double calculateAccruedInterest(SecurityMasterData smd) {
-        return 0.;
-    }
 }

@@ -20,7 +20,7 @@ public class PositionDetailDAO {
         return repository.findByIdPositionDetail(idPositionDetail);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Optional<PositionDetail> findByPositionMdAndMasterDataAndCounterparty(Integer positionMd,
             Integer masterData,
             Integer counterparty) {

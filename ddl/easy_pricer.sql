@@ -300,6 +300,7 @@ CREATE TABLE master_data
     , business_days INTEGER NOT NULL DEFAULT 2
     , asset_class INTEGER NOT NULL 
     , amortization_schedule INTEGER NOT NULL 
+    , multiplier NUMERIC(15,5) NOT NULL  DEFAULT 1 -- nel caso dei Bond sara 0.01
     , PRIMARY KEY (id_master_data)
     , CONSTRAINT fk_daycount FOREIGN KEY (daycount)
         REFERENCES daycount(id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION

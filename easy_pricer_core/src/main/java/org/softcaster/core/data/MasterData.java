@@ -96,6 +96,10 @@ public class MasterData implements Serializable {
 
     @Column(name = "business_days")
     private Integer businessDays;
+    
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "multiplier")
+    private Double multiplier;
 
     public Integer getIdMasterData() {
         return idMasterData;
@@ -330,5 +334,19 @@ public class MasterData implements Serializable {
      */
     public void setAccrualDaycount(Daycount accrualDaycount) {
         this.accrualDaycount = accrualDaycount;
+    }
+
+    /**
+     * @return the multiplier
+     */
+    public Double getMultiplier() {
+        return multiplier;
+    }
+
+    /**
+     * @param multiplier the multiplier to set
+     */
+    public void setMultiplier(Double multiplier) {
+        this.multiplier = multiplier;
     }
 }

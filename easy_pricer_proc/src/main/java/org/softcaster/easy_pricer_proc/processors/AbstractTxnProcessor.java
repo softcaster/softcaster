@@ -4,7 +4,6 @@
  */
 package org.softcaster.easy_pricer_proc.processors;
 
-import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.PositionDetail;
 
 /**

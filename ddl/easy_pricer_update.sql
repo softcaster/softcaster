@@ -1,3 +1,5 @@
+ALTER TABLE master_data ADD COLUMN multiplier NUMERIC(15,5) NOT NULL  DEFAULT 1;
+UPDATE master_data SET multiplier=0.01 WHERE asset_class IN (SELECT id_asset_class from asset_class WHERE code IN ('XRB','XRN','BFU'));
 ALTER TABLE yield_curve ADD COLUMN provider VARCHAR(50) NOT NULL DEFAULT '';
 ALTER TABLE master_data DROP COLUMN calendar;
 

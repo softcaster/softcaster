@@ -30,7 +30,8 @@ public class FinancialTxnDAO {
         return repository.findAll();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional // non può essere read-only perchè il repository chiede a
+    // PostgreSQL di bloccare le righe per la scrittura (FOR UPDATE)
     public List<FinancialTxn> findByTxnStatusCode(String code) {
         return repository.findByTxnStatusCode(code);
     }
@@ -40,7 +41,7 @@ public class FinancialTxnDAO {
         return repository.findAllByDaycountCode(code);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true) 
     public List<FinancialTxn> findAllByAssetClass(String code) {
         return repository.findAllByAssetClass(code);
     }

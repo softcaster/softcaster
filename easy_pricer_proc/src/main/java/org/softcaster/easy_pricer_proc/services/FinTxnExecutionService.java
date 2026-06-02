@@ -85,7 +85,9 @@ public class FinTxnExecutionService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    // Non serve più aprire una nuova transazione visto che è aperta a
+    // livello di job. Lascio comunque transactional per isolare i metodi
+    @Transactional//(propagation = Propagation.REQUIRES_NEW)
     protected void updateStatus(Integer txnId, TxnStatus status) {
 
         FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
@@ -93,7 +95,7 @@ public class FinTxnExecutionService {
         financialTxnDAO.saveOrUpdate(txn);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional//(propagation = Propagation.REQUIRES_NEW)
     protected void processBusiness(Integer txnId) {
 
         FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);

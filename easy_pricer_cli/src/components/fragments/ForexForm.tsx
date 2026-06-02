@@ -126,19 +126,7 @@ export const ForexForm = ({ data, masterDataList, positions, counterparties, onC
                             }
                         }}
                         placeholder="Short description..." />
-
                 </div>
-
-{/*
-                <div className="col-12 md:col-6 mt-3">
-                    <label className="text-sm font-bold block mb-2 text-600 uppercase">Notes / Description</label>
-                    <InputText
-                        value={data?.description || 'Nessuna nota'}
-                        readOnly
-                        className="surface-100"
-                    />
-                </div>
-                 */}
             </div>
         </div>
     );

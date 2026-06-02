@@ -19,36 +19,38 @@ export function GenericAssetView<TMaster>({
     FormComponent,
     TableComponent
 }: GenericAssetViewProps<TMaster>) {
-    
-    const { 
-        masterDataList, positionList, counterpartyList, 
-        trades, selectedTrade, setSelectedTrade 
+
+    const {
+        masterDataList, positionList, counterpartyList,
+        trades, selectedTrade, setSelectedTrade
     } = useFinancialView(assetClass, fetchMasterData, defaultTxn);
 
     return (
-        <Splitter layout="vertical" style={{ height: '100%' }} className="border-none">
-            <SplitterPanel size={30} minSize={20} className="overflow-auto">
-                <FormComponent
-                    data={selectedTrade}
-                    masterDataList={masterDataList} // Nome generico per l'anagrafica
-                    positions={positionList}
-                    counterparties={counterpartyList}
-                    /* 
-                       Invece di passare direttamente setSelectedTrade, creiamo un arrow function 
-                       che esegue lo scompattamento ({ ...val }). Questo notifica a React che l'oggetto 
-                       è cambiato, forzando il ri-rendering istantaneo del campo di testo della descrizione.
-                    */
-                    onChange={(val: any) => setSelectedTrade(val ? { ...val } : null)}
-                />
-            </SplitterPanel>
-            
-            <SplitterPanel size={70} minSize={30} className="p-3 flex flex-column">
-                <TableComponent
-                    data={trades}
-                    selection={selectedTrade}
-                    onSelectionChange={(val: any) => setSelectedTrade(val ?? defaultTxn)}
-                />
-            </SplitterPanel>
-        </Splitter>
+        <div style={{ height: 'calc(100vh - 45px)', padding: '1rem', boxSizing: 'border-box' }} className="flex flex-column">
+            <Splitter layout="vertical" style={{ height: '100%' }} className="border-none">
+                <SplitterPanel size={33} minSize={20} className="overflow-auto bg-white p-2">
+                    <FormComponent
+                        data={selectedTrade}
+                        masterDataList={masterDataList} // Nome generico per l'anagrafica
+                        positions={positionList}
+                        counterparties={counterpartyList}
+                        /* 
+                           Invece di passare direttamente setSelectedTrade, creiamo un arrow function 
+                           che esegue lo scompattamento ({ ...val }). Questo notifica a React che l'oggetto 
+                           è cambiato, forzando il ri-rendering istantaneo del campo di testo della descrizione.
+                        */
+                        onChange={(val: any) => setSelectedTrade(val ? { ...val } : null)}
+                    />
+                </SplitterPanel>
+
+                <SplitterPanel size={67} minSize={30} className="p-2 flex flex-column overflow-hidden">
+                    <TableComponent
+                        data={trades}
+                        selection={selectedTrade}
+                        onSelectionChange={(val: any) => setSelectedTrade(val ?? defaultTxn)}
+                    />
+                </SplitterPanel>
+            </Splitter>
+        </div>
     );
 }

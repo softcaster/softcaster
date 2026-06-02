@@ -5,7 +5,9 @@
 package org.softcaster.easy_pricer_proc.processors;
 
 import org.softcaster.core.data.FinancialTxn;
+import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.PositionDetail;
+import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,12 +22,17 @@ public class ForexTxnProcessor extends AbstractTxnProcessor implements ITxnProce
 
     @Override
     public void process(FinancialTxn txn, PositionDetail position) {
+        ForexMasterData fmd = (ForexMasterData) txn.getMasterData();
+        if (fmd == null) {
+            throw new TxnProcessingException("Invalid processor");
+        }
+
         ProcInputData input = new ProcInputData();
         input.setPrice(txn.getPrice());
         input.setQuantity(txn.getQuantity());
         input.setSide(txn.getTxnSide());
         input.setStatus(txn.getTxnStatus().getCode());
-        
+
         super.process(input, position);
     }
 
