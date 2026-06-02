@@ -2,10 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Enum.java to edit this template
  */
-package org.softcaster.easy_pricer_proc.accounting.enums;
+package org.softcaster.engine.enums;
 
 import java.util.Arrays;
-import org.softcaster.engine.enums.IdentifiableEnum;
 
 /**
  *
@@ -17,9 +16,11 @@ public enum TxnStatus implements IdentifiableEnum {
     EXECUTED(3, "EXECUTED", ""),
     SETTLED(4, "SETTLED", ""),
     REJECTED(5, "REJECTED", ""),
+    TO_CANCEL(6, "TO_CANCEL", ""),
     CANCELLED(6, "CANCELLED", ""),
     CANCELLED_EXECUTED(7, "CANCELLED_EXECUTED", ""),
     RESTARTING(8, "RESTARTING", ""),
+    TO_AMEND(8, "TO_AMEND", ""),
     AMENDED(9, "AMENDED", "");
 
     private final int id;
@@ -58,7 +59,7 @@ public enum TxnStatus implements IdentifiableEnum {
 
     public static TxnStatus fromCode(int id) {
         return Arrays.stream(values())
-                .filter( e -> e.id == id)
+                .filter(e -> e.id == id)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid AccountingStatus ID: " + id));
     }
@@ -70,4 +71,3 @@ public enum TxnStatus implements IdentifiableEnum {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid AccountingStatus ID: " + code));
     }
 }
-    

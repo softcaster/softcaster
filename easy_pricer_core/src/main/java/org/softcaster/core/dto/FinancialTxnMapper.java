@@ -4,7 +4,6 @@
  */
 package org.softcaster.core.dto;
 
-import java.util.Objects;
 import org.softcaster.core.data.Counterparty;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.FinancialTxn;
@@ -66,55 +65,26 @@ public class FinancialTxnMapper {
         PositionMasterData pmd = null;
         Counterparty ctp = null;
 
-        // Caso nuova transazione
-        if (financialTxnDto.financialTxnId() == 0) {
-            financialTxn = new FinancialTxn();
-            financialTxn.setIdFinancialTxn(0);
-            // Setto oggetti complessi
-            mds = masterDataDAO.findByIdMasterData(financialTxnDto.masterDataId());
-            financialTxn.setMasterData(mds);
-            pmd = positionMasterDataDAO.findByIdPosition(financialTxnDto.positionMdId());
-            financialTxn.setPositionMd(pmd);
-            ctp = counterpartyDAO.findByIdCounterparty(financialTxnDto.counterpartyId());
-            financialTxn.setCounterparty(ctp);
-            financialTxn.setDescription(financialTxnDto.description());
-            financialTxn.setPrice(financialTxnDto.price());
-            financialTxn.setQuantity(financialTxnDto.quantity());
-            financialTxn.setTradeDate(financialTxnDto.tradeDate());
-            financialTxn.setSettlement(financialTxnDto.tradeDate());
-            financialTxn.setTxnSide(financialTxnDto.txnSide());
-        } // Caso transazione gia`esistente, sono in modifica
-        else {
-            financialTxn = financialTxnDAO.findByIdFinancialTxn(financialTxnDto.financialTxnId());
-            if (!Objects.equals(financialTxn.getMasterData().getIdMasterData(), financialTxnDto.masterDataId())) {
-                mds = masterDataDAO.findByIdMasterData(financialTxnDto.masterDataId());
-                financialTxn.setMasterData(mds);
-            }
-            if (!Objects.equals(financialTxn.getPositionMd().getIdPosition(), financialTxnDto.positionMdId())) {
-                pmd = positionMasterDataDAO.findByIdPosition(financialTxnDto.positionMdId());
-                financialTxn.setPositionMd(pmd);
-            }
-            if (!Objects.equals(financialTxn.getCounterparty().getIdCounterparty(), financialTxnDto.counterpartyId())) {
-                ctp = counterpartyDAO.findByIdCounterparty(financialTxnDto.counterpartyId());
-                financialTxn.setCounterparty(ctp);
-            }
-            if (!financialTxn.getDescription().equals(financialTxnDto.description())) {
-                financialTxn.setDescription(financialTxnDto.description());
-            }
-            if (!(Objects.equals(financialTxn.getPrice(), financialTxnDto.price()))) {
-                financialTxn.setPrice(financialTxnDto.price());
-            }
-            if (!(Objects.equals(financialTxn.getQuantity(), financialTxnDto.quantity()))) {
-                financialTxn.setQuantity(financialTxnDto.quantity());
-            }
-            if (!(Objects.equals(financialTxn.getTradeDate(), financialTxnDto.tradeDate()))) {
-                financialTxn.setTradeDate(financialTxnDto.tradeDate());
-                financialTxn.setSettlement(financialTxnDto.tradeDate());
-            }
-            if (!(Objects.equals(financialTxn.getTxnSide(), financialTxnDto.txnSide()))) {
-                financialTxn.setTxnSide(financialTxnDto.txnSide());
-            }
-        }
+        // Sia in caso di nuova transazione che di modifica creo una nuova
+        // transazione, non chiamo nessuna findByIdFinancialTxn altrimenti
+        // Hibernate cacha la nuova transazione ed oni modifica si riflette
+        // anche sulla vecchia salvata su sb
+        financialTxn = new FinancialTxn();
+        financialTxn.setIdFinancialTxn(0);
+        // Setto oggetti complessi
+        mds = masterDataDAO.findByIdMasterData(financialTxnDto.masterDataId());
+        financialTxn.setMasterData(mds);
+        pmd = positionMasterDataDAO.findByIdPosition(financialTxnDto.positionMdId());
+        financialTxn.setPositionMd(pmd);
+        ctp = counterpartyDAO.findByIdCounterparty(financialTxnDto.counterpartyId());
+        financialTxn.setCounterparty(ctp);
+        financialTxn.setDescription(financialTxnDto.description());
+        financialTxn.setPrice(financialTxnDto.price());
+        financialTxn.setQuantity(financialTxnDto.quantity());
+        financialTxn.setTradeDate(financialTxnDto.tradeDate());
+        financialTxn.setValueDate(financialTxnDto.tradeDate());
+        financialTxn.setSettlement(financialTxnDto.tradeDate());
+        financialTxn.setTxnSide(financialTxnDto.txnSide());
 
         // Aggiorno counterparty, position, segno ...
         return financialTxn;

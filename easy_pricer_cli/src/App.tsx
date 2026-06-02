@@ -9,13 +9,13 @@ import { ActionProvider, useActions } from './context/ActionContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import {
   navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView,
-  BondView, XNoteView, BondPView, BondFutureView,BondFuturePView
+  BondView, XNoteView, BondPView, BondFutureView, BondFuturePView
 } from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 const ToolbarWrapper = () => {
-  const { onSave, onNew, onDel, onExport, isExporting, onCalculate } = useActions(); // Hook che abbiamo creato prima
+  const { onSave, onNew, onDel, onExport, isExporting, onCalculate, onRefresh } = useActions(); // Hook che abbiamo creato prima
   const { user, logout } = useAuth();
 
   const leftContents = (
@@ -48,6 +48,13 @@ const ToolbarWrapper = () => {
         }}
         disabled={!onDel}
         tooltip="Delete"
+      />
+
+      <Button
+        icon="pi pi-refresh"
+        className="p-button-text p-button-plain p-1"
+        onClick={() => onRefresh?.()}
+        tooltip="Refresh"
       />
 
       <span className="border-left-1 surface-border mx-2"></span>

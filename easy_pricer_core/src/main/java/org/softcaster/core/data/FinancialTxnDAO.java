@@ -55,17 +55,16 @@ public class FinancialTxnDAO {
         repository.delete(financialTxn);
     }
 
-    // Cancellazione logica marca solamente la transazione a CANCELLED ma
+    // Cancellazione logica marca solamente la transazione a TO_CANCEL ma
     // non la rimuove fisicamente da DB
     @Transactional
     public FinancialTxn logicalDelete(Integer idFinancialTxn) {
 
         // Carico txn
         FinancialTxn financialTxn = findByIdFinancialTxn(idFinancialTxn);
-        // Setto a CANCELLED
-        financialTxn.setTxnStatus(txnStatusDAO.findByCode("CANCELLED"));
+        // Setto a TO_CANCEL
+        financialTxn.setTxnStatus(txnStatusDAO.findByCode("TO_CANCEL"));
         // Salvo
         return saveOrUpdate(financialTxn);
     }
-
 }

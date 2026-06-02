@@ -10,6 +10,7 @@ interface ActionContextType {
     onExport: (() => void) | null;
     isExporting: boolean;
     onCalculate: (() => void) | null;
+    onRefresh: (() => void) | null;
     showToast: (message: ToastMessage) => void;
     setAction: (actions: {
         save?: () => void,
@@ -18,6 +19,7 @@ interface ActionContextType {
         export?: () => void,
         isExporting?: boolean,
         calculate?: () => void
+        refresh?: () => void
     }) => void;
 }
 
@@ -30,6 +32,7 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [onExport, setOnExport] = useState<(() => void) | null>(null);
     const [isExporting, setIsExporting] = useState<boolean>(false);
     const [onCalculate, setOnCalculate] = useState<(() => void) | null>(null);
+    const [onRefresh, setOnRefresh] = useState<(() => void) | null>(null);
 
     const toast = useRef<Toast>(null);
     const showToast = (message: ToastMessage) => {
@@ -43,6 +46,8 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         export?: () => void,
         isExporting?: boolean,
         calculate?: () => void,
+        refresh?: () => void,
+        
     }) => {
         setOnSave(() => actions.save || null);
         setOnNew(() => actions.new || null);
@@ -50,10 +55,11 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setOnExport(() => actions.export || null);
         setIsExporting(actions.isExporting || false);
         setOnCalculate(() => actions.calculate || null);
+        setOnRefresh(() => actions.refresh || null);
     };
 
     return (
-        <ActionContext.Provider value={{ onSave, onNew, onDel, onExport, isExporting, onCalculate, showToast, setAction }}>
+        <ActionContext.Provider value={{ onSave, onNew, onDel, onExport, isExporting, onCalculate, onRefresh,showToast, setAction }}>
             <Toast ref={toast} /> {/* Il Toast vive qui, nel cuore dell'app */}
             {children}
         </ActionContext.Provider>

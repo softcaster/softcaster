@@ -62,12 +62,23 @@ public class FinTxnPollingJob {
         }
     }
 
-    protected void pollCancelledTrades() {
-        // 1. Cerca le transazioni CANCELLED
-        List<FinancialTxn> cancelledTxn = financialTxnDAO.findByTxnStatusCode("CANCELLED");
+    protected void pollToAmendTrades() {
+        // 1. Cerca le transazioni PENDING
+        List<FinancialTxn> pendingTxn = financialTxnDAO.findByTxnStatusCode("TO_AMEND");
+
+        if (!pendingTxn.isEmpty()) {
+            log.info("=== [BATCH START] find {} TO_AMEND transaction(s) ===", pendingTxn.size());
+            elabFinancialTxnList(pendingTxn);
+            log.info("=== [BATCH END] Processing completed ===\n");
+        }
+    }
+
+    protected void pollToCancelTrades() {
+        // 1. Cerca le transazioni TO_CANCELL
+        List<FinancialTxn> cancelledTxn = financialTxnDAO.findByTxnStatusCode("TO_CANCEL");
 
         if (!cancelledTxn.isEmpty()) {
-            log.info("=== [BATCH START] find {} CANCELLED transaction(s) ===", cancelledTxn.size());
+            log.info("=== [BATCH START] find {} TO_CANCEL transaction(s) ===", cancelledTxn.size());
             elabFinancialTxnList(cancelledTxn);
             log.info("=== [BATCH END] Processing completed ===\n");
         }
@@ -76,10 +87,14 @@ public class FinTxnPollingJob {
     // Esegue il polling ogni 15 secondi (15000 millisecondi)
     @Scheduled(fixedDelay = 15000)
     public void pollTrades() {
-        // 1. Elabora le transazioni PENDING
-        pollPendingTrades();
+        
+        // 1. Elabora le transazioni TO_AMEND
+        pollToAmendTrades();
 
-        // 2. Elabora le transazioni CANCELLED
-        pollCancelledTrades();
+        // 2. Elabora le transazioni TO_CANCEL
+        pollToCancelTrades();
+        
+        // 3. Elabora le transazioni PENDING (nuove)s
+        pollPendingTrades();
     }
 }

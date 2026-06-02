@@ -48,6 +48,8 @@ export const GenericTxnTable = ({ data, selection, onSelectionChange }: GenericT
                 sortable 
             />
             
+            <Column field="txnStatus" header="Status" body={(rowData: FinancialTxnDto) => rowData.txnStatus?.description || '-'} sortable />
+            
             <Column field="masterDataCode" header="Code" body={(rowData: FinancialTxnDto) => rowData.masterDataCode || '-'} sortable />
             
             <Column field="txnSide" header="Side" body={sideBodyTemplate} />

@@ -27,10 +27,10 @@ import org.softcaster.core.data.TxnStatusDAO;
 import org.softcaster.easy_pricer_proc.accounting.context.AccountingContext;
 import org.softcaster.easy_pricer_proc.accounting.context.JournalDsl;
 import org.softcaster.easy_pricer_proc.accounting.enums.AccountingEvent;
-import org.softcaster.easy_pricer_proc.accounting.enums.TxnStatus;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
+import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -63,7 +63,9 @@ public class FinTxnExecutionService {
         switch (oldStatus) {
             case PENDING, RESTARTING ->
                 newStatus = TxnStatus.EXECUTED;
-            case CANCELLED ->
+            case TO_CANCEL ->
+                newStatus = TxnStatus.CANCELLED;
+            case TO_AMEND ->
                 newStatus = TxnStatus.AMENDED;
             default -> {
             }

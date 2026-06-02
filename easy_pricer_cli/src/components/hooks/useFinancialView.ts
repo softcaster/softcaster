@@ -5,7 +5,7 @@ import { useActions } from '../../context/ActionContext';
 // Importa solo i tipi comuni a TUTTE le viste
 import type {
     PositionMasterData,
-    Counterparty
+    Counterparty, TxnStatus
 } from '../data/schema';
 
 import type {
@@ -62,26 +62,62 @@ export function useFinancialView<TMaster>(
 
     useEffect(() => { loadAll(); }, []);
 
+    const refreshTrades = async () => {
+        try {
+            // Chiama solo l'endpoint dei trade
+            const tx = await findAllByAssetClass(assetClass);
+            setTrades(tx); // Aggiorna l'array: React re-renderizza solo la tabella!
+
+            showToast({ severity: 'info', summary: 'Syncronized', detail: 'Grid updated' });
+        } catch (err) {
+            console.error(err);
+            showToast({ severity: 'error', summary: 'Error', detail: 'Can not update grid' });
+        }
+    };
+
+    const getInitialTxnStatus = (txnId: number, status: TxnStatus | null): TxnStatus | null => {
+        // Sicuramente nuova transazione
+        if (txnId == 0) {
+            return { idTxnStatus: 0, code: "PENDING", description: "" };
+        }
+
+        if (!status)
+            return null;
+
+        // Possibili 2 casi accettabili
+        // 1) PENDING transazione non ancora processata
+        // 2) EXECUTED transazione processata
+        switch (status.code) {
+            case "PENDING":
+                return status;
+            case "EXECUTED":
+                return { idTxnStatus: 0, code: "TO_AMEND", description: "" };
+            default:
+                return null;
+        }
+
+    };
+
     const handleSave = async () => {
         if (selectedTrade.price <= 0) return;
         try {
-            /*
-            // Controllo se lo stato e' cambiato, se id e' > 0 ,
-            // il processamento potrebbe aver cambiato lo stato da
-            // PENDING a EXECUTED, ma la txn, caricata dopo la modifica,
-            // potrebbe essere ancora a pending PENDING
-            if (selectedTrade.idFinancialTxn > 0) {
-                const oldTxn = await fetchFinancialTxnById(selectedTrade.idFinancialTxn);
-                if (oldTxn) {
-                    selectedTrade.txnStatus = oldTxn.txnStatus;
-                }
+
+            // setto status transazione
+            selectedTrade.txnStatus = getInitialTxnStatus(selectedTrade.financialTxnId, selectedTrade.txnStatus);
+            if (selectedTrade.txnStatus == null) {
+                showToast({
+                    severity: 'warn',
+                    summary: 'Warning',
+                    detail: 'Invalid Txn status.'
+                });
+                return; // Interrompe la funzione handleSave e non esegue il salvataggio
             }
-            */
-            await saveFinancialTxn(selectedTrade);
+            const result = await saveFinancialTxn(selectedTrade);
+            console.log(result);
             await loadAll(); // Ricarica tutto per sicurezza
             setSelectedTrade(defaultTxn);
             showToast({ severity: 'success', summary: 'Saved', detail: 'Transaction registered' });
-        } catch (err) {
+        } catch (err: any) {
             showToast({ severity: 'error', summary: 'Error', detail: 'Save failed' });
             console.error(err);
         }
@@ -157,7 +193,8 @@ export function useFinancialView<TMaster>(
             new: () => setSelectedTrade(createDefaultTxnDto()), // Crea un oggetto nuovo ogni volta
             del: isDeletable ? handleDelete : undefined,
             export: handleExport,
-            isExporting: isExporting // <--- Passiamo anche lo stato al Context
+            isExporting: isExporting, // <--- Passiamo anche lo stato al Context
+            refresh: refreshTrades
         });
     }, [selectedTrade, trades, isExporting]);
 

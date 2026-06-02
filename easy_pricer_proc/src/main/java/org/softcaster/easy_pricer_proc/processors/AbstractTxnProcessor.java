@@ -17,8 +17,9 @@ public abstract class AbstractTxnProcessor {
 
     public void process(ProcInputData input, PositionDetail position) {
         double quantity = input.getQuantity();
-        // Se transazione cancellata, inverto quantita, mantenendo pero il side
-        if (input.getStatus().equalsIgnoreCase("CANCELLED")) {
+        // Se transazione cancellata o modificata, inverto quantita, mantenendo pero il side
+        if (input.getStatus().equalsIgnoreCase("TO_CANCEL") || 
+                input.getStatus().equalsIgnoreCase("TO_AMEND")) {
             quantity = quantity * (-1.);
         }
         double notionalValue = input.getPrice() * quantity;

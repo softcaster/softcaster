@@ -4,10 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
-import org.softcaster.core.data.TxnStatusDAO;
 import org.softcaster.core.dto.FinancialTxnDto;
 import org.softcaster.core.dto.FinancialTxnMapper;
-import org.softcaster.easy_pricer_srv.util.CommonData;
+import org.softcaster.easy_pricer_srv.services.FinancialTxnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -27,9 +26,9 @@ public class FinancialTxnRestController {
     @Autowired
     private FinancialTxnDAO dao;
     @Autowired
-    private TxnStatusDAO txnStatusDAO;
-    @Autowired
     FinancialTxnMapper mapper;
+    @Autowired
+    private FinancialTxnService financialTxnService;
 
     @GetMapping("/financial_txn/r01")
     public ResponseEntity<List<FinancialTxn>> findAll() {
@@ -74,64 +73,17 @@ public class FinancialTxnRestController {
         return new ResponseEntity(dtoTransactions, HttpStatus.OK);
     }
 
-    protected boolean updateOnly(FinancialTxn oldTxn, FinancialTxn newTxn) {
-
-        if (oldTxn != null && newTxn != null) {
-            // Comparo prezzi
-            if (Double.compare(newTxn.getPrice(), oldTxn.getPrice()) != 0) {
-                return false;
-            }
-            // Comparo quantita
-            if (Double.compare(newTxn.getQuantity(), oldTxn.getQuantity()) != 0) {
-                return false;
-            }
-            // Comparo controparte
-            if (!newTxn.getCounterparty().getCode().equals(oldTxn.getCounterparty().getCode())) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     // save/update record
     @PostMapping(value = "/financial_txn")
-    public ResponseEntity<FinancialTxnDto> saveOrUpdate(@RequestBody FinancialTxnDto financialTxnDto) {
+    public ResponseEntity<FinancialTxnDto> saveOrUpdate(@RequestBody FinancialTxnDto newTxnDto) {
         try {
-            FinancialTxn financialTxn = mapper.fromDto(financialTxnDto);
-            if (financialTxn != null) {
-                // caso nuovo inserimento
-                if (financialTxn.getIdFinancialTxn() == 0) {
-                    financialTxn.setIdFinancialTxn(null);
-                    financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
-                    financialTxn.setValueDate(financialTxn.getTradeDate());
-                } // caso modifica
-                else {
-                    // Recupero txn 
-                    FinancialTxn oldTxn = dao.findByIdFinancialTxn(financialTxn.getIdFinancialTxn());
-                    if (oldTxn.getTxnStatus().getCode().equals("EXECUTED")) {
-                        // Se modifica contabile allora marco la vecchia come CANCELLED
-                        // ed inserisco una nuova transazione a pending
-                        if (!updateOnly(oldTxn, financialTxn)) {
-                            // Marco la vecchia txn come cancellata
-                            oldTxn.setTxnStatus(txnStatusDAO.findByCode("CANCELLED"));
-                            dao.saveOrUpdate(oldTxn);
-                            // Creo una nuova txn
-                            financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
-                            financialTxn.setIdFinancialTxn(null);
-                            financialTxn.setRefId(oldTxn.getIdFinancialTxn());
-                        }
-                    }
-                }
-
-                financialTxn = dao.saveOrUpdate(financialTxn);
-
-                return new ResponseEntity(financialTxnDto, HttpStatus.OK);
-            } else {
-                return new ResponseEntity(CommonData.getJsonError("Null Transaction"), HttpStatus.NOT_ACCEPTABLE);
-            }
+            // Delega l'intera logica atomica al servizio
+            FinancialTxnDto resultDto = financialTxnService.saveOrUpdateTransaction(newTxnDto);
+            return new ResponseEntity<>(resultDto, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity(CommonData.getJsonError(e.getLocalizedMessage()), HttpStatus.NOT_ACCEPTABLE);
+            // Se il service lancia una qualsiasi eccezione, la transazione fallisce,
+            // viene eseguito il rollback automatico sul DB e restituisci l'errore al client.
+            return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
         }
     }
 

@@ -141,22 +141,27 @@ INSERT INTO settlement_type(id_settlement_type,code, description) VALUES (nextva
 -- txn_status
 -- ----------------------------------------------------------------------------
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'PENDING','Pending');
--- in processanto
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'VALIDATING','Validating');
 -- processata
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'EXECUTED','Executed');
--- contabilizzata (scambio denaro titoli a T+bussinnes days
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'SETTLED','Settled');
 -- rifiutata
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'REJECTED','Rejected');
+-- da modificare
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'TO_AMEND','To Amend');
+-- modificata
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'AMENDED','Amended');
+-- da cancellare
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'TO_CANCEL','To Cancel');
 -- cancellata
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'CANCELLED','Cancelled');
--- cancellata e processata
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'CANCELLED_EXECUTED','Cancelled and Executed');
+-- ----------------------------------------------------------------------------
 -- restart transazione rejected
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'RESTARTING','Restartin');
--- transazione modificata
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'AMENDED','Amended');
+-- cancellata e processata
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'CANCELLED_EXECUTED','Cancelled and Executed');
+-- in processanto
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'VALIDATING','Validating');
+-- contabilizzata (scambio denaro titoli a T+bussinnes days
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'SETTLED','Settled');
 
 -- ----------------------------------------------------------------------------
 -- accounting_status - stato contabile
