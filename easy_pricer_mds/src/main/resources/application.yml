@@ -13,9 +13,9 @@ spring:
       port: -1                         
   # Configurazione Database PostgreSQL
   datasource:
-    url: jdbc:postgresql://localhost:5432/easypricer # Il nome del tuo DB
-    username: easypricer                                  # Il tuo utente Postgres
-    password: easypricer                           # La tua password
+    url: jdbc:postgresql://localhost:5432/sofie # Il nome del tuo DB
+    username: sofie                                  # Il tuo utente Postgres
+    password: sofie                           # La tua password
     driver-class-name: org.postgresql.Driver
 
   # 2. Configurazione JPA / Hibernate

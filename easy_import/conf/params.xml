@@ -6,15 +6,15 @@
     </param>
     <param>
         <name>DB_CONNECTION</name>
-        <value>jdbc:postgresql://localhost/easypricer</value>
+        <value>jdbc:postgresql://localhost/sofie</value>
     </param>
     <param>
         <name>DB_USER</name>
-        <value>easypricer</value>
+        <value>sofie</value>
     </param>
     <param>
         <name>DB_PASSWORD</name>
-        <value>easypricer</value>
+        <value>sofie</value>
     </param>
     <param>
         <name>XML_FILENAME</name>
