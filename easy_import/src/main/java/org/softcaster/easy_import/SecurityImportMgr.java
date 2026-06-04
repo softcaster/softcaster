@@ -286,7 +286,7 @@ public class SecurityImportMgr implements IImportMgr {
         if (jBond.desTitCompleta.contains("BTP")) {
             assetClassCode = "XRB";
         } else if (jBond.desTitCompleta.contains("BOT")) {
-            assetClassCode = "XRN";
+            assetClassCode = "BLL";
         } else if (jBond.desTitCompleta.contains("CCT")) {
             assetClassCode = "FRB";
         }

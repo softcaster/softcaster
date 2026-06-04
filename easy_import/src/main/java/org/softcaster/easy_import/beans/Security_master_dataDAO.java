@@ -28,7 +28,7 @@ public class Security_master_dataDAO {
     private final String selectExpr = "SELECT id_master_data FROM security_master_data WHERE isin=?";
     private final String removeExpr = "DELETE FROM security_master_data WHERE id_master_data_id=?";
     private final String selectByPKeyExpr = "SELECT id_master_data,isin,cfi_code,fisn,lei,issuer,nominal_value,first_coupon_rate,first_coupon_payment_date FROM security_master_data WHERE id_master_data=?";
-    private final String selectByIdxExpr = "SELECT id_master_data,isin,cfi_code,fisn,lei,issuer,issue_description,nominal_value,first_coupon_rate,first_coupon_payment_date FROM security_master_data WHERE isin=?";
+    private final String selectByIdxExpr = "SELECT id_master_data,isin,cfi_code,fisn,lei,issuer,nominal_value,first_coupon_rate,first_coupon_payment_date FROM security_master_data WHERE isin=?";
 
     public Security_master_dataDAO() {
         ConnectioManager cm = ConnectioManager.getInstance();

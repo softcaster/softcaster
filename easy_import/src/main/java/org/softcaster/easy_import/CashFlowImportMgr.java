@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.easy_import.beans.Asset_class;
+import org.softcaster.easy_import.beans.Asset_classDAO;
 import org.softcaster.easy_import.beans.Cash_flow_item;
 import org.softcaster.easy_import.beans.Cash_flow_itemDAO;
 import org.softcaster.easy_import.beans.Daycount;
@@ -50,6 +52,7 @@ public class CashFlowImportMgr extends BondImportMgrHelper implements IImportMgr
     Cash_flow_itemDAO cashFlowItemDAO = null;
     private DaycountDAO daycountDAO = null;
     private FrequencyDAO frequencyDAO = null;
+    private Asset_classDAO asset_classDAO = null;
 
     private void createBeans() {
         master_data = new Master_data();
@@ -63,6 +66,7 @@ public class CashFlowImportMgr extends BondImportMgrHelper implements IImportMgr
         cashFlowItemDAO = new Cash_flow_itemDAO();
         daycountDAO = new DaycountDAO();
         frequencyDAO = new FrequencyDAO();
+        asset_classDAO = new Asset_classDAO();
     }
 
     public CashFlowImportMgr() {
@@ -108,26 +112,40 @@ public class CashFlowImportMgr extends BondImportMgrHelper implements IImportMgr
             security_master_data.setIsin(master_data.getCode());
             security_master_dataDAO.loadByIdx(security_master_data);
 
-            List<PaymentPeriod> periods = bsg.generate(master_data.getIssue_date().toLocalDate(),
-                    master_data.getMaturity_date().toLocalDate(),
-                    org.softcaster.engine.enums.Frequency.SEMI_ANNUAL,
-                    org.softcaster.engine.enums.BusinessDayConvention.FORWARD,
-                    org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA,
-                    null);
+            Asset_class asset_class = new Asset_class();
+            asset_class.setId_asset_class(master_data.getAsset_class());
+            asset_classDAO.loadByPKey(asset_class);
 
-            List<CashFlow> flows = bas.generateCashFlows(master_data.getRedempion_price(), master_data.getInterest_rate() * master_data.getMultiplier(),
-                    periods, org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA);
+            if (asset_class.getCode().equals("XRB")) {
+                List<PaymentPeriod> periods = bsg.generate(master_data.getIssue_date().toLocalDate(),
+                        master_data.getMaturity_date().toLocalDate(),
+                        org.softcaster.engine.enums.Frequency.SEMI_ANNUAL,
+                        org.softcaster.engine.enums.BusinessDayConvention.FORWARD,
+                        org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA,
+                        null);
 
-            for (CashFlow flow : flows) {
+                List<CashFlow> flows = bas.generateCashFlows(master_data.getRedempion_price(), master_data.getInterest_rate() * master_data.getMultiplier(),
+                        periods, org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA);
+
+                for (CashFlow flow : flows) {
+                    Cash_flow_item item = new Cash_flow_item();
+                    item.setMaster_data(master_data.getId_master_data());
+                    item.setStart_date(java.sql.Date.valueOf(flow.accrualStart()));
+                    item.setEnd_date(java.sql.Date.valueOf(flow.accrualEnd()));
+                    item.setInterest(flow.interest());
+                    item.setAmount(flow.principal());
+                    cashFlows.add(item);
+                }
+            } else if(asset_class.getCode().equals("BLL")) {
                 Cash_flow_item item = new Cash_flow_item();
-                item.setMaster_data(master_data.getId_master_data());
-                item.setStart_date(java.sql.Date.valueOf(flow.accrualStart()));
-                item.setEnd_date(java.sql.Date.valueOf(flow.accrualEnd()));
-                item.setInterest(flow.interest());
-                item.setAmount(flow.principal());
-                cashFlows.add(item);
+                    item.setMaster_data(master_data.getId_master_data());
+                    item.setStart_date(master_data.getIssue_date());
+                    item.setEnd_date(master_data.getMaturity_date());
+                    item.setInterest(0.);
+                    item.setAmount(master_data.getRedempion_price());
+                    cashFlows.add(item);
             }
-
+            
             for (Cash_flow_item item : cashFlows) {
                 cashFlowItemDAO.insertOrUpdate(item);
             }
