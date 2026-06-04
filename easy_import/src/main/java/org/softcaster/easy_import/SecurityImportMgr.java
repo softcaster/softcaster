@@ -53,11 +53,13 @@ import org.softcaster.easy_import.beans.Security_master_data;
 import org.softcaster.easy_import.beans.Type_of_interestDAO;
 import org.softcaster.easy_import.xml.BondLoaderMgr;
 import org.softcaster.easy_import.xml.ItemBond;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author ep
  */
+@Service("Bonds")
 public class SecurityImportMgr implements IImportMgr {
 
     private static SecurityImportMgr _instance = null;
@@ -92,6 +94,7 @@ public class SecurityImportMgr implements IImportMgr {
     private Type_of_interest toi = null;
     private Form form = null;
     private Daycount daycount = null;
+    private Daycount accrualDaycount = null;
     private Roll_convention rollConv = null;
     private Accrual_schedule_type ast = null;
     private Frequency frequency = null;
@@ -123,6 +126,7 @@ public class SecurityImportMgr implements IImportMgr {
         toi = new Type_of_interest();
         form = new Form();
         daycount = new Daycount();
+        accrualDaycount = new Daycount();
         rollConv = new Roll_convention();
         ast = new Accrual_schedule_type();
         frequency = new Frequency();
@@ -325,10 +329,13 @@ public class SecurityImportMgr implements IImportMgr {
             
             fillFrequency(jBond);
                     
-            daycount.setCode("ACT_ACT");
+            daycount.setCode("ACT_ACT_ICMA");
             daycountDAO.loadByIdx(daycount);
 
-            rollConv.setCode("NONE");
+            accrualDaycount.setCode("ACT_365");
+            daycountDAO.loadByIdx(accrualDaycount);
+
+            rollConv.setCode("UNADJUSTED");
             rollConvDAO.loadByIdx(rollConv);
 
             ast.setCode("NONE");
@@ -358,6 +365,9 @@ public class SecurityImportMgr implements IImportMgr {
             masterData.setAsset_class(asset_class.getId_asset_class());
             masterData.setAmortization_schedule(amortization_schedule.getId_amortization_schedule());
             masterData.setCode(bond.isincode);
+            masterData.setDescription(jBond.desTitCompleta);
+            masterData.setMultiplier(0.01);
+            masterData.setAccrual_daycount(accrualDaycount.getId_daycount());
             masterDataDAO.insertOrUpdate(masterData);
             masterDataDAO.loadByIdx(masterData);
 
@@ -381,7 +391,6 @@ public class SecurityImportMgr implements IImportMgr {
             securityMasterData.setFirst_coupon_rate(firstCed);
             securityMasterData.setFisn(jBond.codFisn);
             securityMasterData.setIsin(bond.isincode);
-            securityMasterData.setIssue_description(jBond.desTitCompleta);
             securityMasterData.setIssuer(issuer.getId_issuer());
             securityMasterData.setLei(jBond.codLei);
             securityMasterData.setNominal_value(bond.amount);

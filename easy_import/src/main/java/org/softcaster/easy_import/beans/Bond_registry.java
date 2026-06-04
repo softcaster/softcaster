@@ -30,6 +30,7 @@ public class Bond_registry implements IRecord {
     private Double first_coupon_rate = 0.0;
     private Date first_coupon_payment_date = null;
     private Integer business_days = 0;
+    private Double multiplier = 0.01;
 
     public Integer getId_bond_registry() {
         return id_bond_registry;
@@ -239,6 +240,20 @@ public class Bond_registry implements IRecord {
      */
     public void setFirst_coupon_payment_date(Date first_coupon_payment_date) {
         this.first_coupon_payment_date = first_coupon_payment_date;
+    }
+
+    /**
+     * @return the multiplier
+     */
+    public Double getMultiplier() {
+        return multiplier;
+    }
+
+    /**
+     * @param multiplier the multiplier to set
+     */
+    public void setMultiplier(Double multiplier) {
+        this.multiplier = multiplier;
     }
 
 }

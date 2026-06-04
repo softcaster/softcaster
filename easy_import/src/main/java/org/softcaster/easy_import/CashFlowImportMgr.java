@@ -28,14 +28,14 @@ import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
 import org.softcaster.engine.cashflow.BulletAmortizationStrategy;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.cashflow.PaymentPeriod;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author softc
  */
+@Service("CashFlows")
 public class CashFlowImportMgr extends BondImportMgrHelper implements IImportMgr {
-
-    private static CashFlowImportMgr _instance = null;
 
     // Beans
     Master_data master_data = null;
@@ -65,7 +65,7 @@ public class CashFlowImportMgr extends BondImportMgrHelper implements IImportMgr
         frequencyDAO = new FrequencyDAO();
     }
 
-    private CashFlowImportMgr() {
+    public CashFlowImportMgr() {
 
         if (loader == null) {
             try {
@@ -115,7 +115,7 @@ public class CashFlowImportMgr extends BondImportMgrHelper implements IImportMgr
                     org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA,
                     null);
 
-            List<CashFlow> flows = bas.generateCashFlows(master_data.getIssue_price(), master_data.getInterest_rate(),
+            List<CashFlow> flows = bas.generateCashFlows(master_data.getRedempion_price(), master_data.getInterest_rate() * master_data.getMultiplier(),
                     periods, org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA);
 
             for (CashFlow flow : flows) {
@@ -236,13 +236,4 @@ public class CashFlowImportMgr extends BondImportMgrHelper implements IImportMgr
             frequencyDAO = null;
         }
     }
-
-    public static CashFlowImportMgr getInstance() {
-        if (_instance == null) {
-            _instance = new CashFlowImportMgr();
-        }
-
-        return _instance;
-    }
-
 }

@@ -47,9 +47,7 @@ import org.softcaster.easy_import.beans.Type_of_interest;
 import org.softcaster.easy_import.beans.Type_of_interestDAO;
 import org.softcaster.easy_import.xml.BondLoaderMgr;
 import org.softcaster.easy_import.xml.ItemBond;
-import org.springframework.stereotype.Service;
 
-@Service("Bonds") 
 public class BondImportMgr implements IImportMgr {
 
     public BondImportMgr() {
@@ -286,7 +284,7 @@ public class BondImportMgr implements IImportMgr {
             frequency.setCode("SEMI-ANNUAL");
             frequencyDAO.loadByIdx(frequency);
 
-            daycount.setCode("ACT_ACT");
+            daycount.setCode("ACT_ACT_ICMA");
             daycountDAO.loadByIdx(daycount);
 
             rollConv.setCode("NONE");
@@ -303,11 +301,8 @@ public class BondImportMgr implements IImportMgr {
             bondRegistry.setCoupon_frequency(frequency.getId_frequency());
             bondRegistry.setCurrency(currency.getId_currency());
             bondRegistry.setDaycount(daycount.getId_daycount());
-            DateParser parser = new DateParser(jBond.datPrCed);
-            Date dt = new Date(parser.year(), parser.month(), parser.day());
-            bondRegistry.setFirst_coupon_payment_date(dt.sqlDate());
             String firstCedStr = jBond.perCed;
-            double firstCed=Double.parseDouble(firstCedStr.replaceAll(",", "."));
+            double firstCed = Double.parseDouble(firstCedStr.replaceAll(",", "."));
             bondRegistry.setFirst_coupon_rate(firstCed);
             bondRegistry.setFisn(jBond.codFisn);
             bondRegistry.setForm(form.getId_form());
@@ -319,6 +314,13 @@ public class BondImportMgr implements IImportMgr {
             bondRegistry.setIssuer(issuer.getId_issuer());
             bondRegistry.setLei(jBond.codLei);
             bondRegistry.setMaturity_date(bond.redemptiondate);
+            if (!jBond.datPrCed.isBlank()) {
+                DateParser parser = new DateParser(jBond.datPrCed);
+                Date dt = new Date(parser.year(), parser.month(), parser.day());
+                bondRegistry.setFirst_coupon_payment_date(dt.sqlDate());
+            } else {
+                bondRegistry.setFirst_coupon_payment_date(bond.redemptiondate);
+            }
             bondRegistry.setNominal_value(bond.amount);
             bondRegistry.setRedempion_price(bond.redemptionprice);
             bondRegistry.setRoll_convention(rollConv.getId_roll_convention());
@@ -341,11 +343,12 @@ public class BondImportMgr implements IImportMgr {
             // Lista Bond 
             List<String> items = getIsinList();
             int progress = items.size() / 10;
-            if(progress > 0)
+            if (progress > 0) {
                 progress = 100 / progress;
-            else
+            } else {
                 progress = items.size();
-            
+            }
+
             int cnt = 1;
             for (String item : items) {
                 isin = item;
@@ -418,7 +421,7 @@ public class BondImportMgr implements IImportMgr {
         if (bondRegistryDAO != null) {
             bondRegistryDAO.closeStatements();
         }
-        
+
         LoggerMgr.logInfo("Import terminated");
     }
 

@@ -12,7 +12,6 @@ public class Security_master_data implements IRecord {
     private String fisn = "";
     private String lei = "";
     private Integer issuer = 0;
-    private String issue_description = "";
     private Double nominal_value = 0.0;
     private Double first_coupon_rate = 0.0;
     private Date first_coupon_payment_date = null;
@@ -63,14 +62,6 @@ public class Security_master_data implements IRecord {
 
     public void setIssuer(Integer issuer) {
         this.issuer = issuer;
-    }
-
-    public String getIssue_description() {
-        return issue_description;
-    }
-
-    public void setIssue_description(String issue_description) {
-        this.issue_description = issue_description;
     }
 
     public Double getNominal_value() {

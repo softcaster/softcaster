@@ -24,6 +24,9 @@ public class Master_data implements IRecord {
     private Integer business_days = 0;
     private Integer asset_class = 0;
     private Integer amortization_schedule = 0;
+    private String description = "";
+    private Integer accrual_daycount = 0;
+    private Double multiplier = 0.0;
 
     public Integer getId_master_data() {
         return id_master_data;
@@ -185,6 +188,48 @@ public class Master_data implements IRecord {
      */
     public void setAmortization_schedule(Integer amortization_schedule) {
         this.amortization_schedule = amortization_schedule;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * @return the accrual_daycount
+     */
+    public Integer getAccrual_daycount() {
+        return accrual_daycount;
+    }
+
+    /**
+     * @param accrual_daycount the accrual_daycount to set
+     */
+    public void setAccrual_daycount(Integer accrual_daycount) {
+        this.accrual_daycount = accrual_daycount;
+    }
+
+    /**
+     * @return the multiplier
+     */
+    public Double getMultiplier() {
+        return multiplier;
+    }
+
+    /**
+     * @param multiplier the multiplier to set
+     */
+    public void setMultiplier(Double multiplier) {
+        this.multiplier = multiplier;
     }
 
 }

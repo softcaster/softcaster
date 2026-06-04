@@ -23,11 +23,11 @@ public class Security_master_dataDAO {
     private PreparedStatement selectByIdxStmt = null;
     private PreparedStatement selectStmt = null;
 
-    private final String insertExpr = "INSERT INTO security_master_data(id_master_data,isin,cfi_code,fisn,lei,issuer,issue_description,nominal_value,first_coupon_rate,first_coupon_payment_date) VALUES(?,?,?,?,?,?,?,?,?,?)";
-    private final String updateExpr = "UPDATE security_master_data SET isin=?,cfi_code=?,fisn=?,lei=?,issuer=?,issue_description=?,nominal_value=?,first_coupon_rate=?,first_coupon_payment_date=? WHERE id_master_data=?";
+    private final String insertExpr = "INSERT INTO security_master_data(id_master_data,isin,cfi_code,fisn,lei,issuer,nominal_value,first_coupon_rate,first_coupon_payment_date) VALUES(?,?,?,?,?,?,?,?,?)";
+    private final String updateExpr = "UPDATE security_master_data SET isin=?,cfi_code=?,fisn=?,lei=?,issuer=?,nominal_value=?,first_coupon_rate=?,first_coupon_payment_date=? WHERE id_master_data=?";
     private final String selectExpr = "SELECT id_master_data FROM security_master_data WHERE isin=?";
     private final String removeExpr = "DELETE FROM security_master_data WHERE id_master_data_id=?";
-    private final String selectByPKeyExpr = "SELECT id_master_data,isin,cfi_code,fisn,lei,issuer,issue_description,nominal_value,first_coupon_rate,first_coupon_payment_date FROM security_master_data WHERE id_master_data=?";
+    private final String selectByPKeyExpr = "SELECT id_master_data,isin,cfi_code,fisn,lei,issuer,nominal_value,first_coupon_rate,first_coupon_payment_date FROM security_master_data WHERE id_master_data=?";
     private final String selectByIdxExpr = "SELECT id_master_data,isin,cfi_code,fisn,lei,issuer,issue_description,nominal_value,first_coupon_rate,first_coupon_payment_date FROM security_master_data WHERE isin=?";
 
     public Security_master_dataDAO() {
@@ -71,10 +71,9 @@ public class Security_master_dataDAO {
             insertStmt.setString(4, record.getFisn());
             insertStmt.setString(5, record.getLei());
             insertStmt.setInt(6, record.getIssuer());
-            insertStmt.setString(7, record.getIssue_description());
-            insertStmt.setDouble(8, record.getNominal_value());
-            insertStmt.setDouble(9, record.getFirst_coupon_rate());
-            insertStmt.setDate(10, record.getFirst_coupon_payment_date());
+            insertStmt.setDouble(7, record.getNominal_value());
+            insertStmt.setDouble(8, record.getFirst_coupon_rate());
+            insertStmt.setDate(9, record.getFirst_coupon_payment_date());
             insertStmt.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -92,11 +91,10 @@ public class Security_master_dataDAO {
             updateStmt.setString(3, record.getFisn());
             updateStmt.setString(4, record.getLei());
             updateStmt.setInt(5, record.getIssuer());
-            updateStmt.setString(6, record.getIssue_description());
-            updateStmt.setDouble(7, record.getNominal_value());
-            updateStmt.setDouble(8, record.getFirst_coupon_rate());
-            updateStmt.setDate(9, record.getFirst_coupon_payment_date());
-            updateStmt.setInt(10, record.getId_master_data());
+            updateStmt.setDouble(6, record.getNominal_value());
+            updateStmt.setDouble(7, record.getFirst_coupon_rate());
+            updateStmt.setDate(8, record.getFirst_coupon_payment_date());
+            updateStmt.setInt(9, record.getId_master_data());
             updateStmt.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -133,7 +131,6 @@ public class Security_master_dataDAO {
                     record.setFisn(rs.getString("fisn"));
                     record.setLei(rs.getString("lei"));
                     record.setIssuer(rs.getInt("issuer"));
-                    record.setIssue_description(rs.getString("issue_description"));
                     record.setNominal_value(rs.getDouble("nominal_value"));
                     record.setFirst_coupon_rate(rs.getDouble("first_coupon_rate"));
                     record.setFirst_coupon_payment_date(rs.getDate("first_coupon_payment_date"));
@@ -161,7 +158,6 @@ public class Security_master_dataDAO {
                     record.setFisn(rs.getString("fisn"));
                     record.setLei(rs.getString("lei"));
                     record.setIssuer(rs.getInt("issuer"));
-                    record.setIssue_description(rs.getString("issue_description"));
                     record.setNominal_value(rs.getDouble("nominal_value"));
                     record.setFirst_coupon_rate(rs.getDouble("first_coupon_rate"));
                     record.setFirst_coupon_payment_date(rs.getDate("first_coupon_payment_date"));
@@ -179,7 +175,7 @@ public class Security_master_dataDAO {
         errorMsg = "";
         try {
             List<Security_master_data> records = new ArrayList<>();
-            String selectByWhereExpr = "SELECT id_master_data,isin,cfi_code,fisn,lei,issuer,issue_description,nominal_value,first_coupon_rate,first_coupon_payment_date FROM security_master_data " + whereExpr;
+            String selectByWhereExpr = "SELECT id_master_data,isin,cfi_code,fisn,lei,issuer,nominal_value,first_coupon_rate,first_coupon_payment_date FROM security_master_data " + whereExpr;
             ConnectioManager cm = ConnectioManager.getInstance();
             try (PreparedStatement selectByWhereStmt = cm.createPreparedStatement(selectByWhereExpr)) {
                 if (!params.isEmpty()) {
@@ -218,7 +214,6 @@ public class Security_master_dataDAO {
                         record.setFisn(rs.getString("fisn"));
                         record.setLei(rs.getString("lei"));
                         record.setIssuer(rs.getInt("issuer"));
-                        record.setIssue_description(rs.getString("issue_description"));
                         record.setNominal_value(rs.getDouble("nominal_value"));
                         record.setFirst_coupon_rate(rs.getDouble("first_coupon_rate"));
                         record.setFirst_coupon_payment_date(rs.getDate("first_coupon_payment_date"));
