@@ -139,8 +139,10 @@ public class CurrPairPanel extends FndtAbstactPanel {
         dialog.setVisible(true);
 
         // Post chiusura dialog
-        CurrPairTableModel model = (CurrPairTableModel) fxTable.getModel();
-        refreshModel(model);
+        if (dialog.isConfirmed()) {
+            CurrPairTableModel model = (CurrPairTableModel) fxTable.getModel();
+            refreshModel(model);
+        }
     }
 
     @Override
@@ -165,7 +167,9 @@ public class CurrPairPanel extends FndtAbstactPanel {
             dialog.setVisible(true);
 
             // Post chiusura dialog
-            refreshModel(model);
+            if (dialog.isConfirmed()) {
+                refreshModel(model);
+            }
         }
     }
 
@@ -302,7 +306,7 @@ public class CurrPairPanel extends FndtAbstactPanel {
 
         model.setData(forexBeanList);
     }
-    
+
     protected void refreshModelFromDb(FndtTableModel ftm) {
         // Cancella vecchia lista
         forexBeanList.clear();

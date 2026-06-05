@@ -22,11 +22,11 @@ public class Master_dataDAO {
     private PreparedStatement selectByPKeyStmt = null;
     private PreparedStatement selectByIdxStmt = null;
 
-    private final String insertExpr = "INSERT INTO master_data(id_master_data,code,currency,calendar,issue_date,maturity_date,type_of_interest,form,daycount,frequency,roll_convention,accrual_schedule_type,interest_rate,issue_price,redempion_price,business_days,asset_class,amortization_schedule,description,accrual_daycount,multiplier) VALUES(nextval(('master_data_s'::text)::regclass),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    private final String updateExpr = "UPDATE master_data SET code=?,currency=?,calendar=?,issue_date=?,maturity_date=?,type_of_interest=?,form=?,daycount=?,frequency=?,roll_convention=?,accrual_schedule_type=?,interest_rate=?,issue_price=?,redempion_price=?,business_days=?,asset_class=?,amortization_schedule=?,description=?,accrual_daycount=?,multiplier=? WHERE id_master_data=?";
+    private final String insertExpr = "INSERT INTO master_data(id_master_data,code,currency,issue_date,maturity_date,type_of_interest,form,daycount,frequency,roll_convention,accrual_schedule_type,interest_rate,issue_price,redempion_price,business_days,asset_class,amortization_schedule,description,accrual_daycount,multiplier) VALUES(nextval(('master_data_s'::text)::regclass),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    private final String updateExpr = "UPDATE master_data SET code=?,currency=?,issue_date=?,maturity_date=?,type_of_interest=?,form=?,daycount=?,frequency=?,roll_convention=?,accrual_schedule_type=?,interest_rate=?,issue_price=?,redempion_price=?,business_days=?,asset_class=?,amortization_schedule=?,description=?,accrual_daycount=?,multiplier=? WHERE id_master_data=?";
     private final String removeExpr = "DELETE FROM master_data WHERE id_master_data_id=?";
-    private final String selectByPKeyExpr = "SELECT id_master_data,code,currency,calendar,issue_date,maturity_date,type_of_interest,form,daycount,frequency,roll_convention,accrual_schedule_type,interest_rate,issue_price,redempion_price,business_days,asset_class,amortization_schedule,description,accrual_daycount,multiplier FROM master_data WHERE id_master_data=?";
-    private final String selectByIdxExpr = "SELECT id_master_data,code,currency,calendar,issue_date,maturity_date,type_of_interest,form,daycount,frequency,roll_convention,accrual_schedule_type,interest_rate,issue_price,redempion_price,business_days,asset_class,amortization_schedule,description,accrual_daycount,multiplier FROM master_data WHERE code=?";
+    private final String selectByPKeyExpr = "SELECT id_master_data,code,currency,issue_date,maturity_date,type_of_interest,form,daycount,frequency,roll_convention,accrual_schedule_type,interest_rate,issue_price,redempion_price,business_days,asset_class,amortization_schedule,description,accrual_daycount,multiplier FROM master_data WHERE id_master_data=?";
+    private final String selectByIdxExpr = "SELECT id_master_data,code,currency,issue_date,maturity_date,type_of_interest,form,daycount,frequency,roll_convention,accrual_schedule_type,interest_rate,issue_price,redempion_price,business_days,asset_class,amortization_schedule,description,accrual_daycount,multiplier FROM master_data WHERE code=?";
 
     public Master_dataDAO() {
         ConnectioManager cm = ConnectioManager.getInstance();
@@ -64,24 +64,23 @@ public class Master_dataDAO {
         try {
             insertStmt.setString(1, record.getCode());
             insertStmt.setInt(2, record.getCurrency());
-            insertStmt.setInt(3, record.getCalendar());
-            insertStmt.setDate(4, record.getIssue_date());
-            insertStmt.setDate(5, record.getMaturity_date());
-            insertStmt.setInt(6, record.getType_of_interest());
-            insertStmt.setInt(7, record.getForm());
-            insertStmt.setInt(8, record.getDaycount());
-            insertStmt.setInt(9, record.getFrequency());
-            insertStmt.setInt(10, record.getRoll_convention());
-            insertStmt.setInt(11, record.getAccrual_schedule_type());
-            insertStmt.setDouble(12, record.getInterest_rate());
-            insertStmt.setDouble(13, record.getIssue_price());
-            insertStmt.setDouble(14, record.getRedempion_price());
-            insertStmt.setInt(15, record.getBusiness_days());
-            insertStmt.setInt(16, record.getAsset_class());
-            insertStmt.setInt(17, record.getAmortization_schedule());
-            insertStmt.setString(18, record.getDescription());
-            insertStmt.setInt(19, record.getAccrual_daycount());
-            insertStmt.setDouble(20, record.getMultiplier());
+            insertStmt.setDate(3, record.getIssue_date());
+            insertStmt.setDate(4, record.getMaturity_date());
+            insertStmt.setInt(5, record.getType_of_interest());
+            insertStmt.setInt(6, record.getForm());
+            insertStmt.setInt(7, record.getDaycount());
+            insertStmt.setInt(8, record.getFrequency());
+            insertStmt.setInt(9, record.getRoll_convention());
+            insertStmt.setInt(10, record.getAccrual_schedule_type());
+            insertStmt.setDouble(11, record.getInterest_rate());
+            insertStmt.setDouble(12, record.getIssue_price());
+            insertStmt.setDouble(13, record.getRedempion_price());
+            insertStmt.setInt(14, record.getBusiness_days());
+            insertStmt.setInt(15, record.getAsset_class());
+            insertStmt.setInt(16, record.getAmortization_schedule());
+            insertStmt.setString(17, record.getDescription());
+            insertStmt.setInt(18, record.getAccrual_daycount());
+            insertStmt.setDouble(19, record.getMultiplier());
             insertStmt.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -96,25 +95,24 @@ public class Master_dataDAO {
         try {
             updateStmt.setString(1,record.getCode());
             updateStmt.setInt(2,record.getCurrency());
-            updateStmt.setInt(3,record.getCalendar());
-            updateStmt.setDate(4,record.getIssue_date());
-            updateStmt.setDate(5,record.getMaturity_date());
-             updateStmt.setInt(6,record.getType_of_interest());
-            updateStmt.setInt(7,record.getForm());
-            updateStmt.setInt(8,record.getDaycount());
-            updateStmt.setInt(9,record.getFrequency());
-            updateStmt.setInt(10,record.getRoll_convention());
-            updateStmt.setInt(11,record.getAccrual_schedule_type());
-            updateStmt.setDouble(12,record.getInterest_rate());
-            updateStmt.setDouble(13,record.getIssue_price());
-            updateStmt.setDouble(14,record.getRedempion_price());
-            updateStmt.setInt(15,record.getBusiness_days());
-            updateStmt.setInt(16,record.getAsset_class());
-            updateStmt.setInt(17,record.getAmortization_schedule());
-            updateStmt.setInt(18,record.getId_master_data());
-            insertStmt.setString(19, record.getDescription());
-            insertStmt.setInt(20, record.getAccrual_daycount());
-            insertStmt.setDouble(21, record.getMultiplier());
+            updateStmt.setDate(3,record.getIssue_date());
+            updateStmt.setDate(4,record.getMaturity_date());
+             updateStmt.setInt(5,record.getType_of_interest());
+            updateStmt.setInt(6,record.getForm());
+            updateStmt.setInt(7,record.getDaycount());
+            updateStmt.setInt(8,record.getFrequency());
+            updateStmt.setInt(9,record.getRoll_convention());
+            updateStmt.setInt(10,record.getAccrual_schedule_type());
+            updateStmt.setDouble(11,record.getInterest_rate());
+            updateStmt.setDouble(12,record.getIssue_price());
+            updateStmt.setDouble(13,record.getRedempion_price());
+            updateStmt.setInt(14,record.getBusiness_days());
+            updateStmt.setInt(15,record.getAsset_class());
+            updateStmt.setInt(16,record.getAmortization_schedule());
+            updateStmt.setInt(17,record.getId_master_data());
+            insertStmt.setString(18, record.getDescription());
+            insertStmt.setInt(10, record.getAccrual_daycount());
+            insertStmt.setDouble(20, record.getMultiplier());
             updateStmt.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -148,7 +146,6 @@ public class Master_dataDAO {
                     record.setId_master_data(rs.getInt("id_master_data"));
                     record.setCode(rs.getString("code"));
                     record.setCurrency(rs.getInt("currency"));
-                    record.setCalendar(rs.getInt("calendar"));
                     record.setIssue_date(rs.getDate("issue_date"));
                     record.setMaturity_date(rs.getDate("maturity_date"));
                     record.setType_of_interest(rs.getInt("type_of_interest"));
@@ -187,7 +184,6 @@ public class Master_dataDAO {
                     record.setId_master_data(rs.getInt("id_master_data"));
                     record.setCode(rs.getString("code"));
                     record.setCurrency(rs.getInt("currency"));
-                    record.setCalendar(rs.getInt("calendar"));
                     record.setIssue_date(rs.getDate("issue_date"));
                     record.setMaturity_date(rs.getDate("maturity_date"));
                     record.setType_of_interest(rs.getInt("type_of_interest"));
@@ -255,7 +251,6 @@ public class Master_dataDAO {
                         record.setId_master_data(rs.getInt("id_master_data"));
                         record.setCode(rs.getString("code"));
                         record.setCurrency(rs.getInt("currency"));
-                        record.setCalendar(rs.getInt("calendar"));
                         record.setIssue_date(rs.getDate("issue_date"));
                         record.setMaturity_date(rs.getDate("maturity_date"));
                         record.setType_of_interest(rs.getInt("type_of_interest"));

@@ -9,7 +9,6 @@ public class Master_data implements IRecord {
     private Integer id_master_data = 0;
     private String code = "";
     private Integer currency = 0;
-    private Integer calendar = 0;
     private Date issue_date = null;
     private Date maturity_date = null;
     private Integer type_of_interest = 0;
@@ -42,14 +41,6 @@ public class Master_data implements IRecord {
 
     public void setCurrency(Integer currency) {
         this.currency = currency;
-    }
-
-    public Integer getCalendar() {
-        return calendar;
-    }
-
-    public void setCalendar(Integer calendar) {
-        this.calendar = calendar;
     }
 
     public Date getIssue_date() {

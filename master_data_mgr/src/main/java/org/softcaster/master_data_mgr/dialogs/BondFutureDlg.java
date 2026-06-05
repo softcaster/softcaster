@@ -623,6 +623,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
             bfmd.setCurrency(currency);
             bfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
             bfmd.setDaycount((Daycount) cbDaycount.getSelectedItem());
+            bfmd.setAccrualDaycount((Daycount) cbDaycount.getSelectedItem());
             masterDataFacade.getBondFutureMasterDataDAO().saveOrUpdate(bfmd);
             return true;
         } catch (Exception ex) {
@@ -635,8 +636,8 @@ public class BondFutureDlg extends javax.swing.JDialog {
         // Aggiungo campi standard
         bean.getBondFutureMasterData().setTypeOfInterest(masterDataFacade.findTypeOfInterest("FIXED"));
         bean.getBondFutureMasterData().setForm(masterDataFacade.findForm("BEARER"));
-        bean.getBondFutureMasterData().setFrequency(masterDataFacade.findFrequency("CUSTOM"));
-        bean.getBondFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("RC_NONE"));
+        bean.getBondFutureMasterData().setFrequency(masterDataFacade.findFrequency("NONE"));
+        bean.getBondFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("UNADJUSTED"));
         bean.getBondFutureMasterData().setAccrualScheduleType(100);
         bean.getBondFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("BFU"));
         bean.getBondFutureMasterData().setAmortizationSchedule(masterDataFacade.findAmortizationSchedule("SAS"));
@@ -645,5 +646,6 @@ public class BondFutureDlg extends javax.swing.JDialog {
         bean.getBondFutureMasterData().setInterestRate(0.);
         bean.getBondFutureMasterData().setIssuePrice(100.);
         bean.getBondFutureMasterData().setRedempionPrice(100.);
+        bean.getBondFutureMasterData().setMultiplier(1.);
     }
 }

@@ -141,8 +141,10 @@ public class BondPanel extends FndtAbstactPanel {
         dialog.setVisible(true);
 
         // Post chiusura dialog
-        BondTableModel model = (BondTableModel) bondTable.getModel();
-        refreshModelFromDb(model);
+        if (dialog.isConfirmed()) {
+            BondTableModel model = (BondTableModel) bondTable.getModel();
+            refreshModelFromDb(model);
+        }
     }
 
     @Override
@@ -167,7 +169,9 @@ public class BondPanel extends FndtAbstactPanel {
             dialog.setVisible(true);
 
             // Post chiusura dialog
-            refreshModelFromDb(model);
+            if (dialog.isConfirmed()) {
+                refreshModelFromDb(model);
+            }
         }
     }
 
@@ -191,7 +195,7 @@ public class BondPanel extends FndtAbstactPanel {
                 if (dao != null) {
                     BondBean bondBean = null;
                     BondTableModel model = (BondTableModel) bondTable.getModel();
-                    for (int i = 1; i < model.getRowCount(); i++) {
+                    for (int i = 0; i < model.getRowCount(); i++) {
                         bondBean = (BondBean) model.getElementAt(i);
                         if (bondBean != null) {
                             dao.saveOrUpdate(bondBean.getInstrumentQuote());
@@ -311,17 +315,17 @@ public class BondPanel extends FndtAbstactPanel {
         MarketDataService mds = mDSFacade.getMarketDataService();
         BondBean bondBean = null;
         List<TokenItem> tokens = new ArrayList<>();
-        for (int i = 1; i < model.getRowCount(); i++) {
+        for (int i = 0; i < model.getRowCount(); i++) {
             bondBean = (BondBean) model.getElementAt(i);
             if (bondBean != null) {
                 tokens.add(new TokenItem(bondBean.getInstrumentQuote().getCode(),
-                bondBean.getInstrumentQuote().getProvider()));
+                        bondBean.getInstrumentQuote().getProvider()));
             }
         }
 
         mds.updateSpotPrice(tokens, Market.BONDS);
 
-        for (int i = 1; i < model.getRowCount(); i++) {
+        for (int i = 0; i < model.getRowCount(); i++) {
             bondBean = (BondBean) model.getElementAt(i);
             if (bondBean != null) {
                 bondBean.setAsk(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.ASK));

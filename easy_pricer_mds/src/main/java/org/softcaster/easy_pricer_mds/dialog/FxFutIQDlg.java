@@ -26,6 +26,7 @@ public class FxFutIQDlg extends javax.swing.JDialog {
     private FxFutBean bean;
     private boolean isInsert = true;
     private List<javax.swing.JTextField> fieldsToValidate;
+    private boolean confirmed = false;
 
     /**
      * Creates new form CurrPairIQDlg
@@ -287,6 +288,7 @@ public class FxFutIQDlg extends javax.swing.JDialog {
                         javax.swing.JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            confirmed = true;
             this.dispose();
         }
 
@@ -387,5 +389,12 @@ public class FxFutIQDlg extends javax.swing.JDialog {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return false;
         }
+    }
+
+    /**
+     * @return the confirmed
+     */
+    public boolean isConfirmed() {
+        return confirmed;
     }
 }

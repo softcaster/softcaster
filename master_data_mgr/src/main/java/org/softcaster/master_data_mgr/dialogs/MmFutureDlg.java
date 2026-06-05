@@ -688,6 +688,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
             mfmd.setCurrency(currency);
             mfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
             mfmd.setDaycount((Daycount) cbDaycount.getSelectedItem());
+            mfmd.setAccrualDaycount((Daycount) cbDaycount.getSelectedItem());
             mfmd.setUnderlying((ForexMasterData) cbUnderlying.getSelectedItem());
             mfmd.setMaintenanceMargin(Converter.toDouble(txtMainMant.getText(), false));
             masterDataFacade.getMmFutureMasterDataDAO().saveOrUpdate(mfmd);
@@ -702,8 +703,8 @@ public class MmFutureDlg extends javax.swing.JDialog {
         // Aggiungo campi standard
         bean.getMmFutureMasterData().setTypeOfInterest(masterDataFacade.findTypeOfInterest("FIXED"));
         bean.getMmFutureMasterData().setForm(masterDataFacade.findForm("BEARER"));
-        bean.getMmFutureMasterData().setFrequency(masterDataFacade.findFrequency("CUSTOM"));
-        bean.getMmFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("RC_NONE"));
+        bean.getMmFutureMasterData().setFrequency(masterDataFacade.findFrequency("NONE"));
+        bean.getMmFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("UNADJUSTED"));
         bean.getMmFutureMasterData().setAccrualScheduleType(100);
         bean.getMmFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("MFU"));
         bean.getMmFutureMasterData().setAmortizationSchedule(masterDataFacade.findAmortizationSchedule("SAS"));
@@ -712,5 +713,6 @@ public class MmFutureDlg extends javax.swing.JDialog {
         bean.getMmFutureMasterData().setInterestRate(0.);
         bean.getMmFutureMasterData().setIssuePrice(100.);
         bean.getMmFutureMasterData().setRedempionPrice(100.);
+        bean.getMmFutureMasterData().setMultiplier(1.);
     }
 }

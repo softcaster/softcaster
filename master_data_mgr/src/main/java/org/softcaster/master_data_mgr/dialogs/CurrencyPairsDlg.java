@@ -330,8 +330,8 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
         // Aggiungo campi standard
         bean.getForexMasterData().setTypeOfInterest(masterDataFacade.findTypeOfInterest("FIXED"));
         bean.getForexMasterData().setForm(masterDataFacade.findForm("BEARER"));
-        bean.getForexMasterData().setFrequency(masterDataFacade.findFrequency("CUSTOM"));
-        bean.getForexMasterData().setRollConvention(masterDataFacade.findRollConvention("RC_NONE"));
+        bean.getForexMasterData().setFrequency(masterDataFacade.findFrequency("NONE"));
+        bean.getForexMasterData().setRollConvention(masterDataFacade.findRollConvention("UNADJUSTED"));
         bean.getForexMasterData().setAccrualScheduleType(100);
         bean.getForexMasterData().setAssetClass(masterDataFacade.findAssetClass("FSP"));
         bean.getForexMasterData().setAmortizationSchedule(masterDataFacade.findAmortizationSchedule("SAS"));
@@ -340,12 +340,14 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
         bean.getForexMasterData().setInterestRate(0.);
         bean.getForexMasterData().setIssuePrice(0.);
         bean.getForexMasterData().setRedempionPrice(0.);
+        bean.getForexMasterData().setMultiplier(1.);
 
         // Dati relativi alla bcy
         Currency bcy = (Currency) cbBcy.getSelectedItem();
         bean.getForexMasterData().setCurrency(bcy);
         bean.getForexMasterData().setDaycount(bcy.getDaycount());
         Currency ccy = (Currency) cbCcy.getSelectedItem();
+        bean.getForexMasterData().setAccrualDaycount(ccy.getDaycount());
         String code = bcy.getIsoCode()+ccy.getIsoCode();
         bean.getForexMasterData().setCode(code);
         bean.getForexMasterData().setIssueDate(new Date().sqlDate());

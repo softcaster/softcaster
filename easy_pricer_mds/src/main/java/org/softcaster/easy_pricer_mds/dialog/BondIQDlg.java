@@ -22,10 +22,18 @@ import org.softcaster.easy_pricer_mds.bean.BondBean;
  */
 public class BondIQDlg extends javax.swing.JDialog {
 
+    /**
+     * @return the confirmed
+     */
+    public boolean isConfirmed() {
+        return confirmed;
+    }
+
     private final MDSFacade mDSFacade;
     private BondBean bean;
     private boolean isInsert = true;
     private List<javax.swing.JTextField> fieldsToValidate;
+    private boolean confirmed = false;
 
     /**
      * Creates new form CurrPairIQDlg
@@ -272,6 +280,7 @@ public class BondIQDlg extends javax.swing.JDialog {
                         javax.swing.JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            confirmed = true;
             this.dispose();
         }
 

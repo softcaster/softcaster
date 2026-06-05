@@ -4,8 +4,11 @@
  */
 package org.softcaster.master_data_mgr.dialogs;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.ui.dialog.DialogHelper;
@@ -512,7 +515,12 @@ public class FxFutureDlg extends javax.swing.JDialog {
     }//GEN-LAST:event_txtContractValueFocusLost
 
     private void txtTickSizeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTickSizeFocusLost
-        DialogHelper.textFieldDoubleFocusLost(txtTickSize);
+        try {
+            double price = Converter.toDouble(txtTickSize.getText(), false);
+            txtTickSize.setText(Converter.fromDouble(price));
+        } catch (ParseException ex) {
+            txtTickSize.setText("");
+        }
     }//GEN-LAST:event_txtTickSizeFocusLost
 
     private void txtInitMarginFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtInitMarginFocusLost
@@ -687,6 +695,7 @@ public class FxFutureDlg extends javax.swing.JDialog {
             ffmd.setCurrency(currency);
             ffmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
             ffmd.setDaycount((Daycount) cbDaycount.getSelectedItem());
+            ffmd.setAccrualDaycount((Daycount) cbDaycount.getSelectedItem());
             ffmd.setUnderlying((ForexMasterData) cbUnderlying.getSelectedItem());
             ffmd.setMaintenanceMargin(Converter.toDouble(txtMainMant.getText(), false));
             masterDataFacade.getFxFutureMasterDataDAO().saveOrUpdate(ffmd);
@@ -701,8 +710,8 @@ public class FxFutureDlg extends javax.swing.JDialog {
         // Aggiungo campi standard
         bean.getFxFutureMasterData().setTypeOfInterest(masterDataFacade.findTypeOfInterest("FIXED"));
         bean.getFxFutureMasterData().setForm(masterDataFacade.findForm("BEARER"));
-        bean.getFxFutureMasterData().setFrequency(masterDataFacade.findFrequency("CUSTOM"));
-        bean.getFxFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("RC_NONE"));
+        bean.getFxFutureMasterData().setFrequency(masterDataFacade.findFrequency("NONE"));
+        bean.getFxFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("UNADJUSTED"));
         bean.getFxFutureMasterData().setAccrualScheduleType(100);
         bean.getFxFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("FFU"));
         bean.getFxFutureMasterData().setAmortizationSchedule(masterDataFacade.findAmortizationSchedule("SAS"));
@@ -711,5 +720,6 @@ public class FxFutureDlg extends javax.swing.JDialog {
         bean.getFxFutureMasterData().setInterestRate(0.);
         bean.getFxFutureMasterData().setIssuePrice(100.);
         bean.getFxFutureMasterData().setRedempionPrice(100.);
+        bean.getFxFutureMasterData().setMultiplier(1.);
     }
 }

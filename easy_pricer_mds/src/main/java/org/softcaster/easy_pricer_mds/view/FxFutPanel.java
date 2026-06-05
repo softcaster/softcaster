@@ -9,15 +9,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import javax.swing.JDialog;
+import javax.swing.SwingWorker;
 import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.InstrumentQuote;
+import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.FxFutBean;
 import org.softcaster.easy_pricer_mds.dialog.FxFutIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.FxFutTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.provider.enums.Market;
+import org.softcaster.provider.enums.RequestType;
 
 /**
  *
@@ -114,7 +122,7 @@ public class FxFutPanel extends FndtAbstactPanel {
         fxFutTable.setModel(model);
 
         // Popola il model
-        refreshModel(model);
+        refreshModelFromDb(model);
     }
 
     @Override
@@ -133,8 +141,10 @@ public class FxFutPanel extends FndtAbstactPanel {
         dialog.setVisible(true);
 
         // Post chiusura dialog
-        FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
-        refreshModel(model);
+        if (dialog.isConfirmed()) {
+            FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
+            refreshModel(model);
+        }
     }
 
     @Override
@@ -159,7 +169,9 @@ public class FxFutPanel extends FndtAbstactPanel {
             dialog.setVisible(true);
 
             // Post chiusura dialog
-            refreshModel(model);
+            if (dialog.isConfirmed()) {
+                refreshModel(model);
+            }
         }
     }
 
@@ -169,6 +181,52 @@ public class FxFutPanel extends FndtAbstactPanel {
 
     @Override
     public void downloadAction() {
+        // 1. Crea la dialog di attesa
+        final JDialog loadingDialog = createLoadingDialog("Saving Fx Future prices ... Please wait.");
+
+        // 2. Crea lo SwingWorker
+        // I parametri generici <Void, Void> indicano: <Tipo di ritorno finale, Tipo di dati intermedi>
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                // Questo metodo gira su un THREAD SEPARATO in background.
+                InstrumentQuoteDAO dao = mDSFacade.getInstrumentQuoteDAO();
+                if (dao != null) {
+                    FxFutBean bean = null;
+                    FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
+                    for (int i = 0; i < model.getRowCount(); i++) {
+                        bean = (FxFutBean) model.getElementAt(i);
+                        if (bean != null) {
+                            dao.saveOrUpdate(bean.getInstrumentQuote());
+                        }
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                // Questo metodo viene eseguito sull'EDT (Thread Grafico) alla fine del download.
+                try {
+                    // Controlla se ci sono state eccezioni durante il download
+                    get();
+                } catch (InterruptedException | ExecutionException e) {
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                    java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(FxFutPanel.this);
+                    javax.swing.JOptionPane.showMessageDialog(parentWindow,
+                            "Error during download: " + e.getLocalizedMessage(),
+                            "Download Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    // Chiude la dialog e sblocca la Card del pannello
+                    loadingDialog.dispose();
+                }
+            }
+        };
+        // 3. Avvia il thread in background
+        worker.execute();
+        // 4. Mostra la dialog (bloccherà solo l'interfaccia, non il thread in background)
+        loadingDialog.setVisible(true);
     }
 
     @Override
@@ -181,7 +239,7 @@ public class FxFutPanel extends FndtAbstactPanel {
         this.refreshModel(model);
     }
 
-    private void refreshFromDb(FndtTableModel ftm) {
+    private void refreshModelFromDb(FndtTableModel ftm) {
         // Cancella vecchia lista
         fxFutBeanList.clear();
 
@@ -209,37 +267,67 @@ public class FxFutPanel extends FndtAbstactPanel {
 
     @Override
     protected void refreshModel(FndtTableModel ftm) {
-        // Cancella vecchia lista
-        fxFutBeanList.clear();
+        // 1. Crea la dialog di attesa
+        final JDialog loadingDialog = createLoadingDialog("Downloading Fx Future prices ... Please wait.");
 
-        // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> iqList = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FFU");
-        if (iqList.isEmpty()) {
-            return;
-        }
+        // 2. Crea lo SwingWorker
+        // I parametri generici <Void, Void> indicano: <Tipo di ritorno finale, Tipo di dati intermedi>
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 
-        // Aggiorno service
-        Map<String, List<String>> tokenList = new HashMap<>();
-        for (InstrumentQuote quote : iqList) {
-            tokenList.computeIfAbsent(quote.getProvider(), k -> new ArrayList<>()).add(quote.getCode());
-        }
-        FxFutBean bean = null;
+            @Override
+            protected Void doInBackground() throws Exception {
+                // Questo metodo gira su un THREAD SEPARATO in background.
+                updateModel(ftm);
+                return null;
+            }
 
-        for (InstrumentQuote quote : iqList) {
-            bean = new FxFutBean(quote);
-            fxFutBeanList.add(bean);
-        }
+            @Override
+            protected void done() {
+                // Questo metodo viene eseguito sull'EDT (Thread Grafico) alla fine del download.
+                try {
+                    // Controlla se ci sono state eccezioni durante il download
+                    get();
 
-        ftm.setData(fxFutBeanList);
+                } catch (InterruptedException | ExecutionException e) {
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                    java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(FxFutPanel.this);
+                    javax.swing.JOptionPane.showMessageDialog(parentWindow,
+                            "Error during download: " + e.getLocalizedMessage(),
+                            "Download Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    // Chiude la dialog e sblocca la Card del pannello
+                    loadingDialog.dispose();
+                }
+            }
+        };
+        // 3. Avvia il thread in background
+        worker.execute();
+        // 4. Mostra la dialog (bloccherà solo l'interfaccia, non il thread in background)
+        loadingDialog.setVisible(true);
     }
 
     @Override
     protected void updateModel(FndtTableModel model) {
-        Map<String, List<String>> tokenList = new HashMap<>();
-        MarketDataService mds = new MarketDataService();
-        //mds.updateBondFutPrice(tokenList, null);
 
-        //quote.setBid(mds.getSpotPrice(quote.getCode(), RequestType.BID));
-        //quote.setAsk(mds.getSpotPrice(quote.getCode(), RequestType.ASK));
+        List<TokenItem> tokens = new ArrayList<>();
+        for (FxFutBean bean : fxFutBeanList) {
+            tokens.add(new TokenItem(bean.getInstrumentQuote().getCode(), bean.getInstrumentQuote().getProvider()));
+        }
+        MarketDataService mds = mDSFacade.getMarketDataService();
+        mds.updateSpotPrice(tokens, Market.FUTURES);
+
+        // Leggo lista pairs anagrafiche
+        List<InstrumentQuote> futures = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FFU");
+        if (futures.isEmpty()) {
+            return;
+        }
+
+        // Aggiorno dati in memoria
+        for (FxFutBean bean : fxFutBeanList) {
+            bean.setBid(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.BID));
+            bean.setAsk(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.ASK));
+        }
+
+        model.setData(fxFutBeanList);
     }
 }

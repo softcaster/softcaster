@@ -774,7 +774,6 @@ public class BondDlg extends javax.swing.JDialog {
                     "Cash Flows already present.\n Are you sure? ", JMasterDataMgr.TITLE,
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION) {
-                return;
             }
         }
 /*
@@ -1057,6 +1056,7 @@ public class BondDlg extends javax.swing.JDialog {
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             smd.setCurrency(currency);
             smd.setDaycount((Daycount) cbDaycount.getSelectedItem());
+            smd.setAccrualDaycount(masterDataFacade.findDaycount("ACT_365"));
             smd.setAccrualScheduleType(100);
             smd.setAmortizationSchedule((AmortizationSchedule) cbAmortSched.getSelectedItem());
             smd.setForm((Form) cbForm.getSelectedItem());
@@ -1070,6 +1070,7 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setCfiCode(txtCfiCode.getText());
             smd.setFisn(txtFisn.getText());
             smd.setLei(txtLei.getText());
+            smd.setMultiplier(0.01);
             masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(smd);
 
             return true;

@@ -261,7 +261,6 @@ public class ForexImportMgr implements IImportMgr {
             masterData = new Master_data();
             masterData.setAccrual_schedule_type(ast.getId_accrual_schedule_type());
             masterData.setBusiness_days(2);
-            masterData.setCalendar(currency.getCalendar());
             masterData.setCurrency(currency.getId_currency());
             masterData.setDaycount(daycount.getId_daycount());
             masterData.setForm(form.getId_form());

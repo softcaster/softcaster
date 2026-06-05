@@ -284,7 +284,6 @@ CREATE TABLE master_data
     , code VARCHAR(25) NOT NULL
     , description VARCHAR(255) NOT NULL DEFAULT ''
     , currency INTEGER NOT NULL
-    , calendar INTEGER NOT NULL
     , issue_date DATE NOT NULL
     , maturity_date DATE NOT NULL
     , type_of_interest INTEGER NOT NULL
@@ -310,8 +309,6 @@ CREATE TABLE master_data
         REFERENCES frequency(id_frequency) ON DELETE NO ACTION ON UPDATE NO ACTION
     , CONSTRAINT fk_form FOREIGN KEY (form)
         REFERENCES form(id_form) ON DELETE NO ACTION ON UPDATE NO ACTION
-    , CONSTRAINT fk_calendar FOREIGN KEY (calendar)
-        REFERENCES calendar(id_calendar) ON DELETE NO ACTION ON UPDATE NO ACTION
     , CONSTRAINT fk_currency FOREIGN KEY (currency)
         REFERENCES currency(id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
     , CONSTRAINT fk_roll_convention FOREIGN KEY (roll_convention)
