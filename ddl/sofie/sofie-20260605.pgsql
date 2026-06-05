@@ -5,7 +5,7 @@
 -- Dumped from database version 17.5
 -- Dumped by pg_dump version 17.5
 
--- Started on 2026-06-05 13:28:44
+-- Started on 2026-06-05 14:08:34
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -3426,6 +3426,7 @@ COPY public.compounding (id_compounding, code, description) FROM stdin;
 --
 
 COPY public.counterparty (id_counterparty, ctp_type, lei_code, country, code, description) FROM stdin;
+1	1	Default	2	DEFAULT	Default Counterparty
 \.
 
 
@@ -3535,6 +3536,7 @@ COPY public.financial_statement_types (statement_type_id, code, description) FRO
 --
 
 COPY public.financial_txn (id_financial_txn, counterparty, position_md, master_data, txn_status, txn_side, description, trade_date, value_date, settlement, quantity, price, ref_id, version) FROM stdin;
+1	1	1	60	3	1	100k-b	2026-06-05	2026-06-05	2026-06-05	100000.00000	1.65400	1	1
 \.
 
 
@@ -3853,6 +3855,7 @@ COPY public.normal_balances (balance_id, code, description) FROM stdin;
 --
 
 COPY public.portfolio_master_data (id_portfolio, currency, code, description) FROM stdin;
+1	2	PTUSD01	Default Portfolio (USD)
 \.
 
 
@@ -3863,6 +3866,7 @@ COPY public.portfolio_master_data (id_portfolio, currency, code, description) FR
 --
 
 COPY public.position_detail (id_position_detail, position_md, master_data, counterparty, realized_pnl, unrealized_pnl, buy_qty, notional_value_buy, buy_fees, buy_taxes, sell_qty, notional_value_sell, sell_fees, sell_taxes, multiplier, market_price) FROM stdin;
+1	1	60	1	0.00000	0.00000	100000.00000	165400.00000	0.00000	0.00000	0.00000	0.00000	0.00000	0.00000	1.00000	1.65400
 \.
 
 
@@ -3873,6 +3877,7 @@ COPY public.position_detail (id_position_detail, position_md, master_data, count
 --
 
 COPY public.position_master_data (id_position, portfolio, currency, code, description) FROM stdin;
+1	1	2	PSUSD01	Default Position (USD)
 \.
 
 
@@ -4187,7 +4192,7 @@ SELECT pg_catalog.setval('public.compounding_s', 4, true);
 -- Name: counterparty_s; Type: SEQUENCE SET; Schema: public; Owner: sofie
 --
 
-SELECT pg_catalog.setval('public.counterparty_s', 1, false);
+SELECT pg_catalog.setval('public.counterparty_s', 1, true);
 
 
 --
@@ -4250,7 +4255,7 @@ SELECT pg_catalog.setval('public.financial_statement_types_s', 3, true);
 -- Name: financial_txn_s; Type: SEQUENCE SET; Schema: public; Owner: sofie
 --
 
-SELECT pg_catalog.setval('public.financial_txn_s', 1, false);
+SELECT pg_catalog.setval('public.financial_txn_s', 1, true);
 
 
 --
@@ -4340,7 +4345,7 @@ SELECT pg_catalog.setval('public.normal_balances_s', 2, true);
 -- Name: portfolio_master_data_s; Type: SEQUENCE SET; Schema: public; Owner: sofie
 --
 
-SELECT pg_catalog.setval('public.portfolio_master_data_s', 1, false);
+SELECT pg_catalog.setval('public.portfolio_master_data_s', 1, true);
 
 
 --
@@ -4349,7 +4354,7 @@ SELECT pg_catalog.setval('public.portfolio_master_data_s', 1, false);
 -- Name: position_detail_s; Type: SEQUENCE SET; Schema: public; Owner: sofie
 --
 
-SELECT pg_catalog.setval('public.position_detail_s', 1, false);
+SELECT pg_catalog.setval('public.position_detail_s', 1, true);
 
 
 --
@@ -4358,7 +4363,7 @@ SELECT pg_catalog.setval('public.position_detail_s', 1, false);
 -- Name: position_master_data_s; Type: SEQUENCE SET; Schema: public; Owner: sofie
 --
 
-SELECT pg_catalog.setval('public.position_master_data_s', 1, false);
+SELECT pg_catalog.setval('public.position_master_data_s', 1, true);
 
 
 --
@@ -5584,7 +5589,7 @@ ALTER TABLE ONLY public.yield_curve_item
     ADD CONSTRAINT fk_yield_curve FOREIGN KEY (yield_curve) REFERENCES public.yield_curve(id_yield_curve);
 
 
--- Completed on 2026-06-05 13:28:44
+-- Completed on 2026-06-05 14:08:34
 
 --
 -- PostgreSQL database dump complete
