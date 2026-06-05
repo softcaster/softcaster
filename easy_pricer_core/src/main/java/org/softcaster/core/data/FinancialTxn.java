@@ -1,5 +1,6 @@
 package org.softcaster.core.data;
 
+import jakarta.persistence.CascadeType;
 import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,11 +9,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
@@ -43,6 +49,11 @@ public class FinancialTxn implements Serializable {
     @JoinColumn(name = "txn_status", nullable = true)
     private TxnStatus txnStatus;
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JoinColumn(name = "financial_txn", nullable = false) // FK in child table holiday
+    private List<FinancialTxnComponent> components = new ArrayList<>();    
+    
     @Column(name = "ref_id")
     private Integer refId;
 
@@ -241,5 +252,19 @@ public class FinancialTxn implements Serializable {
      */
     public void setValueDate(java.sql.Date valueDate) {
         this.valueDate = valueDate;
+    }
+
+    /**
+     * @return the components
+     */
+    public List<FinancialTxnComponent> getComponents() {
+        return components;
+    }
+
+    /**
+     * @param components the components to set
+     */
+    public void setComponents(List<FinancialTxnComponent> components) {
+        this.components = components;
     }
 }

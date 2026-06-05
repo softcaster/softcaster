@@ -814,3 +814,36 @@ ALTER TABLE financial_txn OWNER TO sofie;
 CREATE SEQUENCE financial_txn_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE financial_txn_s OWNER TO sofie;
 
+-- ----------------------------------------------------------------------------
+-- txn_component_type - tabella lookup component type mappada da enum ComponentType
+-- ----------------------------------------------------------------------------
+CREATE TABLE txn_component_types (
+    component_type_id INTEGER NOT NULL,
+    code VARCHAR(25) NOT NULL UNIQUE, -- 'BROKER_FEE', 'INITIAL_MARGIN', 'EXCHANGE_FEE', 'PREMIUM'
+    description VARCHAR(150) NOT NULL,
+    PRIMARY KEY (component_type_id)
+);
+ALTER TABLE txn_component_types OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- financial_txn_component - tabella di dettaglio che si aggancia alla financial_txn
+-- ----------------------------------------------------------------------------
+CREATE TABLE financial_txn_components (
+    txn_component_id INTEGER NOT NULL,
+    financial_txn INTEGER NOT NULL,
+    component_type INTEGER NOT NULL,
+    currency INTEGER NOT NULL, -- Fondamentale: le commissioni potrebbero essere in EUR anche se il trade è in USD
+    amount NUMERIC(15,5) NOT NULL,
+    description VARCHAR(255) NOT NULL DEFAULT '',
+    PRIMARY KEY (txn_component_id),
+    CONSTRAINT fk_financial_txn FOREIGN KEY (financial_txn)
+        REFERENCES financial_txn(id_financial_txn) ON DELETE CASCADE,
+    CONSTRAINT fk_component_type FOREIGN KEY (component_type)
+        REFERENCES txn_component_types(component_type_id),
+    CONSTRAINT fk_currency FOREIGN KEY (currency)
+        REFERENCES currency(id_currency)
+);
+ALTER TABLE financial_txn_components OWNER TO sofie;
+-- Creo sequenza
+CREATE SEQUENCE financial_txn_components_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE financial_txn_components_s OWNER TO sofie;

@@ -134,6 +134,16 @@ INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_sta
 -- restart transazione rejected
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'RESTARTING','Restartin');
 
+
+-- ----------------------------------------------------------------------------
+-- txn_status
+-- ----------------------------------------------------------------------------
+INSERT INTO txn_component_types(component_type_id,code, description) VALUES (1, 'BROKER_FEE', 'Broker Transaction and Execution Fees');
+INSERT INTO txn_component_types(component_type_id,code, description) VALUES (2, 'EXCHANGE_FEE', 'CME / Clearing House Regulatory Fees');
+INSERT INTO txn_component_types(component_type_id,code, description) VALUES (3, 'INITIAL_MARGIN', 'Initial Margin Deposit Requirement');
+INSERT INTO txn_component_types(component_type_id,code, description) VALUES (4, 'MAINTENANCE_MARGIN', 'Maintenance Margin Requirement');
+INSERT INTO txn_component_types(component_type_id,code, description) VALUES (5, 'OPTION_PREMIUM', 'Option Premium Paid or Written');
+
 -- ----------------------------------------------------------------------------
 -- counterparty_type
 -- ----------------------------------------------------------------------------
