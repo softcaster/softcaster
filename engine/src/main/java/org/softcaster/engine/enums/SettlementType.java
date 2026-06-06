@@ -46,4 +46,12 @@ public enum SettlementType implements IdentifiableEnum {
     public String getDescription() {
         return description;
     }
+    
+    public static SettlementType fromId(int id) {
+        return IdentifiableEnum.fromId(SettlementType.class, id);
+    }
+
+    public static SettlementType fromCode(String code) {
+        return IdentifiableEnum.fromCode(SettlementType.class, code);
+    }
 }

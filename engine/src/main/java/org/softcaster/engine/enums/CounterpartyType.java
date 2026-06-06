@@ -4,16 +4,17 @@
  */
 package org.softcaster.engine.enums;
 
-public enum OptionStyle implements IdentifiableEnum {
-    EUROPEAN(1, "EUROPEAN", "Can only be exercised at the expiration date"),
-    AMERICAN(2, "AMERICAN", "Can be exercised at any time up to the expiration date"),
-    BERMUDAN(3, "BERMUDAN", "Can be exercised on specific dates before expiration");
+public enum CounterpartyType implements IdentifiableEnum {
+    NATURAL_PERSON(1, "NATURAL_PERSON", "Individual Person"),
+    LEGAL_ENTITY(2, "LEGAL_ENTITY", "Corporate Entity"),
+    INVESTMENT_FUND(3, "INVESTMENT_FUND", "Investment Fund"),
+    SOVEREIGN_PUBLIC(4, "SOVEREIGN_PUBLIC", "Sovereign Government");
 
     private final int id;
     private final String code;
     private final String description;
 
-    OptionStyle(int id, String code, String description) {
+    CounterpartyType(int id, String code, String description) {
         this.id = id;
         this.code = code;
         this.description = description;
@@ -33,11 +34,12 @@ public enum OptionStyle implements IdentifiableEnum {
     public String getDescription() {
         return description;
     }
-    public static OptionStyle fromId(int id) {
-        return IdentifiableEnum.fromId(OptionStyle.class, id);
+
+    public static CounterpartyType fromId(int id) {
+        return IdentifiableEnum.fromId(CounterpartyType.class, id);
     }
 
-    public static OptionStyle fromCode(String code) {
-        return IdentifiableEnum.fromCode(OptionStyle.class, code);
+    public static CounterpartyType fromCode(String code) {
+        return IdentifiableEnum.fromCode(CounterpartyType.class, code);
     }
 }

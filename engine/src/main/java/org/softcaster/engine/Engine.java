@@ -40,7 +40,6 @@ import org.softcaster.engine.dto.OptionOutputData;
 import org.softcaster.engine.enums.BusinessDayConvention;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
-import org.softcaster.engine.enums.EnumUtils;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.engine.enums.OptionStyle;
@@ -167,10 +166,10 @@ public class Engine {
         BackwardScheduleGenerator bsg = new BackwardScheduleGenerator();
         LocalDate effectiveDate = LocalDate.of(2002, 1, 1);
         LocalDate terminationDate = LocalDate.of(2033, 1, 2);
-        Frequency freq = EnumUtils.fromId(Frequency.class, 2);
+        Frequency freq = Frequency.fromId(2);
 
-        BusinessDayConvention bdc = EnumUtils.fromId(BusinessDayConvention.class, 3);
-        DaycountBasis daycount = EnumUtils.fromId(DaycountBasis.class, 5);
+        BusinessDayConvention bdc = BusinessDayConvention.fromId(3);
+        DaycountBasis daycount = DaycountBasis.fromId(5);
 
         DummyCaLendar dummy = new DummyCaLendar();
         List<PaymentPeriod> periods = bsg.generate(effectiveDate, terminationDate, freq, bdc, daycount, dummy);

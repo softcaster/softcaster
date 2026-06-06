@@ -10,7 +10,6 @@ import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.CounterpartyDAO;
-import org.softcaster.core.data.CounterpartyTypeDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.Daycount;
@@ -91,8 +90,6 @@ public class MDSFacade {
     private AssetClassDAO assetClassDAO;
     @Autowired
     private YieldCurveDAO yieldCurveDAO;
-    @Autowired
-    private CounterpartyTypeDAO counterpartyTypeDAO;
 
     @Autowired
     @Qualifier("bondPricer")
@@ -232,13 +229,6 @@ public class MDSFacade {
      */
     public CountryDAO getCountryDAO() {
         return countryDAO;
-    }
-
-    /**
-     * @return the counterpartyTypeDAO
-     */
-    public CounterpartyTypeDAO getCounterpartyTypeDAO() {
-        return counterpartyTypeDAO;
     }
 
     /**

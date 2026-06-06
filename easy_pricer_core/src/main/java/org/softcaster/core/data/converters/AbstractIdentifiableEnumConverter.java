@@ -2,10 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.easy_pricer_shared.converters;
+package org.softcaster.core.data.converters;
 
 import jakarta.persistence.AttributeConverter;
-import org.softcaster.easy_pricer_shared.enums.IdentifiableEnum;
+import org.softcaster.engine.enums.IdentifiableEnum;
 
 /**
  * Convertitore JPA generico base per tutti gli enum che implementano

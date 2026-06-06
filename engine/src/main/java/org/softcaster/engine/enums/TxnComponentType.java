@@ -2,13 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Enum.java to edit this template
  */
-package org.softcaster.core.data.enums;
+package org.softcaster.engine.enums;
 
 /**
  *
  * @author ep
  */
-public enum TxnComponentType {
+public enum TxnComponentType implements IdentifiableEnum {
     BROKER_FEE(1, "BROKER_FEE", "Broker Transaction and Execution Fees"),
     EXCHANGE_FEE(2, "EXCHANGE_FEE", "CME / Clearing House Regulatory Fees"),
     INITIAL_MARGIN(3, "INITIAL_MARGIN", "Initial Margin Deposit Requirement"),
@@ -25,40 +25,26 @@ public enum TxnComponentType {
         this.description = description;
     }
 
+    @Override
     public int getId() {
         return id;
     }
 
+    @Override
     public String getCode() {
         return code;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
+
     public static TxnComponentType fromId(int id) {
-        for (TxnComponentType item : TxnComponentType.values()) {
-            if (item.getId() == id) {
-                return item;
-            }
-        }
-        throw new IllegalArgumentException("Invalid TxnComponentType ID: " + id);
+        return IdentifiableEnum.fromId(TxnComponentType.class, id);
     }
 
     public static TxnComponentType fromCode(String code) {
-        if (code == null) {
-            throw new IllegalArgumentException("Code cannot be null");
-        }
-
-        // Scorre tutti i valori dell'enum
-        for (TxnComponentType item : TxnComponentType.values()) {
-            // Usa equalsIgnoreCase se vuoi ignorare maiuscole/minuscole, altrimenti usa .equals()
-            if (item.getCode().equals(code)) {
-                return item;
-            }
-        }
-
-        // Lancia un'eccezione se il codice non corrisponde a nessun elemento
-        throw new IllegalArgumentException("Invalid TxnComponentType code: " + code);
+        return IdentifiableEnum.fromCode(TxnComponentType.class, code);
     }
 }

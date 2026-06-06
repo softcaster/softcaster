@@ -29,7 +29,7 @@ public class CounterpartyBean implements IMasterDataModel {
             case 2 ->
                 ctp.getCountry().getAlfa3Code();
             case 3 ->
-                ctp.getCtpType().getCode();
+                ctp.getCtpType().getDescription();
             default ->
                 null;
         };

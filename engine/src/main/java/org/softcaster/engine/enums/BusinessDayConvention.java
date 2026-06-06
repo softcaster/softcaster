@@ -79,4 +79,12 @@ public enum BusinessDayConvention implements IdentifiableEnum {
         }
         return adjusted;
     }
+    
+    public static BusinessDayConvention fromId(int id) {
+        return IdentifiableEnum.fromId(BusinessDayConvention.class, id);
+    }
+
+    public static BusinessDayConvention fromCode(String code) {
+        return IdentifiableEnum.fromCode(BusinessDayConvention.class, code);
+    }
 }

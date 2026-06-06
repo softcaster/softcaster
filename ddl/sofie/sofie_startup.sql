@@ -136,13 +136,22 @@ INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_sta
 
 
 -- ----------------------------------------------------------------------------
--- txn_status
+-- txn_component_types
 -- ----------------------------------------------------------------------------
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (1, 'BROKER_FEE', 'Broker Transaction and Execution Fees');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (2, 'EXCHANGE_FEE', 'CME / Clearing House Regulatory Fees');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (3, 'INITIAL_MARGIN', 'Initial Margin Deposit Requirement');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (4, 'MAINTENANCE_MARGIN', 'Maintenance Margin Requirement');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (5, 'OPTION_PREMIUM', 'Option Premium Paid or Written');
+
+-- ----------------------------------------------------------------------------
+-- counterparty_roles
+-- ----------------------------------------------------------------------------
+INSERT INTO counterparty_roles VALUES (1, 'CUSTOMER', 'Customer');
+INSERT INTO counterparty_roles VALUES (2, 'VENDOR', 'Vendor');
+INSERT INTO counterparty_roles VALUES (3, 'BROKER', 'Financial Broker');
+INSERT INTO counterparty_roles VALUES (4, 'CLEARING_HOUSE', 'Clearing House');
+INSERT INTO counterparty_roles VALUES (5, 'INTERNAL_ENTITY', 'Group companies / Affiliates');
 
 -- ----------------------------------------------------------------------------
 -- counterparty_type

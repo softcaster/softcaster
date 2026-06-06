@@ -52,6 +52,14 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.softcaster.engine</groupId>
+            <artifactId>engine</artifactId>
+            <version>1.0</version>
+            <scope>provided</scope> 
+            <!-- 'provided' significa che non verrà impacchettata nel JAR, 
+                 poiché la dipendenza reale verrà fornita da Spring Boot nel progetto principale -->
+        </dependency>
     </dependencies>
 
     <build>

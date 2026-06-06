@@ -4,11 +4,8 @@
  */
 package org.softcaster.engine.enums;
 
-/**
- *
- * @author ep
- */
-// Obbliga gli enum ad averela stessa interfaccia
+import java.util.Arrays;
+
 public interface IdentifiableEnum {
 
     int getId();
@@ -16,4 +13,20 @@ public interface IdentifiableEnum {
     String getCode();
 
     String getDescription();
+
+    // Nota: il simbolo & viene usato nei Generics per definire un Multiple Bond (un vincolo multiplo
+    // L'oggetto passato deve essere un Enum e deve implementare l'interfaccia IdentifiableEnum
+    public static <T extends Enum<T> & IdentifiableEnum> T fromCode(Class<T> enumClass, String code) {
+        return Arrays.stream(enumClass.getEnumConstants())
+                .filter(e -> e.getCode().equalsIgnoreCase(code) || e.name().equalsIgnoreCase(code))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown code for " + enumClass.getSimpleName() + ": " + code));
+    }
+
+    public static <T extends Enum<T> & IdentifiableEnum> T fromId(Class<T> enumClass, int id) {
+        return Arrays.stream(enumClass.getEnumConstants())
+                .filter(e -> e.getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown ID for " + enumClass.getSimpleName() + ": " + id));
+    }
 }

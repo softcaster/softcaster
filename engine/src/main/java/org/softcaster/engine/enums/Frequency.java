@@ -73,20 +73,11 @@ public enum Frequency implements IdentifiableEnum {
         return date.minusMonths(months);
     }
 
+    public static Frequency fromId(int id) {
+        return IdentifiableEnum.fromId(Frequency.class, id);
+    }
+
     public static Frequency fromCode(String code) {
-        if (code == null) {
-            throw new IllegalArgumentException("Code cannot be null");
-        }
-
-        // Scorre tutti i valori dell'enum
-        for (Frequency frequency : Frequency.values()) {
-            // Usa equalsIgnoreCase se vuoi ignorare maiuscole/minuscole, altrimenti usa .equals()
-            if (frequency.getCode().equals(code)) {
-                return frequency;
-            }
-        }
-
-        // Lancia un'eccezione se il codice non corrisponde a nessun elemento
-        throw new IllegalArgumentException("Invalid Frequency code: " + code);
+        return IdentifiableEnum.fromCode(Frequency.class, code);
     }
 }

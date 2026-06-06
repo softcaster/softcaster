@@ -14,7 +14,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import org.softcaster.core.data.converters.TxnComponentTypeConverter;
-import org.softcaster.core.data.enums.TxnComponentType;
+import org.softcaster.engine.enums.TxnComponentType;
 
 /**
  *

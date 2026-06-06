@@ -32,4 +32,12 @@ public enum OptionType implements IdentifiableEnum {
     public String getDescription() {
         return description;
     }
+    
+    public static OptionType fromId(int id) {
+        return IdentifiableEnum.fromId(OptionType.class, id);
+    }
+
+    public static OptionType fromCode(String code) {
+        return IdentifiableEnum.fromCode(OptionType.class, code);
+    }
 }

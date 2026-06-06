@@ -847,3 +847,62 @@ ALTER TABLE financial_txn_components OWNER TO sofie;
 -- Creo sequenza
 CREATE SEQUENCE financial_txn_components_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE financial_txn_components_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- counterparty_roles 
+-- ----------------------------------------------------------------------------
+CREATE TABLE counterparty_roles (
+    role_id INTEGER NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(150) NOT NULL,
+    PRIMARY KEY (role_id)
+);
+ALTER TABLE counterparty_roles OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- counterparty_roles 
+-- Tabella di raccordo Molti-a-Molti (Una controparte può essere sia VENDOR che BROKER)
+-- ----------------------------------------------------------------------------
+CREATE TABLE counterparty_role_mapping (
+    counterparty_role_mapping_id INTEGER NOT NULL,
+    counterparty INTEGER NOT NULL,
+    ctp_role INTEGER NOT NULL,
+    PRIMARY KEY (counterparty_role_mapping_id),
+    CONSTRAINT fk_mapping_counterparty FOREIGN KEY (counterparty) 
+        REFERENCES counterparty(id_counterparty) ON DELETE CASCADE,
+    CONSTRAINT fk_mapping_role FOREIGN KEY (ctp_role) 
+        REFERENCES counterparty_roles(role_id)
+);
+CREATE UNIQUE INDEX idx_ctp_role ON counterparty_role_mapping(counterparty,ctp_role);
+ALTER TABLE counterparty_role_mapping OWNER TO sofie;
+CREATE SEQUENCE counterparty_role_mapping_s START WITH 1 INCREMENT BY 1; 
+ALTER SEQUENCE counterparty_role_mapping_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- broker_instrument_rules 
+-- definisce le regole di costo per quella specifica combinazione di Broker, Strumento e Lato (Buy/Sell).
+-- ----------------------------------------------------------------------------
+CREATE TABLE broker_instrument_rules (
+    broker_rule_id     INTEGER NOT NULL,
+    broker             INTEGER NOT NULL, -- Punta a counterparty(id_counterparty)
+    master_data        INTEGER NOT NULL, -- Punta a master_data(id_master_data)
+    txn_side           SMALLINT NOT NULL, -- (1 = Buy, 2 = Sell, o un Enum)
+    initial_margin     NUMERIC(15,5) NOT NULL DEFAULT 0.0,
+    maintenance_margin NUMERIC(15,5) NOT NULL DEFAULT 0.0,
+    broker_fee         NUMERIC(15,5) NOT NULL DEFAULT 0.0,
+    exchange_fee       NUMERIC(15,5) NOT NULL DEFAULT 0.0,
+    currency           INTEGER NOT NULL, -- Valuta della fee (es. USD per CME)
+    PRIMARY KEY (broker_rule_id),
+    CONSTRAINT fk_rule_broker FOREIGN KEY (broker) 
+        REFERENCES counterparty(id_counterparty),
+    CONSTRAINT fk_rule_instrument FOREIGN KEY (master_data) 
+        REFERENCES master_data(id_master_data),
+    CONSTRAINT fk_rule_currency FOREIGN KEY (currency) 
+        REFERENCES currency(id_currency),
+    -- Vincolo di unicità: non possono esserci due regole identiche per lo stesso broker/strumento/lato
+    CONSTRAINT idx_broker_inst_side UNIQUE (broker, master_data, txn_side)
+);
+
+ALTER TABLE broker_instrument_rules OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS broker_instrument_rules_s START WITH 1 INCREMENT BY 1;
+ALTER TABLE broker_instrument_rules_s OWNER TO sofie;

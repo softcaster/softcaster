@@ -4,8 +4,6 @@
  */
 package org.softcaster.engine.enums;
 
-import java.util.Arrays;
-
 /**
  *
  * @author softc
@@ -14,14 +12,12 @@ public enum TxnStatus implements IdentifiableEnum {
     PENDING(1, "PENDING", ""),
     VALIDATING(2, "VALIDATING", ""),
     EXECUTED(3, "EXECUTED", ""),
-    SETTLED(4, "SETTLED", ""),
-    REJECTED(5, "REJECTED", ""),
-    TO_CANCEL(6, "TO_CANCEL", ""),
-    CANCELLED(6, "CANCELLED", ""),
-    CANCELLED_EXECUTED(7, "CANCELLED_EXECUTED", ""),
-    RESTARTING(8, "RESTARTING", ""),
-    TO_AMEND(8, "TO_AMEND", ""),
-    AMENDED(9, "AMENDED", "");
+    REJECTED(4, "REJECTED", ""),
+    TO_AMEND(5, "TO_AMEND", ""),
+    AMENDED(6, "AMENDED", ""),
+    TO_CANCEL(7, "TO_CANCEL", ""),
+    CANCELLED(8, "CANCELLED", ""),
+    RESTARTING(9, "RESTARTING", "");
 
     private final int id;
     private final String code;
@@ -56,18 +52,12 @@ public enum TxnStatus implements IdentifiableEnum {
     public String getDescription() {
         return description;
     }
-
-    public static TxnStatus fromCode(int id) {
-        return Arrays.stream(values())
-                .filter(e -> e.id == id)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid AccountingStatus ID: " + id));
+    
+    public static TxnStatus fromId(int id) {
+        return IdentifiableEnum.fromId(TxnStatus.class, id);
     }
 
     public static TxnStatus fromCode(String code) {
-        return Arrays.stream(values())
-                .filter(e -> e.code.equals(code))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid AccountingStatus ID: " + code));
+        return IdentifiableEnum.fromCode(TxnStatus.class, code);
     }
 }

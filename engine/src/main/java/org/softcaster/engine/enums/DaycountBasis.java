@@ -68,42 +68,11 @@ public enum DaycountBasis implements IdentifiableEnum {
         }
     }
 
-    public static DaycountBasis fromOrdinal(int ordinal) {
-        // Recupera l'array di tutti i valori dell'enum
-        DaycountBasis[] values = DaycountBasis.values();
-
-        // Verifica che l'indice sia valido usando la proprietà .length corretta
-        if (ordinal < 0 || ordinal >= values.length) {
-            throw new IndexOutOfBoundsException("Invalid ordinal: " + ordinal);
-        }
-
-        // Restituisce l'elemento all'indice specificato
-        return values[ordinal];
-    }
-
     public static DaycountBasis fromId(int id) {
-        for (DaycountBasis basis : DaycountBasis.values()) {
-            if (basis.getId() == id) {
-                return basis;
-            }
-        }
-        throw new IllegalArgumentException("Invalid DaycountBasis ID: " + id);
+        return IdentifiableEnum.fromId(DaycountBasis.class, id);
     }
 
     public static DaycountBasis fromCode(String code) {
-        if (code == null) {
-            throw new IllegalArgumentException("Code cannot be null");
-        }
-
-        // Scorre tutti i valori dell'enum
-        for (DaycountBasis basis : DaycountBasis.values()) {
-            // Usa equalsIgnoreCase se vuoi ignorare maiuscole/minuscole, altrimenti usa .equals()
-            if (basis.getCode().equals(code)) {
-                return basis;
-            }
-        }
-
-        // Lancia un'eccezione se il codice non corrisponde a nessun elemento
-        throw new IllegalArgumentException("Invalid DaycountBasis code: " + code);
+        return IdentifiableEnum.fromCode(DaycountBasis.class, code);
     }
 }

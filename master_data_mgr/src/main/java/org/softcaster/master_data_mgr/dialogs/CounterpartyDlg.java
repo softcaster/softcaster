@@ -9,8 +9,10 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Counterparty;
-import org.softcaster.core.data.CounterpartyType;
+import org.softcaster.core.data.CounterpartyRoleMapping;
 import org.softcaster.core.data.Country;
+import org.softcaster.engine.enums.CounterpartyRole;
+import org.softcaster.engine.enums.CounterpartyType;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.CounterpartyBean;
 
@@ -65,6 +67,8 @@ public class CounterpartyDlg extends javax.swing.JDialog {
         txtDescription = new javax.swing.JTextField();
         jLabel14 = new javax.swing.JLabel();
         txtLeiCode = new javax.swing.JTextField();
+        jLabel15 = new javax.swing.JLabel();
+        cbRoles = new javax.swing.JComboBox<>();
         btnPanel = new javax.swing.JPanel();
         btnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -175,6 +179,24 @@ public class CounterpartyDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         additionalPanel.add(txtLeiCode, gridBagConstraints);
 
+        jLabel15.setText("Roles");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(jLabel15, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(cbRoles, gridBagConstraints);
+
         tabbedPane.addTab("Specification", additionalPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -266,6 +288,7 @@ public class CounterpartyDlg extends javax.swing.JDialog {
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<Country> cbCountry;
     private javax.swing.JComboBox<CounterpartyType> cbNoe;
+    private javax.swing.JComboBox<CounterpartyRole> cbRoles;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
     private javax.swing.JLabel jLabel10;
@@ -273,6 +296,7 @@ public class CounterpartyDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JTextField txtCode;
@@ -283,6 +307,7 @@ public class CounterpartyDlg extends javax.swing.JDialog {
     private void postInit() {
         setUpCountryCombo();
         setUpNoeCombo();
+        setUpRolesCombo();
 
         if (bean != null) {
             isInsert = false;
@@ -290,6 +315,7 @@ public class CounterpartyDlg extends javax.swing.JDialog {
             txtDescription.setText(bean.getCounterparty().getDescription());
             cbCountry.setSelectedItem(bean.getCounterparty().getCountry());
             cbNoe.setSelectedItem(bean.getCounterparty().getCtpType());
+            txtLeiCode.setText(bean.getCounterparty().getLeiCode());
         }
 
         fieldsToValidate = Arrays.asList(txtCode, txtDescription);
@@ -297,18 +323,27 @@ public class CounterpartyDlg extends javax.swing.JDialog {
 
     private void setUpCountryCombo() {
         List<Country> countries = masterDataFacade.getCountryDAO().findAll();
-
-        // 2. Crea il modello partendo dalla lista
+        // Crea il modello partendo dalla lista
         DefaultComboBoxModel<Country> model = new DefaultComboBoxModel<>(countries.toArray(Country[]::new));
         cbCountry.setModel(model);
     }
 
     private void setUpNoeCombo() {
-        List<CounterpartyType> types = masterDataFacade.getCounterpartyTypeDAO().findAll();
+        cbNoe.setRenderer(new IdentifiableEnumCellRenderer());
+        List<CounterpartyType> types = List.of(CounterpartyType.values());
 
-        // 2. Crea il modello partendo dalla lista
+        // Crea il modello partendo dalla lista
         DefaultComboBoxModel<CounterpartyType> model = new DefaultComboBoxModel<>(types.toArray(CounterpartyType[]::new));
         cbNoe.setModel(model);
+    }
+
+    private void setUpRolesCombo() {
+        cbRoles.setRenderer(new IdentifiableEnumCellRenderer());
+        List<CounterpartyRole> types = List.of(CounterpartyRole.values());
+
+        // Crea il modello partendo dalla lista
+        DefaultComboBoxModel<CounterpartyRole> model = new DefaultComboBoxModel<>(types.toArray(CounterpartyRole[]::new));
+        cbRoles.setModel(model);
     }
 
     // Check sulla validita dei campi, non devono essere blank
@@ -333,7 +368,17 @@ public class CounterpartyDlg extends javax.swing.JDialog {
             ctp.setCountry((Country) cbCountry.getSelectedItem());
             ctp.setCtpType((CounterpartyType) cbNoe.getSelectedItem());
             ctp.setLeiCode(txtLeiCode.getText());
-            masterDataFacade.getCounterpartyDAO().saveOrUpdate(ctp);
+            CounterpartyRole ctpRole = (CounterpartyRole) cbRoles.getSelectedItem();
+            // Riottengo ctp appena salvata
+            ctp = masterDataFacade.getCounterpartyDAO().saveOrUpdate(ctp);
+            if (ctp != null && !ctp.hasRole(ctpRole)) {
+                CounterpartyRoleMapping role = new CounterpartyRoleMapping();
+                role.setCounterparty(ctp.getIdCounterparty());
+                role.setCtpRole(ctpRole);
+                ctp.getRoles().add(role);
+                masterDataFacade.getCounterpartyDAO().saveOrUpdate(ctp);
+            }
+
             return true;
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());

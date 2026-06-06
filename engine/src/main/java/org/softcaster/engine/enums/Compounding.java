@@ -48,42 +48,11 @@ public enum Compounding implements IdentifiableEnum {
         return description;
     }
 
-    public static Compounding fromOrdinal(int ordinal) {
-        // Recupera l'array di tutti i valori dell'enum
-        Compounding[] values = Compounding.values();
-
-        // Verifica che l'indice sia valido usando la proprietà .length corretta
-        if (ordinal < 0 || ordinal >= values.length) {
-            throw new IndexOutOfBoundsException("Invalid ordinal: " + ordinal);
-        }
-
-        // Restituisce l'elemento all'indice specificato
-        return values[ordinal];
+    public static Compounding fromId(int id) {
+        return IdentifiableEnum.fromId(Compounding.class, id);
     }
 
     public static Compounding fromCode(String code) {
-        if (code == null) {
-            throw new IllegalArgumentException("Code cannot be null");
-        }
-
-        // Scorre tutti i valori dell'enum
-        for (Compounding c : Compounding.values()) {
-            // Usa equalsIgnoreCase se vuoi ignorare maiuscole/minuscole, altrimenti usa .equals()
-            if (c.getCode().equals(code)) {
-                return c;
-            }
-        }
-
-        // Lancia un'eccezione se il codice non corrisponde a nessun elemento
-        throw new IllegalArgumentException("Invalid DaycountBasis code: " + code);
-    }
-
-    public static Compounding fromId(int id) {
-        for (Compounding c : Compounding.values()) {
-            if (c.getId() == id) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException("Invalid Compounding ID: " + id);
+        return IdentifiableEnum.fromCode(Compounding.class, code);
     }
 }

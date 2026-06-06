@@ -47,4 +47,12 @@ public enum Form implements IdentifiableEnum {
     public String getDescription() {
         return description;
     }
+
+    public static Form fromId(int id) {
+        return IdentifiableEnum.fromId(Form.class, id);
+    }
+
+    public static Form fromCode(String code) {
+        return IdentifiableEnum.fromCode(Form.class, code);
+    }
 }

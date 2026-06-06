@@ -1,3 +1,11 @@
+insert into financial_txn_components(txn_component_id,financial_txn,component_type,currency,amount,description)
+values(nextval('financial_txn_components_s'),
+1,
+1,
+(SELECT id_currency FROM currency WHERE iso_code='EUR' LIMIT 1),
+500.,
+'Brooker fees');
+
 ALTER TABLE master_data ADD COLUMN multiplier NUMERIC(15,5) NOT NULL  DEFAULT 1;
 UPDATE master_data SET multiplier=0.01 WHERE asset_class IN (SELECT id_asset_class from asset_class WHERE code IN ('XRB','XRN','BFU'));
 ALTER TABLE yield_curve ADD COLUMN provider VARCHAR(50) NOT NULL DEFAULT '';
