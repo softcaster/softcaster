@@ -2,9 +2,12 @@ package org.softcaster.core.data;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.io.Serializable;
@@ -23,11 +26,13 @@ public class BrokerInstrumentRules implements Serializable {
     @Column(name = "broker_rule_id")
     private Integer brokerRuleId;
 
-    @Column(name = "broker")
-    private Integer broker;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "broker", nullable = true)
+    private Counterparty broker;
 
-    @Column(name = "master_data")
-    private Integer masterData;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "master_data", nullable = true)
+    private MasterData masterData;
 
     @Column(name = "txn_side")
     private Short txnSide;
@@ -57,22 +62,6 @@ public class BrokerInstrumentRules implements Serializable {
 
     public void setBrokerRuleId(Integer brokerRuleId) {
         this.brokerRuleId = brokerRuleId;
-    }
-
-    public Integer getBroker() {
-        return broker;
-    }
-
-    public void setBroker(Integer broker) {
-        this.broker = broker;
-    }
-
-    public Integer getMasterData() {
-        return masterData;
-    }
-
-    public void setMasterData(Integer masterData) {
-        this.masterData = masterData;
     }
 
     public Short getTxnSide() {
@@ -138,5 +127,33 @@ public class BrokerInstrumentRules implements Serializable {
     @Override
     public int hashCode() {
         return getBrokerRuleId() == null ? 0 : brokerRuleId.hashCode();
+    }
+
+    /**
+     * @return the broker
+     */
+    public Counterparty getBroker() {
+        return broker;
+    }
+
+    /**
+     * @param broker the broker to set
+     */
+    public void setBroker(Counterparty broker) {
+        this.broker = broker;
+    }
+
+    /**
+     * @return the masterData
+     */
+    public MasterData getMasterData() {
+        return masterData;
+    }
+
+    /**
+     * @param masterData the masterData to set
+     */
+    public void setMasterData(MasterData masterData) {
+        this.masterData = masterData;
     }
 }

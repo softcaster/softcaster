@@ -4,17 +4,29 @@
  */
 package org.softcaster.master_data_mgr.dialogs;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ListSelectionModel;
+import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.BrokerInstrumentRules;
+import org.softcaster.core.data.BrokerInstrumentRulesDAO;
 import org.softcaster.core.data.Counterparty;
 import org.softcaster.core.data.CounterpartyRoleMapping;
 import org.softcaster.core.data.Country;
 import org.softcaster.engine.enums.CounterpartyRole;
 import org.softcaster.engine.enums.CounterpartyType;
 import org.softcaster.master_data_mgr.MasterDataFacade;
+import org.softcaster.master_data_mgr.models.MasterDataTableModel;
+import org.softcaster.master_data_mgr.models.beans.BrokerRuleBean;
 import org.softcaster.master_data_mgr.models.beans.CounterpartyBean;
+import org.softcaster.master_data_mgr.ui.DecimalRenderer;
 
 /**
  *
@@ -69,6 +81,9 @@ public class CounterpartyDlg extends javax.swing.JDialog {
         txtLeiCode = new javax.swing.JTextField();
         jLabel15 = new javax.swing.JLabel();
         cbRoles = new javax.swing.JComboBox<>();
+        rulesPanel = new javax.swing.JPanel();
+        scrollPaneCF = new javax.swing.JScrollPane();
+        tableRules = new ZebraTable();
         btnPanel = new javax.swing.JPanel();
         btnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -197,7 +212,27 @@ public class CounterpartyDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         additionalPanel.add(cbRoles, gridBagConstraints);
 
-        tabbedPane.addTab("Specification", additionalPanel);
+        tabbedPane.addTab("Detail", additionalPanel);
+
+        rulesPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
+        rulesPanel.setLayout(new java.awt.BorderLayout());
+
+        tableRules.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        scrollPaneCF.setViewportView(tableRules);
+
+        rulesPanel.add(scrollPaneCF, java.awt.BorderLayout.CENTER);
+
+        tabbedPane.addTab("Rules", rulesPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -298,7 +333,10 @@ public class CounterpartyDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JPanel rulesPanel;
+    private javax.swing.JScrollPane scrollPaneCF;
     private javax.swing.JTabbedPane tabbedPane;
+    private javax.swing.JTable tableRules;
     private javax.swing.JTextField txtCode;
     private javax.swing.JTextField txtDescription;
     private javax.swing.JTextField txtLeiCode;
@@ -316,9 +354,15 @@ public class CounterpartyDlg extends javax.swing.JDialog {
             cbCountry.setSelectedItem(bean.getCounterparty().getCountry());
             cbNoe.setSelectedItem(bean.getCounterparty().getCtpType());
             txtLeiCode.setText(bean.getCounterparty().getLeiCode());
+            if (bean.getCounterparty().getRoles() != null && !bean.getCounterparty().getRoles().isEmpty()) {
+                CounterpartyRoleMapping mapping = bean.getCounterparty().getRoles().get(0);
+                CounterpartyRole activeRole = mapping.getCtpRole();
+                cbRoles.setSelectedItem(activeRole);
+            }
         }
 
         fieldsToValidate = Arrays.asList(txtCode, txtDescription);
+        initTable();
     }
 
     private void setUpCountryCombo() {
@@ -388,5 +432,67 @@ public class CounterpartyDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
+    }
+
+    private void fillModelList() {
+        // Crea e setta il model
+        BrokerRuleBean prototype = new BrokerRuleBean(null);
+        MasterDataTableModel<BrokerRuleBean> model = new MasterDataTableModel<>(prototype);
+        tableRules.setModel(model);
+        refreshModel(model);
+    }
+
+    private void refreshModel(MasterDataTableModel model) {
+        List<BrokerRuleBean> rulesBeanList = new ArrayList<>();
+        BrokerRuleBean ruleBean = null;
+        if (bean.getCounterparty().getIdCounterparty() > 0) {
+            BrokerInstrumentRulesDAO brokerInstrumentRulesDAO = masterDataFacade.getBrokerInstrumentRulesDAO();
+            List<BrokerInstrumentRules> rules = brokerInstrumentRulesDAO.findByBroker(bean.getCounterparty().getIdCounterparty());
+            if (rules != null && !rules.isEmpty()) {
+                for (BrokerInstrumentRules rule : rules) {
+                    ruleBean = new BrokerRuleBean(rule);
+                    rulesBeanList.add(ruleBean);
+                }
+            }
+        }
+        model.setData(rulesBeanList);
+    }
+
+    protected void initTable() {
+        tableRules.setFillsViewportHeight(true);
+        tableRules.setRowHeight(25);
+        tableRules.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+
+        // Opzionale: Rimuovi le linee della griglia per un look più moderno (flat)
+        tableRules.setShowGrid(false);
+        tableRules.setIntercellSpacing(new Dimension(0, 0));
+
+        // Header Elegante
+        tableRules.getTableHeader().setOpaque(false);
+        tableRules.getTableHeader().setBackground(new Color(230, 230, 230));
+        tableRules.getTableHeader().setForeground(Color.BLACK);
+        tableRules.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+
+        // Più spazio rende i dati più leggibili
+        tableRules.setRowHeight(30);
+
+        // Selezione
+        tableRules.setSelectionBackground(new Color(184, 207, 229)); // Un blu delicato per la riga selezionata
+        tableRules.setSelectionForeground(Color.BLACK);
+
+        tableRules.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableRules.setFocusable(false);
+        tableRules.setRowSelectionAllowed(true);
+
+        // Valido per tutti i campi double
+        tableRules.setDefaultRenderer(Double.class, new DecimalRenderer());
+
+        // Rendo la tabella sortabile
+        tableRules.setAutoCreateRowSorter(true);
+
+        // Setta il model e popola la tabella
+        if (!isInsert) {
+            fillModelList();
+        }
     }
 }

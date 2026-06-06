@@ -9,6 +9,7 @@ import org.softcaster.core.data.AmortizationScheduleDAO;
 import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
+import org.softcaster.core.data.BrokerInstrumentRulesDAO;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
@@ -83,6 +84,8 @@ public class MasterDataFacade {
     private AssetClassDAO assetClassDAO;
     @Autowired
     private YieldCurveDAO yieldCurveDAO;
+    @Autowired
+    private BrokerInstrumentRulesDAO brokerInstrumentRulesDAO;
 
     /**
      * @return the securityMasterDataDAO
@@ -250,5 +253,12 @@ public class MasterDataFacade {
      */
     public MmFutureMasterDataDAO getMmFutureMasterDataDAO() {
         return mmFutureMasterDataDAO;
+    }
+
+    /**
+     * @return the brokerInstrumentRulesDAO
+     */
+    public BrokerInstrumentRulesDAO getBrokerInstrumentRulesDAO() {
+        return brokerInstrumentRulesDAO;
     }
 }

@@ -905,4 +905,4 @@ CREATE TABLE broker_instrument_rules (
 
 ALTER TABLE broker_instrument_rules OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS broker_instrument_rules_s START WITH 1 INCREMENT BY 1;
-ALTER TABLE broker_instrument_rules_s OWNER TO sofie;
+ALTER SEQUENCE broker_instrument_rules_s OWNER TO sofie;

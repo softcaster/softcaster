@@ -776,48 +776,6 @@ public class BondDlg extends javax.swing.JDialog {
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION) {
             }
         }
-/*
-        CashFlows cf = BondCashFlowGenerator.cashFlowsOddBond(bean.getSecurityMasterData().getIssueDate(),
-                bean.getSecurityMasterData().getIssueDate(),
-                bean.getSecurityMasterData().getMaturityDate(),
-                bean.getSecurityMasterData().getFirstCouponPaymentDate(),
-                null,
-                bean.getSecurityMasterData().getNominalValue(),
-                bean.getSecurityMasterData().getInterestRate(),
-                bean.getSecurityMasterData().getFrequency().getYearFraction().intValue(),
-                getDayCountBasis(bean.getSecurityMasterData().getDaycount().getCode()));
-        List<CashFlowItem> cashFlows = new ArrayList();
-        Date start = null;
-        Date end = null;
-        CashFlowItem item = null;
-        for (java.util.Date date : cf.getDates()) {
-            if (start == null) {
-                start = new Date(date);
-            } else {
-                end = new Date(date);
-                item = new CashFlowItem();
-                item.setStartDate(start.sqlDate());
-                item.setEndDate(end.sqlDate());
-                item.setInterest(cf.getCashFlow(date, "INTEREST"));
-                item.setAmount(cf.getCashFlow(date, "PRINCIPAL"));
-                item.setMasterData(bean.getSecurityMasterData().getIdMasterData());
-                cashFlows.add(item);
-                start = end;
-            }
-        }
-
-        // Cancella vecchio cash flow (se esistente) per evitare errore:
-        // chiave duplicato viola il vincolo univoco "idx_md_ed"
-        if (showMessage) {
-            bean.getSecurityMasterData().getCashFlows().clear();
-            if (!saveBean()) {
-                return;
-            }
-        }
-        bean.getSecurityMasterData().setCashFlows(cashFlows);
-        MasterDataTableModel<CashFlowBean> model = (MasterDataTableModel<CashFlowBean>) tableCF.getModel();
-        refreshModel(model);
-*/
     }//GEN-LAST:event_btnGenerateCFActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

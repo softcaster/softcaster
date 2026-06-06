@@ -6,6 +6,10 @@ values(nextval('financial_txn_components_s'),
 500.,
 'Brooker fees');
 
+insert into broker_instrument_rules(broker_rule_id,broker,master_data,txn_side,initial_margin,maintenance_margin,
+    broker_fee,exchange_fee,currency) values(nextval('broker_instrument_rules_s'),2,61,2,250,250,
+    0.8,0.8,s(SELECT id_currency FROM currency WHERE iso_code='USD' LIMIT 1));
+
 ALTER TABLE master_data ADD COLUMN multiplier NUMERIC(15,5) NOT NULL  DEFAULT 1;
 UPDATE master_data SET multiplier=0.01 WHERE asset_class IN (SELECT id_asset_class from asset_class WHERE code IN ('XRB','XRN','BFU'));
 ALTER TABLE yield_curve ADD COLUMN provider VARCHAR(50) NOT NULL DEFAULT '';
