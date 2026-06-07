@@ -32,6 +32,7 @@ import org.softcaster.core.data.SettlementTypeDAO;
 import org.softcaster.core.data.TypeOfInterest;
 import org.softcaster.core.data.TypeOfInterestDAO;
 import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.account.GlAccountDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -86,6 +87,8 @@ public class MasterDataFacade {
     private YieldCurveDAO yieldCurveDAO;
     @Autowired
     private BrokerInstrumentRulesDAO brokerInstrumentRulesDAO;
+    @Autowired
+    private GlAccountDAO glAccountDAO;
 
     /**
      * @return the securityMasterDataDAO
@@ -260,5 +263,12 @@ public class MasterDataFacade {
      */
     public BrokerInstrumentRulesDAO getBrokerInstrumentRulesDAO() {
         return brokerInstrumentRulesDAO;
+    }
+
+    /**
+     * @return the glAccountDAO
+     */
+    public GlAccountDAO getGlAccountDAO() {
+        return glAccountDAO;
     }
 }

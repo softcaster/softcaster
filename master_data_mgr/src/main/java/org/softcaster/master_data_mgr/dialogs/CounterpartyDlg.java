@@ -20,6 +20,7 @@ import org.softcaster.core.data.BrokerInstrumentRulesDAO;
 import org.softcaster.core.data.Counterparty;
 import org.softcaster.core.data.CounterpartyRoleMapping;
 import org.softcaster.core.data.Country;
+import org.softcaster.core.data.account.GlAccount;
 import org.softcaster.engine.enums.CounterpartyRole;
 import org.softcaster.engine.enums.CounterpartyType;
 import org.softcaster.master_data_mgr.MasterDataFacade;
@@ -363,6 +364,9 @@ public class CounterpartyDlg extends javax.swing.JDialog {
 
         fieldsToValidate = Arrays.asList(txtCode, txtDescription);
         initTable();
+        
+        GlAccount account = masterDataFacade.getGlAccountDAO().findByAccountId(30);
+        System.out.println(account.getCode());
     }
 
     private void setUpCountryCombo() {
