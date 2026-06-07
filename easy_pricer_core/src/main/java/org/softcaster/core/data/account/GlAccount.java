@@ -1,6 +1,7 @@
 package org.softcaster.core.data.account;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -18,6 +19,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.core.data.Currency;
+import org.softcaster.core.data.converters.AccountNatureConverter;
+import org.softcaster.core.data.converters.FinancialStatementTypeConverter;
+import org.softcaster.core.data.converters.NormalBalanceConverter;
+import org.softcaster.engine.enums.AccountNature;
+import org.softcaster.engine.enums.FinancialStatementType;
+import org.softcaster.engine.enums.NormalBalance;
 
 @Entity
 @Table(name = "gl_accounts")
@@ -54,16 +61,16 @@ public class GlAccount implements Serializable {
     @JoinColumn(name = "currency", nullable = true)
     private Currency currency;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "statement_type", nullable = true)
+    @Convert(converter = FinancialStatementTypeConverter.class)
+    @Column(name = "statement_type")
     private FinancialStatementType statementType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "nature", nullable = true)
+    @Convert(converter = AccountNatureConverter.class)
+    @Column(name = "nature")
     private AccountNature nature;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "balance", nullable = true)
+    @Convert(converter = NormalBalanceConverter.class)
+    @Column(name = "balance")
     private NormalBalance balance;
 
     @Column(name = "created_at")

@@ -9,9 +9,6 @@ CREATE TABLE financial_statement_types (
     , PRIMARY KEY (statement_type_id)
 );
 ALTER TABLE financial_statement_types OWNER TO sofie;
--- Creo sequenza
-CREATE SEQUENCE financial_statement_types_s START WITH 1 INCREMENT BY 1; 
-ALTER SEQUENCE financial_statement_types_s OWNER TO sofie;
 
 -- Tabella Anagrafica della Natura del Conto
 CREATE TABLE account_natures (
@@ -21,9 +18,6 @@ CREATE TABLE account_natures (
     , PRIMARY KEY (nature_id)
 );
 ALTER TABLE account_natures OWNER TO sofie;
--- Creo sequenza
-CREATE SEQUENCE account_natures_s START WITH 1 INCREMENT BY 1; 
-ALTER SEQUENCE account_natures_s OWNER TO sofie;
 
 -- Tabella Anagrafica del Segno Algebrico Naturale (Sezione Contabile)
 CREATE TABLE normal_balances (
@@ -33,9 +27,6 @@ CREATE TABLE normal_balances (
     , PRIMARY KEY (balance_id)
 );
 ALTER TABLE normal_balances OWNER TO sofie;
--- Creo sequenza
-CREATE SEQUENCE normal_balances_s START WITH 1 INCREMENT BY 1; 
-ALTER SEQUENCE normal_balances_s OWNER TO sofie;
 
 -- Tabella Anagrafica Chart Of Accounts
 CREATE TABLE gl_accounts (
@@ -68,7 +59,45 @@ ALTER TABLE gl_accounts OWNER TO sofie;
 CREATE SEQUENCE gl_accounts_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE gl_accounts_s OWNER TO sofie;
 
--- Tabella evento contabile
+-- ----------------------------------------------------------------------------
+-- accounting_event_types
+-- ----------------------------------------------------------------------------
+CREATE TABLE accounting_event_types (
+   event_type_id INTEGER NOT NULL
+    , code VARCHAR(25) NOT NULL -- TRADE_EXECUTED TRADE_CANCEL MTM COUPON ACCRUAL SETTLEMENT MATURITY FX_REVALUATION
+    , description VARCHAR(225) NOT NULL DEFAULT '' 
+    , PRIMARY KEY (event_type_id)
+);
+CREATE UNIQUE INDEX idx_event_types_code ON accounting_event_types(code);
+ALTER TABLE accounting_event_types OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- accounting_event_status
+-- ----------------------------------------------------------------------------
+CREATE TABLE accounting_event_status (
+   event_status_id INTEGER NOT NULL
+    , code VARCHAR(25) NOT NULL -- NEW IN_PROGRESS PROCESSED FAILED
+    , description VARCHAR(225) NOT NULL DEFAULT '' 
+    , PRIMARY KEY (event_status_id)
+);
+CREATE UNIQUE INDEX idx_event_status_code ON accounting_event_status(code);
+ALTER TABLE accounting_event_status OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- source_event_types
+-- ----------------------------------------------------------------------------
+CREATE TABLE event_source_types (
+   source_type_id INTEGER NOT NULL
+    , code VARCHAR(25) NOT NULL  -- TRADE INSTRUMENT POSITION_DETAIL(caso MTM)->  id_position_detail
+    , description VARCHAR(225) NOT NULL DEFAULT '' 
+    , PRIMARY KEY (source_type_id)
+);
+CREATE UNIQUE INDEX idx_source_code ON event_source_types(code);
+ALTER TABLE event_source_types OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- accounting_events - Tabella evento contabile
+-- ----------------------------------------------------------------------------
 CREATE TABLE accounting_events (
     event_id INTEGER NOT NULL 
     , event_type INTEGER NOT NULL-- TRADE_EXECUTION TRADE_CANCEL MTM COUPON ACCRUAL SETTLEMENT MATURITY FX_REVALUATION
@@ -85,7 +114,7 @@ CREATE TABLE accounting_events (
     , CONSTRAINT fk_event_status FOREIGN KEY (event_status)
               REFERENCES accounting_event_status(event_status_id) ON DELETE NO ACTION ON UPDATE NO ACTION
     , CONSTRAINT fk_source_type FOREIGN KEY (source_type)
-              REFERENCES accounting_source_type(source_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+              REFERENCES event_source_types(source_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 -- Per garantire idemponenza (1 event_key per record)
 CREATE UNIQUE INDEX idx_event_key ON accounting_events(event_key);
@@ -100,114 +129,3 @@ ALTER TABLE accounting_events OWNER TO sofie;
 CREATE SEQUENCE accounting_events_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE accounting_events_s OWNER TO sofie;
 
--------------------------------------------------------------------------------
-Asset 1
-Cash 10: Cash and Cash Equivalents (cash and banks)
-├── 100010 - Cash and Cash Equivalents - Base Currency (EUR)
-├── 100015 - Cash and Cash Equivalents - Foreign Currency (USD)
-└── 100020 - Petty Cash (Cassa contanti interna)
-
-Categoria 11: Short-Term Deposits (Depositi monetari vincolati)
-├── 110010 - Short-Term Time Deposits - EUR
-└── 110015 - Short-Term Time Deposits - USD
-
-Categoria 12: Margin Accounts and Broker Receivables (Conti di marginatura e crediti vs broker)
-├── 120050 - Initial Margin Deposit - EUR
-├── 120055 - Initial Margin Deposit - USD  <-- [Uso: Deposito cauzionale iniziale per Future ZNM6]
-├── 120060 - Variation Margin Account - EUR
-└── 120065 - Variation Margin Account - USD  <-- [Uso: Accredito/Addebito Mark-to-Market giornaliero]
-
-Categoria 13: Financial Assets at FVTPL (Titoli detenuti per trading)
-├── 130010 - Debt Securities - Sovereign Bonds (EUR)
-├── 130015 - Debt Securities - U.S. Treasuries (USD) <-- [Uso: Acquisto bond fisico sottostante o CTD]
-├── 130020 - Equity Securities - Domestic Shares (EUR)
-└── 130025 - Equity Securities - International Shares (USD)
-
-Categoria 14: Financial Derivatives - Assets (Derivati attivi con Fair Value positivo)
-├── 140010 - FX Forward Contracts - Asset  <-- [Uso: Fair Value positivo fine mese contratti a termine]
-└── 140020 - Options Premium Purchased (Opzioni comprate - valore di mercato)
-
-Categoria 19: Accruals and Receivables (Ratei e crediti commerciali/finanziari)
-├── 190010 - Accrued Interest Receivable - Debt Securities <-- [Uso: Rateo attivo cedole bond in maturazione]
-└── 190020 - Dividends Receivable (Dividendi deliberati da incassare)
-
-Categoria 21: Short-Term Borrowings (Finanziamenti e scoperti a breve termine)
-├── 210010 - Bank Overdrafts - EUR (Scoperti di conto corrente)
-├── 210015 - Bank Overdrafts - USD
-└── 210020 - Short-Term Repo Loans (Finanziamenti da operazioni Pronti contro Termine)
-
-Categoria 24: Financial Derivatives & Settlement Liabilities (Derivati passivi e debiti tecnici)
-├── 240010 - FX Forward Contracts - Liability <-- [Uso: Fair Value negativo fine mese contratti a termine]
-├── 240020 - Options Premium Written (Opzioni vendute/scoperte)
-└── 240050 - Due to Brokers / Settlement Liabilities <-- [Uso: Debiti tecnici vs broker per transazioni T+2]
-
-Categoria 30: Capital and Reserves (Capitale sociale e riserve)
-├── 300010 - Share Capital (Capitale sociale)
-├── 300050 - Retained Earnings (Utili/Perdite portati a nuovo dagli esercizi precedenti)
-└── 300080 - FX Translation Reserve (Riserva da conversione per utili/perdite latenti di bilancio)
-
-Categoria 70: Gains on Financial Derivatives (Utili e profitti da strumenti derivati)
-├── 700010 - Realized Gain on Financial Derivatives <-- [Uso: Chiusura Future o Forward in profitto]
-└── 700020 - Unrealized Gain on Financial Derivatives <-- [Uso: Stima Fair Value positivo fine anno]
-
-Categoria 71: Foreign Exchange Gains (Profitti sui cambi valutari)
-├── 710010 - Realized Foreign Exchange Gains <-- [Uso: Guadagno effettivo da conversione fisica USD -> EUR]
-└── 710020 - Unrealized Foreign Exchange Gains <-- [Uso: Rivalutazione saldi dei conti liquidi USD a fine mese]
-
-Categoria 72: Interest and Dividend Income (Interessi attivi e cedole)
-├── 720010 - Interest Income - Bank & Short-Term Deposits
-├── 720020 - Interest Income - Sovereign Debt (Coupons) <-- [Uso: Cedole incassate su Bond/Treasuries]
-├── 720050 - Realized Gain on Debt Securities (Utili da compravendita Bond/Treasuries)
-└── 720060 - Realized Gain on Equity Securities (Utili da compravendita Azioni/ETF)
-
-Categoria 80: Losses on Financial Derivatives (Perdite subite su strumenti derivati)
-├── 800010 - Realized Loss on Financial Derivatives <-- [Uso: Chiusura Future o Forward in perdita]
-└── 800020 - Unrealized Loss on Financial Derivatives <-- [Uso: Stima Fair Value negativo fine anno]
-
-Categoria 81: Foreign Exchange Losses (Perdite sui cambi valutari)
-├── 810010 - Realized Foreign Exchange Losses <-- [Uso: Perdita effettiva da conversione fisica USD -> EUR]
-└── 810020 - Unrealized Foreign Exchange Losses <-- [Uso: Svalutazione saldi dei conti liquidi USD a fine mese]
-
-Categoria 82: Interest Expenses and Trading Losses (Interessi passivi e perdite su titoli)
-├── 820010 - Interest Expense on Borrowings / Repo
-├── 820050 - Realized Loss on Debt Securities (Perdite da compravendita Bond/Treasuries)
-└── 820060 - Realized Loss on Equity Securities (Perdite da compravendita Azioni/ETF)
-
-Categoria 88: Trading Fees and Execution Costs (Commissioni e spese di negoziazione)
-├── 880010 - Brokerage and Execution Fees <-- [Uso: Costo vivo di apertura/chiusura contratti ZNM6]
-├── 880020 - Clearing and Exchange Fees (Spese di regolamento della Cassa di Compensazione / CME)
-└── 880030 - Custody and Safe-Keeping Fees (Spese di custodia dei titoli di Stato fisici)
-
-Categoria 90: Financial Commitments (Tracciabilità del valore nozionale aperto sul mercato)
-├── 900010 - Financial Commitments - Long Futures <-- [Uso: Valore nozionale contratti Future acquistati]
-├── 900015 - Financial Commitments - Short Futures (Valore nozionale contratti Future venduti)
-├── 900020 - Financial Commitments - Forward Currency Purchase <-- [Uso: Nozionale contratti Forward Forex]
-└── 990030 - Counterpart for Financial Commitments <-- [Uso: Contropartita tecnica obbligatoria per far quadrare il pacchetto 9xxx a zero]
-
-
-
--- Inserimento Livello 1 (Macro-classi)
-INSERT INTO account_macro_classes (macro_id, macro_name, statement_type) VALUES
-('1', 'Assets', 'BALANCE_SHEET'),
-('2', 'Liabilities', 'BALANCE_SHEET'),
-('7', 'Financial Income', 'INCOME_STATEMENT'),
-('7', 'Financial Expenses', 'INCOME_STATEMENT'),
-('9', 'Memorandum Accounts', 'OFF_BALANCE_SHEET');
-
--- Inserimento Livello 2 (Categorie)
-INSERT INTO account_categories (category_id, macro_id, category_name) VALUES
-('10', '1', 'Cash and Cash Equivalents'),
-('12', '1', 'Margin Accounts and Broker Receivables'),
-('24', '2', 'Financial Derivatives and Settlement Liabilities'),
-('70', '7', 'Gains on Financial Derivatives'),
-('90', '9', 'Financial Commitments');
-
--- Inserimento Livello 3 (Conti operativi finali)
-INSERT INTO chart_of_accounts (account_id, category_id, account_name, currency) VALUES
-('1010', '10', 'Cash and Cash Equivalents - EUR', 'EUR'),
-('1015', '10', 'Cash and Cash Equivalents - USD Account', 'USD'),
-('1255', '12', 'Margin Account with Broker - USD', 'USD'),
-('2410', '24', 'Financial Derivatives - Liability (Forward Forex)', 'EUR'),
-('7010', '70', 'Realized Gain on Financial Derivatives', 'EUR'),
-('9010', '90', 'Financial Commitments - Long Futures', 'USD');
- 

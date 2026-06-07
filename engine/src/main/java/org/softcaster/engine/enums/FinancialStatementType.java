@@ -8,22 +8,16 @@ package org.softcaster.engine.enums;
  *
  * @author softc
  */
-public enum TxnStatus implements IdentifiableEnum {
-    PENDING(1, "PENDING", "Pending"),
-    VALIDATING(2, "VALIDATING", "Validating"),
-    EXECUTED(3, "EXECUTED", "Executed"),    
-    REJECTED(4, "REJECTED", "Rejected"),
-    TO_AMEND(5, "TO_AMEND", "To Amend"),
-    AMENDED(6, "AMENDED", "Amended"),
-    TO_CANCEL(7, "TO_CANCEL", "To Cancel"),
-    CANCELLED(8, "CANCELLED", "Cancelled"),
-    RESTARTING(9, "RESTARTING", "Restarting");
+public enum FinancialStatementType implements IdentifiableEnum {
+    BALANCE_SHEET(1, "BALANCE_SHEET", "Balance Sheet"),
+    INCOME_STATEMENT(2, "INCOME_STATEMENT", "Income Statement"),
+    OFF_BALANCE_SHEET(3, "OFF_BALANCE_SHEET", "Off Balance Sheet");   
 
     private final int id;
     private final String code;
     private final String description;
 
-    TxnStatus(int id, String code, String description) {
+    FinancialStatementType(int id, String code, String description) {
         this.id = id;
         this.code = code;
         this.description = description;
@@ -53,11 +47,11 @@ public enum TxnStatus implements IdentifiableEnum {
         return description;
     }
     
-    public static TxnStatus fromId(int id) {
-        return IdentifiableEnum.fromId(TxnStatus.class, id);
+    public static FinancialStatementType fromId(int id) {
+        return IdentifiableEnum.fromId(FinancialStatementType.class, id);
     }
 
-    public static TxnStatus fromCode(String code) {
-        return IdentifiableEnum.fromCode(TxnStatus.class, code);
-    }
+    public static FinancialStatementType fromCode(String code) {
+        return IdentifiableEnum.fromCode(FinancialStatementType.class, code);
+    }    
 }
