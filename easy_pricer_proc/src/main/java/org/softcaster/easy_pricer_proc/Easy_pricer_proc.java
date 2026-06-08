@@ -12,10 +12,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-/**
- *
- * @author ep
- */
 @SpringBootApplication
 @EnableScheduling
 // Scansiona tutti i componenti nei package org.softcaster (sia proc che core)
