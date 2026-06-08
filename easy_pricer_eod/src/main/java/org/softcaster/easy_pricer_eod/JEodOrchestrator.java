@@ -15,9 +15,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.easy_pricer_eod.services.MicroserviceLauncher;
 import org.softcaster.easy_pricer_eod.ui.models.TreeModel;
 import org.softcaster.easy_pricer_eod.ui.views.HomePanel;
 import org.softcaster.easy_pricer_eod.ui.views.RestEnginePanel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,6 +29,9 @@ public class JEodOrchestrator extends javax.swing.JFrame {
 
     private AppCard currentCard;
     private Map<AppCard, javax.swing.JPanel> cardMap = new HashMap<>();
+
+    @Autowired
+    private MicroserviceLauncher microserviceLauncher;
 
     /**
      * Creates new form JEodOrchestrator
@@ -110,7 +115,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
             });
 
             addPanels();
-            
+
             // Sovrascrive qualsiasi impostazione precedente
             this.setDefaultCloseOperation(javax.swing.JFrame.DO_NOTHING_ON_CLOSE);
 
@@ -139,7 +144,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
         mainPanel.add(rePanel, AppCard.REST_ENGINE_CARD.name());
-        
+
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();
         cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
@@ -310,6 +315,11 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     }
 
     private void refreshAction() {
+        // Definisci dove si trova il JAR del servizio MTM (puoi metterlo anche nell'application.properties)
+        String jarPath = "C:/test/rsrv/easy_pricer_srv-1.0.jar";
+
+        // Avvia il servizio
+        microserviceLauncher.startMtmService(jarPath, "dev");
     }
 
     private void saveAction() {
