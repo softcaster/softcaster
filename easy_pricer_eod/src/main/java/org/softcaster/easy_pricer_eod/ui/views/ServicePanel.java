@@ -14,6 +14,8 @@ public interface ServicePanel {
 
     void stopService();
 
+    void suspendService();
+
     void refreshStatus();
 
     String getServiceName(); // Deve corrispondere al testo del nodo dell'albero (es. "Rest Engine")

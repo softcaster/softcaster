@@ -170,6 +170,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JToolBar.Separator();
         btnStart = new javax.swing.JButton();
         btnStop = new javax.swing.JButton();
+        btnSuspend = new javax.swing.JButton();
         btnRefresh = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JToolBar.Separator();
         btnClear = new javax.swing.JButton();
@@ -226,6 +227,14 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         btnStop.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnStop.addActionListener(this::btnStopActionPerformed);
         toolBar.add(btnStop);
+
+        btnSuspend.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/analytics_16dp.png"))); // NOI18N
+        btnSuspend.setMnemonic('S');
+        btnSuspend.setFocusable(false);
+        btnSuspend.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnSuspend.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnSuspend.addActionListener(this::btnSuspendActionPerformed);
+        toolBar.add(btnSuspend);
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/refresh_16dp.png"))); // NOI18N
         btnRefresh.setToolTipText("Refresh");
@@ -296,6 +305,11 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         refreshAction();
     }//GEN-LAST:event_btnRefreshActionPerformed
 
+    private void btnSuspendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSuspendActionPerformed
+        // TODO add your handling code here:
+        suspendAction();
+    }//GEN-LAST:event_btnSuspendActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClear;
@@ -303,6 +317,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnStart;
     private javax.swing.JButton btnStop;
+    private javax.swing.JButton btnSuspend;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem itemExit;
     private javax.swing.JMenuItem itemRefresh;
@@ -366,6 +381,13 @@ public class JEodOrchestrator extends javax.swing.JFrame {
             if (activePanel != null) {
                 activePanel.clear();
             }
+        }
+    }
+
+    private void suspendAction() {
+        ServicePanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.suspendService();
         }
     }
 }
