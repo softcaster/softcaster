@@ -15,10 +15,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_eod.services.MicroserviceLauncher;
 import org.softcaster.easy_pricer_eod.ui.models.TreeModel;
 import org.softcaster.easy_pricer_eod.ui.views.HomePanel;
 import org.softcaster.easy_pricer_eod.ui.views.RestEnginePanel;
+import org.softcaster.easy_pricer_eod.ui.views.ServiceInfo;
+import org.softcaster.easy_pricer_eod.ui.views.ServicePanel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +32,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     private Map<AppCard, javax.swing.JPanel> cardMap = new HashMap<>();
 
     @Autowired
-    private MicroserviceLauncher microserviceLauncher;
+    private EODFacade eodFacade;
 
     /**
      * Creates new form JEodOrchestrator
@@ -138,7 +139,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         // 1. Istanzia i pannelli
         JPanel defaultPanel = new HomePanel();
         cardMap.put(AppCard.DEFAULT_CARD, defaultPanel);
-        JPanel rePanel = new RestEnginePanel();
+        JPanel rePanel = new RestEnginePanel(eodFacade);
         cardMap.put(AppCard.REST_ENGINE_CARD, rePanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
@@ -167,10 +168,11 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         toolBar = new javax.swing.JToolBar();
         btnExit = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
+        btnStart = new javax.swing.JButton();
+        btnStop = new javax.swing.JButton();
         btnRefresh = new javax.swing.JButton();
-        btnSave = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JToolBar.Separator();
-        btnCalc = new javax.swing.JButton();
+        btnClear = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         itemRefresh = new javax.swing.JMenuItem();
@@ -209,30 +211,38 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         toolBar.add(btnExit);
         toolBar.add(jSeparator1);
 
-        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/file_open_16dp.png"))); // NOI18N
+        btnStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/toggle_on_16dp.png"))); // NOI18N
+        btnStart.setToolTipText("Start Service");
+        btnStart.setFocusable(false);
+        btnStart.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnStart.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnStart.addActionListener(this::btnStartActionPerformed);
+        toolBar.add(btnStart);
+
+        btnStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/toggle_off_16dp.png"))); // NOI18N
+        btnStop.setToolTipText("Close Service");
+        btnStop.setFocusable(false);
+        btnStop.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnStop.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnStop.addActionListener(this::btnStopActionPerformed);
+        toolBar.add(btnStop);
+
+        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/refresh_16dp.png"))); // NOI18N
         btnRefresh.setToolTipText("Refresh");
         btnRefresh.setFocusable(false);
         btnRefresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnRefresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnRefresh.addActionListener(this::btnRefreshActionPerformed);
         toolBar.add(btnRefresh);
-
-        btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/save_16dp.png"))); // NOI18N
-        btnSave.setToolTipText("Save");
-        btnSave.setFocusable(false);
-        btnSave.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        btnSave.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        btnSave.addActionListener(this::btnSaveActionPerformed);
-        toolBar.add(btnSave);
         toolBar.add(jSeparator3);
 
-        btnCalc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/analytics_16dp.png"))); // NOI18N
-        btnCalc.setToolTipText("Calculate");
-        btnCalc.setFocusable(false);
-        btnCalc.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        btnCalc.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        btnCalc.addActionListener(this::btnCalcActionPerformed);
-        toolBar.add(btnCalc);
+        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/delete_16dp.png"))); // NOI18N
+        btnClear.setToolTipText("Clear");
+        btnClear.setFocusable(false);
+        btnClear.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnClear.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnClear.addActionListener(this::btnClearActionPerformed);
+        toolBar.add(btnClear);
 
         getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
 
@@ -270,24 +280,29 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         exitAction();
     }//GEN-LAST:event_btnExitActionPerformed
 
+    private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
+        startAction();
+    }//GEN-LAST:event_btnStartActionPerformed
+
+    private void btnStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStopActionPerformed
+        stopAction();
+    }//GEN-LAST:event_btnStopActionPerformed
+
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        clearAction();
+    }//GEN-LAST:event_btnClearActionPerformed
+
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
         refreshAction();
     }//GEN-LAST:event_btnRefreshActionPerformed
 
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        saveAction();
-    }//GEN-LAST:event_btnSaveActionPerformed
-
-    private void btnCalcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalcActionPerformed
-        calculateAction();
-    }//GEN-LAST:event_btnCalcActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnCalc;
+    private javax.swing.JButton btnClear;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnRefresh;
-    private javax.swing.JButton btnSave;
+    private javax.swing.JButton btnStart;
+    private javax.swing.JButton btnStop;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem itemExit;
     private javax.swing.JMenuItem itemRefresh;
@@ -314,17 +329,43 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         }
     }
 
+    private ServicePanel getActiveCard() {
+        JPanel panel = cardMap.get(currentCard);
+        if (panel instanceof ServicePanel abstactMDPanel) {
+            return abstactMDPanel;
+        } else {
+            return null;
+        }
+    }
+
     private void refreshAction() {
         // Definisci dove si trova il JAR del servizio MTM (puoi metterlo anche nell'application.properties)
         String jarPath = "C:/test/rsrv/easy_pricer_srv-1.0.jar";
 
         // Avvia il servizio
-        microserviceLauncher.startMtmService(jarPath, "dev");
+        //microserviceLauncher.startMtmService(jarPath, "dev");
     }
 
-    private void saveAction() {
+    private void startAction() {
+        ServicePanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.startService();
+        }
     }
 
-    private void calculateAction() {
+    private void stopAction() {
+        ServicePanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.stopService();
+        }
+    }
+
+    private void clearAction() {
+        JPanel panel = cardMap.get(currentCard);
+        if (panel instanceof ServiceInfo activePanel) {
+            if (activePanel != null) {
+                activePanel.clear();
+            }
+        }
     }
 }

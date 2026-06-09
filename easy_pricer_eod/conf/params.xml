@@ -4,4 +4,8 @@
         <name>PY_DEBUG</name>
         <value>false</value>
     </param>
+    <param>
+        <name>RSRV</name>
+        <value>E:\tools\projects\DEVELOP\test\rsrv\easy_pricer_srv-1.0.jar;dev</value>
+    </param>
 </params>

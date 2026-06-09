@@ -4,17 +4,36 @@
  */
 package org.softcaster.easy_pricer_eod.ui.views;
 
+import javax.swing.DefaultListModel;
+import javax.swing.border.EmptyBorder;
+import org.softcaster.commons.xml.ParamsMgr;
+import org.softcaster.easy_pricer_eod.EODFacade;
+import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
+
 /**
  *
  * @author softc
  */
-public class RestEnginePanel extends javax.swing.JPanel {
+public final class RestEnginePanel extends javax.swing.JPanel implements ServicePanel, ServiceInfo {
+
+    RestServiceDescriptor descriptor = null;
+    EODFacade eodFacade;
+
+    // Il modello che gestisce fisicamente i dati della lista
+    private final DefaultListModel<String> listModel = new DefaultListModel<>();
 
     /**
      * Creates new form RestEnginePanel
+     *
+     * @param eodFacade
      */
-    public RestEnginePanel() {
+    public RestEnginePanel(EODFacade eodFacade) {
         initComponents();
+        this.eodFacade = eodFacade;
+        messageList.setModel(listModel);
+        messageList.setBorder(new EmptyBorder(10, 15, 10, 15));
+        loadServiceDescriptor();
+        eodFacade.getMicroserviceLauncher().addLogger(this);
     }
 
     /**
@@ -26,19 +45,88 @@ public class RestEnginePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        scrollPane = new javax.swing.JScrollPane();
+        messageList = new javax.swing.JList<>();
+
+        setLayout(new java.awt.BorderLayout(10, 10));
+
+        messageList.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        scrollPane.setViewportView(messageList);
+
+        add(scrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList<String> messageList;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * Metodo per appendere un nuovo messaggio di stato o log nella JList
+     *
+     * @param message
+     */
+    public void appendMessage(String message) {
+        // FONDAMENTALE: le modifiche all'interfaccia Swing devono avvenire nell'EDT
+        java.awt.EventQueue.invokeLater(() -> {
+            // Aggiunge l'elemento in fondo alla lista
+            listModel.addElement(message);
+
+            // OPZIONALE: Forza l'autoscroll per mostrare sempre l'ultimo messaggio inserito
+            int lastIndex = listModel.getSize() - 1;
+            if (lastIndex >= 0) {
+                messageList.ensureIndexIsVisible(lastIndex);
+            }
+        });
+    }
+
+    @Override
+    public void startService() {
+        appendMessage("Starting Txn Rest service");
+        eodFacade.getMicroserviceLauncher().startService(descriptor);
+    }
+
+    @Override
+    public void stopService() {
+        appendMessage("Closing Txn Rest service");
+        eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
+    }
+
+    @Override
+    public void refreshStatus() {
+    }
+
+    @Override
+    public String getServiceName() {
+        return "";
+    }
+
+    @Override
+    public void clear() {
+        listModel.clear();
+    }
+
+    private void loadServiceDescriptor() {
+        ParamsMgr paramsMgr = ParamsMgr.getInstance();
+        String[] params = paramsMgr.getParamValue("RSRV").split(";");
+        descriptor = new RestServiceDescriptor();
+        descriptor.setServiceName("RSRV");
+        descriptor.setJarPath(params[0]);
+        descriptor.setActiveProfile(params[1]);
+    }
+
+    @Override
+    public void logInfo(String info) {
+        appendMessage("Info: " + info);
+    }
+
+    @Override
+    public void logError(String error) {
+        appendMessage("Error: " + error);
+    }
 }
