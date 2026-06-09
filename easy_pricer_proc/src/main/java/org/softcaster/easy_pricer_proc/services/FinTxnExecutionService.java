@@ -33,7 +33,6 @@ import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
 import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service

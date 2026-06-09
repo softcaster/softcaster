@@ -24,6 +24,10 @@ import org.softcaster.easy_pricer_eod.ui.views.ServicePanel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+//
+// cerca processi sulla porta 8080: netstat -ano | findstr 8080
+//
+// killa il processo: taskkill /F /PID 12345
 @Component
 public class JEodOrchestrator extends javax.swing.JFrame {
 
