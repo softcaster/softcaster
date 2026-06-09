@@ -17,6 +17,7 @@ import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_eod.ui.models.TreeModel;
 import org.softcaster.easy_pricer_eod.ui.views.HomePanel;
+import org.softcaster.easy_pricer_eod.ui.views.ProcEnginePanel;
 import org.softcaster.easy_pricer_eod.ui.views.RestEnginePanel;
 import org.softcaster.easy_pricer_eod.ui.views.ServiceInfo;
 import org.softcaster.easy_pricer_eod.ui.views.ServicePanel;
@@ -141,10 +142,13 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         cardMap.put(AppCard.DEFAULT_CARD, defaultPanel);
         JPanel rePanel = new RestEnginePanel(eodFacade);
         cardMap.put(AppCard.REST_ENGINE_CARD, rePanel);
+        JPanel pePanel = new ProcEnginePanel(eodFacade);
+        cardMap.put(AppCard.TRADE_PROCESSOR_CARD, pePanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
         mainPanel.add(rePanel, AppCard.REST_ENGINE_CARD.name());
+        mainPanel.add(pePanel, AppCard.TRADE_PROCESSOR_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

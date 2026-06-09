@@ -16,7 +16,7 @@ import org.springframework.web.client.RestClient;
  *
  * @author softc
  */
-public final class RestEnginePanel extends javax.swing.JPanel implements ServicePanel, ServiceInfo {
+public final class ProcEnginePanel extends javax.swing.JPanel implements ServicePanel, ServiceInfo {
 
     RestServiceDescriptor descriptor = null;
     EODFacade eodFacade;
@@ -29,14 +29,14 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
      *
      * @param eodFacade
      */
-    public RestEnginePanel(EODFacade eodFacade) {
+    public ProcEnginePanel(EODFacade eodFacade) {
         initComponents();
         this.eodFacade = eodFacade;
         messageList.setModel(listModel);
         messageList.setBorder(new EmptyBorder(10, 15, 10, 15));
         loadServiceDescriptor();
         eodFacade.getMicroserviceLauncher().addLogger(this);
-        appendMessage("Rest Service ready...");
+        appendMessage("Processor Service ready...");
     }
 
     /**
@@ -90,13 +90,13 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void startService() {
-        appendMessage("Starting Txn Rest service");
+        appendMessage("Starting Processor service");
         eodFacade.getMicroserviceLauncher().startService(descriptor);
     }
 
     @Override
     public void stopService() {
-        appendMessage("Closing Txn Rest service");
+        appendMessage("Closing Processor service");
         eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
     }
 
@@ -106,7 +106,7 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public String getServiceName() {
-        return "RSRV";
+        return "PSRV";
     }
 
     @Override
@@ -116,9 +116,9 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
     private void loadServiceDescriptor() {
         ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String[] params = paramsMgr.getParamValue("RSRV").split(";");
+        String[] params = paramsMgr.getParamValue("PSRV").split(";");
         descriptor = new RestServiceDescriptor();
-        descriptor.setServiceName("RSRV");
+        descriptor.setServiceName("PSRV");
         descriptor.setJarPath(params[0]);
         descriptor.setActiveProfile(params[1]);
     }
@@ -135,7 +135,7 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void suspendService() {
-        appendMessage("Sending suspension request via HTTP to Txn Rest service...");
+        appendMessage("Sending suspension request via HTTP to Processor service...");
 
         // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
         new Thread(() -> {
@@ -145,7 +145,7 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
                 // 2. Ipotizziamo l'URL del microservizio REST (es. porta 8080)
                 // Puoi anche recuperare la porta dinamicamente da ParamsMgr se configurata lì
-                String baseUrl = "http://localhost:8080/api/v1/internal/system/suspend";
+                String baseUrl = "http://localhost:8081/api/v1/internal/system/suspend";
 
                 // 3. Esegui la chiamata POST sincrona
                 restClient.post()
