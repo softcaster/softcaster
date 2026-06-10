@@ -7,7 +7,6 @@ package org.softcaster.easy_pricer_srv.calc;
 import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.core.data.CashFlowItem;
-import org.softcaster.core.data.Daycount;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
@@ -36,11 +35,7 @@ public class Utils {
         return flows;
     }
 
-    public static DaycountBasis convertDaycount(Daycount dbDaycount) {
-        return DaycountBasis.fromCode(dbDaycount.getCode());
-    }
-
-    public static Frequency convertFrequency(org.softcaster.core.data.Frequency dbFrequency) {
+   public static Frequency convertFrequency(org.softcaster.core.data.Frequency dbFrequency) {
         return Frequency.fromCode(dbFrequency.getCode());
     }
 

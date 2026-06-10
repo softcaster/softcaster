@@ -12,7 +12,6 @@ import org.softcaster.commons.ui.dialog.DialogHelper;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
-import org.softcaster.core.data.Daycount;
 import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.MmFutureMasterData;

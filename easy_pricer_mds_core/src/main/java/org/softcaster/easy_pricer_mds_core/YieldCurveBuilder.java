@@ -10,8 +10,6 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.softcaster.core.data.Daycount;
-import org.softcaster.core.data.DaycountDAO;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.core.data.YieldCurveItem;
 import org.softcaster.engine.curve.CurveNodeInput;
@@ -30,9 +28,6 @@ public class YieldCurveBuilder {
     @Autowired
     YieldCurveDAO yieldCurveDAO;
 
-    @Autowired
-    DaycountDAO daycountDAO;
-
     public org.softcaster.engine.curve.YieldCurve buildYieldCurve(String idCurve, List<CurveNodeInput> newInputs, LocalDate officialDate) {
         org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
         if (dbCurve != null) {
@@ -47,7 +42,7 @@ public class YieldCurveBuilder {
 
         OffsetType offsetType = OffsetType.fromId(item.getOffsetType());
         Offset offset = new Offset(item.getOffsetValue(), offsetType);
-        Daycount daycount = daycountDAO.findByIdDaycount(item.getDaycount().intValue());
+        DaycountBasis daycount = DaycountBasis.fromId(item.getDaycount().intValue());
         DaycountBasis daycount_ = DaycountBasis.fromCode(daycount.getCode());
         Compounding compounding = Compounding.fromId(item.getCompounding());
         CurveNodeInput cni = new CurveNodeInput(item.getRic(), offset, item.getBid(),
@@ -119,7 +114,7 @@ public class YieldCurveBuilder {
             List<YieldCurveItem> updatedItems = new ArrayList<>();
 
             // 3. Allinea i dati finanziari con le entità DB
-            org.softcaster.core.data.Daycount daycount = null;
+            DaycountBasis daycount = null;
             for (CurveNodeInput node : newInputs) {
                 String key = node.symbol();
 
@@ -138,8 +133,8 @@ public class YieldCurveBuilder {
                     newItem.setOffsetType((short) node.tenorOffset().offsetType().getId());
                     newItem.setAsk(node.rate());
                     newItem.setBid(node.rate());
-                    daycount = daycountDAO.findByCode(node.daycount().getCode());
-                    newItem.setDaycount(daycount.getIdDaycount().shortValue());
+                    daycount = node.daycount();
+                    newItem.setDaycount((short)daycount.getId());
                     newItem.setCompounding((short) node.compounding().getId());
                     updatedItems.add(newItem);
                 }

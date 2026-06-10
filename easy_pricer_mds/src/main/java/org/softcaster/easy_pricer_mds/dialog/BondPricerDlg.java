@@ -409,25 +409,6 @@ public class BondPricerDlg extends javax.swing.JDialog {
         return result;
     }
 
-    private org.softcaster.engine.enums.DaycountBasis getDaycount(org.softcaster.core.data.Daycount daycount) {
-        org.softcaster.engine.enums.DaycountBasis result = org.softcaster.engine.enums.DaycountBasis.ACT_365;
-        switch (daycount.getCode()) {
-            case "NASD_30_360" ->
-                result = org.softcaster.engine.enums.DaycountBasis.NASD_30_360;
-            case "EUR_30_360" ->
-                result = org.softcaster.engine.enums.DaycountBasis.EUR_30_360;
-            case "ACT_360" ->
-                result = org.softcaster.engine.enums.DaycountBasis.ACT_360;
-            case "ACT_365" ->
-                result = org.softcaster.engine.enums.DaycountBasis.ACT_365;
-            case "ACT_ACT" ->
-                result = org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA;
-            default -> {
-            }
-        }
-        return result;
-    }
-
     private List<org.softcaster.engine.cashflow.CashFlow> cashFlow(MasterData masterData) {
         List<org.softcaster.engine.cashflow.CashFlow> flows = new ArrayList<>();
         if (masterData instanceof SecurityMasterData smd) {

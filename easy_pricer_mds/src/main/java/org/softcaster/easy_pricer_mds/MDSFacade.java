@@ -12,8 +12,6 @@ import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
-import org.softcaster.core.data.Daycount;
-import org.softcaster.core.data.DaycountDAO;
 import org.softcaster.core.data.ForexMasterDataDAO;
 import org.softcaster.core.data.Form;
 import org.softcaster.core.data.FormDAO;
@@ -73,8 +71,6 @@ public class MDSFacade {
     @Autowired
     private CountryDAO countryDAO;
     @Autowired
-    private DaycountDAO daycountDAO;
-    @Autowired
     private SettlementTypeDAO settlementTypeDAO;
     @Autowired
     private TypeOfInterestDAO typeOfInterestDAO;
@@ -117,13 +113,6 @@ public class MDSFacade {
      */
     public BondFutureMasterDataDAO getBondFutureMasterDataDAO() {
         return bondFutureMasterDataDAO;
-    }
-
-    /**
-     * @return the daycountDAO
-     */
-    public DaycountDAO getDaycountDAO() {
-        return daycountDAO;
     }
 
     /**
@@ -170,10 +159,6 @@ public class MDSFacade {
 
     public TypeOfInterest findTypeOfInterest(String code) {
         return typeOfInterestDAO.findByCode(code);
-    }
-
-    public Daycount findDaycount(String code) {
-        return daycountDAO.findByCode(code);
     }
 
     public Form findForm(String code) {

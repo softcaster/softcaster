@@ -2,6 +2,7 @@ package org.softcaster.core.data;
 
 import java.io.Serializable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +12,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import org.softcaster.core.data.converters.DaycountConverter;
+import org.softcaster.engine.enums.DaycountBasis;
 
 @Entity
 @Table(name = "currency")
@@ -49,9 +52,9 @@ public class Currency implements Serializable {
     @JoinColumn(name = "calendar", nullable = true)
     private Calendar calendar;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "daycount", nullable = true)
-    private Daycount daycount;
+    @Convert(converter = DaycountConverter.class)
+    @Column(name = "daycount")
+    private DaycountBasis daycount;
 
     public Integer getIdCurrency() {
         return idCurrency;
@@ -162,14 +165,14 @@ public class Currency implements Serializable {
     /**
      * @return the daycount
      */
-    public Daycount getDaycount() {
+    public DaycountBasis getDaycount() {
         return daycount;
     }
 
     /**
      * @param daycount the daycount to set
      */
-    public void setDaycount(Daycount daycount) {
+    public void setDaycount(DaycountBasis daycount) {
         this.daycount = daycount;
     }
 
