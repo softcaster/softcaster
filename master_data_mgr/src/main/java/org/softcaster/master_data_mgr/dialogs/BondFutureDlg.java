@@ -14,6 +14,7 @@ import org.softcaster.core.data.BondFutureMasterData;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.Daycount;
 import org.softcaster.core.data.SettlementType;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.FutBondBean;
 
@@ -488,7 +489,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<Currency> cbCurrency;
-    private javax.swing.JComboBox<Daycount> cbDaycount;
+    private javax.swing.JComboBox<DaycountBasis> cbDaycount;
     private javax.swing.JComboBox<SettlementType> cbSettlementType;
     private javax.swing.JPanel fieldPanel;
     private javax.swing.Box.Filler filler1;
@@ -556,10 +557,10 @@ public class BondFutureDlg extends javax.swing.JDialog {
     }
 
     private void setUpDaycountCombo() {
-        List<Daycount> daycounts = masterDataFacade.getDaycountDAO().findAll();
+        List<DaycountBasis> daycounts = List.of(DaycountBasis.values());
 
-        // 2. Crea il modello partendo dalla lista
-        DefaultComboBoxModel<Daycount> model = new DefaultComboBoxModel<>(daycounts.toArray(Daycount[]::new));
+        // Crea il modello partendo dalla lista
+        DefaultComboBoxModel<DaycountBasis> model = new DefaultComboBoxModel<>(daycounts.toArray(DaycountBasis[]::new));
         cbDaycount.setModel(model);
     }
 
@@ -622,8 +623,8 @@ public class BondFutureDlg extends javax.swing.JDialog {
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             bfmd.setCurrency(currency);
             bfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
-            bfmd.setDaycount((Daycount) cbDaycount.getSelectedItem());
-            bfmd.setAccrualDaycount((Daycount) cbDaycount.getSelectedItem());
+            bfmd.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
+            bfmd.setAccrualDaycount(DaycountBasis.ACT_365);
             masterDataFacade.getBondFutureMasterDataDAO().saveOrUpdate(bfmd);
             return true;
         } catch (Exception ex) {

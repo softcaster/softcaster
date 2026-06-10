@@ -22,7 +22,6 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.AmortizationSchedule;
 import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.Currency;
-import org.softcaster.core.data.Daycount;
 import org.softcaster.core.data.Form;
 import org.softcaster.core.data.Frequency;
 import org.softcaster.core.data.Issuer;
@@ -760,10 +759,6 @@ public class BondDlg extends javax.swing.JDialog {
         MDDialogHelper.textFieldDoubleFocusLost(txtNominalValue);
     }//GEN-LAST:event_txtNominalValueFocusLost
 
-    private DaycountBasis getDayCountBasis(String code) {
-        return DaycountBasis.fromCode(code);
-    }
-
     private void btnGenerateCFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateCFActionPerformed
 
         boolean showMessage = bean != null
@@ -787,7 +782,7 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JPanel cashFlowPanel;
     private javax.swing.JComboBox<AmortizationSchedule> cbAmortSched;
     private javax.swing.JComboBox<Currency> cbCurrency;
-    private javax.swing.JComboBox<Daycount> cbDaycount;
+    private javax.swing.JComboBox<DaycountBasis> cbDaycount;
     private javax.swing.JComboBox<Form> cbForm;
     private javax.swing.JComboBox<Frequency> cbFrequency;
     private javax.swing.JComboBox<Issuer> cbIssuer;
@@ -960,10 +955,10 @@ public class BondDlg extends javax.swing.JDialog {
     }
 
     private void setUpDaycountCombo() {
-        List<Daycount> daycounts = masterDataFacade.getDaycountDAO().findAll();
+        List<DaycountBasis> daycounts = List.of(DaycountBasis.values());
 
-        // 2. Crea il modello partendo dalla lista
-        DefaultComboBoxModel<Daycount> model = new DefaultComboBoxModel<>(daycounts.toArray(Daycount[]::new));
+        // Crea il modello partendo dalla lista
+        DefaultComboBoxModel<DaycountBasis> model = new DefaultComboBoxModel<>(daycounts.toArray(DaycountBasis[]::new));
         cbDaycount.setModel(model);
     }
 
@@ -1013,8 +1008,8 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             smd.setCurrency(currency);
-            smd.setDaycount((Daycount) cbDaycount.getSelectedItem());
-            smd.setAccrualDaycount(masterDataFacade.findDaycount("ACT_365"));
+            smd.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
+            smd.setAccrualDaycount(DaycountBasis.ACT_365);
             smd.setAccrualScheduleType(100);
             smd.setAmortizationSchedule((AmortizationSchedule) cbAmortSched.getSelectedItem());
             smd.setForm((Form) cbForm.getSelectedItem());

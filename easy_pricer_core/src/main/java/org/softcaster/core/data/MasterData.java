@@ -2,6 +2,7 @@ package org.softcaster.core.data;
 
 import java.io.Serializable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +16,8 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.DaycountConverter;
+import org.softcaster.engine.enums.DaycountBasis;
 
 @Entity
 @Table(name = "master_data")
@@ -55,14 +58,14 @@ public class MasterData implements Serializable {
     @JoinColumn(name = "form", nullable = true)
     private Form form;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "daycount", nullable = true)
-    private Daycount daycount;
+    @Convert(converter = DaycountConverter.class)
+    @Column(name = "daycount")
+    private DaycountBasis daycount;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "accrual_daycount", nullable = true)
-    private Daycount accrualDaycount;
-
+    @Convert(converter = DaycountConverter.class)
+    @Column(name = "accrual_daycount")
+    private DaycountBasis accrualDaycount;
+    
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "frequency", nullable = true)
     private Frequency frequency;
@@ -211,20 +214,6 @@ public class MasterData implements Serializable {
     }
 
     /**
-     * @return the daycount
-     */
-    public Daycount getDaycount() {
-        return daycount;
-    }
-
-    /**
-     * @param daycount the daycount to set
-     */
-    public void setDaycount(Daycount daycount) {
-        this.daycount = daycount;
-    }
-
-    /**
      * @return the frequency
      */
     public Frequency getFrequency() {
@@ -323,20 +312,6 @@ public class MasterData implements Serializable {
     }
 
     /**
-     * @return the accrualDaycount
-     */
-    public Daycount getAccrualDaycount() {
-        return accrualDaycount;
-    }
-
-    /**
-     * @param accrualDaycount the accrualDaycount to set
-     */
-    public void setAccrualDaycount(Daycount accrualDaycount) {
-        this.accrualDaycount = accrualDaycount;
-    }
-
-    /**
      * @return the multiplier
      */
     public Double getMultiplier() {
@@ -348,5 +323,33 @@ public class MasterData implements Serializable {
      */
     public void setMultiplier(Double multiplier) {
         this.multiplier = multiplier;
+    }
+
+    /**
+     * @return the daycount
+     */
+    public DaycountBasis getDaycount() {
+        return daycount;
+    }
+
+    /**
+     * @param daycount the daycount to set
+     */
+    public void setDaycount(DaycountBasis daycount) {
+        this.daycount = daycount;
+    }
+
+    /**
+     * @return the accrualDaycount
+     */
+    public DaycountBasis getAccrualDaycount() {
+        return accrualDaycount;
+    }
+
+    /**
+     * @param accrualDaycount the accrualDaycount to set
+     */
+    public void setAccrualDaycount(DaycountBasis accrualDaycount) {
+        this.accrualDaycount = accrualDaycount;
     }
 }

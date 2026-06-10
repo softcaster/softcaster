@@ -17,6 +17,7 @@ import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.MmFutureMasterData;
 import org.softcaster.core.data.SettlementType;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.MmFutBean;
 
@@ -542,7 +543,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<Currency> cbCurrency;
-    private javax.swing.JComboBox<Daycount> cbDaycount;
+    private javax.swing.JComboBox<DaycountBasis> cbDaycount;
     private javax.swing.JComboBox<SettlementType> cbSettlementType;
     private javax.swing.JComboBox<ForexMasterData> cbUnderlying;
     private javax.swing.JPanel fieldPanel;
@@ -617,10 +618,10 @@ public class MmFutureDlg extends javax.swing.JDialog {
     }
 
     private void setUpDaycountCombo() {
-        List<Daycount> daycounts = masterDataFacade.getDaycountDAO().findAll();
+        List<DaycountBasis> daycounts = List.of(DaycountBasis.values());
 
-        // 2. Crea il modello partendo dalla lista
-        DefaultComboBoxModel<Daycount> model = new DefaultComboBoxModel<>(daycounts.toArray(Daycount[]::new));
+        // Crea il modello partendo dalla lista
+        DefaultComboBoxModel<DaycountBasis> model = new DefaultComboBoxModel<>(daycounts.toArray(DaycountBasis[]::new));
         cbDaycount.setModel(model);
     }
 
@@ -687,8 +688,8 @@ public class MmFutureDlg extends javax.swing.JDialog {
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             mfmd.setCurrency(currency);
             mfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
-            mfmd.setDaycount((Daycount) cbDaycount.getSelectedItem());
-            mfmd.setAccrualDaycount((Daycount) cbDaycount.getSelectedItem());
+            mfmd.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
+            mfmd.setAccrualDaycount(DaycountBasis.ACT_360);
             mfmd.setUnderlying((ForexMasterData) cbUnderlying.getSelectedItem());
             mfmd.setMaintenanceMargin(Converter.toDouble(txtMainMant.getText(), false));
             masterDataFacade.getMmFutureMasterDataDAO().saveOrUpdate(mfmd);

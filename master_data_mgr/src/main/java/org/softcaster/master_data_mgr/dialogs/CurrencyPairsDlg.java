@@ -11,6 +11,7 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.YieldCurve;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.ForexBean;
 
@@ -345,9 +346,9 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
         // Dati relativi alla bcy
         Currency bcy = (Currency) cbBcy.getSelectedItem();
         bean.getForexMasterData().setCurrency(bcy);
-        bean.getForexMasterData().setDaycount(bcy.getDaycount());
+        bean.getForexMasterData().setDaycount(DaycountBasis.fromCode(bcy.getDaycount().getCode()));
         Currency ccy = (Currency) cbCcy.getSelectedItem();
-        bean.getForexMasterData().setAccrualDaycount(ccy.getDaycount());
+        bean.getForexMasterData().setAccrualDaycount(DaycountBasis.fromCode(ccy.getDaycount().getCode()));
         String code = bcy.getIsoCode()+ccy.getIsoCode();
         bean.getForexMasterData().setCode(code);
         bean.getForexMasterData().setIssueDate(new Date().sqlDate());

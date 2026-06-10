@@ -116,7 +116,7 @@ public class BondForwardCalculator {
                 underlyingCashFlow = Utils.convertCashFlow(smd.getCashFlows());
 
                 // Calcolo dei ratei usando i metodi della classe BondForwardPricer
-                DaycountBasis accrualDaycount = Utils.convertDaycount(smd.getAccrualDaycount());
+                DaycountBasis accrualDaycount = smd.getAccrualDaycount();
                 Frequency frequency = Utils.convertFrequency(smd.getFrequency());
                 double spotAccrual = bondForwardPricer.calculateAccrualAtDate(underlyingCashFlow,
                         valuationDate,
@@ -133,7 +133,7 @@ public class BondForwardCalculator {
                 double invoicePrice = (request.referencePrice * deliverable.getBondCf()) + deliveryAccrual;
 
                 // Calcolo del Cost of Carry (Interessi di finanziamento sul prezzo dirty spot)
-                DaycountBasis fwdDaycount = Utils.convertDaycount(bfmd.getDaycount());
+                DaycountBasis fwdDaycount = bfmd.getDaycount();
                 double maturityTenor = fwdDaycount.calculate(valuationDate, bfmd.getMaturityDate().toLocalDate(), null);
                 double carryCost = dirtySpotPrice * request.domesticRate * maturityTenor;
 
