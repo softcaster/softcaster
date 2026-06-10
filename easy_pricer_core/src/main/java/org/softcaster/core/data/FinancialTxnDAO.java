@@ -2,6 +2,7 @@ package org.softcaster.core.data;
 
 import java.util.List;
 import jakarta.annotation.Resource;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,8 @@ public class FinancialTxnDAO {
 
     @Transactional(readOnly = true)
     public List<FinancialTxn> findAllByDaycountCode(String code) {
-        return repository.findAllByDaycountCode(code);
+        DaycountBasis daycount = DaycountBasis.fromCode(code);
+        return repository.findAllByDaycount(daycount);
     }
 
     @Transactional(readOnly = true) 
