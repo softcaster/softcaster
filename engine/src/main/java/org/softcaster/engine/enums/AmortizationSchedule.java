@@ -8,14 +8,17 @@ package org.softcaster.engine.enums;
  *
  * @author ep
  */
-public enum AccrualScheduleType implements IdentifiableEnum {
-    NONE(100, "AST_NONE", "None");
+public enum AmortizationSchedule  implements IdentifiableEnum {
+    SAS(1, "SAS", "Standard Amortization Schedule"), // Piano ammortamento francese a rata costante
+    SLP(2, "SLP", "Straight Line - Fixed principal repayment"), // Piano ammortamento italiano a quote cap. costanti
+    IOL(3, "IOL", "Interest only - Full principal at maturity"), // Paino ammortamento Bond
+    NONE(100, "NONE", "None");
 
     private final int id;
     private final String code;
     private final String description;
 
-    AccrualScheduleType(int id, String code, String description) {
+    AmortizationSchedule(int id, String code, String description) {
         this.id = id;
         this.code = code;
         this.description = description;
@@ -45,11 +48,11 @@ public enum AccrualScheduleType implements IdentifiableEnum {
         return description;
     }
 
-    public static AccrualScheduleType fromId(int id) {
-        return IdentifiableEnum.fromId(AccrualScheduleType.class, id);
+    public static AmortizationSchedule fromId(int id) {
+        return IdentifiableEnum.fromId(AmortizationSchedule.class, id);
     }
 
-    public static AccrualScheduleType fromCode(String code) {
-        return IdentifiableEnum.fromCode(AccrualScheduleType.class, code);
+    public static AmortizationSchedule fromCode(String code) {
+        return IdentifiableEnum.fromCode(AmortizationSchedule.class, code);
     }
 }

@@ -8,14 +8,17 @@ package org.softcaster.engine.enums;
  *
  * @author ep
  */
-public enum AccrualScheduleType implements IdentifiableEnum {
-    NONE(100, "AST_NONE", "None");
+public enum RollConvention  implements IdentifiableEnum {
+    PREVIOUS(1, "PREVIOUS", "Previus"), 
+    PREVIOUS_MODIFIED(2, "PREVIOUS-MODIFIED", "Previus Following"),
+    FORWARD(3, "FORWARD", "Following"), 
+    FORWARD_MODIFIED(4, "FORWARD-MODIFIED", "Modified Following");
 
     private final int id;
     private final String code;
     private final String description;
 
-    AccrualScheduleType(int id, String code, String description) {
+    RollConvention(int id, String code, String description) {
         this.id = id;
         this.code = code;
         this.description = description;
@@ -45,11 +48,11 @@ public enum AccrualScheduleType implements IdentifiableEnum {
         return description;
     }
 
-    public static AccrualScheduleType fromId(int id) {
-        return IdentifiableEnum.fromId(AccrualScheduleType.class, id);
+    public static RollConvention fromId(int id) {
+        return IdentifiableEnum.fromId(RollConvention.class, id);
     }
 
-    public static AccrualScheduleType fromCode(String code) {
-        return IdentifiableEnum.fromCode(AccrualScheduleType.class, code);
+    public static RollConvention fromCode(String code) {
+        return IdentifiableEnum.fromCode(RollConvention.class, code);
     }
 }

@@ -130,6 +130,7 @@ INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VA
 INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (nextval('amortization_schedule_s'),'SLP','Straight-line Principal');
 -- Piano Bullet
 INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (nextval('amortization_schedule_s'),'IOL','Interest Only Loan');
+INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (100,'NONE','None');
 
 -- ----------------------------------------------------------------------------
 -- settlement_type - tipo consegna
