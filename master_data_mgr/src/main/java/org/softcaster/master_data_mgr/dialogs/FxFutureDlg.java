@@ -16,7 +16,13 @@ import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.SettlementType;
+import org.softcaster.engine.enums.AccrualScheduleType;
+import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Form;
+import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.RollConvention;
+import org.softcaster.engine.enums.TypeOfInterest;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.FxFutBean;
 
@@ -706,13 +712,13 @@ public class FxFutureDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getFxFutureMasterData().setTypeOfInterest(masterDataFacade.findTypeOfInterest("FIXED"));
-        bean.getFxFutureMasterData().setForm(masterDataFacade.findForm("BEARER"));
-        bean.getFxFutureMasterData().setFrequency(masterDataFacade.findFrequency("NONE"));
-        bean.getFxFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("UNADJUSTED"));
-        bean.getFxFutureMasterData().setAccrualScheduleType(100);
+        bean.getFxFutureMasterData().setTypeOfInterest(TypeOfInterest.NONE);
+        bean.getFxFutureMasterData().setForm(Form.BEARER);
+        bean.getFxFutureMasterData().setFrequency(Frequency.NONE);
+        bean.getFxFutureMasterData().setRollConvention(RollConvention.UNADJUSTED);
+        bean.getFxFutureMasterData().setAccrualScheduleType(AccrualScheduleType.NONE);
         bean.getFxFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("FFU"));
-        bean.getFxFutureMasterData().setAmortizationSchedule(masterDataFacade.findAmortizationSchedule("SAS"));
+        bean.getFxFutureMasterData().setAmortizationSchedule(AmortizationSchedule.NONE);
 
         bean.getFxFutureMasterData().setBusinessDays(2);
         bean.getFxFutureMasterData().setInterestRate(0.);

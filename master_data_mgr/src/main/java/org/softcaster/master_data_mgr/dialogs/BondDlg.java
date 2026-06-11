@@ -19,16 +19,17 @@ import javax.swing.event.ChangeEvent;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.core.data.AmortizationSchedule;
 import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.Currency;
-import org.softcaster.core.data.Form;
-import org.softcaster.core.data.Frequency;
 import org.softcaster.core.data.Issuer;
-import org.softcaster.core.data.RollConvention;
 import org.softcaster.core.data.SecurityMasterData;
-import org.softcaster.core.data.TypeOfInterest;
+import org.softcaster.engine.enums.AccrualScheduleType;
+import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Form;
+import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.RollConvention;
+import org.softcaster.engine.enums.TypeOfInterest;
 import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
@@ -899,7 +900,7 @@ public class BondDlg extends javax.swing.JDialog {
     }
 
     private void setUpToiCombo() {
-        List<TypeOfInterest> tois = masterDataFacade.getTypeOfInterestDAO().findAll();
+        List<TypeOfInterest> tois = List.of(TypeOfInterest.values());
 
         // 2. Crea il modello partendo dalla lista
         DefaultComboBoxModel<TypeOfInterest> model = new DefaultComboBoxModel<>(tois.toArray(TypeOfInterest[]::new));
@@ -907,7 +908,7 @@ public class BondDlg extends javax.swing.JDialog {
     }
 
     private void setUpAmSchedCombo() {
-        List<AmortizationSchedule> amscheds = masterDataFacade.getAmortizationScheduleDAO().findAll();
+        List<AmortizationSchedule> amscheds = List.of(AmortizationSchedule.values());
 
         // 2. Crea il modello partendo dalla lista
         DefaultComboBoxModel<AmortizationSchedule> model = new DefaultComboBoxModel<>(amscheds.toArray(AmortizationSchedule[]::new));
@@ -915,7 +916,7 @@ public class BondDlg extends javax.swing.JDialog {
     }
 
     private void setUpFormCombo() {
-        List<Form> forms = masterDataFacade.getFormDAO().findAll();
+        List<Form> forms = List.of(Form.values());
 
         // 2. Crea il modello partendo dalla lista
         DefaultComboBoxModel<Form> model = new DefaultComboBoxModel<>(forms.toArray(Form[]::new));
@@ -923,7 +924,7 @@ public class BondDlg extends javax.swing.JDialog {
     }
 
     private void setUpFrequencyCombo() {
-        List<Frequency> frequencies = masterDataFacade.getFrequencyDAO().findAll();
+        List<Frequency> frequencies = List.of(Frequency.values());
 
         // 2. Crea il modello partendo dalla lista
         DefaultComboBoxModel<Frequency> model = new DefaultComboBoxModel<>(frequencies.toArray(Frequency[]::new));
@@ -931,9 +932,9 @@ public class BondDlg extends javax.swing.JDialog {
     }
 
     private void setUpRollConvCombo() {
-        List<RollConvention> rollconvs = masterDataFacade.getRollConventionDAO().findAll();
+        List<RollConvention> rollconvs = List.of(RollConvention.values());
 
-        // 2. Crea il modello partendo dalla lista
+        // Crea il modello partendo dalla lista
         DefaultComboBoxModel<RollConvention> model = new DefaultComboBoxModel<>(rollconvs.toArray(RollConvention[]::new));
         cbRollConv.setModel(model);
     }
@@ -1010,7 +1011,7 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setCurrency(currency);
             smd.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
             smd.setAccrualDaycount(DaycountBasis.ACT_365);
-            smd.setAccrualScheduleType(100);
+            smd.setAccrualScheduleType(AccrualScheduleType.NONE);
             smd.setAmortizationSchedule((AmortizationSchedule) cbAmortSched.getSelectedItem());
             smd.setForm((Form) cbForm.getSelectedItem());
             smd.setFrequency((Frequency) cbFrequency.getSelectedItem());

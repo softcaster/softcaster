@@ -16,8 +16,20 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.AccrualScheduleTypeConverter;
+import org.softcaster.core.data.converters.AmortizationScheduleConverter;
 import org.softcaster.core.data.converters.DaycountConverter;
+import org.softcaster.core.data.converters.FormConverter;
+import org.softcaster.core.data.converters.FrequencyConverter;
+import org.softcaster.core.data.converters.RollConventionConverter;
+import org.softcaster.core.data.converters.TypeOfInterestConverter;
+import org.softcaster.engine.enums.AccrualScheduleType;
+import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Form;
+import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.RollConvention;
+import org.softcaster.engine.enums.TypeOfInterest;
 
 @Entity
 @Table(name = "master_data")
@@ -44,46 +56,47 @@ public class MasterData implements Serializable {
     @JoinColumn(name = "currency", nullable = true)
     private Currency currency;
 
-    @Column(name = "issue_date")
-    private java.sql.Date issueDate;
-
-    @Column(name = "maturity_date")
-    private java.sql.Date maturityDate;
-
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "type_of_interest", nullable = true)
-    private TypeOfInterest typeOfInterest;
-
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "form", nullable = true)
-    private Form form;
+    @JoinColumn(name = "asset_class", nullable = true)
+    private AssetClass assetClass;
 
     @Convert(converter = DaycountConverter.class)
     @Column(name = "daycount")
     private DaycountBasis daycount;
 
+    @Convert(converter = RollConventionConverter.class)
+    @Column(name = "roll_convention")
+    private RollConvention rollConvention;
+
+    @Convert(converter = FormConverter.class)
+    @Column(name = "form")
+    private Form form;
+
     @Convert(converter = DaycountConverter.class)
     @Column(name = "accrual_daycount")
     private DaycountBasis accrualDaycount;
     
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "frequency", nullable = true)
+    @Convert(converter = FrequencyConverter.class)
+    @Column(name = "frequency")
     private Frequency frequency;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "roll_convention", nullable = true)
-    private RollConvention rollConvention;
+    @Convert(converter = TypeOfInterestConverter.class)
+    @Column(name = "type_of_interest")
+    private TypeOfInterest typeOfInterest;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "asset_class", nullable = true)
-    private AssetClass assetClass;
-
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "amortization_schedule", nullable = true)
+    @Convert(converter = AmortizationScheduleConverter.class)
+    @Column(name = "amortization_schedule")
     private AmortizationSchedule amortizationSchedule;
 
+    @Convert(converter = AccrualScheduleTypeConverter.class)
     @Column(name = "accrual_schedule_type")
-    private Integer accrualScheduleType;
+    private AccrualScheduleType accrualScheduleType;
+
+    @Column(name = "issue_date")
+    private java.sql.Date issueDate;
+
+    @Column(name = "maturity_date")
+    private java.sql.Date maturityDate;
 
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "interest_rate")
@@ -126,14 +139,6 @@ public class MasterData implements Serializable {
 
     public void setMaturityDate(java.sql.Date maturityDate) {
         this.maturityDate = maturityDate;
-    }
-
-    public Integer getAccrualScheduleType() {
-        return accrualScheduleType;
-    }
-
-    public void setAccrualScheduleType(Integer accrualScheduleType) {
-        this.accrualScheduleType = accrualScheduleType;
     }
 
     public Double getInterestRate() {
@@ -351,5 +356,19 @@ public class MasterData implements Serializable {
      */
     public void setAccrualDaycount(DaycountBasis accrualDaycount) {
         this.accrualDaycount = accrualDaycount;
+    }
+
+    /**
+     * @return the accrualScheduleType
+     */
+    public AccrualScheduleType getAccrualScheduleType() {
+        return accrualScheduleType;
+    }
+
+    /**
+     * @param accrualScheduleType the accrualScheduleType to set
+     */
+    public void setAccrualScheduleType(AccrualScheduleType accrualScheduleType) {
+        this.accrualScheduleType = accrualScheduleType;
     }
 }

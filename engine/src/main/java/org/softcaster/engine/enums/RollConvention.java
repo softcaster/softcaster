@@ -12,7 +12,8 @@ public enum RollConvention  implements IdentifiableEnum {
     PREVIOUS(1, "PREVIOUS", "Previus"), 
     PREVIOUS_MODIFIED(2, "PREVIOUS-MODIFIED", "Previus Following"),
     FORWARD(3, "FORWARD", "Following"), 
-    FORWARD_MODIFIED(4, "FORWARD-MODIFIED", "Modified Following");
+    FORWARD_MODIFIED(4, "FORWARD-MODIFIED", "Modified Following"),
+    UNADJUSTED(100, "UNADJUSTED", "Unadjuster");
 
     private final int id;
     private final String code;

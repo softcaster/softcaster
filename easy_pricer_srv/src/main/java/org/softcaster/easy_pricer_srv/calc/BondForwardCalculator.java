@@ -117,7 +117,7 @@ public class BondForwardCalculator {
 
                 // Calcolo dei ratei usando i metodi della classe BondForwardPricer
                 DaycountBasis accrualDaycount = smd.getAccrualDaycount();
-                Frequency frequency = Utils.convertFrequency(smd.getFrequency());
+                Frequency frequency = smd.getFrequency();
                 double spotAccrual = bondForwardPricer.calculateAccrualAtDate(underlyingCashFlow,
                         valuationDate,
                         accrualDaycount,

@@ -35,10 +35,6 @@ public class Utils {
         return flows;
     }
 
-   public static Frequency convertFrequency(org.softcaster.core.data.Frequency dbFrequency) {
-        return Frequency.fromCode(dbFrequency.getCode());
-    }
-
     public static Compounding convertCompounding(String compounding) {
         return Compounding.fromCode(compounding);
     }

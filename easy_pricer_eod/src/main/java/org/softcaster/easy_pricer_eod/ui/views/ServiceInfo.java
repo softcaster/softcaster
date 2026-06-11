@@ -9,11 +9,11 @@ package org.softcaster.easy_pricer_eod.ui.views;
  * @author ep
  */
 public interface ServiceInfo {
-    
+
     void clear();
 
     void logInfo(String info);
-    
+
     void logError(String error);
 
 }

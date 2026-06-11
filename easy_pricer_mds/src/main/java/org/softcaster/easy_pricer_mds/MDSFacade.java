@@ -4,8 +4,6 @@
  */
 package org.softcaster.easy_pricer_mds;
 
-import org.softcaster.core.data.AmortizationSchedule;
-import org.softcaster.core.data.AmortizationScheduleDAO;
 import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
@@ -13,22 +11,14 @@ import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.ForexMasterDataDAO;
-import org.softcaster.core.data.Form;
-import org.softcaster.core.data.FormDAO;
-import org.softcaster.core.data.Frequency;
-import org.softcaster.core.data.FrequencyDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.IssuerDAO;
 import org.softcaster.core.data.MmFutureMasterDataDAO;
 import org.softcaster.core.data.PortfolioMasterDataDAO;
 import org.softcaster.core.data.PositionMasterDataDAO;
-import org.softcaster.core.data.RollConvention;
-import org.softcaster.core.data.RollConventionDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SettlementTypeDAO;
-import org.softcaster.core.data.TypeOfInterest;
-import org.softcaster.core.data.TypeOfInterestDAO;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.engine.analytics.BondPricer;
@@ -73,16 +63,6 @@ public class MDSFacade {
     @Autowired
     private SettlementTypeDAO settlementTypeDAO;
     @Autowired
-    private TypeOfInterestDAO typeOfInterestDAO;
-    @Autowired
-    private FormDAO formDAO;
-    @Autowired
-    private FrequencyDAO frequencyDAO;
-    @Autowired
-    private RollConventionDAO rollConventionDAO;
-    @Autowired
-    private AmortizationScheduleDAO amortizationScheduleDAO;
-    @Autowired
     private AssetClassDAO assetClassDAO;
     @Autowired
     private YieldCurveDAO yieldCurveDAO;
@@ -116,67 +96,11 @@ public class MDSFacade {
     }
 
     /**
-     * @return the typeOfInterestDAO
-     */
-    public TypeOfInterestDAO getTypeOfInterestDAO() {
-        return typeOfInterestDAO;
-    }
-
-    /**
-     * @return the formDAO
-     */
-    public FormDAO getFormDAO() {
-        return formDAO;
-    }
-
-    /**
-     * @return the frequencyDAO
-     */
-    public FrequencyDAO getFrequencyDAO() {
-        return frequencyDAO;
-    }
-
-    /**
-     * @return the rollConventionDAO
-     */
-    public RollConventionDAO getRollConventionDAO() {
-        return rollConventionDAO;
-    }
-
-    /**
-     * @return the amortizationScheduleDAO
-     */
-    public AmortizationScheduleDAO getAmortizationScheduleDAO() {
-        return amortizationScheduleDAO;
-    }
-
-    /**
      * @return the assetClassDAO
      */
     public AssetClassDAO getAssetClassDAO() {
         return assetClassDAO;
     }
-
-    public TypeOfInterest findTypeOfInterest(String code) {
-        return typeOfInterestDAO.findByCode(code);
-    }
-
-    public Form findForm(String code) {
-        return formDAO.findByCode(code);
-    }
-
-    public Frequency findFrequency(String code) {
-        return frequencyDAO.findByCode(code);
-    }
-
-    public RollConvention findRollConvention(String code) {
-        return rollConventionDAO.findByCode(code);
-    }
-
-    public AmortizationSchedule findAmortizationSchedule(String code) {
-        return amortizationScheduleDAO.findByCode(code);
-    }
-
     public AssetClass findAssetClass(String code) {
         return assetClassDAO.findByCode(code);
     }

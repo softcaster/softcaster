@@ -5,6 +5,7 @@
 package org.softcaster.easy_pricer_eod.services;
 
 import java.util.List;
+import org.softcaster.easy_pricer_eod.ui.views.ServiceInfo;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,7 +15,8 @@ public class RestServiceDescriptor implements MicroserviceDescriptor {
     private String jarPath = "";
     private String activeProfile = "";
     private List<String> additionalArgs = null;
-    
+    private ServiceInfo serviceInfo = null;
+
     @Override
     public String getServiceName() {
         return serviceName;
@@ -32,10 +34,11 @@ public class RestServiceDescriptor implements MicroserviceDescriptor {
 
     @Override
     public String[] getAdditionalArgs() {
-        if(additionalArgs != null)
+        if (additionalArgs != null) {
             return (String[]) additionalArgs.toArray();
-        else
+        } else {
             return null;
+        }
     }
 
     /**
@@ -65,5 +68,16 @@ public class RestServiceDescriptor implements MicroserviceDescriptor {
     public void setAdditionalArgs(List<String> additionalArgs) {
         this.additionalArgs = additionalArgs;
     }
-    
+
+    @Override
+    public ServiceInfo getServiceInfo() {
+        return serviceInfo;
+    }
+
+    /**
+     * @param serviceInfo the serviceInfo to set
+     */
+    public void setServiceInfo(ServiceInfo serviceInfo) {
+        this.serviceInfo = serviceInfo;
+    }
 }

@@ -35,7 +35,6 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
         messageList.setModel(listModel);
         messageList.setBorder(new EmptyBorder(10, 15, 10, 15));
         loadServiceDescriptor();
-        eodFacade.getMicroserviceLauncher().addLogger(this);
         appendMessage("Rest Service ready...");
     }
 
@@ -121,6 +120,7 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
         descriptor.setServiceName("RSRV");
         descriptor.setJarPath(params[0]);
         descriptor.setActiveProfile(params[1]);
+        descriptor.setServiceInfo(this);
     }
 
     @Override

@@ -330,7 +330,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
             BondInputData input = new BondInputData();
             input.setSpotPrice(refPrice);
             input.setValuationDate(refDate);
-            input.setFrequency(getFrequency(bean.getInstrumentQuote().getMasterData().getFrequency()));
+            input.setFrequency(bean.getInstrumentQuote().getMasterData().getFrequency());
             input.setCompounding(Compounding.COMPOUNDED);
             //input.setDaycount(getDaycount(bean.getInstrumentQuote().getMasterData().getDaycount()));
             // Daycount di attualizzazione
@@ -386,27 +386,6 @@ public class BondPricerDlg extends javax.swing.JDialog {
             txtISIN.setText(bean.getInstrumentQuote().getMasterData().getCode());
             txtDescription.setText(bean.getInstrumentQuote().getMasterData().getDescription());
         }
-    }
-
-    private org.softcaster.engine.enums.Frequency getFrequency(org.softcaster.core.data.Frequency frequency) {
-        org.softcaster.engine.enums.Frequency result = org.softcaster.engine.enums.Frequency.NONE;
-        switch (frequency.getCode()) {
-            case "ANNUAL" ->
-                result = org.softcaster.engine.enums.Frequency.ANNUAL;
-            case "SEMI-ANNUAL" ->
-                result = org.softcaster.engine.enums.Frequency.SEMI_ANNUAL;
-            case "E4M" ->
-                result = org.softcaster.engine.enums.Frequency.E4M;
-            case "QUARTERLY" ->
-                result = org.softcaster.engine.enums.Frequency.QUARTERLY;
-            case "BI-MONTHLY" ->
-                result = org.softcaster.engine.enums.Frequency.BI_MONTHLY;
-            case "MONTHLY" ->
-                result = org.softcaster.engine.enums.Frequency.MONTHLY;
-            default -> {
-            }
-        }
-        return result;
     }
 
     private List<org.softcaster.engine.cashflow.CashFlow> cashFlow(MasterData masterData) {

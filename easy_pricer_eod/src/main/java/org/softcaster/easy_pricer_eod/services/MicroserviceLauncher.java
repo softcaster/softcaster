@@ -13,17 +13,40 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_eod.ui.views.ServiceInfo;
 
+class Microservice {
+    private final Process process;
+    private final ServiceInfo serviceInfo;
+    
+    public Microservice(Process process, ServiceInfo serviceInfo) {
+        this.process = process;
+        this.serviceInfo = serviceInfo;
+    }
+
+    /**
+     * @return the process
+     */
+    public Process getProcess() {
+        return process;
+    }
+
+    /**
+     * @return the serviceInfo
+     */
+    public ServiceInfo getServiceInfo() {
+        return serviceInfo;
+    }
+};
+
 @Service
 public class MicroserviceLauncher {
 
     // Mappa per tenere traccia dei processi attivi usando il nome del servizio come chiave
-    private final ConcurrentHashMap<String, Process> activeProcesses = new ConcurrentHashMap<>();
-    private ServiceInfo serviceInfo;
+    private final ConcurrentHashMap<String, Microservice> activeProcesses = new ConcurrentHashMap<>();
     
     public void startService(MicroserviceDescriptor descriptor) {
         String serviceName = descriptor.getServiceName();
 
-        if (activeProcesses.containsKey(serviceName) && activeProcesses.get(serviceName).isAlive()) {
+        if (activeProcesses.containsKey(serviceName) && activeProcesses.get(serviceName).getProcess().isAlive()) {
             System.out.println("Service [" + serviceName + "] is running.");
             return;
         }
@@ -48,9 +71,11 @@ public class MicroserviceLauncher {
 
                 // 4. Avvia il processo e salva nella mappa
                 Process process = pb.start();
-                activeProcesses.put(serviceName, process);
+                Microservice microservice = new Microservice(process,descriptor.getServiceInfo());
+                activeProcesses.put(serviceName, microservice);
                 String info = "Service [" + serviceName + "] started succesfully. PID: " + process.pid();
-                serviceInfo.logInfo(info);
+                if(descriptor.getServiceInfo() != null)
+                    descriptor.getServiceInfo().logInfo(info);
                 LoggerMgr.logInfo(info);
 
                 // 5. Consuma l'output log in tempo reale
@@ -65,12 +90,14 @@ public class MicroserviceLauncher {
                 int exitCode = process.waitFor();
                 activeProcesses.remove(serviceName);
                 info = "Service [" + serviceName + "] interrupted with code: " + exitCode;
-                serviceInfo.logInfo(info);
+                if(descriptor.getServiceInfo() != null)
+                    descriptor.getServiceInfo().logInfo(info);
                 LoggerMgr.logInfo(info);
 
             } catch (Exception e) {
                 String error = "Error starting service [" + serviceName + "]: " + e.getMessage();
-                serviceInfo.logError(error);
+                if(descriptor.getServiceInfo() != null)
+                    descriptor.getServiceInfo().logError(error);
                 LoggerMgr.logError(error);
                 activeProcesses.remove(serviceName);
             }
@@ -78,21 +105,18 @@ public class MicroserviceLauncher {
     }
 
     public void stopService(String serviceName) {
-        Process process = activeProcesses.get(serviceName);
+        Process process = activeProcesses.get(serviceName).getProcess();
         if (process != null && process.isAlive()) {
             process.destroy();
-            activeProcesses.remove(serviceName);
             String info = "Service [" + serviceName + "] interrupted.";
-            serviceInfo.logInfo(info);
+            if(activeProcesses.get(serviceName).getServiceInfo() != null)
+                activeProcesses.get(serviceName).getServiceInfo().logInfo(info);
             LoggerMgr.logInfo(info);
+            activeProcesses.remove(serviceName);
         }
     }
 
     public void stopAllServices() {
         activeProcesses.keySet().forEach(this::stopService);
-    }
-    
-    public void addLogger(ServiceInfo serviceInfo) {
-        this.serviceInfo = serviceInfo;
     }
 }

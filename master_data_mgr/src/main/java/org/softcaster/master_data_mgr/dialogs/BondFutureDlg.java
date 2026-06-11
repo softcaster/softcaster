@@ -13,7 +13,13 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.BondFutureMasterData;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.SettlementType;
+import org.softcaster.engine.enums.AccrualScheduleType;
+import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Form;
+import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.RollConvention;
+import org.softcaster.engine.enums.TypeOfInterest;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.FutBondBean;
 
@@ -634,13 +640,13 @@ public class BondFutureDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getBondFutureMasterData().setTypeOfInterest(masterDataFacade.findTypeOfInterest("FIXED"));
-        bean.getBondFutureMasterData().setForm(masterDataFacade.findForm("BEARER"));
-        bean.getBondFutureMasterData().setFrequency(masterDataFacade.findFrequency("NONE"));
-        bean.getBondFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("UNADJUSTED"));
-        bean.getBondFutureMasterData().setAccrualScheduleType(100);
+        bean.getBondFutureMasterData().setTypeOfInterest(TypeOfInterest.NONE);
+        bean.getBondFutureMasterData().setForm(Form.BEARER);
+        bean.getBondFutureMasterData().setFrequency(Frequency.NONE);
+        bean.getBondFutureMasterData().setRollConvention(RollConvention.UNADJUSTED);
+        bean.getBondFutureMasterData().setAccrualScheduleType(AccrualScheduleType.NONE);
         bean.getBondFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("BFU"));
-        bean.getBondFutureMasterData().setAmortizationSchedule(masterDataFacade.findAmortizationSchedule("SAS"));
+        bean.getBondFutureMasterData().setAmortizationSchedule(AmortizationSchedule.NONE);
 
         bean.getBondFutureMasterData().setBusinessDays(2);
         bean.getBondFutureMasterData().setInterestRate(0.);

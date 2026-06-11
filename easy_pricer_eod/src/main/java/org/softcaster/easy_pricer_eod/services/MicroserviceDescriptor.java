@@ -4,6 +4,8 @@
  */
 package org.softcaster.easy_pricer_eod.services;
 
+import org.softcaster.easy_pricer_eod.ui.views.ServiceInfo;
+
 public interface MicroserviceDescriptor {
 
     String getServiceName();       // Es. "MTM-Service", "Rest-Server"
@@ -13,4 +15,6 @@ public interface MicroserviceDescriptor {
     String getActiveProfile();     // Profilo Spring (es. "dev", "prod")
 
     String[] getAdditionalArgs();  // Argomenti extra (es. "--server.port=8081")
+
+    ServiceInfo getServiceInfo();
 }

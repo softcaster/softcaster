@@ -16,7 +16,13 @@ import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.MmFutureMasterData;
 import org.softcaster.core.data.SettlementType;
+import org.softcaster.engine.enums.AccrualScheduleType;
+import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Form;
+import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.RollConvention;
+import org.softcaster.engine.enums.TypeOfInterest;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.MmFutBean;
 
@@ -701,13 +707,13 @@ public class MmFutureDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getMmFutureMasterData().setTypeOfInterest(masterDataFacade.findTypeOfInterest("FIXED"));
-        bean.getMmFutureMasterData().setForm(masterDataFacade.findForm("BEARER"));
-        bean.getMmFutureMasterData().setFrequency(masterDataFacade.findFrequency("NONE"));
-        bean.getMmFutureMasterData().setRollConvention(masterDataFacade.findRollConvention("UNADJUSTED"));
-        bean.getMmFutureMasterData().setAccrualScheduleType(100);
+        bean.getMmFutureMasterData().setTypeOfInterest(TypeOfInterest.NONE);
+        bean.getMmFutureMasterData().setForm(Form.BEARER);
+        bean.getMmFutureMasterData().setFrequency(Frequency.NONE);
+        bean.getMmFutureMasterData().setRollConvention(RollConvention.UNADJUSTED);
+        bean.getMmFutureMasterData().setAccrualScheduleType(AccrualScheduleType.NONE);
         bean.getMmFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("MFU"));
-        bean.getMmFutureMasterData().setAmortizationSchedule(masterDataFacade.findAmortizationSchedule("SAS"));
+        bean.getMmFutureMasterData().setAmortizationSchedule(AmortizationSchedule.NONE);
 
         bean.getMmFutureMasterData().setBusinessDays(2);
         bean.getMmFutureMasterData().setInterestRate(0.);

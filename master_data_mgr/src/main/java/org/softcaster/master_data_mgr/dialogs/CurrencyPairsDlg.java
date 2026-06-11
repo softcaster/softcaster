@@ -11,7 +11,13 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.YieldCurve;
+import org.softcaster.engine.enums.AccrualScheduleType;
+import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Form;
+import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.RollConvention;
+import org.softcaster.engine.enums.TypeOfInterest;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.ForexBean;
 
@@ -329,13 +335,13 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getForexMasterData().setTypeOfInterest(masterDataFacade.findTypeOfInterest("FIXED"));
-        bean.getForexMasterData().setForm(masterDataFacade.findForm("BEARER"));
-        bean.getForexMasterData().setFrequency(masterDataFacade.findFrequency("NONE"));
-        bean.getForexMasterData().setRollConvention(masterDataFacade.findRollConvention("UNADJUSTED"));
-        bean.getForexMasterData().setAccrualScheduleType(100);
+        bean.getForexMasterData().setTypeOfInterest(TypeOfInterest.NONE);
+        bean.getForexMasterData().setForm(Form.BEARER);
+        bean.getForexMasterData().setFrequency(Frequency.NONE);
+        bean.getForexMasterData().setRollConvention(RollConvention.UNADJUSTED);
+        bean.getForexMasterData().setAccrualScheduleType(AccrualScheduleType.NONE);
         bean.getForexMasterData().setAssetClass(masterDataFacade.findAssetClass("FSP"));
-        bean.getForexMasterData().setAmortizationSchedule(masterDataFacade.findAmortizationSchedule("SAS"));
+        bean.getForexMasterData().setAmortizationSchedule(AmortizationSchedule.NONE);
 
         bean.getForexMasterData().setBusinessDays(2);
         bean.getForexMasterData().setInterestRate(0.);

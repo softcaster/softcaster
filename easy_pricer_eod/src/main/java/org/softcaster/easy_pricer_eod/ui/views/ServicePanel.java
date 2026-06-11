@@ -19,5 +19,4 @@ public interface ServicePanel {
     void refreshStatus();
 
     String getServiceName(); // Deve corrispondere al testo del nodo dell'albero (es. "Rest Engine")
-
 }
