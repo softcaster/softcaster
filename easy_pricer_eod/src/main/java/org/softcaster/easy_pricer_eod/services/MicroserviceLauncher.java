@@ -47,7 +47,10 @@ public class MicroserviceLauncher {
         String serviceName = descriptor.getServiceName();
 
         if (activeProcesses.containsKey(serviceName) && activeProcesses.get(serviceName).getProcess().isAlive()) {
-            System.out.println("Service [" + serviceName + "] is running.");
+            String info = "Service [" + serviceName + "] is running.";
+            if(activeProcesses.get(serviceName).getServiceInfo() != null)
+                activeProcesses.get(serviceName).getServiceInfo().logInfo(info);
+            System.out.println(info);
             return;
         }
 
@@ -77,6 +80,7 @@ public class MicroserviceLauncher {
                 if(descriptor.getServiceInfo() != null)
                     descriptor.getServiceInfo().logInfo(info);
                 LoggerMgr.logInfo(info);
+                System.out.println(info);
 
                 // 5. Consuma l'output log in tempo reale
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -93,12 +97,14 @@ public class MicroserviceLauncher {
                 if(descriptor.getServiceInfo() != null)
                     descriptor.getServiceInfo().logInfo(info);
                 LoggerMgr.logInfo(info);
+                System.out.println(info);
 
             } catch (Exception e) {
                 String error = "Error starting service [" + serviceName + "]: " + e.getMessage();
                 if(descriptor.getServiceInfo() != null)
                     descriptor.getServiceInfo().logError(error);
                 LoggerMgr.logError(error);
+                System.out.println(error);
                 activeProcesses.remove(serviceName);
             }
         }).start();
@@ -112,6 +118,7 @@ public class MicroserviceLauncher {
             if(activeProcesses.get(serviceName).getServiceInfo() != null)
                 activeProcesses.get(serviceName).getServiceInfo().logInfo(info);
             LoggerMgr.logInfo(info);
+            System.out.println(info);
             activeProcesses.remove(serviceName);
         }
     }
