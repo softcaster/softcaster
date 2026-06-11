@@ -21,7 +21,9 @@ import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SettlementTypeDAO;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.core.data.account.GlAccountDAO;
+import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 /**
@@ -55,7 +57,7 @@ public class MasterDataFacade {
     private CurrencyDAO currencyDAO;
     @Autowired
     private CountryDAO countryDAO;
-   @Autowired
+    @Autowired
     private SettlementTypeDAO settlementTypeDAO;
     @Autowired
     private AssetClassDAO assetClassDAO;
@@ -65,6 +67,10 @@ public class MasterDataFacade {
     private BrokerInstrumentRulesDAO brokerInstrumentRulesDAO;
     @Autowired
     private GlAccountDAO glAccountDAO;
+
+    @Autowired
+    @Qualifier("backwardScheduleGenerator")
+    private BackwardScheduleGenerator backwardScheduleGenerator;
 
     /**
      * @return the securityMasterDataDAO
@@ -125,7 +131,7 @@ public class MasterDataFacade {
     public CounterpartyDAO getCounterpartyDAO() {
         return counterpartyDAO;
     }
-                                                                                            
+
     /**
      * @return the countryDAO
      */
@@ -180,5 +186,12 @@ public class MasterDataFacade {
      */
     public GlAccountDAO getGlAccountDAO() {
         return glAccountDAO;
+    }
+
+    /**
+     * @return the backwardScheduleGenerator
+     */
+    public BackwardScheduleGenerator getBackwardScheduleGenerator() {
+        return backwardScheduleGenerator;
     }
 }

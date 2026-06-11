@@ -8,6 +8,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +25,10 @@ import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.Issuer;
 import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
+import org.softcaster.engine.cashflow.BulletAmortizationStrategy;
+import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.DaycountBasis;
@@ -771,6 +777,34 @@ public class BondDlg extends javax.swing.JDialog {
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION) {
             }
+        } else {
+            try {
+                BackwardScheduleGenerator bsg = new BackwardScheduleGenerator();
+                BulletAmortizationStrategy bas = new BulletAmortizationStrategy();
+                LocalDate issueDate = new Date(txtIssueDate.getText()).sqlDate().toLocalDate();
+                LocalDate maturityDate = new Date(txtExpiryDate.getText()).sqlDate().toLocalDate();
+                List<PaymentPeriod> periods = bsg.generate(issueDate,
+                        maturityDate,
+                        org.softcaster.engine.enums.Frequency.SEMI_ANNUAL,
+                        org.softcaster.engine.enums.BusinessDayConvention.FORWARD,
+                        org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA,
+                        null);
+
+                double redemptionPrice;
+                redemptionPrice = Converter.toDouble(txtRedempionPrice.getText(), false);
+                double coupon;
+                coupon = Converter.toDouble(txtCoupon.getText(), false);
+
+                List<CashFlow> flows = bas.generateCashFlows(redemptionPrice, coupon * 0.01,
+                        periods, org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA);
+
+                for (CashFlow flow : flows) {
+                    System.out.println(flow.accrualStart() + " " + flow.accrualEnd() + " " + flow.interest() + " " + flow.principal());
+                }
+            } catch (ParseException ex) {
+                System.getLogger(BondDlg.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            }
+
         }
     }//GEN-LAST:event_btnGenerateCFActionPerformed
 
