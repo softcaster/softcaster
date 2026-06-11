@@ -18,6 +18,11 @@ public class IssuerDAO {
     public Issuer findByIdIssuer(Integer idIssuer) {
         return repository.findByIdIssuer(idIssuer);
     }
+    
+    @Transactional(readOnly = true)
+    public Issuer findByShortIssuerName(String shortIssuerName) {
+        return repository.findByShortIssuerName(shortIssuerName);
+    }
 
     @Transactional
     public Issuer saveOrUpdate(Issuer issuer) {

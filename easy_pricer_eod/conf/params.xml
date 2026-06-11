@@ -6,10 +6,10 @@
     </param>
     <param>
         <name>RSRV</name>
-        <value>E:\tools\projects\DEVELOP\test\rsrv\easy_pricer_srv-1.0.jar;dev</value>
+        <value>C:\tools\projects\DEVELOP\test\rsrv\easy_pricer_srv-1.0.jar;dev</value>
     </param>
     <param>
         <name>PSRV</name>
-        <value>E:\tools\projects\DEVELOP\test\psrv\easy_pricer_proc-1.0.jar;dev</value>
+        <value>C:\tools\projects\DEVELOP\test\psrv\easy_pricer_proc-1.0.jar;dev</value>
     </param>
 </params>

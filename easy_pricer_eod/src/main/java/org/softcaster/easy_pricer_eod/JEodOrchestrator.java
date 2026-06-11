@@ -178,7 +178,9 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JToolBar.Separator();
         btnStart = new javax.swing.JButton();
         btnStop = new javax.swing.JButton();
+        jSeparator4 = new javax.swing.JToolBar.Separator();
         btnSuspend = new javax.swing.JButton();
+        btnRestore = new javax.swing.JButton();
         btnRefresh = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JToolBar.Separator();
         btnClear = new javax.swing.JButton();
@@ -235,17 +237,26 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         btnStop.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnStop.addActionListener(this::btnStopActionPerformed);
         toolBar.add(btnStop);
+        toolBar.add(jSeparator4);
 
-        btnSuspend.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/analytics_16dp.png"))); // NOI18N
-        btnSuspend.setMnemonic('S');
+        btnSuspend.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/move_down_16dp.png"))); // NOI18N
+        btnSuspend.setToolTipText("Suspend Service");
         btnSuspend.setFocusable(false);
         btnSuspend.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnSuspend.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         btnSuspend.addActionListener(this::btnSuspendActionPerformed);
         toolBar.add(btnSuspend);
 
+        btnRestore.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/move_up_16dp.png"))); // NOI18N
+        btnRestore.setToolTipText("Resume Service");
+        btnRestore.setFocusable(false);
+        btnRestore.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnRestore.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnRestore.addActionListener(this::btnRestoreActionPerformed);
+        toolBar.add(btnRestore);
+
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/refresh_16dp.png"))); // NOI18N
-        btnRefresh.setToolTipText("Refresh");
+        btnRefresh.setToolTipText("Refresh Service");
         btnRefresh.setFocusable(false);
         btnRefresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnRefresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -254,7 +265,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         toolBar.add(jSeparator3);
 
         btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/delete_16dp.png"))); // NOI18N
-        btnClear.setToolTipText("Clear");
+        btnClear.setToolTipText("Clear logs");
         btnClear.setFocusable(false);
         btnClear.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnClear.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -314,15 +325,20 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRefreshActionPerformed
 
     private void btnSuspendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSuspendActionPerformed
-        // TODO add your handling code here:
         suspendAction();
     }//GEN-LAST:event_btnSuspendActionPerformed
+
+    private void btnRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestoreActionPerformed
+        // TODO add your handling code here:
+        restoreAction();
+    }//GEN-LAST:event_btnRestoreActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnRefresh;
+    private javax.swing.JButton btnRestore;
     private javax.swing.JButton btnStart;
     private javax.swing.JButton btnStop;
     private javax.swing.JButton btnSuspend;
@@ -333,6 +349,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
+    private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JTree navigator;
@@ -396,6 +413,13 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         ServicePanel activePanel = getActiveCard();
         if (activePanel != null) {
             activePanel.suspendService();
+        }
+    }
+
+    private void restoreAction() {
+        ServicePanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.restoreService();
         }
     }
 }

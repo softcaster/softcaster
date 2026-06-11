@@ -15,6 +15,8 @@ public interface ServicePanel {
     void stopService();
 
     void suspendService();
+    
+    void restoreService();
 
     void refreshStatus();
 

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
+import org.softcaster.easy_pricer_proc.services.EngineStateManager;
 import org.softcaster.easy_pricer_proc.services.FinTxnExecutionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,9 +28,12 @@ public class FinTxnPollingJob {
 
     @Autowired
     FinTxnExecutionService finTxnExecutionService;
+    
     @Autowired
     private FinancialTxnDAO financialTxnDAO;
 
+    @Autowired
+    private EngineStateManager engineStateManager;
     /*
     @Value("${app.scripts.path}")
     private String scriptsPath;
@@ -92,6 +96,11 @@ public class FinTxnPollingJob {
     @Scheduled(fixedDelay = 15000)
     public void pollTrades() {
 
+        if(engineStateManager.isSuspended()) {
+            log.info("=== [PSRV] Service is suspended ===\n");            
+            return;
+        }
+        
         // 1. Elabora le transazioni TO_AMEND
         pollToAmendTrades();
 

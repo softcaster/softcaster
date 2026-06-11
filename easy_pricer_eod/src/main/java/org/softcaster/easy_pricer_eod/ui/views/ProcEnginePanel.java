@@ -135,7 +135,7 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void suspendService() {
-        appendMessage("Sending suspension request via HTTP to Processor service...");
+        appendMessage("Sending suspend request via HTTP to Processor service...");
 
         // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
         new Thread(() -> {
@@ -159,6 +159,40 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
             } catch (Exception e) {
                 // Gestione dell'errore se il server è già spento o irraggiungibile
                 logError("HTTP suspension failed: " + e.getLocalizedMessage());
+
+                // Consiglio: se l'HTTP fallisce (es. server bloccato), proviamo comunque a killare il processo OS
+                appendMessage("Force closing OS process due to HTTP failure...");
+                eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
+            }
+        }).start();
+    }
+
+    @Override
+    public void restoreService() {
+        appendMessage("Sending resume request via HTTP to Processor service...");
+
+        // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
+        new Thread(() -> {
+            try {
+                // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
+                RestClient restClient = RestClient.create();
+
+                // 2. Ipotizziamo l'URL del microservizio REST (es. porta 8080)
+                // Puoi anche recuperare la porta dinamicamente da ParamsMgr se configurata lì
+                String baseUrl = "http://localhost:8081/api/v1/internal/system/resume";
+
+                // 3. Esegui la chiamata POST sincrona
+                restClient.post()
+                        .uri(baseUrl)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .toBodilessEntity(); // Invia la richiesta e attende la risposta (200 OK)
+
+                appendMessage("Service resumed successfully via HTTP.");
+
+            } catch (Exception e) {
+                // Gestione dell'errore se il server è già spento o irraggiungibile
+                logError("HTTP resuming failed: " + e.getLocalizedMessage());
 
                 // Consiglio: se l'HTTP fallisce (es. server bloccato), proviamo comunque a killare il processo OS
                 appendMessage("Force closing OS process due to HTTP failure...");

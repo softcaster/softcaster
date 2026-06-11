@@ -166,4 +166,8 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
             }
         }).start();
     }
+
+    @Override
+    public void restoreService() {
+    }
 }

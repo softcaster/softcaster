@@ -846,11 +846,11 @@ public class BondDlg extends javax.swing.JDialog {
             txtDescription.setText(bean.getSecurityMasterData().getDescription());
             txtIssuePrice.setText(Converter.fromDouble(bean.getSecurityMasterData().getIssuePrice()));
             txtRedempionPrice.setText(Converter.fromDouble(bean.getSecurityMasterData().getRedempionPrice()));
-            txtCoupon.setText(Converter.fromDouble(bean.getSecurityMasterData().getInterestRate() * 100.));
+            txtCoupon.setText(Converter.fromDouble(bean.getSecurityMasterData().getInterestRate()));
             txtIssueDate.setText(new Date(bean.getSecurityMasterData().getIssueDate()).toString());
             txtExpiryDate.setText(new Date(bean.getSecurityMasterData().getMaturityDate()).toString());
             txtFirstCpMaturity.setText(new Date(bean.getSecurityMasterData().getFirstCouponPaymentDate()).toString());
-            txtFirstCpRate.setText(Converter.fromDouble(bean.getSecurityMasterData().getFirstCouponRate() * 100.));
+            txtFirstCpRate.setText(Converter.fromDouble(bean.getSecurityMasterData().getFirstCouponRate()));
             txtCfiCode.setText(bean.getSecurityMasterData().getCfiCode());
             txtFisn.setText(bean.getSecurityMasterData().getFisn());
             txtLei.setText(bean.getSecurityMasterData().getLei());
@@ -1004,7 +1004,7 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setDescription(txtDescription.getText());
             smd.setIssuePrice(Converter.toDouble(txtIssuePrice.getText(), false));
             smd.setRedempionPrice(Converter.toDouble(txtRedempionPrice.getText(), false));
-            smd.setInterestRate(Converter.toDouble(txtCoupon.getText(), false) / 100.);
+            smd.setInterestRate(Converter.toDouble(txtCoupon.getText(), false));
             smd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             smd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
@@ -1020,7 +1020,7 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setIssuer((Issuer) cbIssuer.getSelectedItem());
             smd.setNominalValue(Converter.toDouble(txtNominalValue.getText(), false));
             smd.setFirstCouponPaymentDate(new Date(txtFirstCpMaturity.getText()).sqlDate());
-            smd.setFirstCouponRate(Converter.toDouble(txtFirstCpRate.getText(), false) / 100.);
+            smd.setFirstCouponRate(Converter.toDouble(txtFirstCpRate.getText(), false));
             smd.setCfiCode(txtCfiCode.getText());
             smd.setFisn(txtFisn.getText());
             smd.setLei(txtLei.getText());

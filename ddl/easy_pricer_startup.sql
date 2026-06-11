@@ -204,3 +204,6 @@ INSERT INTO currency_pair(id_currency_pair,code,bcy,ccy,bid,ask)
     (SELECT id_currency FROM currency WHERE iso_code='GBP'),0,0);
 
 -- ----------------------------------------------------------------------------
+INSERT INTO issuer(id_issuer,short_issuer_name,long_issuer_name,country) 
+    VALUES(nextval('issuer_s'),'USDT','United States Department of the Treasury',
+    (SELECT id_country FROM country WHERE alfa_3_code='USA'));

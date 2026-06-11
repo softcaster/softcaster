@@ -24,7 +24,7 @@ public class InternalSystem {
     @PostMapping(value = "/internal/system/suspend")
     public ResponseEntity<String> suspend() {
         // Cambia lo stato centralizzato
-        stateManager.suspend();
+            stateManager.suspend();
         log.info("Service suspended...");
         return new ResponseEntity<>("Service suspended", HttpStatus.OK);
     }
