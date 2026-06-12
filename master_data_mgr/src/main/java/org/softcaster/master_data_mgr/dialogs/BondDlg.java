@@ -798,9 +798,17 @@ public class BondDlg extends javax.swing.JDialog {
                 List<CashFlow> flows = bas.generateCashFlows(redemptionPrice, coupon * 0.01,
                         periods, org.softcaster.engine.enums.DaycountBasis.ACT_ACT_ICMA);
 
+                List<CashFlowItem> items = new ArrayList<>();
+                CashFlowItem item = null;
                 for (CashFlow flow : flows) {
-                    System.out.println(flow.accrualStart() + " " + flow.accrualEnd() + " " + flow.interest() + " " + flow.principal());
+                    item = new CashFlowItem();
+                    item.setStartDate(java.sql.Date.valueOf(flow.accrualStart()));
+                    item.setEndDate(java.sql.Date.valueOf(flow.accrualEnd()));
+                    item.setInterest(flow.interest());
+                    item.setAmount(flow.principal());                    
                 }
+                MasterDataTableModel<CashFlowBean> model = (MasterDataTableModel<CashFlowBean>) tableCF.getModel();
+                this.refreshModel(model, items);
             } catch (ParseException ex) {
                 System.getLogger(BondDlg.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
             }
@@ -1083,8 +1091,7 @@ public class BondDlg extends javax.swing.JDialog {
         }
     }
 
-    private void refreshModel(MasterDataTableModel model) {
-        List<CashFlowItem> items = bean.getSecurityMasterData().getCashFlows();
+    private void refreshModel(MasterDataTableModel model, List<CashFlowItem> items) {
         List<CashFlowBean> cfBeanList = new ArrayList<>();
         CashFlowBean cfb = null;
         for (CashFlowItem item : items) {
@@ -1101,7 +1108,7 @@ public class BondDlg extends javax.swing.JDialog {
         tableCF.setModel(model);
 
         // Popola il model
-        refreshModel(model);
+        refreshModel(model, bean.getSecurityMasterData().getCashFlows());
     }
 
     protected void initTable() {
