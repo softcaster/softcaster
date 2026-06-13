@@ -198,7 +198,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         splitPane.setDividerLocation(200);
 
         sideNav.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        sideNav.setLayout(new java.awt.BorderLayout());
+        sideNav.setLayout(new java.awt.BorderLayout(10, 10));
 
         sideNavScrollPane.setViewportView(navigator);
 
@@ -207,7 +207,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         splitPane.setLeftComponent(sideNav);
 
         mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 15, 5, 5));
-        mainPanel.setLayout(new java.awt.CardLayout());
+        mainPanel.setLayout(new java.awt.CardLayout(10, 10));
         splitPane.setRightComponent(mainPanel);
 
         getContentPane().add(splitPane, java.awt.BorderLayout.CENTER);

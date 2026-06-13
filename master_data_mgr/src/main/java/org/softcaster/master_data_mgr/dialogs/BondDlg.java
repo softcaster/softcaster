@@ -805,7 +805,8 @@ public class BondDlg extends javax.swing.JDialog {
                     item.setStartDate(java.sql.Date.valueOf(flow.accrualStart()));
                     item.setEndDate(java.sql.Date.valueOf(flow.accrualEnd()));
                     item.setInterest(flow.interest());
-                    item.setAmount(flow.principal());                    
+                    item.setAmount(flow.principal());   
+                    items.add(item);
                 }
                 MasterDataTableModel<CashFlowBean> model = (MasterDataTableModel<CashFlowBean>) tableCF.getModel();
                 this.refreshModel(model, items);

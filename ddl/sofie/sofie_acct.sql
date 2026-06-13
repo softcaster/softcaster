@@ -129,3 +129,14 @@ ALTER TABLE accounting_events OWNER TO sofie;
 CREATE SEQUENCE accounting_events_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE accounting_events_s OWNER TO sofie;
 
+/*
+DSL significa Domain Specific Language, cioè:
+un linguaggio progettato per descrivere un problema specifico di un dominio.
+Nel tuo caso il dominio è:
+Contabilità finanziaria / Posting Engine
+e quindi Groovy non viene usato come linguaggio generico, ma come linguaggio per esprimere:
+quali conti movimentare
+con quali importi
+in quali eventi
+JournalDsl è l'API che esponi a Groovy
+*/

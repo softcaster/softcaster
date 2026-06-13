@@ -5,11 +5,11 @@
 package org.softcaster.core.data.converters;
 
 import jakarta.persistence.Converter;
-import org.softcaster.engine.enums.EventType;
+import org.softcaster.engine.enums.TxnStatus;
 
 @Converter(autoApply = true)
-public class AcctEventTypeConverter extends AbstractIdentifiableEnumConverter<EventType> {
-    public AcctEventTypeConverter() {
-        super(EventType.class);
+public class TxnStatusConverter  extends AbstractIdentifiableEnumConverter<TxnStatus> {
+    public TxnStatusConverter() {
+        super(TxnStatus.class);
     }
 }

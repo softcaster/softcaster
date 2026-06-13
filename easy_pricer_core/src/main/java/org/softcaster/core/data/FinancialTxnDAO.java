@@ -3,15 +3,12 @@ package org.softcaster.core.data;
 import java.util.List;
 import jakarta.annotation.Resource;
 import org.softcaster.engine.enums.DaycountBasis;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("financialTxnDAO")
 public class FinancialTxnDAO {
-
-    @Autowired
-    private TxnStatusDAO txnStatusDAO;
 
     @Resource
     private FinancialTxnRepository repository;
@@ -66,7 +63,7 @@ public class FinancialTxnDAO {
         // Carico txn
         FinancialTxn financialTxn = findByIdFinancialTxn(idFinancialTxn);
         // Setto a TO_CANCEL
-        financialTxn.setTxnStatus(txnStatusDAO.findByCode("TO_CANCEL"));
+        financialTxn.setTxnStatus(TxnStatus.TO_CANCEL);
         // Salvo
         return saveOrUpdate(financialTxn);
     }

@@ -12,6 +12,7 @@ import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.core.data.PositionMasterDataDAO;
+import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +49,9 @@ public class FinancialTxnMapper {
                 entity.getMasterData() != null ? entity.getMasterData().getIdMasterData() : null,
                 entity.getMasterData() != null ? entity.getMasterData().getCode() : null,
                 entity.getMasterData() != null ? entity.getMasterData().getDescription() : null,
-                entity.getTxnStatus() != null ? entity.getTxnStatus() : null,
+                entity.getTxnStatus() != null ? entity.getTxnStatus().getId() : null,
+                entity.getTxnStatus() != null ? entity.getTxnStatus().getCode() : null,
+                entity.getTxnStatus() != null ? entity.getTxnStatus().getDescription() : null,
                 entity.getRefId(),
                 entity.getTxnSide(),
                 entity.getTradeDate(),
@@ -67,8 +70,8 @@ public class FinancialTxnMapper {
 
         // Sia in caso di nuova transazione che di modifica creo una nuova
         // transazione, non chiamo nessuna findByIdFinancialTxn altrimenti
-        // Hibernate cacha la nuova transazione ed oni modifica si riflette
-        // anche sulla vecchia salvata su sb
+        // Hibernate cacha la nuova transazione ed ogni modifica si riflette
+        // anche sulla vecchia salvata su db
         financialTxn = new FinancialTxn();
         financialTxn.setIdFinancialTxn(0);
         // Setto oggetti complessi
@@ -85,7 +88,8 @@ public class FinancialTxnMapper {
         financialTxn.setValueDate(financialTxnDto.tradeDate());
         financialTxn.setSettlement(financialTxnDto.tradeDate());
         financialTxn.setTxnSide(financialTxnDto.txnSide());
-
+        TxnStatus status = TxnStatus.fromId(financialTxnDto.txnStatusId());
+        financialTxn.setTxnStatus(status);
         // Aggiorno counterparty, position, segno ...
         return financialTxn;
     }

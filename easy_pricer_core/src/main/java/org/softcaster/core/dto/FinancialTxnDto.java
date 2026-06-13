@@ -4,8 +4,6 @@
  */
 package org.softcaster.core.dto;
 
-import org.softcaster.core.data.TxnStatus;
-
 /**
  *
  * @author ep
@@ -24,7 +22,9 @@ public record FinancialTxnDto(
         Integer masterDataId,
         String masterDataCode,
         String masterDataDesc,
-        TxnStatus txnStatus,
+        Integer txnStatusId,
+        String txnStatusCode,
+        String txnStatusDescription,
         Integer refId,
         Short txnSide,
         java.sql.Date tradeDate,

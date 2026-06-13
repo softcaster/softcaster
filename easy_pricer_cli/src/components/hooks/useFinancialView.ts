@@ -5,7 +5,7 @@ import { useActions } from '../../context/ActionContext';
 // Importa solo i tipi comuni a TUTTE le viste
 import type {
     PositionMasterData,
-    Counterparty, TxnStatus
+    Counterparty
 } from '../data/schema';
 
 import type {
@@ -75,10 +75,10 @@ export function useFinancialView<TMaster>(
         }
     };
 
-    const getInitialTxnStatus = (txnId: number, status: TxnStatus | null): TxnStatus | null => {
+    const getInitialTxnStatus = (txnId: number, status: number | null): number | null => {
         // Sicuramente nuova transazione
         if (txnId == 0) {
-            return { idTxnStatus: 0, code: "PENDING", description: "" };
+            return 1;
         }
 
         if (!status)
@@ -87,11 +87,11 @@ export function useFinancialView<TMaster>(
         // Possibili 2 casi accettabili
         // 1) PENDING transazione non ancora processata
         // 2) EXECUTED transazione processata
-        switch (status.code) {
-            case "PENDING":
+        switch (status) {
+            case 1: // PENDING
                 return status;
-            case "EXECUTED":
-                return { idTxnStatus: 0, code: "TO_AMEND", description: "" };
+            case 3: // EXECUTED
+                return 5; // TO_AMEND
             default:
                 return null;
         }
@@ -103,8 +103,8 @@ export function useFinancialView<TMaster>(
         try {
 
             // setto status transazione
-            selectedTrade.txnStatus = getInitialTxnStatus(selectedTrade.financialTxnId, selectedTrade.txnStatus);
-            if (selectedTrade.txnStatus == null) {
+            selectedTrade.txnStatusId = getInitialTxnStatus(selectedTrade.financialTxnId, selectedTrade.txnStatusId);
+            if (selectedTrade.txnStatusId == null) {
                 showToast({
                     severity: 'warn',
                     summary: 'Warning',

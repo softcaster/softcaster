@@ -4,18 +4,9 @@
  */
 package org.softcaster.easy_pricer_proc.services;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javax.script.Bindings;
-import javax.script.Compilable;
+import java.time.LocalDateTime;
 import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -23,14 +14,16 @@ import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
-import org.softcaster.core.data.TxnStatusDAO;
-import org.softcaster.easy_pricer_proc.accounting.context.AccountingContext;
-import org.softcaster.easy_pricer_proc.accounting.context.JournalDsl;
-import org.softcaster.easy_pricer_proc.accounting.enums.AccountingEvent;
+import org.softcaster.core.data.account.AccountingEvent;
+import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
+import org.softcaster.engine.enums.AccountingEventStatus;
+import org.softcaster.engine.enums.EventSourceType;
+import org.softcaster.engine.enums.EventType;
 import org.softcaster.engine.enums.TxnStatus;
+import static org.softcaster.engine.enums.TxnStatus.EXECUTED;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,9 +42,9 @@ public class FinTxnExecutionService {
     @Autowired
     private ProcessorDispatcher processorDispatcher;
     @Autowired
-    private TxnStatusDAO txnStatusDAO;
-    @Autowired
     private ScriptEngine groovyEngine;
+    @Autowired
+    AccountingEventDAO accountingEventDAO;
 
     public void executeTxn(Integer txnId) {
         FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
@@ -89,9 +82,11 @@ public class FinTxnExecutionService {
     @Transactional//(propagation = Propagation.REQUIRES_NEW)
     protected void updateStatus(Integer txnId, TxnStatus status) {
 
-        FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
-        txn.setTxnStatus(txnStatusDAO.findByCode(status.getCode()));
+        FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
+        txn.setTxnStatus(status);
         financialTxnDAO.saveOrUpdate(txn);
+
+        postElabFinancialTxn(txn);
     }
 
     @Transactional//(propagation = Propagation.REQUIRES_NEW)
@@ -122,8 +117,6 @@ public class FinTxnExecutionService {
 
     protected void elabFinancialTxn(FinancialTxn txn, PositionDetail position) {
 
-        postElabFinancialTxn(txn);
-
         ITxnProcessor processor = processorDispatcher.dispatch(txn.getMasterData().getAssetClass().getCode());
         if (processor != null) {
             // Serve per calcolo unrealizedPnL
@@ -134,11 +127,43 @@ public class FinTxnExecutionService {
         }
     }
 
+    private void postElabFinancialTxn(FinancialTxn txn) {
+        if (txn == null) {
+            throw new TxnProcessingException("Invalid Txn");
+        }
+        try {
+            // Genero AccountingEvent
+            AccountingEvent event = new AccountingEvent();
+            switch (txn.getTxnStatus()) {
+                case EXECUTED ->
+                    event.setEventType(EventType.TRADE_EXECUTED);
+                case AMENDED ->
+                    event.setEventType(EventType.TRADE_AMENDED);
+                case CANCELLED ->
+                    event.setEventType(EventType.TRADE_CANCELED);
+                default -> {
+                    throw new TxnProcessingException("Invalid Status: " + txn.getTxnStatus().getCode());
+                }
+            }
+            event.setSourceId(txn.getIdFinancialTxn());
+            event.setEventStatus(AccountingEventStatus.NEW);
+            event.setSourceType(EventSourceType.TRADE);
+            event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "]");
+            event.setCreatedAt(LocalDateTime.now());
+            event.setGeneratedBy(txn.getMasterData().getIdMasterData());
+            event.setGeneratedRef("");
+            accountingEventDAO.saveOrUpdate(event);
+        } catch (Exception ex) {
+            LoggerMgr.logInfo(ex.getLocalizedMessage());
+            throw new TxnProcessingException("Invalid Status: " + txn.getTxnStatus().getCode());
+        }
+    }
+    /*
     private boolean postElabFinancialTxn(FinancialTxn txn) {
         try {
             String userDir = System.getProperty("user.dir");
             Path scriptPath;
-            log.info("=== [BATCH START] preElabFinancialTxn ===");
+            log.info("=== [BATCH START] postElabFinancialTxn ===");
 
             // Se l'IDE si trova già dentro "easy_pricer_proc", il percorso parte da "./scripts/"
             if (userDir.endsWith("easy_pricer_proc")) {
@@ -175,7 +200,7 @@ public class FinTxnExecutionService {
             // Usiamo il motore globale, ma isoliamo i dati della transazione corrente
             // in un oggetto Bindings locale al thread di esecuzione.
             JournalDsl dsl = new JournalDsl();
-            AccountingContext ctx = new AccountingContext(txn, dsl, AccountingEvent.TRADE_BOOKED);
+            AccountingContext ctx = new AccountingContext(txn, dsl, null);
             Bindings bindings = new SimpleBindings();
             bindings.put("ctx", ctx);
 
@@ -194,4 +219,5 @@ public class FinTxnExecutionService {
             return false;
         }
     }
+     */
 }

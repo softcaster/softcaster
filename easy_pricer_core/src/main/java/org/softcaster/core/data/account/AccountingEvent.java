@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import org.softcaster.core.data.converters.AcctEventTypeConverter;
 import org.softcaster.engine.enums.AccountingEventStatus;
-import org.softcaster.engine.enums.AccountingEventType;
+import org.softcaster.engine.enums.EventType;
 import org.softcaster.engine.enums.EventSourceType;
 
 @Entity
@@ -29,7 +29,7 @@ public class AccountingEvent implements Serializable {
     
     @Convert(converter = AcctEventTypeConverter.class)
     @Column(name = "event_type")
-    private AccountingEventType eventType;
+    private EventType eventType;
     
     @Convert(converter = AcctEventTypeConverter.class)
     @Column(name = "event_status")
@@ -91,14 +91,14 @@ public class AccountingEvent implements Serializable {
     /**
      * @return the eventType
      */
-    public AccountingEventType getEventType() {
+    public EventType getEventType() {
         return eventType;
     }
 
     /**
      * @param eventType the eventType to set
      */
-    public void setEventType(AccountingEventType eventType) {
+    public void setEventType(EventType eventType) {
         this.eventType = eventType;
     }
 

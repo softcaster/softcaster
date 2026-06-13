@@ -24,7 +24,7 @@ export const GenericTxnTable = ({ data, selection, onSelectionChange }: GenericT
             <DataTable
                 value={data}
                  rowClassName={(rowData: FinancialTxnDto) => ({
-                    'font-italic opacity-60': (rowData.txnStatus?.code === 'CANCELLED' || rowData.txnStatus?.code === 'CANCELLED_EXECUTED')
+                    'font-italic opacity-60': (rowData.txnStatusCode === 'CANCELLED' || rowData.txnStatusCode === 'CANCELLED_EXECUTED')
                 })}
                 // 1. Allineato alla chiave primaria definita nella export interface
                 dataKey="financialTxnId"
@@ -49,7 +49,7 @@ export const GenericTxnTable = ({ data, selection, onSelectionChange }: GenericT
                     sortable
                 />
 
-                <Column field="txnStatus" header="Status" body={(rowData: FinancialTxnDto) => rowData.txnStatus?.description || '-'} sortable />
+                <Column field="txnStatus" header="Status" body={(rowData: FinancialTxnDto) => rowData.txnStatusDescription || '-'} sortable />
 
                 <Column field="masterDataCode" header="Code" body={(rowData: FinancialTxnDto) => rowData.masterDataCode || '-'} sortable />
 

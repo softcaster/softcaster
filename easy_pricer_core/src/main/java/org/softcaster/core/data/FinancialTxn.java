@@ -3,6 +3,7 @@ package org.softcaster.core.data;
 import jakarta.persistence.CascadeType;
 import java.io.Serializable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +21,8 @@ import java.util.List;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.TxnStatusConverter;
+import org.softcaster.engine.enums.TxnStatus;
 
 @Entity
 @Table(name = "financial_txn")
@@ -45,8 +48,8 @@ public class FinancialTxn implements Serializable {
     @JoinColumn(name = "master_data", nullable = true)
     private MasterData masterData;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "txn_status", nullable = true)
+    @Convert(converter = TxnStatusConverter.class)
+    @Column(name = "txn_status")
     private TxnStatus txnStatus;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

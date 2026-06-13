@@ -8,7 +8,7 @@ package org.softcaster.engine.enums;
  *
  * @author softc
  */
-public enum AccountingEventType implements IdentifiableEnum {
+public enum EventType implements IdentifiableEnum {
 
     TRADE_EXECUTED(1, "TRADE_EXECUTED", "Trade Executed"),
     TRADE_AMENDED(2, "TRADE_AMENDED", "Trade Amended"),
@@ -24,7 +24,7 @@ public enum AccountingEventType implements IdentifiableEnum {
     private final String code;
     private final String description;
 
-    AccountingEventType(int id, String code, String description) {
+    EventType(int id, String code, String description) {
         this.id = id;
         this.code = code;
         this.description = description;
@@ -51,12 +51,12 @@ public enum AccountingEventType implements IdentifiableEnum {
         return description;
     }
     
-    public static AccountingEventType fromId(int id) {
-        return IdentifiableEnum.fromId(AccountingEventType.class, id);
+    public static EventType fromId(int id) {
+        return IdentifiableEnum.fromId(EventType.class, id);
     }
 
-    public static AccountingEventType fromCode(String code) {
-        return IdentifiableEnum.fromCode(AccountingEventType.class, code);
+    public static EventType fromCode(String code) {
+        return IdentifiableEnum.fromCode(EventType.class, code);
     }
 
 }

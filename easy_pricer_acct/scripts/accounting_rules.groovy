@@ -1,7 +1,7 @@
 
-import org.softcaster.easy_pricer_proc.accounting.enums.AccountingEvent
+import org.softcaster.engine.enums.EventType
 
-if (ctx.accountingEvent == AccountingEvent.TRADE_BOOKED) {
+if (ctx.eventType == EventType.TRADE_EXECUTED) {
 
     ctx.journal.debit(
         "BOND_POSITION",

@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Objects;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
-import org.softcaster.core.data.TxnStatusDAO;
 import org.softcaster.core.dto.FinancialTxnDto;
 import org.softcaster.core.dto.FinancialTxnMapper;
 import org.softcaster.engine.enums.TxnStatus;
@@ -33,8 +32,6 @@ public class FinancialTxnService {
     @Autowired
     private FinancialTxnDAO dao;
     @Autowired
-    private TxnStatusDAO txnStatusDAO;
-    @Autowired
     private FinancialTxnMapper mapper;
 
     public FinancialTxnDto saveOrUpdateTransaction(FinancialTxnDto newTxnDto) {
@@ -43,10 +40,14 @@ public class FinancialTxnService {
 
             // 1. Recuperiamo l'oggetto DTO originale prima che il mapper lo modifichi in memoria
             FinancialTxnDto oldTxnDto = null;
+            // Devo salvare la version per il caso di modifica di una
+            // transazione PENDING, vedi commento alla funzione fromDto
+            Integer version = null;
             if (newTxnDto.financialTxnId() > 0) {
                 FinancialTxn databaseTxn = dao.findByIdFinancialTxn(newTxnDto.financialTxnId());
                 if (databaseTxn != null) {
                     oldTxnDto = mapper.toDto(databaseTxn);
+                    version = databaseTxn.getVersion();
                 }
             }
 
@@ -56,14 +57,21 @@ public class FinancialTxnService {
             if (financialTxn == null) {
                 throw new IllegalArgumentException("Null Transaction");
             }
-            TxnStatus txnStatusEnum = TxnStatus.fromCode(newTxnDto.txnStatus().getCode());
-            switch (txnStatusEnum) {
+            TxnStatus txnStatus = TxnStatus.fromId(newTxnDto.txnStatusId());
+            switch (txnStatus) {
                 case PENDING -> {
-                    // Nuova transazione inserita per la prima volta
-                    financialTxn.setIdFinancialTxn(null);
-                    financialTxn.setTxnStatus(txnStatusDAO.findByCode("PENDING"));
-                    financialTxn.setValueDate(financialTxn.getTradeDate());
-
+                    // NB vedi commenti in fromDto per questo controllo. 
+                    // Se oldTxnDto = null allora nuova transazione inserita per la prima volta
+                    // Se != null allora modifica di una transazione pending e basta semplicemente
+                    // assegnare il txnId e salvarla
+                    if (oldTxnDto == null) {
+                        financialTxn.setIdFinancialTxn(null);
+                        financialTxn.setTxnStatus(TxnStatus.PENDING);
+                        financialTxn.setValueDate(financialTxn.getTradeDate());
+                    } else {
+                       financialTxn.setIdFinancialTxn(oldTxnDto.financialTxnId()); 
+                       financialTxn.setVersion(version);
+                    }
                     // Usiamo il DAO coerentemente con il resto dello switch
                     dao.saveOrUpdate(financialTxn);
                 }
@@ -71,17 +79,16 @@ public class FinancialTxnService {
                     // Se la modifica tocca dati contabili o strutturali importanti
                     if (!updateOnly(oldTxnDto, newTxnDto)) {
 
-                        // PASSO A: Aggiorna lo stato del vecchio record a TO_CANCEL
+                        // lo stato del vecchio record a TO_AMEND
                         FinancialTxn oldTxnToCancel = dao.findByIdFinancialTxn(oldTxnDto.financialTxnId());
-                        oldTxnToCancel.setTxnStatus(txnStatusDAO.findByCode(TxnStatus.TO_AMEND.getCode()));
+                        oldTxnToCancel.setTxnStatus(TxnStatus.TO_AMEND);
                         dao.saveOrUpdate(oldTxnToCancel);
 
                         // Crea un record Java nuovo (Nasce slegato dalla sessione di Hibernate)
                         financialTxn.setIdFinancialTxn(null); // Forza la INSERT di una riga nuova
                         financialTxn.setRefId(oldTxnToCancel.getIdFinancialTxn()); // Copia l'ID originale (es. 34)
-                        financialTxn.setTxnStatus(txnStatusDAO.findByCode(TxnStatus.PENDING.getCode())); // Imposta Stato 10
+                        financialTxn.setTxnStatus(TxnStatus.PENDING);
 
-                        // Salva la nuova riga indipendente. Il trigger leggerà ref_id = 34 in sicurezza
                         dao.saveOrUpdate(financialTxn);
                     } else {
                         // Modifica superficiale (es. solo descrizione): aggiorna il record esistente senza stornare
