@@ -5,8 +5,6 @@
 package org.softcaster.easy_pricer_proc.services;
 
 import java.time.LocalDateTime;
-import javax.script.CompiledScript;
-import javax.script.ScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -32,8 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class FinTxnExecutionService {
 
     private static final Logger log = LoggerFactory.getLogger(FinTxnExecutionService.class);
-    private CompiledScript cachedScript = null;
-    private long lastScriptModifiedTime = 0;
 
     @Autowired
     private FinancialTxnDAO financialTxnDAO;
@@ -41,8 +37,6 @@ public class FinTxnExecutionService {
     private PositionDetailDAO positionRepository;
     @Autowired
     private ProcessorDispatcher processorDispatcher;
-    @Autowired
-    private ScriptEngine groovyEngine;
     @Autowired
     AccountingEventDAO accountingEventDAO;
 
@@ -64,6 +58,7 @@ public class FinTxnExecutionService {
         }
 
         if (newStatus == TxnStatus.REJECTED) {
+            log.error("Invalid Status " + txn.getTxnStatus().getCode());
             throw new TxnProcessingException("Invalid Status");
         }
 
@@ -73,6 +68,7 @@ public class FinTxnExecutionService {
 
         } catch (Exception e) {
             updateStatus(txnId, TxnStatus.REJECTED);
+            log.error(e.getLocalizedMessage());
             throw e;
         }
     }
@@ -123,12 +119,14 @@ public class FinTxnExecutionService {
             position.setMarketPrice(txn.getPrice());
             processor.process(txn, position);
         } else {
+            log.error("Invalid ITxnProcessor");
             throw new TxnProcessingException("Invalid ITxnProcessor");
         }
     }
 
     private void postElabFinancialTxn(FinancialTxn txn) {
         if (txn == null) {
+            log.error("Invalid Txn");
             throw new TxnProcessingException("Invalid Txn");
         }
         try {
@@ -155,69 +153,8 @@ public class FinTxnExecutionService {
             accountingEventDAO.saveOrUpdate(event);
         } catch (Exception ex) {
             LoggerMgr.logInfo(ex.getLocalizedMessage());
+            log.error(ex.getLocalizedMessage());
             throw new TxnProcessingException("Invalid Status: " + txn.getTxnStatus().getCode());
         }
     }
-    /*
-    private boolean postElabFinancialTxn(FinancialTxn txn) {
-        try {
-            String userDir = System.getProperty("user.dir");
-            Path scriptPath;
-            log.info("=== [BATCH START] postElabFinancialTxn ===");
-
-            // Se l'IDE si trova già dentro "easy_pricer_proc", il percorso parte da "./scripts/"
-            if (userDir.endsWith("easy_pricer_proc")) {
-                scriptPath = Paths.get(userDir, "scripts", "accounting_rules.groovy");
-            } else {
-                // Se l'IDE è avviato dalla radice globale, aggiungiamo il nome del sotto-modulo
-                scriptPath = Paths.get(userDir, "easy_pricer_proc", "scripts", "accounting_rules.groovy");
-            }
-            File file = scriptPath.toFile();
-            long currentModifiedTime = file.lastModified();
-
-            // CONTROLLO TIMESTAMP: Rilanciamo la compilazione solo se il file è cambiato o non è mai stato caricato
-            if (cachedScript == null || currentModifiedTime > lastScriptModifiedTime) {
-                log.info("Loading the Groovy script...");
-
-                if (groovyEngine instanceof Compilable compilableEngine) {
-                    try (FileReader reader = new FileReader(file)) {
-                        // Compiliamo lo script e lo salviamo in cache
-                        this.cachedScript = compilableEngine.compile(reader);
-                        this.lastScriptModifiedTime = currentModifiedTime;
-                    } catch (IOException ex) {
-                        LoggerMgr.logError(ex.getLocalizedMessage());
-                    }
-                } else {
-                    throw new ScriptException("The scripting engine does not support source compilation.");
-                }
-            }
-            // Se il file non esiste sul disco, interrompiamo subito
-            if (!file.exists()) {
-                log.error("Script not found in: " + file.getAbsolutePath());
-                LoggerMgr.logError("Script not found in: " + file.getAbsolutePath());
-                return false;
-            }
-            // Usiamo il motore globale, ma isoliamo i dati della transazione corrente
-            // in un oggetto Bindings locale al thread di esecuzione.
-            JournalDsl dsl = new JournalDsl();
-            AccountingContext ctx = new AccountingContext(txn, dsl, null);
-            Bindings bindings = new SimpleBindings();
-            bindings.put("ctx", ctx);
-
-            bindings.put(
-                    ScriptEngine.FILENAME,
-                    scriptPath.toAbsolutePath().toString()
-            );
-
-            groovyEngine.eval(new FileReader(scriptPath.toFile()), bindings);
-            log.info("Script result: " + dsl.build());
-
-            return true;
-
-        } catch (FileNotFoundException | ScriptException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-            return false;
-        }
-    }
-     */
 }

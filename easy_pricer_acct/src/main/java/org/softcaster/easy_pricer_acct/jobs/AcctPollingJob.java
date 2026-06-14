@@ -4,24 +4,17 @@
  */
 package org.softcaster.easy_pricer_acct.jobs;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javax.script.Bindings;
-import javax.script.Compilable;
-import javax.script.CompiledScript;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
+import org.softcaster.easy_pricer_acct.services.TradeAccountingEventService;
+import jakarta.transaction.Transactional;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.easy_pricer_acct.context.AccountingContext;
-import org.softcaster.easy_pricer_acct.context.JournalDsl;
+import org.softcaster.core.data.account.AccountingEvent;
+import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.easy_pricer_acct.services.EngineStateManager;
+import org.softcaster.engine.enums.AccountingEventStatus;
+import org.softcaster.engine.enums.EventSourceType;
 import org.softcaster.engine.enums.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,80 +24,91 @@ import org.springframework.stereotype.Component;
 public class AcctPollingJob {
 
     private static final Logger log = LoggerFactory.getLogger(AcctPollingJob.class);
-    private CompiledScript cachedScript = null;
-    private long lastScriptModifiedTime = 0;
 
     @Autowired
     private EngineStateManager engineStateManager;
+
     @Autowired
-    private ScriptEngine groovyEngine;
+    private AccountingEventDAO accountingEventDAO;
 
-    private void loadScript() {
-        try {
-            String userDir = System.getProperty("user.dir");
-            Path scriptPath;
-            log.info("=== [BATCH START]  ===");
+    @Autowired
+    private TradeAccountingEventService tradeAccountingEventService;
 
-            // Se l'IDE si trova già dentro "easy_pricer_proc", il percorso parte da "./scripts/"
-            if (userDir.endsWith("easy_pricer_proc")) {
-                scriptPath = Paths.get(userDir, "scripts", "accounting_rules.groovy");
-            } else {
-                // Se l'IDE è avviato dalla radice globale, aggiungiamo il nome del sotto-modulo
-                scriptPath = Paths.get(userDir, "easy_pricer_proc", "scripts", "accounting_rules.groovy");
+
+    private void elabAmendedTradeEvents(List<AccountingEvent> pendingEvents) {
+
+    }
+
+    private void elabCancelledTradeEvents(List<AccountingEvent> pendingEvents) {
+
+    }
+
+    private void elabExecutedTradeEvents(List<AccountingEvent> pendingEvents) {
+        for (AccountingEvent event : pendingEvents) {
+            try {
+                tradeAccountingEventService.processEvent(event);
+            } catch (Exception e) {
+                log.error("### ERROR ID {}: {}", event.getEventId(), e.getMessage());
+                LoggerMgr.logError(e.getLocalizedMessage());
             }
-            File file = scriptPath.toFile();
-            long currentModifiedTime = file.lastModified();
-
-            // CONTROLLO TIMESTAMP: Rilanciamo la compilazione solo se il file è cambiato o non è mai stato caricato
-            if (cachedScript == null || currentModifiedTime > lastScriptModifiedTime) {
-                log.info("Loading the Groovy script...");
-
-                if (groovyEngine instanceof Compilable compilableEngine) {
-                    try (FileReader reader = new FileReader(file)) {
-                        // Compiliamo lo script e lo salviamo in cache
-                        this.cachedScript = compilableEngine.compile(reader);
-                        this.lastScriptModifiedTime = currentModifiedTime;
-                    } catch (IOException ex) {
-                        LoggerMgr.logError(ex.getLocalizedMessage());
-                    }
-                } else {
-                    throw new ScriptException("The scripting engine does not support source compilation.");
-                }
-            }
-            // Se il file non esiste sul disco, interrompiamo subito
-            if (!file.exists()) {
-                log.error("Script not found in: " + file.getAbsolutePath());
-                LoggerMgr.logError("Script not found in: " + file.getAbsolutePath());
-                return;
-            }
-            // Usiamo il motore globale, ma isoliamo i dati della transazione corrente
-            // in un oggetto Bindings locale al thread di esecuzione.
-            JournalDsl dsl = new JournalDsl();
-            AccountingContext ctx = new AccountingContext(null, dsl, EventType.TRADE_EXECUTED);
-            Bindings bindings = new SimpleBindings();
-            bindings.put("ctx", ctx);
-
-            bindings.put(
-                    ScriptEngine.FILENAME,
-                    scriptPath.toAbsolutePath().toString()
-            );
-
-            groovyEngine.eval(new FileReader(scriptPath.toFile()), bindings);
-            log.info("Script result: " + dsl.build());
-
-        } catch (FileNotFoundException | ScriptException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
         }
+    }
 
+    private void poolPendingAmendedTradeEvents() {
+        List<AccountingEvent> pendingEvents = accountingEventDAO.findTradeEvents(EventSourceType.TRADE,
+                EventType.TRADE_AMENDED, AccountingEventStatus.NEW);
+
+        if (!pendingEvents.isEmpty()) {
+            log.info("=== [BATCH START] find {} AMENDED transaction(s) ===", pendingEvents.size());
+            elabAmendedTradeEvents(pendingEvents);
+            log.info("=== [BATCH END] Processing completed ===\n");
+        }
+    }
+
+    private void poolPendingCancelledTradeEvents() {
+        List<AccountingEvent> pendingEvents = accountingEventDAO.findTradeEvents(EventSourceType.TRADE,
+                EventType.TRADE_CANCELED, AccountingEventStatus.NEW);
+
+        if (!pendingEvents.isEmpty()) {
+            log.info("=== [BATCH START] find {} CANCELLED transaction(s) ===", pendingEvents.size());
+            elabCancelledTradeEvents(pendingEvents);
+            log.info("=== [BATCH END] Processing completed ===\n");
+        }
+    }
+
+    private void poolPendingExecutedTradeEvents() {
+        List<AccountingEvent> pendingEvents = accountingEventDAO.findTradeEvents(EventSourceType.TRADE,
+                EventType.TRADE_EXECUTED, AccountingEventStatus.NEW);
+
+        if (!pendingEvents.isEmpty()) {
+            log.info("=== [BATCH START] find {} EXECUTED transaction(s) ===", pendingEvents.size());
+            elabExecutedTradeEvents(pendingEvents);
+            log.info("=== [BATCH END] Processing completed ===\n");
+        }
+    }
+
+    @Transactional
+    protected void pollPendingAcctingTradeEvents() {
+        /*
+        List<EventType> targetTypes = List.of(
+                EventType.TRADE_EXECUTED,
+                EventType.TRADE_AMENDED,
+                EventType.TRADE_CANCELED
+        );
+         */
+        poolPendingAmendedTradeEvents();
+        poolPendingCancelledTradeEvents();
+        poolPendingExecutedTradeEvents();
     }
 
     // Esegue il polling ogni 15 secondi (15000 millisecondi)
     @Scheduled(fixedDelay = 15000)
-    public void pollTrades() {
+    public void pollAccountinEvents() {
         if (engineStateManager.isSuspended()) {
             log.info("=== [PSRV] Service is suspended ===\n");
             return;
         }
-        loadScript();
+        //loadScript();
+        pollPendingAcctingTradeEvents();
     }
 }

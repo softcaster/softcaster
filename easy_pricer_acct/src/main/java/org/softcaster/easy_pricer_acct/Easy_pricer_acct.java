@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 // Scansiona tutti i componenti nei package org.softcaster (sia proc che core)
 @ComponentScan(basePackages = {
-    "org.softcaster.easy_pricer_proc",
+    "org.softcaster.easy_pricer_acct",
     "org.softcaster.easy_pricer_mds_core",
     "org.softcaster.core.data", // Il pacchetto della libreria core
     "org.softcaster.engine" // Il pacchetto della libreria engine

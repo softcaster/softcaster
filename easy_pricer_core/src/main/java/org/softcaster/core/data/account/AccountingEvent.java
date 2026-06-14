@@ -10,6 +10,8 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import org.softcaster.core.data.converters.AcctEventStatusConverter;
+import org.softcaster.core.data.converters.AcctEventSourceConverter;
 import org.softcaster.core.data.converters.AcctEventTypeConverter;
 import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.EventType;
@@ -31,11 +33,11 @@ public class AccountingEvent implements Serializable {
     @Column(name = "event_type")
     private EventType eventType;
     
-    @Convert(converter = AcctEventTypeConverter.class)
+    @Convert(converter = AcctEventStatusConverter.class)
     @Column(name = "event_status")
     private AccountingEventStatus eventStatus;
 
-    @Convert(converter = AcctEventTypeConverter.class)
+    @Convert(converter = AcctEventSourceConverter.class)
     @Column(name = "source_type")
     private EventSourceType sourceType;
 
