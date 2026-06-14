@@ -28,8 +28,9 @@ INSERT INTO accounting_event_types(event_type_id,code, description) VALUES (9,'F
 
 -- accounting_event_status
 INSERT INTO accounting_event_status(event_status_id,code, description) VALUES (1,'NEW','New');
-INSERT INTO accounting_event_status(event_status_id,code, description) VALUES (2,'PROCESSED','Processed');
-INSERT INTO accounting_event_status(event_status_id,code, description) VALUES (3,'FAILED','Failed');
+INSERT INTO accounting_event_status(event_status_id,code, description) VALUES (2,'PROCESSING','Processing');
+INSERT INTO accounting_event_status(event_status_id,code, description) VALUES (3,'PROCESSED','Processed');
+INSERT INTO accounting_event_status(event_status_id,code, description) VALUES (4,'FAILED','Failed');
 
 -- source_event_types
 INSERT INTO event_source_types(source_type_id,code, description) VALUES (1,'TRADE','Trade');

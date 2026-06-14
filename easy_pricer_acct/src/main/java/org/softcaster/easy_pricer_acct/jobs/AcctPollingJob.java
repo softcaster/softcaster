@@ -5,8 +5,9 @@
 package org.softcaster.easy_pricer_acct.jobs;
 
 import org.softcaster.easy_pricer_acct.services.TradeAccountingEventService;
-import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -17,6 +18,8 @@ import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.EventSourceType;
 import org.softcaster.engine.enums.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -34,29 +37,64 @@ public class AcctPollingJob {
     @Autowired
     private TradeAccountingEventService tradeAccountingEventService;
 
+    @Autowired
+    @Qualifier("acctEventExecutor")
+    private TaskExecutor taskExecutor;
 
+    // Raddoppiato il pattern asincrono anche per gli Amended
     private void elabAmendedTradeEvents(List<AccountingEvent> pendingEvents) {
-
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (AccountingEvent event : pendingEvents) {
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    tradeAccountingEventService.processEvent(event);
+                } catch (Exception e) {
+                    log.error("### ERROR AMENDED ID {}: {}", event.getEventId(), e.getMessage());
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                }
+            }, taskExecutor));
+        }
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
+    // Raddoppiato il pattern asincrono anche per i Cancelled
     private void elabCancelledTradeEvents(List<AccountingEvent> pendingEvents) {
-
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (AccountingEvent event : pendingEvents) {
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    tradeAccountingEventService.processEvent(event);
+                } catch (Exception e) {
+                    log.error("### ERROR CANCELLED ID {}: {}", event.getEventId(), e.getMessage());
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                }
+            }, taskExecutor));
+        }
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
     private void elabExecutedTradeEvents(List<AccountingEvent> pendingEvents) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
         for (AccountingEvent event : pendingEvents) {
-            try {
-                tradeAccountingEventService.processEvent(event);
-            } catch (Exception e) {
-                log.error("### ERROR ID {}: {}", event.getEventId(), e.getMessage());
-                LoggerMgr.logError(e.getLocalizedMessage());
-            }
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    tradeAccountingEventService.processEvent(event);
+                } catch (Exception e) {
+                    log.error("### ERROR EXECUTED ID {}: {}", event.getEventId(), e.getMessage());
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                }
+            }, taskExecutor);
+
+            futures.add(future);
         }
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
     private void poolPendingAmendedTradeEvents() {
-        List<AccountingEvent> pendingEvents = accountingEventDAO.findTradeEvents(EventSourceType.TRADE,
-                EventType.TRADE_AMENDED, AccountingEventStatus.NEW);
+        List<AccountingEvent> pendingEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.TRADE,
+                EventType.TRADE_AMENDED);
 
         if (!pendingEvents.isEmpty()) {
             log.info("=== [BATCH START] find {} AMENDED transaction(s) ===", pendingEvents.size());
@@ -66,8 +104,8 @@ public class AcctPollingJob {
     }
 
     private void poolPendingCancelledTradeEvents() {
-        List<AccountingEvent> pendingEvents = accountingEventDAO.findTradeEvents(EventSourceType.TRADE,
-                EventType.TRADE_CANCELED, AccountingEventStatus.NEW);
+        List<AccountingEvent> pendingEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.TRADE,
+                EventType.TRADE_CANCELED);
 
         if (!pendingEvents.isEmpty()) {
             log.info("=== [BATCH START] find {} CANCELLED transaction(s) ===", pendingEvents.size());
@@ -77,8 +115,8 @@ public class AcctPollingJob {
     }
 
     private void poolPendingExecutedTradeEvents() {
-        List<AccountingEvent> pendingEvents = accountingEventDAO.findTradeEvents(EventSourceType.TRADE,
-                EventType.TRADE_EXECUTED, AccountingEventStatus.NEW);
+        List<AccountingEvent> pendingEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.TRADE,
+                EventType.TRADE_EXECUTED);
 
         if (!pendingEvents.isEmpty()) {
             log.info("=== [BATCH START] find {} EXECUTED transaction(s) ===", pendingEvents.size());
@@ -87,28 +125,18 @@ public class AcctPollingJob {
         }
     }
 
-    @Transactional
     protected void pollPendingAcctingTradeEvents() {
-        /*
-        List<EventType> targetTypes = List.of(
-                EventType.TRADE_EXECUTED,
-                EventType.TRADE_AMENDED,
-                EventType.TRADE_CANCELED
-        );
-         */
         poolPendingAmendedTradeEvents();
         poolPendingCancelledTradeEvents();
         poolPendingExecutedTradeEvents();
     }
 
-    // Esegue il polling ogni 15 secondi (15000 millisecondi)
     @Scheduled(fixedDelay = 15000)
     public void pollAccountinEvents() {
         if (engineStateManager.isSuspended()) {
             log.info("=== [PSRV] Service is suspended ===\n");
             return;
         }
-        //loadScript();
         pollPendingAcctingTradeEvents();
     }
 }

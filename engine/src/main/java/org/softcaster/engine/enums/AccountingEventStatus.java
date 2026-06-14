@@ -10,8 +10,9 @@ package org.softcaster.engine.enums;
  */
 public enum AccountingEventStatus implements IdentifiableEnum {
     NEW(1, "PENDING", "New"),
-    PROCESSED(2, "PROCESSED", "Processed"),
-    FAILED(3, "FAILED", "Failed");   
+    PROCESSING(2, "PROCESSED", "Processed"),
+    PROCESSED(3, "PROCESSED", "Processed"),
+    FAILED(4, "FAILED", "Failed");
 
     private final int id;
     private final String code;
@@ -46,7 +47,7 @@ public enum AccountingEventStatus implements IdentifiableEnum {
     public String getDescription() {
         return description;
     }
-    
+
     public static AccountingEventStatus fromId(int id) {
         return IdentifiableEnum.fromId(AccountingEventStatus.class, id);
     }
@@ -54,5 +55,5 @@ public enum AccountingEventStatus implements IdentifiableEnum {
     public static AccountingEventStatus fromCode(String code) {
         return IdentifiableEnum.fromCode(AccountingEventStatus.class, code);
     }
-    
+
 }

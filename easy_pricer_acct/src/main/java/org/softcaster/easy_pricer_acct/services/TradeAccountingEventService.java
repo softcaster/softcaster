@@ -5,8 +5,8 @@
 package org.softcaster.easy_pricer_acct.services;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,7 +23,6 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.easy_pricer_acct.context.AccountingContext;
 import org.softcaster.easy_pricer_acct.context.JournalDsl;
-import org.softcaster.easy_pricer_acct.jobs.AcctPollingJob;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -84,9 +83,10 @@ public class TradeAccountingEventService {
     }
 
     /**
-     * 
+     *
      * @param event
      */
+    @Transactional // <--- Fondamentale: ogni evento viene elaborato e committato singolarmente
     public void processEvent(AccountingEvent event) {
         log.info("Process event: {}", event.getEventId());
 
