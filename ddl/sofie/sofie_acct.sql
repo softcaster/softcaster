@@ -109,6 +109,7 @@ CREATE TABLE accounting_events (
     , generated_ref VARCHAR (100) -- batch_20260530_01
     , created_at TIMESTAMP NOT NULL DEFAULT now()
     , processed_at TIMESTAMP NULL -- null fino a quando event nonè processato
+    , PRIMARY KEY (event_id)
     , CONSTRAINT fk_event_type FOREIGN KEY (event_type)
               REFERENCES accounting_event_types(event_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
     , CONSTRAINT fk_event_status FOREIGN KEY (event_status)
@@ -128,6 +129,74 @@ ALTER TABLE accounting_events OWNER TO sofie;
 
 CREATE SEQUENCE accounting_events_s START WITH 1 INCREMENT BY 1; 
 ALTER SEQUENCE accounting_events_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- journal_entry_types 
+-- ----------------------------------------------------------------------------
+CREATE TABLE journal_entry_types (
+    entry_type_id INTEGER NOT NULL,
+    code VARCHAR(30) NOT NULL,
+    description VARCHAR(100),
+
+    PRIMARY KEY (entry_type_id)
+);
+ALTER TABLE journal_entry_types OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- journal_entries 
+-- ----------------------------------------------------------------------------
+CREATE TABLE journal_entries (
+    journal_entry_id INTEGER NOT NULL
+    , accounting_event INTEGER NOT NULL
+    , entry_type INTEGER NOT NULL -- ACCOUNTING MEMO  REVERSAL ADJUSTMENT
+    , business_date DATE NOT NULL
+    , entry_date TIMESTAMP NOT NULL DEFAULT now()
+    , reference VARCHAR(100)
+    , description VARCHAR(500)
+    , reversal_of INTEGER NULL
+    , created_at TIMESTAMP NOT NULL DEFAULT now()
+
+    , PRIMARY KEY (journal_entry_id)
+    , CONSTRAINT fk_je_event FOREIGN KEY (accounting_event)
+        REFERENCES accounting_events(event_id)
+    , CONSTRAINT fk_je_reversal FOREIGN KEY (reversal_of)
+        REFERENCES journal_entries(journal_entry_id)
+    , CONSTRAINT fk_je_type FOREIGN KEY (entry_type)
+        REFERENCES journal_entry_types(entry_type_id)
+);
+ALTER TABLE journal_entries OWNER TO sofie;
+
+CREATE SEQUENCE journal_entries_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE journal_entries_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- journal_entry_lines 
+-- ----------------------------------------------------------------------------
+CREATE TABLE journal_entry_lines (
+    journal_entry_line_id INTEGER NOT NULL
+    , journal_entry INTEGER NOT NULL
+    , line_no INTEGEr NOT NULL
+    , gl_account INTEGER NOT NULL
+    , debit_amount NUMERIC(20,8)
+    , credit_amount NUMERIC(20,8)
+    , currency INTEGER NOT NULL
+    , description VARCHAR(250)
+
+    , PRIMARY KEY (journal_entry_line_id)
+
+    , CONSTRAINT fk_jel_entry FOREIGN KEY (journal_entry)
+        REFERENCES journal_entries(journal_entry_id)
+
+    , CONSTRAINT fk_jel_account FOREIGN KEY (gl_account)
+        REFERENCES gl_accounts(account_id)
+
+    , CONSTRAINT fk_jel_currency FOREIGN KEY (currency)
+        REFERENCES currency(id_currency)
+);
+ALTER TABLE journal_entry_lines OWNER TO sofie;
+
+CREATE SEQUENCE journal_entry_lines_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE journal_entry_lines_s OWNER TO sofie;
 
 /*
 DSL significa Domain Specific Language, cioè:

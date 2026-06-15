@@ -64,16 +64,18 @@ public class AccountingEvent implements Serializable {
         if (this == obj) {
             return true;
         }
-        if (getEventId() == null || obj == null || getClass() != obj.getClass()) {
+
+        if (!(obj instanceof AccountingEvent that)) {
             return false;
         }
-        AccountingEvent that = (AccountingEvent) obj;
-        return getEventId().equals(that.getEventId());
+
+        return eventId != null
+                && eventId.equals(that.eventId);
     }
 
     @Override
     public int hashCode() {
-        return getEventId() == null ? 0 : eventId.hashCode();
+        return getClass().hashCode();
     }
 
     /**

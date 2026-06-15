@@ -139,24 +139,22 @@ public class GlAccount implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (!(o instanceof GlAccount other)) {
+
+        if (!(obj instanceof GlAccount that)) {
             return false;
         }
 
-        if (accountId != null && other.accountId != null) {
-            return accountId.equals(other.accountId);
-        }
-
-        return code != null && code.equals(other.code);
+        return accountId != null
+                && accountId.equals(that.accountId);
     }
 
     @Override
     public int hashCode() {
-        return accountId != null ? accountId.hashCode() : code.hashCode();
+        return getClass().hashCode();
     }
 
     /**

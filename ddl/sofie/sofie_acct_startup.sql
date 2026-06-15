@@ -36,3 +36,9 @@ INSERT INTO accounting_event_status(event_status_id,code, description) VALUES (4
 INSERT INTO event_source_types(source_type_id,code, description) VALUES (1,'TRADE','Trade');
 INSERT INTO event_source_types(source_type_id,code, description) VALUES (2,'INSTRUMENT','Instrument');
 INSERT INTO event_source_types(source_type_id,code, description) VALUES (3,'POSITION_DETAIL','Position Detail');
+
+-- journal_entry_types
+INSERT INTO journal_entry_types VALUES (1,'ACCOUNTING','Official accounting entry');
+INSERT INTO journal_entry_types VALUES (2,'MEMO','Memorandum entry');
+INSERT INTO journal_entry_types VALUES (3,'REVERSAL','Reversal entry');
+INSERT INTO journal_entry_types VALUES (4,'ADJUSTMENT','Adjustment entry');
