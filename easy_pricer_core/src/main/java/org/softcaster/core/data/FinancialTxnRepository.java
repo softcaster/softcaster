@@ -26,10 +26,10 @@ public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Inte
             + "WHERE m.assetClass.code = :code")
     public List<FinancialTxn> findAllByAssetClass(@Param("code") String code);
 
-    @Query(value = "SELECT f.* FROM financial_txn f " +
-                   "JOIN txn_status s ON f.txn_status = s.id_txn_status " +
-                   "WHERE s.code = :code " +
-                   "FOR UPDATE SKIP LOCKED", nativeQuery = true)
+    @Query(value = "SELECT f.* FROM financial_txn f "
+            + "JOIN txn_status s ON f.txn_status = s.id_txn_status "
+            + "WHERE s.code = :code "
+            + "FOR UPDATE SKIP LOCKED", nativeQuery = true)
     public List<FinancialTxn> findByTxnStatusCode(String code);
 
     @Query("""
@@ -39,5 +39,5 @@ public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Inte
         join fetch md.assetClass ac
         where t.idFinancialTxn = :id
     """)
-    public FinancialTxn findByIdWithMasterData( @Param("id") Integer idFinancialTxn);
+    public FinancialTxn findByIdWithMasterData(@Param("id") Integer idFinancialTxn);
 }

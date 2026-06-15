@@ -4,9 +4,9 @@
  */
 package org.softcaster.easy_pricer_acct.context;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import org.softcaster.engine.enums.NormalBalance;
 
 /**
  *
@@ -16,12 +16,12 @@ public class JournalDsl {
 
     private final List<JournalLine> lines = new ArrayList<>();
 
-    public void debit(String account, BigDecimal amount) {
-        lines.add(new JournalLine(account, amount));
+    public void debit(String account, double amount, int currency) {
+        lines.add(new JournalLine(account, amount, currency, NormalBalance.DEBIT));
     }
 
-    public void credit(String account, BigDecimal amount) {
-        lines.add(new JournalLine(account, amount));
+    public void credit(String account, double amount, int currency) {
+        lines.add(new JournalLine(account, amount, currency, NormalBalance.CREDIT));
     }
 
     public List<JournalLine> build() {

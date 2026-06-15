@@ -20,9 +20,12 @@ import javax.script.SimpleBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.FinancialTxn;
+import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.easy_pricer_acct.context.AccountingContext;
 import org.softcaster.easy_pricer_acct.context.JournalDsl;
+import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +41,9 @@ public class TradeAccountingEventService {
     @Autowired
     private ScriptEngine groovyEngine;
 
+    @Autowired
+    private FinancialTxnDAO financialTxnDAO;
+    
     /**
      * COMPILAZIONE UNICA ALL'AVVIO Avviene una sola volta, all'avvio del
      * Service di Spring.
@@ -96,9 +102,14 @@ public class TradeAccountingEventService {
         }
 
         try {
+            // Carico txn
+            FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(event.getEventId());
+            if(txn == null) {
+                throw new AccountingException(" Invalid txn!");
+            }
             JournalDsl dsl = new JournalDsl();
             // Utilizza il tipo di evento corrente in modo dinamico
-            AccountingContext ctx = new AccountingContext(null, dsl, event.getEventType());
+            AccountingContext ctx = new AccountingContext(txn, dsl, event);
 
             Bindings bindings = new SimpleBindings();
             bindings.put("ctx", ctx);
@@ -110,7 +121,9 @@ public class TradeAccountingEventService {
             log.info("Script result for event {}: {}", event.getEventId(), dsl.build());
 
         } catch (ScriptException ex) {
-            LoggerMgr.logError("Error executing script for event " + event.getEventId() + ": " + ex.getLocalizedMessage());
+            String error = "Error executing script for event " + event.getEventId() + ": " + ex.getLocalizedMessage();
+            LoggerMgr.logError(error);
+            throw new AccountingException(error);
         }
     }
 }

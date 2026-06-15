@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import java.sql.Types;
+import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 @Table(name = "journal_entry_lines")
@@ -21,7 +23,7 @@ public class JournalEntryLines implements Serializable {
     @Column(name = "journal_entry_line_id", columnDefinition = "INTEGER")
     private Integer journalEntryLineId;
 
-    @Column(name = "journal_entry")
+    @Column(name = "journal_entry", insertable = false, updatable = false)
     private Integer journalEntry;
 
     @Column(name = "line_no")
@@ -30,9 +32,11 @@ public class JournalEntryLines implements Serializable {
     @Column(name = "gl_account")
     private Integer glAccount;
 
+    @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "debit_amount")
     private Double debitAmount;
 
+    @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "credit_amount")
     private Double creditAmount;
 

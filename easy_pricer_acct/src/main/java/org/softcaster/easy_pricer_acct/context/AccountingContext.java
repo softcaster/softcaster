@@ -5,7 +5,7 @@
 package org.softcaster.easy_pricer_acct.context;
 
 import org.softcaster.core.data.FinancialTxn;
-import org.softcaster.engine.enums.EventType;
+import org.softcaster.core.data.account.AccountingEvent;
 /**
  *
  * @author ep
@@ -14,13 +14,14 @@ public class AccountingContext {
 
     private final FinancialTxn txn;
     private final JournalDsl journal;
-    private final EventType eventType;
+    private final AccountingEvent event;
     
-    public AccountingContext(FinancialTxn txn, JournalDsl journal, EventType  eventType) {
+    public AccountingContext(FinancialTxn txn, JournalDsl journal, AccountingEvent  event) {
         this.txn = txn;
         this.journal = journal;
-        this.eventType = eventType;
+        this.event = event;
     }
+
     /**
      * @return the txn
      */
@@ -36,9 +37,9 @@ public class AccountingContext {
     }
 
     /**
-     * @return the eventType
+     * @return the event
      */
-    public EventType getEventType() {
-        return eventType;
+    public AccountingEvent getEvent() {
+        return event;
     }
 }

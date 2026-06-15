@@ -4,12 +4,12 @@
  */
 package org.softcaster.easy_pricer_acct.context;
 
-import java.math.BigDecimal;
+import org.softcaster.engine.enums.NormalBalance;
 
 /**
  *
  * @author ep
  */
-public record JournalLine(String account, BigDecimal amount) {
-    
+public record JournalLine(String account, double amount, int currency, NormalBalance balance) {
+
 }

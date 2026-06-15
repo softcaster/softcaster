@@ -1,17 +1,21 @@
 
 import org.softcaster.engine.enums.EventType
 
-if (ctx.eventType == EventType.TRADE_EXECUTED) {
+if (ctx.event.eventType == EventType.TRADE_EXECUTED) {
 
-    ctx.journal.debit(
-        "BOND_POSITION",
-        //ctx.txn.quantity * ctx.txn.price * 2
-        10000.0
-    )
+    if(ctx.txn.masterData.assetClass.getCode() == "FSP") {
+        // Es EUR/USD buy 100000
+        // compro 100000 USD vendendo 100000/cambio EUR
+        ctx.journal.debit(
+        "240090",
+            ctx.txn.quantity,
+            ctx.txn.masterData.ccy.idCurrency
+        )
 
-    ctx.journal.credit(
-        "CASH",
-        //ctx.txn.quantity * ctx.txn.price * 2
-        101.0
-    )
+        ctx.journal.credit(
+        "240090",
+            ctx.txn.quantity / ctx.txn.price,
+            ctx.txn.masterData.bcy.idCurrency
+        )
+    }
 }

@@ -41,6 +41,19 @@ public class JournalEntries implements Serializable {
     @Column(name = "entry_type")
     private JournalEntryType entryType;
 
+    // Le JournalEntryLines non dovrebbero mai essere cancellate solo
+    // movimenti di senso contrario per questo uso PERSIST e tolto
+    // orphanRemoval = true
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = false)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JoinColumn(name = "journal_entry", nullable = false) // FK in child table journal_entry_lines
+    private final List<JournalEntryLines> jeLines = new ArrayList<>();
+
+    public void addLine(JournalEntryLines line) {
+        line.setLineNo(jeLines.size() + 1);
+        jeLines.add(line);
+    }
+    
     @Column(name = "business_date")
     private java.sql.Date businessDate;
 
@@ -56,11 +69,6 @@ public class JournalEntries implements Serializable {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Fetch(value = FetchMode.SUBSELECT)
-    @JoinColumn(name = "journal_entry", nullable = false) // FK in child table journal_entry_lines
-    private final List<JournalEntryLines> jeLines = new ArrayList<>();
 
     public Integer getJournalEntryId() {
         return journalEntryId;
