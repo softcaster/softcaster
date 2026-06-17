@@ -74,32 +74,37 @@ public class TradeAccountingEventService {
                 return;
             }
 
-            // Compila lo script principale
             if (groovyEngine instanceof Compilable compilableEngine) {
+
+                // 1. COMPILAZIONE SCRIPT PRINCIPALE
+                // Impostiamo il FILENAME nel contesto globale del motore prima di compilare
+                groovyEngine.put(ScriptEngine.FILENAME, mainScriptFile.getAbsolutePath());
                 try (FileReader reader = new FileReader(mainScriptFile)) {
                     this.cachedMainScript = compilableEngine.compile(reader);
                 }
 
-                // Salva il path assoluto della cartella delle strategie e compilale
+                // 2. COMPILAZIONE DELLE SOTTO-STRATEGIE
                 Path strategiesPath = baseScriptsPath.resolve("strategies");
                 this.strategiesFolderAbsolutePath = strategiesPath.toFile().getAbsolutePath();
-
                 File strategiesDir = strategiesPath.toFile();
+
                 if (strategiesDir.exists() && strategiesDir.isDirectory()) {
                     File[] files = strategiesDir.listFiles((dir, name) -> name.endsWith(".groovy"));
                     if (files != null) {
                         for (File file : files) {
                             String assetClassName = file.getName().replace(".groovy", "");
+
+                            // Aggiorna il FILENAME nel motore per ogni singola strategia prima della compilazione
+                            String debugPath = "strategies" + File.separator + file.getName();
+                            groovyEngine.put(ScriptEngine.FILENAME, debugPath);
                             try (FileReader reader = new FileReader(file)) {
-                                cachedStrategies.put(assetClassName, compilableEngine.compile(reader));
+                                CompiledScript compiledStrategy = compilableEngine.compile(reader);
+                                cachedStrategies.put(assetClassName, compiledStrategy);
                             }
                         }
                     }
                 }
-                log.info("All scripts compiled and cached successfully.");
-            } else {
-                // PROTEZIONE: segnala se il motore non supporta la compilazione
-                log.error("CRITICAL: The Groovy ScriptEngine instance does not support Compilable!");
+                log.info("All scripts compiled and cached successfully with debug info.");
             }
         } catch (IOException | ScriptException ex) {
             log.error("Failed to compile accounting script during startup!", ex);
@@ -147,9 +152,9 @@ public class TradeAccountingEventService {
 
                 if (assetStrategy != null) {
                     // Aggiorna il FILENAME con il percorso specifico della sotto-strategia prima del lancio
-                    String strategyPath = this.strategiesFolderAbsolutePath + File.separator + assetCode + ".groovy";
+                    String strategyDebugPath = "strategies" + File.separator + assetCode + ".groovy";
                     // Eseguiamo la sotto-strategia condividendo lo stesso contesto contabile
-                    bindings.put(ScriptEngine.FILENAME, strategyPath);
+                    bindings.put(ScriptEngine.FILENAME, strategyDebugPath);
                     assetStrategy.eval(bindings);
                 } else {
                     log.warn("No specific strategy script found cached for Asset Class: {}", assetCode);

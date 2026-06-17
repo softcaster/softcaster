@@ -11,12 +11,12 @@ String clearAccount    = "240090"
 String positionAccount = "240095"
 String feesAccount     = "580010"
 
-if (txn.txnSide == TxnSide.DEBIT) { 
+if (txn.txnSide == TxnSide.BUY) { 
     ctx.journal.debit(clearAccount, baseAmount, baseCcy)
     ctx.journal.credit(positionAccount, baseAmount, baseCcy)
     ctx.journal.debit(positionAccount, baseAmount, quoteCcy)
     ctx.journal.credit(clearAccount, quoteAmount, quoteCcy)
-} else if (txn.txnSide == TxnSide.CREDIT) { 
+} else if (txn.txnSide == TxnSide.SELL) { 
     ctx.journal.debit(positionAccount, baseAmount, baseCcy)
     ctx.journal.credit(clearAccount, baseAmount, baseCcy)
     ctx.journal.debit(clearAccount, quoteAmount, quoteCcy)
@@ -24,6 +24,7 @@ if (txn.txnSide == TxnSide.DEBIT) {
 }
 
 // Gestione Fee
+/*
 if (txn.components) {
     txn.components.each { cmp ->
         double feeAmount = cmp.amount ? cmp.amount.round(2) : 0.0
@@ -32,5 +33,6 @@ if (txn.components) {
             ctx.journal.debit(feesAccount, feeAmount, feeCcy)
             ctx.journal.credit(clearAccount, feeAmount, feeCcy)
         }
-    }
+    }    
 }
+*/
