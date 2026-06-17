@@ -67,6 +67,7 @@
                         <configuration>
                             <sources>
                                 <source>scripts</source>
+                                <source>scripts/strategies</source>
                             </sources>
                         </configuration>
                     </execution>

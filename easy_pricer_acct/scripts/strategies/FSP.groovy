@@ -8,19 +8,19 @@ double baseAmount  = txn.quantity.round(2)
 double quoteAmount = (txn.quantity * txn.price).round(2)
 
 String clearAccount    = "240090"
-String positionAccount = "240095"
+String positionAccount = "240050"
 String feesAccount     = "580010"
 
 if (txn.txnSide == TxnSide.BUY) { 
     ctx.journal.debit(clearAccount, baseAmount, baseCcy)
     ctx.journal.credit(positionAccount, baseAmount, baseCcy)
-    ctx.journal.debit(positionAccount, baseAmount, quoteCcy)
+    ctx.journal.debit(positionAccount, quoteAmount, quoteCcy)
     ctx.journal.credit(clearAccount, quoteAmount, quoteCcy)
 } else if (txn.txnSide == TxnSide.SELL) { 
     ctx.journal.debit(positionAccount, baseAmount, baseCcy)
     ctx.journal.credit(clearAccount, baseAmount, baseCcy)
     ctx.journal.debit(clearAccount, quoteAmount, quoteCcy)
-    ctx.journal.credit(positionAccount, baseAmount, quoteCcy)
+    ctx.journal.credit(positionAccount, quoteAmount, quoteCcy)
 }
 
 // Gestione Fee

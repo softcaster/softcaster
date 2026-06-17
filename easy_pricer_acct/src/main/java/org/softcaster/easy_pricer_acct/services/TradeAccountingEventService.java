@@ -11,6 +11,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.script.Bindings;
@@ -22,12 +24,24 @@ import javax.script.SimpleBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.Currency;
+import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.account.AccountingEvent;
+import org.softcaster.core.data.account.AccountingEventDAO;
+import org.softcaster.core.data.account.GlAccount;
+import org.softcaster.core.data.account.GlAccountDAO;
+import org.softcaster.core.data.account.JournalEntries;
+import org.softcaster.core.data.account.JournalEntriesDAO;
+import org.softcaster.core.data.account.JournalEntryLines;
 import org.softcaster.easy_pricer_acct.context.AccountingContext;
 import org.softcaster.easy_pricer_acct.context.JournalDsl;
+import org.softcaster.easy_pricer_acct.context.JournalLine;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
+import org.softcaster.engine.enums.AccountingEventStatus;
+import org.softcaster.engine.enums.JournalEntryType;
+import static org.softcaster.engine.enums.NormalBalance.DEBIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,13 +58,21 @@ public class TradeAccountingEventService {
 
     // Memorizza i percorsi assoluti
     private String mainScriptAbsolutePath = "";
-    private String strategiesFolderAbsolutePath = "";
 
     @Autowired
     private ScriptEngine groovyEngine;
 
     @Autowired
     private FinancialTxnDAO financialTxnDAO;
+
+    @Autowired
+    private JournalEntriesDAO journalEntriesDAO;
+
+    @Autowired
+    private GlAccountDAO glAccountDAO;
+    
+    @Autowired
+    private AccountingEventDAO accountingEventDAO;
 
     /**
      * COMPILAZIONE UNICA ALL'AVVIO Avviene una sola volta, all'avvio del
@@ -85,7 +107,7 @@ public class TradeAccountingEventService {
 
                 // 2. COMPILAZIONE DELLE SOTTO-STRATEGIE
                 Path strategiesPath = baseScriptsPath.resolve("strategies");
-                this.strategiesFolderAbsolutePath = strategiesPath.toFile().getAbsolutePath();
+                //this.strategiesFolderAbsolutePath = strategiesPath.toFile().getAbsolutePath();
                 File strategiesDir = strategiesPath.toFile();
 
                 if (strategiesDir.exists() && strategiesDir.isDirectory()) {
@@ -109,6 +131,61 @@ public class TradeAccountingEventService {
         } catch (IOException | ScriptException ex) {
             log.error("Failed to compile accounting script during startup!", ex);
         }
+    }
+
+    private JournalEntryLines getJournalEntryLines(JournalLine line) {
+        JournalEntryLines jel = new JournalEntryLines();
+        jel = new JournalEntryLines();
+        jel.setCurrency(line.currency());
+        jel.setDebitAmount(0.);
+        jel.setCreditAmount(0.);
+        GlAccount glAccount = glAccountDAO.findByCode(line.account());
+        if (glAccount == null) {
+            throw new AccountingException(" Invalid account!");
+        }
+        jel.setGlAccount(glAccount.getAccountId());
+        switch (line.balance()) {
+            case DEBIT ->
+                jel.setDebitAmount(line.amount());
+            case CREDIT ->
+                jel.setCreditAmount(line.amount());
+            default ->
+                throw new AccountingException(" Invalid balance!");
+        }
+
+        return jel;
+    }
+
+    private void addJournalEntrie(AccountingContext ctx) {
+        List<JournalLine> lines = ctx.getJournal().build();
+        // Deve avere linee ed in numero pari
+        if (!lines.isEmpty() && lines.size() % 2 == 0) {
+            JournalEntries entry = new JournalEntries();
+            entry.setAccountingEvent(ctx.getEvent());
+            entry.setBusinessDate(ctx.getTxn().getTradeDate());
+            entry.setCreatedAt(LocalDateTime.now());
+            entry.setDescription(ctx.getTxn().getDescription());
+            entry.setEntryType(JournalEntryType.ACCOUNTING);
+            entry.setReference("txn: " + ctx.getTxn().getIdFinancialTxn());
+            for (JournalLine line : lines) {
+                JournalEntryLines jel = getJournalEntryLines(line);
+                if (jel != null) {
+                    // addLine aggiorna anche LineNo
+                    entry.addLine(jel);
+                } else {
+                    String error = "Invalid JournalEntryLines null value";
+                    log.warn(error);
+                    LoggerMgr.logWarning(error);
+                    throw new AccountingException(error);
+                }
+            }
+            journalEntriesDAO.saveOrUpdate(entry);  
+        } else {
+            String warning = "Invalid Jounal Entries number!";
+            log.warn(warning);
+            LoggerMgr.logWarning(warning);
+        }
+
     }
 
     /**
@@ -156,6 +233,12 @@ public class TradeAccountingEventService {
                     // Eseguiamo la sotto-strategia condividendo lo stesso contesto contabile
                     bindings.put(ScriptEngine.FILENAME, strategyDebugPath);
                     assetStrategy.eval(bindings);
+                    // se lo script ha generato delle line contabili allora aggiorno
+                    // su db (testata + linee)
+                    addJournalEntrie(ctx);
+                    // Aggiorno stato accounting event
+                    event.setEventStatus(AccountingEventStatus.PROCESSED);
+                    accountingEventDAO.saveOrUpdate(event);
                 } else {
                     log.warn("No specific strategy script found cached for Asset Class: {}", assetCode);
                 }

@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface GlAccountRepository extends JpaRepository<GlAccount, Integer> {
 
     public GlAccount findByAccountId(Integer accountId);
+
+    public GlAccount findByCode(String code);
 }
