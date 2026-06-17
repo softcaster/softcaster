@@ -53,7 +53,7 @@ public class AcctPollingJob {
                 }
             }, taskExecutor));
         }
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
     }
 
     // Raddoppiato il pattern asincrono anche per i Cancelled
@@ -69,7 +69,7 @@ public class AcctPollingJob {
                 }
             }, taskExecutor));
         }
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
     }
 
     private void elabExecutedTradeEvents(List<AccountingEvent> pendingEvents) {
@@ -88,7 +88,7 @@ public class AcctPollingJob {
             futures.add(future);
         }
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
     }
 
     private void poolPendingAmendedTradeEvents() {

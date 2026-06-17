@@ -70,7 +70,7 @@ public class TradeAccountingEventService {
 
     @Autowired
     private GlAccountDAO glAccountDAO;
-    
+
     @Autowired
     private AccountingEventDAO accountingEventDAO;
 
@@ -179,7 +179,7 @@ public class TradeAccountingEventService {
                     throw new AccountingException(error);
                 }
             }
-            journalEntriesDAO.saveOrUpdate(entry);  
+            journalEntriesDAO.saveOrUpdate(entry);
         } else {
             String warning = "Invalid Jounal Entries number!";
             log.warn(warning);
@@ -243,10 +243,6 @@ public class TradeAccountingEventService {
                     log.warn("No specific strategy script found cached for Asset Class: {}", assetCode);
                 }
             }
-
-            // Output finale dei movimenti generati nel ciclo transazionale
-            log.info("Script result for event {}: {}", event.getEventId(), dsl.build());
-
         } catch (ScriptException ex) {
             String error = "Error executing script for event " + event.getEventId() + ": " + ex.getLocalizedMessage();
             LoggerMgr.logError(error);

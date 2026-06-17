@@ -5,12 +5,12 @@
 package org.softcaster.core.data.converters;
 
 import jakarta.persistence.Converter;
-import org.softcaster.engine.enums.JournalEntryType;
+import org.softcaster.engine.enums.JournalEntryStatus;
 
 @Converter(autoApply = true)
-    public class JournalEntryTypeConverter extends AbstractIdentifiableEnumConverter<JournalEntryType> {
+public class JournalEntryStatusConverter  extends AbstractIdentifiableEnumConverter<JournalEntryStatus> {
 
-        public JournalEntryTypeConverter() {
-            super(JournalEntryType.class);
-        }
+    public JournalEntryStatusConverter() {
+        super(JournalEntryStatus.class);
+    }
 }
