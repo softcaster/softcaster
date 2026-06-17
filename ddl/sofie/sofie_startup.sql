@@ -116,23 +116,29 @@ INSERT INTO settlement_type(id_settlement_type,code, description) VALUES (nextva
 -- txn_status
 -- ----------------------------------------------------------------------------
 -- in processanto
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'PENDING','Pending');
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (1,'PENDING','Pending');
 -- Da validare
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'VALIDATING','Validating');
--- processata
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'EXECUTED','Executed');
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (2,'VALIDATING','Validating');
+-- validazione
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (3,'EXECUTED','Executed');
 -- rifiutata
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'REJECTED','Rejected');
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (4,'REJECTED','Rejected');
 -- da modificare
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'TO_AMEND','To Amend');
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (5,'TO_AMEND','To Amend');
 -- modificata
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'AMENDED','Amended');
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (6,'AMENDED','Amended');
 -- da cancellare
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'TO_CANCEL','To Cancel');
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (7,'TO_CANCEL','To Cancel');
 -- cancellata
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'CANCELLED','Cancelled');
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (8,'CANCELLED','Cancelled');
 -- restart transazione rejected
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (nextval('txn_status_s'),'RESTARTING','Restartin');
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (9,'RESTARTING','Restartin');
+
+-- ----------------------------------------------------------------------------
+-- txn_side
+-- ----------------------------------------------------------------------------
+INSERT INTO txn_side(id_txn_side,code, description) VALUES (1,'BUY','Buy');
+INSERT INTO txn_side(id_txn_side,code, description) VALUES (2,'SELL','Sell');
 
 
 -- ----------------------------------------------------------------------------

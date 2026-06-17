@@ -21,7 +21,9 @@ import java.util.List;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.TxnSideConverter;
 import org.softcaster.core.data.converters.TxnStatusConverter;
+import org.softcaster.engine.enums.TxnSide;
 import org.softcaster.engine.enums.TxnStatus;
 
 @Entity
@@ -52,16 +54,17 @@ public class FinancialTxn implements Serializable {
     @Column(name = "txn_status")
     private TxnStatus txnStatus;
 
+    @Convert(converter = TxnSideConverter.class)
+    @Column(name = "txn_side")
+    private TxnSide txnSide;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "financial_txn", nullable = false) // FK in child table holiday
-    private List<FinancialTxnComponent> components = new ArrayList<>();    
-    
+    private List<FinancialTxnComponent> components = new ArrayList<>();
+
     @Column(name = "ref_id")
     private Integer refId;
-
-    @Column(name = "txn_side")
-    private Short txnSide;
 
     @Column(name = "description")
     private String description;
@@ -94,11 +97,11 @@ public class FinancialTxn implements Serializable {
         this.idFinancialTxn = idFinancialTxn;
     }
 
-    public Short getTxnSide() {
+    public TxnSide getTxnSide() {
         return txnSide;
     }
 
-    public void setTxnSide(Short txnSide) {
+    public void setTxnSide(TxnSide txnSide) {
         this.txnSide = txnSide;
     }
 

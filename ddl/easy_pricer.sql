@@ -813,7 +813,7 @@ CREATE TABLE financial_txn
     , position_md  INTEGER NOT NULL -- position
     , master_data  INTEGER NOT NULL -- identificativo strumento
     , txn_status  INTEGER NOT NULL -- stato transazione
-    , txn_side SMALLINT NOT NULL -- (Buy/Sell)
+    , txn_side INTEGER NOT NULL -- (Buy/Sell)
     , description VARCHAR(255) NOT NULL 
     , trade_date DATE NOT NULL DEFAULT NOW() -- esecuzione deal 
     , value_date DATE NOT NULL -- data valuta cash

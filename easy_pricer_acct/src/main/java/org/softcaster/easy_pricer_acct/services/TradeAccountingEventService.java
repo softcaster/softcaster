@@ -11,6 +11,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -35,15 +37,21 @@ public class TradeAccountingEventService {
     private static final Logger log = LoggerFactory.getLogger(TradeAccountingEventService.class);
 
     // Variabile "volatile" per garantire la visibilità immediata tra i thread dopo l'init
-    private volatile CompiledScript cachedScript = null;
-    private String scriptAbsolutePath = "";
+    private volatile CompiledScript cachedMainScript = null;
+
+    // Cache per le strategie delle singole Asset Class (FSP, EQ, ecc.)
+    private final Map<String, CompiledScript> cachedStrategies = new ConcurrentHashMap<>();
+
+    // Memorizza i percorsi assoluti
+    private String mainScriptAbsolutePath = "";
+    private String strategiesFolderAbsolutePath = "";
 
     @Autowired
     private ScriptEngine groovyEngine;
 
     @Autowired
     private FinancialTxnDAO financialTxnDAO;
-    
+
     /**
      * COMPILAZIONE UNICA ALL'AVVIO Avviene una sola volta, all'avvio del
      * Service di Spring.
@@ -53,38 +61,48 @@ public class TradeAccountingEventService {
         log.info("=== [INITIALIZING ACCOUNTING SCRIPT] ===");
         try {
             String userDir = System.getProperty("user.dir");
-            Path scriptPath;
+            Path baseScriptsPath = userDir.endsWith("easy_pricer_acct")
+                    ? Paths.get(userDir, "scripts")
+                    : Paths.get(userDir, "easy_pricer_acct", "scripts");
 
-            if (userDir.endsWith("easy_pricer_acct")) {
-                scriptPath = Paths.get(userDir, "scripts", "accounting_rules.groovy");
-            } else {
-                scriptPath = Paths.get(userDir, "easy_pricer_acct", "scripts", "accounting_rules.groovy");
-            }
+            // Salva il path assoluto del file principale
+            File mainScriptFile = baseScriptsPath.resolve("accounting_rules.groovy").toFile();
+            this.mainScriptAbsolutePath = mainScriptFile.getAbsolutePath();
 
-            File file = scriptPath.toFile();
-            this.scriptAbsolutePath = file.getAbsolutePath();
-
-            if (!file.exists()) {
-                log.error("CRITICAL: Script not found in: " + scriptAbsolutePath);
-                LoggerMgr.logError("Script not found in: " + scriptAbsolutePath);
+            if (!mainScriptFile.exists()) {
+                log.error("CRITICAL: Main script not found in: {}", mainScriptAbsolutePath);
                 return;
             }
 
-            // Configura il motore e compila lo script
-            groovyEngine.put(ScriptEngine.FILENAME, scriptAbsolutePath);
-
+            // Compila lo script principale
             if (groovyEngine instanceof Compilable compilableEngine) {
-                try (FileReader reader = new FileReader(file)) {
-                    this.cachedScript = compilableEngine.compile(reader);
-                    log.info("Script compiled successfully and cached for lifecycle.");
+                try (FileReader reader = new FileReader(mainScriptFile)) {
+                    this.cachedMainScript = compilableEngine.compile(reader);
                 }
-            } else {
-                throw new ScriptException("The scripting engine does not support source compilation.");
-            }
 
+                // Salva il path assoluto della cartella delle strategie e compilale
+                Path strategiesPath = baseScriptsPath.resolve("strategies");
+                this.strategiesFolderAbsolutePath = strategiesPath.toFile().getAbsolutePath();
+
+                File strategiesDir = strategiesPath.toFile();
+                if (strategiesDir.exists() && strategiesDir.isDirectory()) {
+                    File[] files = strategiesDir.listFiles((dir, name) -> name.endsWith(".groovy"));
+                    if (files != null) {
+                        for (File file : files) {
+                            String assetClassName = file.getName().replace(".groovy", "");
+                            try (FileReader reader = new FileReader(file)) {
+                                cachedStrategies.put(assetClassName, compilableEngine.compile(reader));
+                            }
+                        }
+                    }
+                }
+                log.info("All scripts compiled and cached successfully.");
+            } else {
+                // PROTEZIONE: segnala se il motore non supporta la compilazione
+                log.error("CRITICAL: The Groovy ScriptEngine instance does not support Compilable!");
+            }
         } catch (IOException | ScriptException ex) {
             log.error("Failed to compile accounting script during startup!", ex);
-            LoggerMgr.logError("Script compilation failed: " + ex.getLocalizedMessage());
         }
     }
 
@@ -96,7 +114,7 @@ public class TradeAccountingEventService {
     public void processEvent(AccountingEvent event) {
         log.info("Process event: {}", event.getEventId());
 
-        if (cachedScript == null) {
+        if (cachedMainScript == null) {
             log.error("Skipping event {}. Script was not compiled during startup.", event.getEventId());
             return;
         }
@@ -104,20 +122,41 @@ public class TradeAccountingEventService {
         try {
             // Carico txn
             FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(event.getEventId());
-            if(txn == null) {
+            if (txn == null) {
                 throw new AccountingException(" Invalid txn!");
             }
+
+            // Inizializzazione del DSL contabile e del contesto
             JournalDsl dsl = new JournalDsl();
-            // Utilizza il tipo di evento corrente in modo dinamico
             AccountingContext ctx = new AccountingContext(txn, dsl, event);
 
+            // Predisposizione dei Bindings condivisibili dagli script
             Bindings bindings = new SimpleBindings();
             bindings.put("ctx", ctx);
-            bindings.put(ScriptEngine.FILENAME, this.scriptAbsolutePath);
+            bindings.put(ScriptEngine.FILENAME, this.mainScriptAbsolutePath);
 
-            // Esecuzione immediata in memoria del codice pre-compilato (Thread-Safe)
-            cachedScript.eval(bindings);
+            // 4. Esecuzione delle regole contabili generali (Orchestratore principale)
+            cachedMainScript.eval(bindings);
 
+            // Esecuzione dinamica della strategia specifica di Asset Class
+            if (txn.getMasterData() != null && txn.getMasterData().getAssetClass() != null) {
+                String assetCode = txn.getMasterData().getAssetClass().getCode();
+
+                // Recuperiamo la strategia pre-compilata dalla cache
+                CompiledScript assetStrategy = cachedStrategies.get(assetCode);
+
+                if (assetStrategy != null) {
+                    // Aggiorna il FILENAME con il percorso specifico della sotto-strategia prima del lancio
+                    String strategyPath = this.strategiesFolderAbsolutePath + File.separator + assetCode + ".groovy";
+                    // Eseguiamo la sotto-strategia condividendo lo stesso contesto contabile
+                    bindings.put(ScriptEngine.FILENAME, strategyPath);
+                    assetStrategy.eval(bindings);
+                } else {
+                    log.warn("No specific strategy script found cached for Asset Class: {}", assetCode);
+                }
+            }
+
+            // Output finale dei movimenti generati nel ciclo transazionale
             log.info("Script result for event {}: {}", event.getEventId(), dsl.build());
 
         } catch (ScriptException ex) {
