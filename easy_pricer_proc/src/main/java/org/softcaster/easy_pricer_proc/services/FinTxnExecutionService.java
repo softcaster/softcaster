@@ -24,6 +24,7 @@ import org.softcaster.engine.enums.TxnStatus;
 import static org.softcaster.engine.enums.TxnStatus.EXECUTED;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -40,8 +41,10 @@ public class FinTxnExecutionService {
     @Autowired
     AccountingEventDAO accountingEventDAO;
 
+    // Ogni evento viene elaborato e committato singolarmente
+    @Transactional
     public void executeTxn(Integer txnId) {
-        FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(txnId);
+        FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
 
         // Determino nuovo stato "potenziale"
         TxnStatus oldStatus = TxnStatus.fromCode(txn.getTxnStatus().getCode());
@@ -63,36 +66,41 @@ public class FinTxnExecutionService {
         }
 
         try {
-            processBusiness(txnId);
-            updateStatus(txnId, newStatus);
+            processFinancialTxn(txn);
+            postProcessFinancialTxn(txn);
+            updateStatus(txn, newStatus);
 
         } catch (Exception e) {
-            updateStatus(txnId, TxnStatus.REJECTED);
             log.error(e.getLocalizedMessage());
             throw e;
         }
     }
 
-    // Non serve più aprire una nuova transazione visto che è aperta a
-    // livello di job. Lascio comunque transactional per isolare i metodi
-    @Transactional//(propagation = Propagation.REQUIRES_NEW)
-    protected void updateStatus(Integer txnId, TxnStatus status) {
+    // Richiede una NUOVA transazione per salvare lo stato di REJECTED 
+    // anche se la transazione principale fallisce e fa rollback
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatusOnFailure(Integer txnId, TxnStatus status) {
+        try {
+            FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
+            if (txn != null) {
+                txn.setTxnStatus(status);
+                financialTxnDAO.saveOrUpdate(txn);
+            }
+        } catch (Exception ex) {
+            log.error("Could not update status to REJECTED for txnId {}", txnId, ex);
+        }
+    }
+    
+    protected void updateStatus(FinancialTxn txn, TxnStatus status) {
 
-        FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
         txn.setTxnStatus(status);
         financialTxnDAO.saveOrUpdate(txn);
-
-        postElabFinancialTxn(txn);
     }
 
-    @Transactional//(propagation = Propagation.REQUIRES_NEW)
-    protected void processBusiness(Integer txnId) {
+    protected void processFinancialTxn(FinancialTxn txn) {
 
-        FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
         PositionDetail position = getPositionDetail(txn);
-
         elabFinancialTxn(txn, position);
-
         positionRepository.saveOrUpdate(position);
     }
 
@@ -124,7 +132,7 @@ public class FinTxnExecutionService {
         }
     }
 
-    private void postElabFinancialTxn(FinancialTxn txn) {
+    private void postProcessFinancialTxn(FinancialTxn txn) {
         if (txn == null) {
             log.error("Invalid Txn");
             throw new TxnProcessingException("Invalid Txn");
@@ -146,7 +154,7 @@ public class FinTxnExecutionService {
             event.setSourceId(txn.getIdFinancialTxn());
             event.setEventStatus(AccountingEventStatus.NEW);
             event.setSourceType(EventSourceType.TRADE);
-            event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "]");
+            event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + txn.getTxnStatus().getCode());
             event.setCreatedAt(LocalDateTime.now());
             event.setGeneratedBy(txn.getMasterData().getIdMasterData());
             event.setGeneratedRef("");

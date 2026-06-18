@@ -12,10 +12,10 @@ import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.easy_pricer_proc.services.EngineStateManager;
 import org.softcaster.easy_pricer_proc.services.FinTxnExecutionService;
+import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -27,36 +27,37 @@ public class FinTxnPollingJob {
     private static final Logger log = LoggerFactory.getLogger(FinTxnPollingJob.class);
 
     @Autowired
-    FinTxnExecutionService finTxnExecutionService;
+    private FinTxnExecutionService finTxnExecutionService;
     
     @Autowired
     private FinancialTxnDAO financialTxnDAO;
 
     @Autowired
     private EngineStateManager engineStateManager;
-    /*
-    @Value("${app.scripts.path}")
-    private String scriptsPath;
 
-    
-    @Autowired
-    private EasyPricerEngine engine;
-     */
     protected boolean elabFinancialTxnList(List<FinancialTxn> financialTxnList) {
+        boolean allSuccess = true;
         for (FinancialTxn txn : financialTxnList) {
             try {
                 finTxnExecutionService.executeTxn(txn.getIdFinancialTxn());
             } catch (Exception e) {
                 log.error("### ERROR ID {}: {}", txn.getIdFinancialTxn(), e.getMessage());
                 LoggerMgr.logError(e.getLocalizedMessage());
-                return false;
+                // Non si puo spostare la funzione updateStatusOnFailure all'interno della classe
+                // perchè In Spring, l'annotazione @Transactional funziona tramite proxy.
+                // un metodo internamente (da un metodo della stessa classe a un altro metodo della stessa classe), 
+                // il proxy di Spring viene saltato completamente.
+                // Di conseguenza, REQUIRES_NEW viene ignorato. Il codice girerà senza una transazione autonoma 
+                // o tenterà di usare quella precedente (che è fallita e marcata per il rollback), 
+                // impedendo il salvataggio dello stato REJECTED
+                finTxnExecutionService.updateStatusOnFailure(txn.getIdFinancialTxn(), TxnStatus.REJECTED);
+                allSuccess = false;
             }
         }
 
-        return true;
+        return allSuccess;
     }
 
-    @Transactional
     protected void pollPendingTrades() {
         // 1. Cerca le transazioni PENDING
         List<FinancialTxn> pendingTxn = financialTxnDAO.findByTxnStatusCode("PENDING");
@@ -68,7 +69,6 @@ public class FinTxnPollingJob {
         }
     }
 
-    @Transactional
     protected void pollToAmendTrades() {
         // 1. Cerca le transazioni PENDING
         List<FinancialTxn> pendingTxn = financialTxnDAO.findByTxnStatusCode("TO_AMEND");
@@ -80,7 +80,6 @@ public class FinTxnPollingJob {
         }
     }
 
-    @Transactional
     protected void pollToCancelTrades() {
         // 1. Cerca le transazioni TO_CANCELL
         List<FinancialTxn> cancelledTxn = financialTxnDAO.findByTxnStatusCode("TO_CANCEL");
