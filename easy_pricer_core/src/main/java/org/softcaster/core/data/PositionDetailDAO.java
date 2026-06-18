@@ -13,8 +13,6 @@ public class PositionDetailDAO {
     @Resource
     private PositionDetailRepository repository;
 
-    private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
-
     @Transactional(readOnly = true)
     public PositionDetail findByIdPositionDetail(Integer idPositionDetail) {
         return repository.findByIdPositionDetail(idPositionDetail);
@@ -31,7 +29,7 @@ public class PositionDetailDAO {
 
     @Transactional(readOnly = true)
     public List<PositionDetail> findAll() {
-        return repository.findAll(sortByCode);
+        return repository.findAll();
     }
 
     @Transactional

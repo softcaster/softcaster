@@ -11,6 +11,7 @@ import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mtm.jobs.services.EngineStateManager;
+import org.softcaster.easy_pricer_mtm.jobs.services.MtmService;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,12 +19,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MtMPollingJob {
+public class MtMPollingJob implements IMtmDataHelper {
     
     private static final Logger log = LoggerFactory.getLogger(MtMPollingJob.class);
 
     @Autowired
     private EngineStateManager engineStateManager;
+
+    @Autowired
+    private MtmService mtmService;
     
     @Autowired    
     @Qualifier("marketDataService") 
@@ -36,7 +40,7 @@ public class MtMPollingJob {
         // load positions
         List<PositionDetail> positions = positionDetailDAO.findAll();
         for(PositionDetail position: positions) {
-            
+            mtmService.evaluatePosition(position.getPositionMd(), position.getMasterData(), position.getCounterparty(), this);
         }
     }
     
@@ -48,8 +52,13 @@ public class MtMPollingJob {
         }
         log.info("=== [MSRV] Starting mtm... ===\n");
         marketDataService.loadSpotPrice();
-                
-        log.info("EURUSD: " + marketDataService.getSpotPrice("EURUSD", RequestType.BID));
+        runMtm();
+        log.info("EURUSD: " + getSpotPrice("EURUSD", RequestType.BID));
+    }
+
+    @Override
+    public double getSpotPrice(String ticker, RequestType request) {
+        return marketDataService.getSpotPrice(ticker, request);
     }
 
 }

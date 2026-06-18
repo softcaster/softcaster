@@ -4,6 +4,11 @@
  */
 package org.softcaster.easy_pricer_mtm.processors;
 
+import org.softcaster.core.data.MasterData;
+import org.softcaster.core.data.PositionDetail;
+import org.softcaster.easy_pricer_mtm.jobs.IMtmDataHelper;
+
 public interface IPositionEvaluator {
     
+    public void evaluate(PositionDetail position, MasterData masterData, IMtmDataHelper mtmHelper);
 }
