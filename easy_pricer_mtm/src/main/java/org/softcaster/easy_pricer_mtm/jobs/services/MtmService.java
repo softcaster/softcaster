@@ -5,6 +5,8 @@
 package org.softcaster.easy_pricer_mtm.jobs.services;
 
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.PositionDetail;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MtmService {
+    private static final Logger log = LoggerFactory.getLogger(MtmService.class);
     
     @Autowired
     private PositionDetailDAO positionDetailDAO;
@@ -40,8 +43,11 @@ public class MtmService {
         String assetClass = masterData.getAssetClass().getCode();
 
         IPositionEvaluator evaluator = evaluatorDispatcher.dispatch(assetClass);
-        if(evaluator != null)
+        if(evaluator != null) {
             evaluator.evaluate(position, masterData, mtmHelper);
+            positionDetailDAO.saveOrUpdate(position);
+            log.info("Mtm intrument: " + masterData.getCode());
+        }
         else 
             throw new MtmException("Invalid evaluator");
     }

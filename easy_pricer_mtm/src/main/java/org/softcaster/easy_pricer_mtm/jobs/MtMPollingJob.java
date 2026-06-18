@@ -53,7 +53,6 @@ public class MtMPollingJob implements IMtmDataHelper {
         log.info("=== [MSRV] Starting mtm... ===\n");
         marketDataService.loadSpotPrice();
         runMtm();
-        log.info("EURUSD: " + getSpotPrice("EURUSD", RequestType.BID));
     }
 
     @Override

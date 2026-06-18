@@ -19,7 +19,7 @@ public class FxSpotEvaluator implements IPositionEvaluator {
         double avgBuyPrice = position.getNotionalValueBuy()/position.getBuyQty();
         double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.ASK);
         double unrealized = (mktPrice - avgBuyPrice)*(position.getBuyQty() - position.getSellQty());
-        System.out.println(unrealized);
+        position.setUnrealizedPnl(unrealized);
     }
     
 }
