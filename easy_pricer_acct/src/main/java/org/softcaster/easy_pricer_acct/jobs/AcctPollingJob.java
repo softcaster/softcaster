@@ -124,7 +124,7 @@ public class AcctPollingJob {
         }
     }
 
-    protected void pollPendingAcctingTradeEvents() {
+    protected void pollPendingAccountingTradeEvents() {
         poolPendingAmendedTradeEvents();
         poolPendingCancelledTradeEvents();
         poolPendingExecutedTradeEvents();
@@ -136,6 +136,6 @@ public class AcctPollingJob {
             log.info("=== [PSRV] Service is suspended ===\n");
             return;
         }
-        pollPendingAcctingTradeEvents();
+        pollPendingAccountingTradeEvents();
     }
 }

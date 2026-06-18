@@ -13,8 +13,5 @@ import org.softcaster.core.data.PositionDetail;
  */
 public interface ITxnProcessor {
 
-    public static final int BUY = 1;
-    public static final int SELL = -1;
-
     void process(FinancialTxn txn, PositionDetail position);
 }

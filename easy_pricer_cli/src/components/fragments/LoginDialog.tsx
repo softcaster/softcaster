@@ -20,8 +20,8 @@ export const LoginDialog = ({ visible, onLogin }: any) => {
     }, [visible]);
 
     const handleInternalLogin = () => {
-        // Simulazione validazione (sostituisci con la tua logica)
-        if (username === 'easypricer' && password === 'easypricer') {
+        // Simulazione validazione
+        if (username === 'sofie' && password === 'sofie') {
             setError(false);
             onLogin({ username, password });
         } else {

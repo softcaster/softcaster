@@ -4,6 +4,9 @@
  */
 package org.softcaster.easy_pricer_proc.processors;
 
+import org.softcaster.engine.enums.TxnSide;
+import org.softcaster.engine.enums.TxnStatus;
+
 /**
  *
  * @author ep
@@ -12,8 +15,8 @@ public class ProcInputData {
 
     private double quantity = 0;
     private double price = 0;
-    private int side = 0;
-    private String status = "";
+    private TxnSide side = TxnSide.BUY;
+    private TxnStatus status = TxnStatus.PENDING;
 
     /**
      * @return the quantity
@@ -46,28 +49,28 @@ public class ProcInputData {
     /**
      * @return the side
      */
-    public int getSide() {
+    public TxnSide getSide() {
         return side;
     }
 
     /**
      * @param side the side to set
      */
-    public void setSide(int side) {
+    public void setSide(TxnSide side) {
         this.side = side;
     }
 
     /**
      * @return the status
      */
-    public String getStatus() {
+    public TxnStatus getStatus() {
         return status;
     }
 
     /**
      * @param status the status to set
      */
-    public void setStatus(String status) {
+    public void setStatus(TxnStatus status) {
         this.status = status;
     }
 

@@ -33,8 +33,8 @@ public class FxFutureTxnProcessor extends AbstractTxnProcessor implements ITxnPr
         ProcInputData input = new ProcInputData();
         input.setPrice(txn.getPrice() * ffmd.getMultiplier());
         input.setQuantity(txn.getQuantity() * ffmd.getContractValue());
-        input.setSide(txn.getTxnSide().getId());
-        input.setStatus(txn.getTxnStatus().getCode());
+        input.setSide(txn.getTxnSide());
+        input.setStatus(txn.getTxnStatus());
 
         super.process(input, position);
     }

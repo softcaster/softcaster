@@ -31,8 +31,8 @@ public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProce
         ProcInputData input = new ProcInputData();
         input.setPrice((txn.getPrice() + accruedInterest) * smd.getMultiplier());
         input.setQuantity(txn.getQuantity());
-        input.setSide(txn.getTxnSide().getId());
-        input.setStatus(txn.getTxnStatus().getCode());
+        input.setSide(txn.getTxnSide());
+        input.setStatus(txn.getTxnStatus());
 
         super.process(input, position);
     }

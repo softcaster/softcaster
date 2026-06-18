@@ -24,8 +24,6 @@ import javax.script.SimpleBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.core.data.Currency;
-import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.account.AccountingEvent;
@@ -40,6 +38,7 @@ import org.softcaster.easy_pricer_acct.context.JournalDsl;
 import org.softcaster.easy_pricer_acct.context.JournalLine;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
 import org.softcaster.engine.enums.AccountingEventStatus;
+import org.softcaster.engine.enums.JournalEntryStatus;
 import org.softcaster.engine.enums.JournalEntryType;
 import static org.softcaster.engine.enums.NormalBalance.DEBIT;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -162,10 +161,11 @@ public class TradeAccountingEventService {
         if (!lines.isEmpty() && lines.size() % 2 == 0) {
             JournalEntries entry = new JournalEntries();
             entry.setAccountingEvent(ctx.getEvent());
+            entry.setEntryStatus(JournalEntryStatus.UNCONSOLIDATED);
+            entry.setEntryType(JournalEntryType.ACCOUNTING);
             entry.setBusinessDate(ctx.getTxn().getTradeDate());
             entry.setCreatedAt(LocalDateTime.now());
             entry.setDescription(ctx.getTxn().getDescription());
-            entry.setEntryType(JournalEntryType.ACCOUNTING);
             entry.setReference("txn: " + ctx.getTxn().getIdFinancialTxn());
             for (JournalLine line : lines) {
                 JournalEntryLines jel = getJournalEntryLines(line);

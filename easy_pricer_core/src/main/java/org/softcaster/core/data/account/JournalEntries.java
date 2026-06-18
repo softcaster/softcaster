@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.softcaster.core.data.converters.JournalEntryStatusConverter;
 import org.softcaster.core.data.converters.JournalEntryTypeConverter;
+import org.softcaster.engine.enums.JournalEntryStatus;
 import org.softcaster.engine.enums.JournalEntryType;
 
 @Entity
@@ -40,6 +42,10 @@ public class JournalEntries implements Serializable {
     @Convert(converter = JournalEntryTypeConverter.class)
     @Column(name = "entry_type")
     private JournalEntryType entryType;
+
+    @Convert(converter = JournalEntryStatusConverter.class)
+    @Column(name = "entry_status")
+    private JournalEntryStatus entryStatus;
 
     // Le JournalEntryLines non dovrebbero mai essere cancellate solo
     // movimenti di senso contrario per questo uso PERSIST e tolto
@@ -158,5 +164,19 @@ public class JournalEntries implements Serializable {
      */
     public List<JournalEntryLines> getJeLines() {
         return jeLines;
+    }
+
+    /**
+     * @return the entryStatus
+     */
+    public JournalEntryStatus getEntryStatus() {
+        return entryStatus;
+    }
+
+    /**
+     * @param entryStatus the entryStatus to set
+     */
+    public void setEntryStatus(JournalEntryStatus entryStatus) {
+        this.entryStatus = entryStatus;
     }
 }

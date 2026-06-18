@@ -159,14 +159,26 @@ CREATE TABLE journal_entry_types (
 ALTER TABLE journal_entry_types OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
+-- journal_entry_status
+-- ----------------------------------------------------------------------------
+CREATE TABLE journal_entry_status (
+    entry_status_id integer NOT NULL,
+    code varchar(30) NOT NULL,
+    description varchar(100),
+    PRIMARY KEY (entry_status_id)
+);
+
+ALTER TABLE journal_entry_status OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
 -- journal_entries
 -- ----------------------------------------------------------------------------
 CREATE TABLE journal_entries (
     journal_entry_id integer NOT NULL,
     accounting_event integer NOT NULL,
     entry_type integer NOT NULL, -- ACCOUNTING MEMO  REVERSAL ADJUSTMENT
+    entry_status integer NOT NULL, -- UNCONSOLIDATED CONSOLIDATED ERROR
     business_date date NOT NULL,
-    entry_date timestamp NOT NULL DEFAULT now(),
     reference varchar(100),
     description varchar(500),
     reversal_of integer NULL,
@@ -175,6 +187,7 @@ CREATE TABLE journal_entries (
     CONSTRAINT fk_je_event FOREIGN KEY (accounting_event) REFERENCES accounting_events (event_id),
     CONSTRAINT fk_je_reversal FOREIGN KEY (reversal_of) REFERENCES journal_entries (journal_entry_id),
     CONSTRAINT fk_je_type FOREIGN KEY (entry_type) REFERENCES journal_entry_types (entry_type_id)
+    CONSTRAINT fk_je_status FOREIGN KEY (entry_status) REFERENCES journal_entry_status (entry_status_id)
 );
 
 ALTER TABLE journal_entries OWNER TO sofie;

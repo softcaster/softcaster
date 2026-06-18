@@ -5,6 +5,7 @@
 package org.softcaster.easy_pricer_proc.processors;
 
 import org.softcaster.core.data.PositionDetail;
+import org.softcaster.engine.enums.TxnStatus;
 
 /**
  *
@@ -17,17 +18,17 @@ public abstract class AbstractTxnProcessor {
     public void process(ProcInputData input, PositionDetail position) {
         double quantity = input.getQuantity();
         // Se transazione cancellata o modificata, inverto quantita, mantenendo pero il side
-        if (input.getStatus().equalsIgnoreCase("TO_CANCEL") || 
-                input.getStatus().equalsIgnoreCase("TO_AMEND")) {
+        if (input.getStatus() == TxnStatus.TO_CANCEL || 
+                input.getStatus() == TxnStatus.TO_AMEND) {
             quantity = quantity * (-1.);
         }
         double notionalValue = input.getPrice() * quantity;
         switch (input.getSide()) {
-            case ITxnProcessor.BUY -> {
+            case BUY -> {
                 position.setBuyQty(position.getBuyQty() + quantity);
                 position.setNotionalValueBuy(position.getNotionalValueBuy() + notionalValue);
             }
-            case ITxnProcessor.SELL -> {
+            case SELL -> {
                 position.setSellQty(position.getSellQty() + quantity);
                 position.setNotionalValueSell(position.getNotionalValueSell() + notionalValue);
             }

@@ -53,7 +53,7 @@ public class Counterparty implements Serializable {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
-    @JoinColumn(name = "counterparty", nullable = false) // FK in child table holiday
+    @JoinColumn(name = "counterparty", nullable = false) // FK in child table counterparty_role_mapping
     private List<CounterpartyRoleMapping> roles = new ArrayList<>();
 
     public Integer getIdCounterparty() {

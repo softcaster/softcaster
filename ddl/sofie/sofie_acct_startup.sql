@@ -42,3 +42,8 @@ INSERT INTO journal_entry_types VALUES (1,'ACCOUNTING','Official accounting entr
 INSERT INTO journal_entry_types VALUES (2,'MEMO','Memorandum entry');
 INSERT INTO journal_entry_types VALUES (3,'REVERSAL','Reversal entry');
 INSERT INTO journal_entry_types VALUES (4,'ADJUSTMENT','Adjustment entry');
+
+-- journal_entry_status
+INSERT INTO journal_entry_status VALUES (1,'UNCONSOLIDATED','Unconsolidated');
+INSERT INTO journal_entry_status VALUES (2,'CONSOLIDATED','Consolidated');
+INSERT INTO journal_entry_status VALUES (3,'ERROR','Error');

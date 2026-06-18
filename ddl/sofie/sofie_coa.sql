@@ -1311,6 +1311,40 @@ VALUES
                             WHERE
                                 code = 'DEBIT'));
 
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES
+    (nextval('gl_accounts_s'),
+        (
+            SELECT
+                account_id
+            FROM
+                gl_accounts
+            WHERE
+                code = '19'), '190030', 'FX Settlement Receivable', TRUE, (
+                SELECT
+                    id_currency
+                FROM
+                    currency
+                WHERE
+                    iso_code = 'EUR'), (
+                    SELECT
+                        statement_type_id
+                    FROM
+                        financial_statement_types
+                    WHERE
+                        code = 'BALANCE_SHEET'), (
+                        SELECT
+                            nature_id
+                        FROM
+                            account_natures
+                        WHERE
+                            code = 'ASSET'), (
+                            SELECT
+                                balance_id
+                            FROM
+                                normal_balances
+                            WHERE
+                                code = 'DEBIT'));
 -- Children of Borrowings (21)
 INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
 VALUES
@@ -1603,6 +1637,41 @@ VALUES
                 gl_accounts
             WHERE
                 code = '24'), '240090', 'Currency Clearing Account', TRUE, (
+                SELECT
+                    id_currency
+                FROM
+                    currency
+                WHERE
+                    iso_code = 'EUR'), (
+                    SELECT
+                        statement_type_id
+                    FROM
+                        financial_statement_types
+                    WHERE
+                        code = 'BALANCE_SHEET'), (
+                        SELECT
+                            nature_id
+                        FROM
+                            account_natures
+                        WHERE
+                            code = 'LIABILITY'), (
+                            SELECT
+                                balance_id
+                            FROM
+                                normal_balances
+                            WHERE
+                                code = 'CREDIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES
+    (nextval('gl_accounts_s'),
+        (
+            SELECT
+                account_id
+            FROM
+                gl_accounts
+            WHERE
+                code = '24'), '240060', 'FX Settlement Payable', TRUE, (
                 SELECT
                     id_currency
                 FROM

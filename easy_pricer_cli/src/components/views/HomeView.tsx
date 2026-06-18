@@ -13,7 +13,7 @@ const HomeView: React.FC = () => {
 
             {/* Titolo Principale */}
             <h1 className="text-4xl font-semibold text-800 mb-2">
-                Welcome to Easy Trades ET
+                Welcome to So.Fi.E
             </h1>
 
             {/* Sottotitolo */}
@@ -23,7 +23,7 @@ const HomeView: React.FC = () => {
 
             {/* Footer della Home */}
             <div className="mt-8 pt-5 border-top-1 surface-border w-full text-500 text-sm font-italic">
-                Version 1.0 - Softcaster Finance Engine
+                Version 1.0 - by Softcaster Financial Engineering
             </div>
         </div>
     );
