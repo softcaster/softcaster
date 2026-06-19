@@ -20,6 +20,7 @@ public class BondInputData extends MarketInputData {
     /**
      * @return the frequency
      */
+    @Override
     public Frequency getFrequency() {
         return frequency;
     }
@@ -27,6 +28,7 @@ public class BondInputData extends MarketInputData {
     /**
      * @param frequency the frequency to set
      */
+    @Override
     public void setFrequency(Frequency frequency) {
         this.frequency = frequency;
     }

@@ -882,6 +882,11 @@ CREATE TABLE position_detail (
     sell_taxes numeric(15, 5) NOT NULL, -- tasse di transazione sulla vendita
     multiplier numeric(15, 5) NOT NULL DEFAULT 1, -- nel caso dei Bond sara 0.01
     market_price numeric(15, 5) NOT NULL, -- prezzo di mercato a cui potrei vendere (sempre bid)
+    accrual numeric(15, 5) NOT NULL DEFAULT 0, -- rateo maturato
+    ytm numeric(15, 5) NOT NULL DEFAULT 0, -- yield-to-maturity
+    duration numeric(15, 5) NOT NULL DEFAULT 0, -- duration 
+    mod_duration numeric(15, 5) NOT NULL DEFAULT 0, -- modified duration
+    theoretical_price numeric(15, 5) NOT NULL DEFAULT 0, -- prezzo teorico
     CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_counterparty FOREIGN KEY (counterparty) REFERENCES counterparty (id_counterparty) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_position_md FOREIGN KEY (position_md) REFERENCES position_master_data (id_position) ON DELETE NO ACTION ON UPDATE NO ACTION,

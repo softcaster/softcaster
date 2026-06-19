@@ -41,9 +41,25 @@ public class FinTxnExecutionService {
     @Autowired
     AccountingEventDAO accountingEventDAO;
 
+    // Richiede una NUOVA transazione per salvare lo stato di REJECTED 
+    // anche se la transazione principale fallisce e fa rollback
+    // Vedere commento a FinTxnPollingJob.elabFinancialTxnList
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatusOnFailure(Integer txnId, TxnStatus status) {
+        try {
+            FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
+            if (txn != null) {
+                txn.setTxnStatus(status);
+                financialTxnDAO.saveOrUpdate(txn);
+            }
+        } catch (Exception ex) {
+            log.error("Could not update status to REJECTED for txnId {}", txnId, ex);
+        }
+    }
+
     // Ogni evento viene elaborato e committato singolarmente
     @Transactional
-    public void executeTxn(Integer txnId) {
+    public void elabFinancialTxn(Integer txnId) {
         FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
 
         // Determino nuovo stato "potenziale"
@@ -66,8 +82,8 @@ public class FinTxnExecutionService {
         }
 
         try {
-            processFinancialTxn(txn);
-            postProcessFinancialTxn(txn);
+            elabFinancialTxn(txn);
+            generateAccountingEvent(txn, newStatus);
             updateStatus(txn, newStatus);
 
         } catch (Exception e) {
@@ -76,35 +92,54 @@ public class FinTxnExecutionService {
         }
     }
 
-    // Richiede una NUOVA transazione per salvare lo stato di REJECTED 
-    // anche se la transazione principale fallisce e fa rollback
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateStatusOnFailure(Integer txnId, TxnStatus status) {
+    private void elabFinancialTxn(FinancialTxn txn) {
+
+        PositionDetail position = getPositionDetail(txn);
+        processFinancialTxn(txn, position);
+        positionRepository.saveOrUpdate(position);
+    }
+
+    private void generateAccountingEvent(FinancialTxn txn, TxnStatus status) {
+        if (txn == null) {
+            log.error("Invalid Txn");
+            throw new TxnProcessingException("Invalid Txn");
+        }
         try {
-            FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
-            if (txn != null) {
-                txn.setTxnStatus(status);
-                financialTxnDAO.saveOrUpdate(txn);
+            // Genero AccountingEvent
+            AccountingEvent event = new AccountingEvent();
+            switch (status) {
+                case EXECUTED ->
+                    event.setEventType(EventType.TRADE_EXECUTED);
+                case AMENDED ->
+                    event.setEventType(EventType.TRADE_AMENDED);
+                case CANCELLED ->
+                    event.setEventType(EventType.TRADE_CANCELED);
+                default -> {
+                    throw new TxnProcessingException("Invalid Status: " + txn.getTxnStatus().getCode());
+                }
             }
+            event.setSourceId(txn.getIdFinancialTxn());
+            event.setEventStatus(AccountingEventStatus.NEW);
+            event.setSourceType(EventSourceType.TRADE);
+            event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + status.getCode());
+            event.setCreatedAt(LocalDateTime.now());
+            event.setGeneratedBy(txn.getMasterData().getIdMasterData());
+            event.setGeneratedRef("");
+            accountingEventDAO.saveOrUpdate(event);
         } catch (Exception ex) {
-            log.error("Could not update status to REJECTED for txnId {}", txnId, ex);
+            LoggerMgr.logInfo(ex.getLocalizedMessage());
+            log.error(ex.getLocalizedMessage());
+            throw new TxnProcessingException("Invalid Status: " + txn.getTxnStatus().getCode());
         }
     }
-    
-    protected void updateStatus(FinancialTxn txn, TxnStatus status) {
+
+    private void updateStatus(FinancialTxn txn, TxnStatus status) {
 
         txn.setTxnStatus(status);
         financialTxnDAO.saveOrUpdate(txn);
     }
 
-    protected void processFinancialTxn(FinancialTxn txn) {
-
-        PositionDetail position = getPositionDetail(txn);
-        elabFinancialTxn(txn, position);
-        positionRepository.saveOrUpdate(position);
-    }
-
-    protected PositionDetail getPositionDetail(FinancialTxn txn) {
+    private PositionDetail getPositionDetail(FinancialTxn txn) {
         PositionDetail position = positionRepository.findByPositionMdAndMasterDataAndCounterparty(
                 txn.getPositionMd().getIdPosition(), txn.getMasterData().getIdMasterData(),
                 txn.getCounterparty().getIdCounterparty()).orElseGet(() -> {
@@ -119,7 +154,7 @@ public class FinTxnExecutionService {
         return position;
     }
 
-    protected void elabFinancialTxn(FinancialTxn txn, PositionDetail position) {
+    private void processFinancialTxn(FinancialTxn txn, PositionDetail position) {
 
         ITxnProcessor processor = processorDispatcher.dispatch(txn.getMasterData().getAssetClass().getCode());
         if (processor != null) {
@@ -129,40 +164,6 @@ public class FinTxnExecutionService {
         } else {
             log.error("Invalid ITxnProcessor");
             throw new TxnProcessingException("Invalid ITxnProcessor");
-        }
-    }
-
-    private void postProcessFinancialTxn(FinancialTxn txn) {
-        if (txn == null) {
-            log.error("Invalid Txn");
-            throw new TxnProcessingException("Invalid Txn");
-        }
-        try {
-            // Genero AccountingEvent
-            AccountingEvent event = new AccountingEvent();
-            switch (txn.getTxnStatus()) {
-                case EXECUTED ->
-                    event.setEventType(EventType.TRADE_EXECUTED);
-                case AMENDED ->
-                    event.setEventType(EventType.TRADE_AMENDED);
-                case CANCELLED ->
-                    event.setEventType(EventType.TRADE_CANCELED);
-                default -> {
-                    throw new TxnProcessingException("Invalid Status: " + txn.getTxnStatus().getCode());
-                }
-            }
-            event.setSourceId(txn.getIdFinancialTxn());
-            event.setEventStatus(AccountingEventStatus.NEW);
-            event.setSourceType(EventSourceType.TRADE);
-            event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + txn.getTxnStatus().getCode());
-            event.setCreatedAt(LocalDateTime.now());
-            event.setGeneratedBy(txn.getMasterData().getIdMasterData());
-            event.setGeneratedRef("");
-            accountingEventDAO.saveOrUpdate(event);
-        } catch (Exception ex) {
-            LoggerMgr.logInfo(ex.getLocalizedMessage());
-            log.error(ex.getLocalizedMessage());
-            throw new TxnProcessingException("Invalid Status: " + txn.getTxnStatus().getCode());
         }
     }
 }

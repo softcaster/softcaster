@@ -39,14 +39,14 @@ public class FinTxnPollingJob {
         boolean allSuccess = true;
         for (FinancialTxn txn : financialTxnList) {
             try {
-                finTxnExecutionService.executeTxn(txn.getIdFinancialTxn());
+                finTxnExecutionService.elabFinancialTxn(txn.getIdFinancialTxn());
             } catch (Exception e) {
                 log.error("### ERROR ID {}: {}", txn.getIdFinancialTxn(), e.getMessage());
                 LoggerMgr.logError(e.getLocalizedMessage());
                 // Non si puo spostare la funzione updateStatusOnFailure all'interno della classe
                 // perchè In Spring, l'annotazione @Transactional funziona tramite proxy.
-                // un metodo internamente (da un metodo della stessa classe a un altro metodo della stessa classe), 
-                // il proxy di Spring viene saltato completamente.
+                // usare un metodo della stessa classe per chiamare  un altro metodo della stessa classe 
+                // non funziona perche'il proxy di Spring viene saltato completamente.
                 // Di conseguenza, REQUIRES_NEW viene ignorato. Il codice girerà senza una transazione autonoma 
                 // o tenterà di usare quella precedente (che è fallita e marcata per il rollback), 
                 // impedendo il salvataggio dello stato REJECTED

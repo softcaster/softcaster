@@ -4,10 +4,20 @@
  */
 package org.softcaster.easy_pricer_proc.processors;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
+import org.softcaster.engine.analytics.BondPricer;
+import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.dto.BondInputData;
+import org.softcaster.engine.dto.BondOutputData;
+import org.softcaster.engine.enums.Compounding;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,6 +26,10 @@ import org.springframework.stereotype.Component;
  */
 @Component("XRB")
 public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
+
+    @Autowired
+    @Qualifier("bondPricer") 
+    private BondPricer bondPricer;
 
     @Override
     public void process(FinancialTxn txn, PositionDetail position) {
@@ -27,9 +41,19 @@ public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProce
         if (smd == null) {
             throw new TxnProcessingException("Invalid processor");
         }
-        double accruedInterest = calculateAccruedInterest(smd);
+
+        
+        BondInputData bondInputData = new BondInputData();
+        bondInputData.setSpotPrice(txn.getPrice());
+        bondInputData.setValuationDate(txn.getSettlement().toLocalDate());
+        bondInputData.setCompounding(Compounding.COMPOUNDED);
+        bondInputData.setDaycount(smd.getAccrualDaycount());
+        bondInputData.setFrequency(smd.getFrequency());
+        bondInputData.setFlows(getFlows(smd.getCashFlows()));
+        BondOutputData bondOutputData = bondPricer.calculate(bondInputData);
+        
         ProcInputData input = new ProcInputData();
-        input.setPrice((txn.getPrice() + accruedInterest) * smd.getMultiplier());
+        input.setPrice((txn.getPrice() + bondOutputData.getAccruedInterest()) * smd.getMultiplier());
         input.setQuantity(txn.getQuantity());
         input.setSide(txn.getTxnSide());
         input.setStatus(txn.getTxnStatus());
@@ -42,7 +66,16 @@ public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProce
         return false;
     }
 
-    protected double calculateAccruedInterest(SecurityMasterData smd) {
-        return 0.;
+    private List<CashFlow> getFlows(List<CashFlowItem> cashFlows) {
+        List<CashFlow> flows = null;
+        
+        if(!cashFlows.isEmpty()) {
+            flows = new ArrayList<>();
+            for(CashFlowItem item: cashFlows) {
+                
+            }
+        }
+        
+        return flows;
     }
 }

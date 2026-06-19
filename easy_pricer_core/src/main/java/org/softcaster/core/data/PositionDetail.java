@@ -80,6 +80,30 @@ public class PositionDetail implements Serializable {
     @Column(name = "market_price")
     private Double marketPrice;
 
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "accrual")
+    private Double accrual;
+
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "ytm")
+    private Double ytm;
+
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "duration")
+    private Double duration;
+
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "mod_duration")
+    private Double modDuration;
+
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "time_to_maturity")
+    private Double timeToMaturity;
+
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "theoretical_price")
+    private Double theoreticalPrice;
+    
     public Integer getIdPositionDetail() {
         return idPositionDetail;
     }
@@ -293,7 +317,92 @@ public class PositionDetail implements Serializable {
 
     public void initialize() {
         realizedPnl = unrealizedPnl = buyQty = notionalValueBuy = buyFees = buyTaxes
-                = sellQty = notionalValueSell = sellFees = sellTaxes = marketPrice = 0.;
+                = sellQty = notionalValueSell = sellFees = sellTaxes = marketPrice 
+                = accrual = ytm = duration = modDuration = timeToMaturity = theoreticalPrice = 0.;
         multiplier = 1.;
+    }
+
+    /**
+     * @return the accrual
+     */
+    public Double getAccrual() {
+        return accrual;
+    }
+
+    /**
+     * @param accrual the accrual to set
+     */
+    public void setAccrual(Double accrual) {
+        this.accrual = accrual;
+    }
+
+    /**
+     * @return the ytm
+     */
+    public Double getYtm() {
+        return ytm;
+    }
+
+    /**
+     * @param ytm the ytm to set
+     */
+    public void setYtm(Double ytm) {
+        this.ytm = ytm;
+    }
+
+    /**
+     * @return the duration
+     */
+    public Double getDuration() {
+        return duration;
+    }
+
+    /**
+     * @param duration the duration to set
+     */
+    public void setDuration(Double duration) {
+        this.duration = duration;
+    }
+
+    /**
+     * @return the modDuration
+     */
+    public Double getModDuration() {
+        return modDuration;
+    }
+
+    /**
+     * @param modDuration the modDuration to set
+     */
+    public void setModDuration(Double modDuration) {
+        this.modDuration = modDuration;
+    }
+
+    /**
+     * @return the timeToMaturity
+     */
+    public Double getTimeToMaturity() {
+        return timeToMaturity;
+    }
+
+    /**
+     * @param timeToMaturity the timeToMaturity to set
+     */
+    public void setTimeToMaturity(Double timeToMaturity) {
+        this.timeToMaturity = timeToMaturity;
+    }
+
+    /**
+     * @return the theoreticalPrice
+     */
+    public Double getTheoreticalPrice() {
+        return theoreticalPrice;
+    }
+
+    /**
+     * @param theoreticalPrice the theoreticalPrice to set
+     */
+    public void setTheoreticalPrice(Double theoreticalPrice) {
+        this.theoreticalPrice = theoreticalPrice;
     }
 }
