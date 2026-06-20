@@ -85,7 +85,6 @@ VALUES
                                 code = 'DEBIT'));
 
 ----------------------------------------------------------------------------------------------
-
 alter table position_detail add column accrual numeric(15, 5) NOT NULL DEFAULT 0;
 alter table position_detail add column ytm numeric(15, 5) NOT NULL DEFAULT 0;
 alter table position_detail add column duration numeric(15, 5) NOT NULL DEFAULT 0;
@@ -93,3 +92,13 @@ alter table position_detail add column time_to_maturity numeric(15, 5) NOT NULL 
 alter table position_detail add column mod_duration numeric(15, 5) NOT NULL DEFAULT 0;
 alter table position_detail add column theoretical_price numeric(15, 5) NOT NULL DEFAULT 0;
 
+----------------------------------------------------------------------------------------------
+alter table position_detail drop column accrual;
+alter table position_detail add column buy_accrual numeric(15, 5) NOT NULL DEFAULT 0;
+alter table position_detail add column sell_accrual numeric(15, 5) NOT NULL DEFAULT 0;
+
+----------------------------------------------------------------------------------------------
+alter table position_detail drop column multiplier;
+
+----------------------------------------------------------------------------------------------
+alter table financial_txn add column txn_status_pre_elab integer NOT NULL DEFAULT 1;

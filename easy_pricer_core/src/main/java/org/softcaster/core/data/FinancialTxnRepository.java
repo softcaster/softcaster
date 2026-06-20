@@ -1,9 +1,14 @@
 package org.softcaster.core.data;
 
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import java.util.List;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Integer> {
@@ -26,11 +31,11 @@ public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Inte
             + "WHERE m.assetClass.code = :code")
     public List<FinancialTxn> findAllByAssetClass(@Param("code") String code);
 
-    @Query(value = "SELECT f.* FROM financial_txn f "
-            + "JOIN txn_status s ON f.txn_status = s.id_txn_status "
-            + "WHERE s.code = :code "
-            + "FOR UPDATE SKIP LOCKED", nativeQuery = true)
-    public List<FinancialTxn> findByTxnStatusCode(String code);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints({
+        @QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2")}) // Attiva lo SKIP LOCKED su Postgres
+    @Query("SELECT t FROM FinancialTxn t WHERE t.txnStatus = :status ORDER BY t.idFinancialTxn ASC")
+    public List<FinancialTxn> getAndLockByStatusCode(@Param("status") TxnStatus status/*, Pageable pageable*/);
 
     @Query("""
         select t

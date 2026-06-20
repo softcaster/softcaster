@@ -4,18 +4,23 @@
  */
 package org.softcaster.easy_pricer_proc.processors;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.dto.BondInputData;
 import org.softcaster.engine.dto.BondOutputData;
 import org.softcaster.engine.enums.Compounding;
+import static org.softcaster.engine.enums.TxnSide.BUY;
+import static org.softcaster.engine.enums.TxnSide.SELL;
+import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -28,7 +33,7 @@ import org.springframework.stereotype.Component;
 public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
 
     @Autowired
-    @Qualifier("bondPricer") 
+    @Qualifier("bondPricer")
     private BondPricer bondPricer;
 
     @Override
@@ -38,27 +43,60 @@ public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProce
         if (txn.getMasterData() instanceof SecurityMasterData bond) {
             smd = bond;
         }
+
         if (smd == null) {
             throw new TxnProcessingException("Invalid processor");
         }
 
-        
-        BondInputData bondInputData = new BondInputData();
-        bondInputData.setSpotPrice(txn.getPrice());
-        bondInputData.setValuationDate(txn.getSettlement().toLocalDate());
-        bondInputData.setCompounding(Compounding.COMPOUNDED);
-        bondInputData.setDaycount(smd.getAccrualDaycount());
-        bondInputData.setFrequency(smd.getFrequency());
-        bondInputData.setFlows(getFlows(smd.getCashFlows()));
-        BondOutputData bondOutputData = bondPricer.calculate(bondInputData);
-        
         ProcInputData input = new ProcInputData();
-        input.setPrice((txn.getPrice() + bondOutputData.getAccruedInterest()) * smd.getMultiplier());
+        // Per calcolo realized/unrealized si utilizza sempre clean price
+        // componente accrual calcolata a parte, andranno a CE come Interessi Attivi/Passivi
+        // o competenze cedolari attive/passive. Utilizzo il prezzo base unitaria
+        input.setPrice(txn.getPrice() * smd.getMultiplier());
         input.setQuantity(txn.getQuantity());
         input.setSide(txn.getTxnSide());
         input.setStatus(txn.getTxnStatus());
 
         super.process(input, position);
+
+        Calendar calendar = new Calendar(smd.getCurrency());
+        LocalDate valuationDate = calendar.getNextBusinessDate(txn.getSettlement().toLocalDate(), smd.getBusinessDays());
+        BondInputData bondInputData = new BondInputData();
+        bondInputData.setSpotPrice(txn.getPrice());
+        bondInputData.setValuationDate(valuationDate);
+        bondInputData.setCompounding(Compounding.COMPOUNDED);
+        bondInputData.setDaycount(smd.getAccrualDaycount());
+        bondInputData.setFrequency(smd.getFrequency());
+        bondInputData.setFlows(getFlows(smd.getCashFlows()));
+        BondOutputData bondOutputData = bondPricer.calculate(bondInputData);
+
+        // Per accrual stessa gestione di quantity e notionalValue
+        // Se transazione cancellata o modificata, inverto quantita, 
+        // mantenendo pero il side
+        double quantity = input.getQuantity();
+        if (input.getStatus() == TxnStatus.TO_CANCEL
+                || input.getStatus() == TxnStatus.TO_AMEND) {
+            quantity = quantity * (-1.);
+        }
+        double accruals = bondOutputData.getAccruedInterest() * quantity * smd.getMultiplier();
+        switch (input.getSide()) {
+            case BUY -> {
+                position.setBuyAccrual(position.getBuyAccrual() + accruals);
+            }
+            case SELL -> {
+                position.setSellAccrual(position.getSellAccrual() + accruals);
+            }
+        }
+
+        position.setYtm(bondOutputData.getYtm());
+        position.setModDuration(bondOutputData.getModifiedDuration());
+        position.setDuration(bondOutputData.getModifiedDuration());
+        LocalDate maturity = smd.getMaturityDate().toLocalDate();
+        double timeToMaturity = smd.getDaycount().calculate(valuationDate, maturity, smd.getFrequency());
+        position.setTimeToMaturity(timeToMaturity);
+        position.setTheoreticalPrice(txn.getPrice() + bondOutputData.getAccruedInterest());
+        // sulla posizione tengo market price normalizzato a base 100
+        position.setMarketPrice(txn.getPrice());
     }
 
     @Override
@@ -68,14 +106,21 @@ public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProce
 
     private List<CashFlow> getFlows(List<CashFlowItem> cashFlows) {
         List<CashFlow> flows = null;
-        
-        if(!cashFlows.isEmpty()) {
+
+        if (!cashFlows.isEmpty()) {
             flows = new ArrayList<>();
-            for(CashFlowItem item: cashFlows) {
-                
+            for (CashFlowItem item : cashFlows) {
+                CashFlow flow = new CashFlow(
+                        item.getStartDate().toLocalDate(),
+                        item.getEnddate().toLocalDate(),
+                        item.getEnddate().toLocalDate(),
+                        item.getAmount(),
+                        item.getInterest(),
+                        0.
+                );
+                flows.add(flow);
             }
         }
-        
         return flows;
     }
 }

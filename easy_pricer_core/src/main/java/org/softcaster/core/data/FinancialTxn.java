@@ -53,6 +53,10 @@ public class FinancialTxn implements Serializable {
     @Convert(converter = TxnStatusConverter.class)
     @Column(name = "txn_status")
     private TxnStatus txnStatus;
+    
+    @Convert(converter = TxnStatusConverter.class)
+    @Column(name = "txn_status_pre_elab")
+    private TxnStatus txnStatusPreElab;
 
     @Convert(converter = TxnSideConverter.class)
     @Column(name = "txn_side")
@@ -272,5 +276,19 @@ public class FinancialTxn implements Serializable {
      */
     public void setComponents(List<FinancialTxnComponent> components) {
         this.components = components;
+    }
+
+    /**
+     * @return the txnStatusPreElab
+     */
+    public TxnStatus getTxnStatusPreElab() {
+        return txnStatusPreElab;
+    }
+
+    /**
+     * @param txnStatusPreElab the txnStatusPreElab to set
+     */
+    public void setTxnStatusPreElab(TxnStatus txnStatusPreElab) {
+        this.txnStatusPreElab = txnStatusPreElab;
     }
 }

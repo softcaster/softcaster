@@ -72,17 +72,17 @@ public class PositionDetail implements Serializable {
     @Column(name = "sell_taxes")
     private Double sellTaxes;
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "multiplier")
-    private Double multiplier;
-
-    @JdbcTypeCode(Types.NUMERIC)
+   @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "market_price")
     private Double marketPrice;
 
     @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "accrual")
-    private Double accrual;
+    @Column(name = "buy_accrual")
+    private Double buyAccrual;
+    
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "sell_accrual")
+    private Double sellAccrual;
 
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "ytm")
@@ -204,20 +204,6 @@ public class PositionDetail implements Serializable {
     }
 
     /**
-     * @return the multiplier
-     */
-    public Double getMultiplier() {
-        return multiplier;
-    }
-
-    /**
-     * @param multiplier the multiplier to set
-     */
-    public void setMultiplier(Double multiplier) {
-        this.multiplier = multiplier;
-    }
-
-    /**
      * @return the notionalValueBuy
      */
     public Double getNotionalValueBuy() {
@@ -318,22 +304,8 @@ public class PositionDetail implements Serializable {
     public void initialize() {
         realizedPnl = unrealizedPnl = buyQty = notionalValueBuy = buyFees = buyTaxes
                 = sellQty = notionalValueSell = sellFees = sellTaxes = marketPrice 
-                = accrual = ytm = duration = modDuration = timeToMaturity = theoreticalPrice = 0.;
-        multiplier = 1.;
-    }
-
-    /**
-     * @return the accrual
-     */
-    public Double getAccrual() {
-        return accrual;
-    }
-
-    /**
-     * @param accrual the accrual to set
-     */
-    public void setAccrual(Double accrual) {
-        this.accrual = accrual;
+                = buyAccrual = sellAccrual = ytm = duration = modDuration = timeToMaturity 
+                = theoreticalPrice = 0.;
     }
 
     /**
@@ -404,5 +376,33 @@ public class PositionDetail implements Serializable {
      */
     public void setTheoreticalPrice(Double theoreticalPrice) {
         this.theoreticalPrice = theoreticalPrice;
+    }
+
+    /**
+     * @return the buyAccrual
+     */
+    public Double getBuyAccrual() {
+        return buyAccrual;
+    }
+
+    /**
+     * @param buyAccrual the buyAccrual to set
+     */
+    public void setBuyAccrual(Double buyAccrual) {
+        this.buyAccrual = buyAccrual;
+    }
+
+    /**
+     * @return the sellAccrual
+     */
+    public Double getSellAccrual() {
+        return sellAccrual;
+    }
+
+    /**
+     * @param sellAccrual the sellAccrual to set
+     */
+    public void setSellAccrual(Double sellAccrual) {
+        this.sellAccrual = sellAccrual;
     }
 }

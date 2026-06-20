@@ -132,7 +132,9 @@ INSERT INTO txn_status(id_txn_status,code, description) VALUES (7,'TO_CANCEL','T
 -- cancellata
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (8,'CANCELLED','Cancelled');
 -- restart transazione rejected
-INSERT INTO txn_status(id_txn_status,code, description) VALUES (9,'RESTARTING','Restartin');
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (9,'RESTARTING','Restarting');
+-- tarnsazione prenotata per il processamento
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (10,'CLAIMED','Claimed');
 
 -- ----------------------------------------------------------------------------
 -- txn_side

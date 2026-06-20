@@ -882,7 +882,8 @@ CREATE TABLE position_detail (
     sell_taxes numeric(15, 5) NOT NULL, -- tasse di transazione sulla vendita
     multiplier numeric(15, 5) NOT NULL DEFAULT 1, -- nel caso dei Bond sara 0.01
     market_price numeric(15, 5) NOT NULL, -- prezzo di mercato a cui potrei vendere (sempre bid)
-    accrual numeric(15, 5) NOT NULL DEFAULT 0, -- rateo maturato
+    buy_accrual numeric(15, 5) NOT NULL DEFAULT 0, -- rateo maturato posizione long
+    sell_accrual numeric(15, 5) NOT NULL DEFAULT 0, -- rateo maturato posizione short
     ytm numeric(15, 5) NOT NULL DEFAULT 0, -- yield-to-maturity
     duration numeric(15, 5) NOT NULL DEFAULT 0, -- duration 
     mod_duration numeric(15, 5) NOT NULL DEFAULT 0, -- modified duration
@@ -945,6 +946,7 @@ CREATE TABLE financial_txn (
     position_md integer NOT NULL, -- position
     master_data integer NOT NULL, -- identificativo strumento
     txn_status integer NOT NULL, -- stato transazione
+    txn_status_pre_elab integer NOT NULL, -- stato transazione pre processamento (iniziale)
     txn_side smallint NOT NULL, -- (Buy/Sell)
     description varchar(255) NOT NULL,
     trade_date date NOT NULL DEFAULT NOW(), -- esecuzione deal

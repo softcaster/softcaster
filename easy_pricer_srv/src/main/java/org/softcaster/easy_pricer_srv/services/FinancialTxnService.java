@@ -67,6 +67,7 @@ public class FinancialTxnService {
                     if (oldTxnDto == null) {
                         financialTxn.setIdFinancialTxn(null);
                         financialTxn.setTxnStatus(TxnStatus.PENDING);
+                        financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
                         financialTxn.setValueDate(financialTxn.getTradeDate());
                     } else {
                        financialTxn.setIdFinancialTxn(oldTxnDto.financialTxnId()); 
@@ -82,12 +83,14 @@ public class FinancialTxnService {
                         // lo stato del vecchio record a TO_AMEND
                         FinancialTxn oldTxnToCancel = dao.findByIdFinancialTxn(oldTxnDto.financialTxnId());
                         oldTxnToCancel.setTxnStatus(TxnStatus.TO_AMEND);
+                        financialTxn.setTxnStatusPreElab(TxnStatus.TO_AMEND);
                         dao.saveOrUpdate(oldTxnToCancel);
 
                         // Crea un record Java nuovo (Nasce slegato dalla sessione di Hibernate)
                         financialTxn.setIdFinancialTxn(null); // Forza la INSERT di una riga nuova
                         financialTxn.setRefId(oldTxnToCancel.getIdFinancialTxn()); // Copia l'ID originale (es. 34)
                         financialTxn.setTxnStatus(TxnStatus.PENDING);
+                        financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
 
                         dao.saveOrUpdate(financialTxn);
                     } else {

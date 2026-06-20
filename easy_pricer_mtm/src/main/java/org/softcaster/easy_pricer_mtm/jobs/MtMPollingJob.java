@@ -4,6 +4,7 @@
  */
 package org.softcaster.easy_pricer_mtm.jobs;
 
+import java.time.LocalDate;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,11 @@ public class MtMPollingJob implements IMtmDataHelper {
     @Override
     public double getSpotPrice(String ticker, RequestType request) {
         return marketDataService.getSpotPrice(ticker, request);
+    }
+
+    @Override
+    public LocalDate getOfficialDate() {
+        return LocalDate.now();
     }
 
 }

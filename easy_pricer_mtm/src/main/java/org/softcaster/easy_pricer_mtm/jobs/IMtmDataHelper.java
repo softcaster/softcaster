@@ -4,6 +4,7 @@
  */
 package org.softcaster.easy_pricer_mtm.jobs;
 
+import java.time.LocalDate;
 import org.softcaster.provider.enums.RequestType;
 
 /**
@@ -13,4 +14,5 @@ import org.softcaster.provider.enums.RequestType;
 public interface IMtmDataHelper {
     
     public double getSpotPrice(String ticker, RequestType request);
+    public LocalDate getOfficialDate();
 }

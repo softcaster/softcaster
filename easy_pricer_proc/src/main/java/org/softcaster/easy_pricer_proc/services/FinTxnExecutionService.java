@@ -63,9 +63,8 @@ public class FinTxnExecutionService {
         FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
 
         // Determino nuovo stato "potenziale"
-        TxnStatus oldStatus = TxnStatus.fromCode(txn.getTxnStatus().getCode());
         TxnStatus newStatus = TxnStatus.REJECTED;
-        switch (oldStatus) {
+        switch (txn.getTxnStatusPreElab()) {
             case PENDING, RESTARTING ->
                 newStatus = TxnStatus.EXECUTED;
             case TO_CANCEL ->
@@ -158,8 +157,6 @@ public class FinTxnExecutionService {
 
         ITxnProcessor processor = processorDispatcher.dispatch(txn.getMasterData().getAssetClass().getCode());
         if (processor != null) {
-            // Serve per calcolo unrealizedPnL
-            position.setMarketPrice(txn.getPrice());
             processor.process(txn, position);
         } else {
             log.error("Invalid ITxnProcessor");

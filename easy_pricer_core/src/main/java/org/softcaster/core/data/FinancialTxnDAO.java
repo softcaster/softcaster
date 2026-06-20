@@ -5,6 +5,7 @@ import jakarta.annotation.Resource;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("financialTxnDAO")
@@ -28,10 +29,21 @@ public class FinancialTxnDAO {
         return repository.findAll();
     }
 
-    @Transactional // non può essere read-only perchè il repository chiede a
-    // PostgreSQL di bloccare le righe per la scrittura (FOR UPDATE)
-    public List<FinancialTxn> findByTxnStatusCode(String code) {
-        return repository.findByTxnStatusCode(code);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public List<FinancialTxn> findAndClaimByTxnStatusCode(String code/*, int maxResults*/) {
+        // 1. Legge e BLOCCA le righe saltando quelle già prenotate da altre istanze (SKIP LOCKED)
+        TxnStatus status = TxnStatus.fromCode(code); 
+        List<FinancialTxn> txnList = repository.getAndLockByStatusCode(status/*, PageRequest.of(0, maxResults)*/);
+
+        // 2. Aggiorna lo stato immediatamente all'interno della stessa transazione atomica
+        for (FinancialTxn txn : txnList) {
+            txn.setTxnStatus(TxnStatus.CLAIMED);
+            repository.save(txn); // Salva nel contesto di persistenza
+        }
+
+        // Al return, il metodo finisce, la transazione fa COMMIT, 
+        // lo stato sul DB diventa "CLAIMED" e i record sono al sicuro dalle altre istanze.
+        return txnList;
     }
 
     @Transactional(readOnly = true)
@@ -40,7 +52,7 @@ public class FinancialTxnDAO {
         return repository.findAllByDaycount(daycount);
     }
 
-    @Transactional(readOnly = true) 
+    @Transactional(readOnly = true)
     public List<FinancialTxn> findAllByAssetClass(String code) {
         return repository.findAllByAssetClass(code);
     }
