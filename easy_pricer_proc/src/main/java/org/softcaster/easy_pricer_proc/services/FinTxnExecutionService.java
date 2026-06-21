@@ -24,6 +24,7 @@ import org.softcaster.engine.enums.TxnStatus;
 import static org.softcaster.engine.enums.TxnStatus.EXECUTED;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,8 +58,9 @@ public class FinTxnExecutionService {
         }
     }
 
-    // Ogni evento viene elaborato e committato singolarmente
-    @Transactional
+    // REQUIRES_NEW sospende la transazione del Job e ne apre una nuova di zecca.
+    // Al fallimento, distrugge l'intera sessione di Hibernate locale, ripulendo la memoria.
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public void elabFinancialTxn(Integer txnId) {
         FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
 
@@ -128,7 +130,7 @@ public class FinTxnExecutionService {
         } catch (Exception ex) {
             LoggerMgr.logInfo(ex.getLocalizedMessage());
             log.error(ex.getLocalizedMessage());
-            throw new TxnProcessingException("Invalid Status: " + txn.getTxnStatus().getCode());
+            throw new TxnProcessingException("IAccounting event generation failed");
         }
     }
 

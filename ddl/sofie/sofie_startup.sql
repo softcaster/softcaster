@@ -176,6 +176,14 @@ INSERT INTO counterparty_type(id_counterparty_type,code, description) VALUES (ne
 INSERT INTO counterparty_type(id_counterparty_type,code, description) VALUES (nextval('counterparty_type_s'),'CUSTODIAN','Custodians');
 
 -- ----------------------------------------------------------------------------
+-- sbc_status
+-- ----------------------------------------------------------------------------
+INSERT INTO sbc_status(sbc_status_id,code, description) VALUES (1,'OPEN','Open');
+INSERT INTO sbc_status(sbc_status_id,code, description) VALUES (2,'CLOSING','Closing');
+INSERT INTO sbc_status(sbc_status_id,code, description) VALUES (3,'CLOSED','Closed');
+INSERT INTO sbc_status(sbc_status_id,code, description) VALUES (4,'LOCKED','Loked');
+
+-- ----------------------------------------------------------------------------
 -- calendar
 -- ----------------------------------------------------------------------------
 INSERT INTO calendar(id_calendar,code, description) VALUES (nextval('calendar_s'),'EUR','Euro Area Calendar');
@@ -314,3 +322,14 @@ INSERT INTO yield_curve (id_yield_curve, code, description, currency, calendar, 
     (SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),
     (SELECT id_compounding FROM compounding WHERE code='CONTINUOUS' LIMIT 1),
     '');
+
+-- ----------------------------------------------------------------------------
+-- system_business_calendar
+-- ----------------------------------------------------------------------------
+INSERT INTO system_business_calendar(sbc_id,description,calendar,status,official_date) 
+    VALUES (1,
+        'SO.FI.E Buiness Calendar',
+        (SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),
+        (SELECT sbc_status_id FROM sbc_status WHERE code='OPEN' LIMIT 1),
+         NOW()
+);

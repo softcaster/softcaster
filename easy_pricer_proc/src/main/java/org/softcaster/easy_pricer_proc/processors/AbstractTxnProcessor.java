@@ -18,8 +18,8 @@ public abstract class AbstractTxnProcessor {
     public void process(ProcInputData input, PositionDetail position) {
         double quantity = input.getQuantity();
         // Se transazione cancellata o modificata, inverto quantita, mantenendo pero il side
-        if (input.getStatus() == TxnStatus.TO_CANCEL || 
-                input.getStatus() == TxnStatus.TO_AMEND) {
+        if (input.getStatus() == TxnStatus.TO_CANCEL
+                || input.getStatus() == TxnStatus.TO_AMEND) {
             quantity = quantity * (-1.);
         }
         double notionalValue = input.getPrice() * quantity;
@@ -33,48 +33,63 @@ public abstract class AbstractTxnProcessor {
                 position.setNotionalValueSell(position.getNotionalValueSell() + notionalValue);
             }
         }
-        
+
         // Calcolo realized P&L
         calcRealizedPnL(position);
 
         // Calcolo unrealized P&L
-        calcUnRealizedPnL(position);
+        calcUnRealizedPnL(input, position);
     }
 
     protected void calcRealizedPnL(PositionDetail position) {
 
         // Controllo se abilitato short selling
-        if (!shortSellEnabled() && Double.compare(position.getBuyQty(), 0.) == 0) 
+        if (!shortSellEnabled()) {
             return;
-        
-        // Calcolo solo su qty sell
-        {
-            if (position.getSellQty() > 0.) {
-                // Calcolo prezzo medio buy
-                if (position.getBuyQty() > 0) {
-                    double avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
-                    double avgSellPrice = position.getNotionalValueSell() / position.getSellQty();
-                    double realizedPnL = (avgSellPrice - avgBuyPrice) * position.getSellQty();
-                    position.setRealizedPnl(realizedPnL);
-                }
-            }
         }
+
+        // Se quantità sell o buy pari a zero non ho realizes
+        if (Double.compare(position.getBuyQty(), 0.) == 0 || Double.compare(position.getSellQty(), 0.) == 0) {
+            return;
+        }
+
+        // calcolo capacity
+        double capacity = 0;
+        // Se acquisti > vendite calcolo realized su tutta la quantita venduta
+        if (position.getBuyQty() > position.getSellQty()) {
+            capacity = position.getSellQty();
+        } // se vendite > acquisti calcolo realized su parte utilizzata dalla vendita
+        else {
+            capacity = position.getBuyQty();
+        }
+
+        double avgBuyPrice = 0.;
+        if (position.getBuyQty() > 0) {
+            avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
+        }
+
+        double avgSellPrice = 0.;
+        if (position.getSellQty() > 0) {
+            avgSellPrice = position.getNotionalValueSell() / position.getSellQty();
+        }
+
+        double realizedPnL = (avgSellPrice - avgBuyPrice) * capacity;
+        position.setRealizedPnl(realizedPnL);
     }
 
-    protected void calcUnRealizedPnL(PositionDetail position) {
-        // Calcolo solo su qty buy rimanente
-        double deltaQty = position.getBuyQty() - position.getSellQty();
-        if (deltaQty > 0.) {
-            // Calcolo prezzo medio buy
-            if (position.getBuyQty() > 0) {
-                double avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
-                double unrealizedPnL = (position.getMarketPrice() - avgBuyPrice) * deltaQty;
-                position.setUnrealizedPnl(unrealizedPnL);
-            }
-        } else {
-            // Nessun unrealized, tutto realized
-            position.setUnrealizedPnl(0.);
+    protected void calcUnRealizedPnL(ProcInputData input, PositionDetail position) {
+        // Calcolo solo su qty buy rimanente o potenziale
+        double capacity = position.getBuyQty() - position.getSellQty();
+        if (capacity < 0.) {
+            capacity *= (-1.);
         }
+
+        double avgBuyPrice = 0.;
+        if (position.getBuyQty() > 0) {
+            avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
+        }
+        double unrealizedPnL = (input.getPrice() - avgBuyPrice) * capacity;
+        position.setUnrealizedPnl(unrealizedPnL);
     }
 
 }

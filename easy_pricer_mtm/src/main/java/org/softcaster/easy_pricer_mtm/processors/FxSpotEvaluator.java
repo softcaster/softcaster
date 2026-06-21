@@ -6,7 +6,7 @@ package org.softcaster.easy_pricer_mtm.processors;
 
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
-import org.softcaster.easy_pricer_mtm.jobs.IMtmDataHelper;
+import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.stereotype.Component;
 

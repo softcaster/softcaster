@@ -1,5 +1,6 @@
 package org.softcaster.core.data;
 
+import jakarta.persistence.CascadeType;
 import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -11,10 +12,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.softcaster.core.data.converters.AccrualScheduleTypeConverter;
 import org.softcaster.core.data.converters.AmortizationScheduleConverter;
@@ -52,6 +59,12 @@ public class MasterData implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    // Aggiungiamo nullable = false per forzare Hibernate a includere il valore dell'ID 
+    // direttamente nella INSERT iniziale, senza fare l'update successivo
+    @JoinColumn(name = "master_data", referencedColumnName = "id_master_data", nullable = false)
+    private List<InstrumentValuation> instrumentValuations = new ArrayList<>();
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "currency", nullable = true)
     private Currency currency;
@@ -75,7 +88,7 @@ public class MasterData implements Serializable {
     @Convert(converter = DaycountConverter.class)
     @Column(name = "accrual_daycount")
     private DaycountBasis accrualDaycount;
-    
+
     @Convert(converter = FrequencyConverter.class)
     @Column(name = "frequency")
     private Frequency frequency;
@@ -112,7 +125,7 @@ public class MasterData implements Serializable {
 
     @Column(name = "business_days")
     private Integer businessDays;
-    
+
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "multiplier")
     private Double multiplier;
@@ -371,4 +384,23 @@ public class MasterData implements Serializable {
     public void setAccrualScheduleType(AccrualScheduleType accrualScheduleType) {
         this.accrualScheduleType = accrualScheduleType;
     }
+
+    // --- GETTER & SETTER APPARENTI (Inizializzano il Proxy solo quando chiamati) ---
+    public InstrumentValuation getInstrumentValuation() {
+        if (this.instrumentValuations != null && !this.instrumentValuations.isEmpty()) {
+            return this.instrumentValuations.get(0);
+        }
+        return null;
+    }
+
+    public void setInstrumentValuation(InstrumentValuation valuation) {
+        if (this.instrumentValuations == null) {
+            this.instrumentValuations = new ArrayList<>();
+        }
+        this.instrumentValuations.clear();
+        if (valuation != null) {
+            this.instrumentValuations.add(valuation);
+        }
+    }
+
 }

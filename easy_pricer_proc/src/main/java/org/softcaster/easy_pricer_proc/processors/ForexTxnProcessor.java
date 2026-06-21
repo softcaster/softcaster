@@ -31,7 +31,7 @@ public class ForexTxnProcessor extends AbstractTxnProcessor implements ITxnProce
         input.setPrice(txn.getPrice());
         input.setQuantity(txn.getQuantity());
         input.setSide(txn.getTxnSide());
-        input.setStatus(txn.getTxnStatus());
+        input.setStatus(txn.getTxnStatusPreElab());
 
         super.process(input, position);
     }

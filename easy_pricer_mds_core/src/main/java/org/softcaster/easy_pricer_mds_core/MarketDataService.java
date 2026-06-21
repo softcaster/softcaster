@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.core.data.InstrumentQuoteDAO;
+import org.softcaster.core.data.SystemBusinessCalendar;
+import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.provider.bricks.Node;
@@ -20,6 +22,8 @@ import org.softcaster.provider.enums.RequestType;
 import org.softcaster.engine.curve.YieldCurve;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  *
@@ -33,6 +37,9 @@ public class MarketDataService {
 
     @Autowired
     InstrumentQuoteDAO instrumentQuoteDAO;
+    
+    @Autowired
+    SystemBusinessCalendarDAO systemBusinessCalendarDAO;
             
     private final ConcurrentHashMap<String, SpotPrice> spotPrices = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, YieldCurve> yieldCurves = new ConcurrentHashMap<>();
@@ -188,4 +195,18 @@ public class MarketDataService {
         List<CurveNodeInput> newInput = yieldCurveBuilder.getNewInput(curveId);
         updateYieldCurveInCache(curveId, newInput);
     }
-}
+    
+    // Il risultato viene salvato nella cache chiamata "businessCalendar"
+    @Cacheable(value = "businessCalendar")
+    public LocalDate getOfficialDate() {
+        SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
+        if(sbc != null)
+            return sbc.getOfficialDate();
+        return null;
+    }
+    // Metodo da chiamare (o esporre via endpoint/scheduler) quando cambia il giorno sul DB
+    @CacheEvict(value = "businessCalendar", allEntries = true)
+    public void refreshOfficialDate() {
+        // Questo metodo svuota la cache, costringendo la chiamata successiva a getOfficialDate() a rifare la select
+        // Nota che non serve implementare nulla nel corpo della funzione
+    }}

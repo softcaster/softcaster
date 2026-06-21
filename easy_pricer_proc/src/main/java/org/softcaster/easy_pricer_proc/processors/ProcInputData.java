@@ -14,6 +14,7 @@ import org.softcaster.engine.enums.TxnStatus;
 public class ProcInputData {
 
     private double quantity = 0;
+    // 
     private double price = 0;
     private TxnSide side = TxnSide.BUY;
     private TxnStatus status = TxnStatus.PENDING;

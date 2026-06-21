@@ -101,12 +101,15 @@ public class FinancialTxnRestController {
 
     // delete logica del record
     @DeleteMapping("/financial_txn/d02/{id}")
-    public ResponseEntity<FinancialTxn> logicalDelete(@PathVariable("id") Integer idFinancialTxn) {
-        FinancialTxn financialTxn = dao.logicalDelete(idFinancialTxn);
-        if (financialTxn != null) {
-            return new ResponseEntity(financialTxn, HttpStatus.OK);
-        } else {
-            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+    public ResponseEntity<FinancialTxnDto> logicalDelete(@PathVariable("id") Integer idFinancialTxn) {
+        try {
+            // Delega l'intera logica atomica al servizio
+            FinancialTxnDto resultDto = financialTxnService.logicalDelete(idFinancialTxn);
+            return new ResponseEntity<>(resultDto, HttpStatus.OK);
+        } catch (Exception e) {
+            // Se il service lancia una qualsiasi eccezione, la transazione fallisce,
+            // viene eseguito il rollback automatico sul DB e restituisci l'errore al client.
+            return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
         }
     }
 

@@ -8,6 +8,7 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.YieldCurveBuilder;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.ComponentScan;
  * @author softc
  */
 @AutoConfiguration
+@EnableCaching // Abilita il supporto alla cache di Spring
 @ComponentScan(basePackages = "org.softcaster.easy_pricer_mds_core")
 public class MdsCoreAutoConfiguration {
     
@@ -32,4 +34,6 @@ public class MdsCoreAutoConfiguration {
     public YieldCurveBuilder yieldCurveBuilder() {
         return new YieldCurveBuilder();
     }
+    
+    
 }

@@ -34,6 +34,26 @@ public class FinancialTxnService {
     @Autowired
     private FinancialTxnMapper mapper;
 
+    // Cancellazione logica marca solamente la transazione a TO_CANCEL ma
+    // non la rimuove fisicamente da DB
+    public FinancialTxnDto logicalDelete(Integer idFinancialTxn) {
+
+        return transactionTemplate.execute(status -> {
+            FinancialTxnDto txnDto = null;
+            FinancialTxn databaseTxn = dao.findByIdFinancialTxn(idFinancialTxn);
+            if (databaseTxn != null) {
+                databaseTxn.setTxnStatus(TxnStatus.TO_CANCEL);
+                databaseTxn.setTxnStatusPreElab(TxnStatus.TO_CANCEL);
+                txnDto = mapper.toDto(databaseTxn);
+                // Salvo
+                dao.saveOrUpdate(databaseTxn);
+                entityManager.flush();
+            }
+
+            return txnDto;
+        });
+    }
+
     public FinancialTxnDto saveOrUpdateTransaction(FinancialTxnDto newTxnDto) {
         // Avviamo una transazione esplicita tramite il template. Tutto il blocco è atomico (tutto o niente).
         return transactionTemplate.execute(status -> {
@@ -70,8 +90,8 @@ public class FinancialTxnService {
                         financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
                         financialTxn.setValueDate(financialTxn.getTradeDate());
                     } else {
-                       financialTxn.setIdFinancialTxn(oldTxnDto.financialTxnId()); 
-                       financialTxn.setVersion(version);
+                        financialTxn.setIdFinancialTxn(oldTxnDto.financialTxnId());
+                        financialTxn.setVersion(version);
                     }
                     // Usiamo il DAO coerentemente con il resto dello switch
                     dao.saveOrUpdate(financialTxn);
@@ -83,7 +103,7 @@ public class FinancialTxnService {
                         // lo stato del vecchio record a TO_AMEND
                         FinancialTxn oldTxnToCancel = dao.findByIdFinancialTxn(oldTxnDto.financialTxnId());
                         oldTxnToCancel.setTxnStatus(TxnStatus.TO_AMEND);
-                        financialTxn.setTxnStatusPreElab(TxnStatus.TO_AMEND);
+                        oldTxnToCancel.setTxnStatusPreElab(TxnStatus.TO_AMEND);
                         dao.saveOrUpdate(oldTxnToCancel);
 
                         // Crea un record Java nuovo (Nasce slegato dalla sessione di Hibernate)

@@ -53,7 +53,7 @@ public class FinancialTxn implements Serializable {
     @Convert(converter = TxnStatusConverter.class)
     @Column(name = "txn_status")
     private TxnStatus txnStatus;
-    
+
     @Convert(converter = TxnStatusConverter.class)
     @Column(name = "txn_status_pre_elab")
     private TxnStatus txnStatusPreElab;
@@ -91,6 +91,7 @@ public class FinancialTxn implements Serializable {
     private Double price;
 
     @Version
+    @Column(name = "version")
     private Integer version;
 
     public Integer getIdFinancialTxn() {

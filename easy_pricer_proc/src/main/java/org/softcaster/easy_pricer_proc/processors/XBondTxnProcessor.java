@@ -55,8 +55,8 @@ public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProce
         input.setPrice(txn.getPrice() * smd.getMultiplier());
         input.setQuantity(txn.getQuantity());
         input.setSide(txn.getTxnSide());
-        input.setStatus(txn.getTxnStatus());
-
+        input.setStatus(txn.getTxnStatusPreElab());
+        // trasformo prezzo di mercato in base unitaria per calcolo utili unrealized
         super.process(input, position);
 
         Calendar calendar = new Calendar(smd.getCurrency());
@@ -101,7 +101,7 @@ public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProce
 
     @Override
     protected boolean shortSellEnabled() {
-        return false;
+        return true;
     }
 
     private List<CashFlow> getFlows(List<CashFlowItem> cashFlows) {

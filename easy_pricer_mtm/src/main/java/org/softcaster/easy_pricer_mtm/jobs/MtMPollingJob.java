@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
+import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mtm.jobs.services.EngineStateManager;
 import org.softcaster.easy_pricer_mtm.jobs.services.MtmService;
@@ -63,7 +64,6 @@ public class MtMPollingJob implements IMtmDataHelper {
 
     @Override
     public LocalDate getOfficialDate() {
-        return LocalDate.now();
+        return marketDataService.getOfficialDate();
     }
-
 }

@@ -410,6 +410,30 @@ ALTER SEQUENCE master_data_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
+-- instrument_valuation tabella valutazione strumento relativo a master_data
+-- ----------------------------------------------------------------------------
+CREATE TABLE instrument_valuation(
+    instrument_valuation_id integer NOT NULL,   
+    master_data integer NOT NULL,   
+    market_price numeric(15, 5) NOT NULL, -- prezzo di mercato a cui potrei vendere (sempre bid)
+    accrued_interest numeric(15, 5) NOT NULL DEFAULT 0, -- accruals
+    ytm numeric(15, 5) NOT NULL DEFAULT 0, -- yield-to-maturity
+    duration numeric(15, 5) NOT NULL DEFAULT 0, -- duration 
+    mod_duration numeric(15, 5) NOT NULL DEFAULT 0, -- modified duration
+    theoretical_price numeric(15, 5) NOT NULL DEFAULT 0, -- prezzo teorico
+    CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
+    PRIMARY KEY (instrument_valuation_id)
+);
+ALTER TABLE instrument_valuation OWNER TO sofie;
+-- Creo sequenza
+CREATE SEQUENCE instrument_valuation_s
+    START WITH 1
+    INCREMENT BY 1;
+
+ALTER SEQUENCE instrument_valuation_s
+    OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
 -- loan_master_data - anagrafica mutui
 -- ----------------------------------------------------------------------------
 -- code = FRM20460700010
@@ -696,7 +720,7 @@ ALTER TABLE mm_future_master_data OWNER TO sofie;
 -- ----------------------------------------------------------------------------
 CREATE TABLE instrument_quote (
     id_instrument_quote integer NOT NULL,
-    master_data integer NOT NULL, -- future
+    master_data integer NOT NULL, 
     provider varchar(50) NOT NULL,
     code varchar(255) NOT NULL,
     bid numeric(15, 5) NOT NULL,
@@ -1076,4 +1100,33 @@ INCREMENT BY 1;
 
 ALTER SEQUENCE broker_instrument_rules_s
     OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- broker_instrument_rules
+-- definisce le regole di costo per quella specifica combinazione di Broker, Strumento e Lato (Buy/Sell).
+-- ----------------------------------------------------------------------------
+CREATE TABLE sbc_status (
+    sbc_status_id integer NOT NULL,
+    code varchar(50) NOT NULL UNIQUE, -- OPEN CLOSING CLOSED LOCKED
+    description varchar(150) NOT NULL,
+    PRIMARY KEY (sbc_status_id)
+);
+ALTER TABLE sbc_status OWNER TO sofie;
+
+CREATE TABLE system_business_calendar (
+    sbc_id integer NOT NULL,
+    description varchar(50) NOT NULL,
+    calendar integer NOT NULL UNIQUE, 
+    status integer NOT NULL,  
+    official_date       DATE NOT NULL,
+    next_business_date  DATE,
+    version INTEGER NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+
+    PRIMARY KEY (sbc_id),
+    CONSTRAINT fk_status FOREIGN KEY (status) REFERENCES sbc_status (sbc_status_id),
+    CONSTRAINT fk_calendar FOREIGN KEY (calendar) REFERENCES calendar (id_calendar)
+);
+
+ALTER TABLE system_business_calendar OWNER TO sofie;
 

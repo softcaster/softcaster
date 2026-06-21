@@ -76,6 +76,7 @@ public class FinancialTxnDAO {
         FinancialTxn financialTxn = findByIdFinancialTxn(idFinancialTxn);
         // Setto a TO_CANCEL
         financialTxn.setTxnStatus(TxnStatus.TO_CANCEL);
+        financialTxn.setTxnStatusPreElab(TxnStatus.TO_CANCEL);
         // Salvo
         return saveOrUpdate(financialTxn);
     }
