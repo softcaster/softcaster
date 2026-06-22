@@ -1,9 +1,11 @@
+import { useEffect } from 'react'; // <-- Importa useEffect per gestire l'inizializzazione
 import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
 import { SideSelector } from './SideSelector';
 import { InstrumentField, CounterpartyField, PositionField } from './FormFields';
 import type { FinancialTxnDto } from '../services/dto';
+import { useSystemDate } from '../../context/SystemDateContext';
 
 interface BondFormProps {
     data: FinancialTxnDto | null;
@@ -15,13 +17,30 @@ interface BondFormProps {
 //Il modulo riceve l'oggetto trade come prop
 export const BondForm = ({ data, masterDataList, positions, counterparties, onChange }: BondFormProps) => {
 
+    const { businessDate, loading } = useSystemDate();
+    // EFFECT DI INIZIALIZZAZIONE: Se stiamo creando un nuovo trade (tradeDate vuoto),
+    // iniettiamo automaticamente la data ufficiale di sistema non appena è disponibile.
+    useEffect(() => {
+        if (data && data.financialTxnId === 0 && businessDate && !loading) {
+            // Spezziamo la stringa, esempio"2026-06-21". per evitare problemi di fuso orario (timezone)
+            const [year, month, day] = businessDate.split('-').map(Number);
+            const officialSystemDate = new Date(year, month - 1, day);
+            if (!data.tradeDate || data.tradeDate.getTime() !== officialSystemDate.getTime()) {
+                onChange({
+                    ...data,
+                    tradeDate: officialSystemDate,
+                    settlement: officialSystemDate // Se ti serve allineare anche la data di settlement
+                });
+            }
+        }
+    }, [businessDate, loading, data?.financialTxnId]); // Scatta all'avvio o se cambia la transazione aperta
+
     if (!data) return null;
 
     // 1. ADATTATORI IN LETTURA: Trovano l'oggetto intero nelle liste usando gli ID del DTO
     const currentInstrument = masterDataList.find(m => m.idMasterData === data.masterDataId) || null;
     const currentCounterparty = counterparties.find(c => c.idCounterparty === data.counterpartyId) || null;
     const currentPosition = positions.find(p => p.idPosition === data.positionMdId) || null;
-
 
     return (
         <div className="surface-ground p-3 border-bottom-1 surface-border">

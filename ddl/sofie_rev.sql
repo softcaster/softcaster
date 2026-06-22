@@ -102,3 +102,9 @@ alter table position_detail drop column multiplier;
 
 ----------------------------------------------------------------------------------------------
 alter table financial_txn add column txn_status_pre_elab integer NOT NULL DEFAULT 1;
+
+----------------------------------------------------------------------------------------------
+alter table instrument_valuation add column valuation_date date NOT NULL DEFAULT NOW();
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (11,'POSTED','Posted');
+alter table position_detail drop column  multiplier;
+

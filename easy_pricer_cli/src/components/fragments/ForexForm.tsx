@@ -4,6 +4,9 @@ import { InputText } from 'primereact/inputtext';
 import { SideSelector } from './SideSelector';
 import { InstrumentField, CounterpartyField, PositionField } from './FormFields';
 import type { FinancialTxnDto } from '../services/dto';
+import { useEffect } from 'react'; // <-- Importa useEffect per gestire l'inizializzazione
+import { useSystemDate } from '../../context/SystemDateContext';
+
 
 interface ForexFormProps {
     data: FinancialTxnDto | null;
@@ -16,6 +19,24 @@ interface ForexFormProps {
 //Il modulo riceve l'oggetto trade come prop
 export const ForexForm = ({ data, masterDataList, positions, counterparties, onChange }: ForexFormProps) => {
 
+    const { businessDate, loading } = useSystemDate();
+    // EFFECT DI INIZIALIZZAZIONE: Se stiamo creando un nuovo trade (tradeDate vuoto),
+    // iniettiamo automaticamente la data ufficiale di sistema non appena è disponibile.
+    useEffect(() => {
+        if (data && data.financialTxnId === 0 && businessDate && !loading) {
+            // Spezziamo la stringa, esempio"2026-06-21". per evitare problemi di fuso orario (timezone)
+            const [year, month, day] = businessDate.split('-').map(Number);
+            const officialSystemDate = new Date(year, month - 1, day);
+            if (!data.tradeDate || data.tradeDate.getTime() !== officialSystemDate.getTime()) {
+                onChange({
+                    ...data,
+                    tradeDate: officialSystemDate,
+                    settlement: officialSystemDate // Se ti serve allineare anche la data di settlement
+                });
+            }
+        }
+    }, [businessDate, loading, data?.financialTxnId]); // Scatta all'avvio o se cambia la transazione aperta
+    
     if (!data) return null;
 
     // 1. ADATTATORI IN LETTURA: Trovano l'oggetto intero nelle liste usando gli ID del DTO

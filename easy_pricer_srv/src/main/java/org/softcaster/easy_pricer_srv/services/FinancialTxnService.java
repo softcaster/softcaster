@@ -12,12 +12,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Objects;
+import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
+import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.dto.FinancialTxnDto;
 import org.softcaster.core.dto.FinancialTxnMapper;
+import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.engine.enums.TxnStatus;
 
 @Service
@@ -88,7 +94,8 @@ public class FinancialTxnService {
                         financialTxn.setIdFinancialTxn(null);
                         financialTxn.setTxnStatus(TxnStatus.PENDING);
                         financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
-                        financialTxn.setValueDate(financialTxn.getTradeDate());
+                        java.sql.Date valueDate = calcValueDate(financialTxn);
+                        financialTxn.setValueDate(valueDate);
                     } else {
                         financialTxn.setIdFinancialTxn(oldTxnDto.financialTxnId());
                         financialTxn.setVersion(version);
@@ -143,5 +150,23 @@ public class FinancialTxnService {
                 && Objects.equals(oldDto.positionMdId(), newDto.positionMdId())
                 && Objects.equals(oldTradeDateStr, newTradeDateStr)
                 && Objects.equals(oldDto.txnSide(), newDto.txnSide());
+    }
+
+    private Date calcValueDate(FinancialTxn financialTxn) {
+        if (financialTxn.getMasterData() instanceof ForexMasterData fmd) {
+            if (fmd != null) {
+                Currency bcy = fmd.getBcy();
+                Currency ccy = fmd.getCcy();
+                if (bcy != null && ccy != null) {
+                    List<Currency> currencies = new ArrayList<>();
+                    currencies.add(ccy);
+                    currencies.add(bcy);
+                    Calendar calendar = new Calendar(currencies);
+                    return java.sql.Date.valueOf(calendar.getNextBusinessDate(financialTxn.getTradeDate(), fmd.getBusinessDays()));
+                }
+            }
+        }
+        
+        return financialTxn.getTradeDate();
     }
 }

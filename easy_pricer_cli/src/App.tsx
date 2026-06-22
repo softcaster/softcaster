@@ -13,10 +13,12 @@ import {
 } from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { SystemDateProvider, useSystemDate } from './context/SystemDateContext';
 
 const ToolbarWrapper = () => {
   const { onSave, onNew, onDel, onExport, isExporting, onCalculate, onRefresh } = useActions(); // Hook che abbiamo creato prima
   const { user, logout } = useAuth();
+  const { businessDate, loading: dateLoading } = useSystemDate();
 
   const leftContents = (
     <div className="flex gap-2">
@@ -77,7 +79,16 @@ const ToolbarWrapper = () => {
   );
 
   const rightContents = (
+
     <div className="flex align-items-center gap-3">
+      {/* Mostriamola data */}
+      <div className="flex align-items-center gap-2 mr-2 surface-100 px-2 py-1 border-round">
+        <i className="pi pi-calendar text-500 text-xs"></i>
+        <span className="text-xs font-semibold text-700">
+          {dateLoading ? <i className="pi pi-spin pi-spinner text-xs"></i> : `System Date: ${businessDate}`}
+        </span>
+      </div>
+
       {/* Mostriamo il nome utente e il tasto Logout */}
       <div className="flex align-items-center gap-2 mr-2">
         <i className="pi pi-user text-400 text-xs"></i>
@@ -198,9 +209,11 @@ export default function App() {
     <BrowserRouter>
       {/* AuthProvider deve avvolgere tutto ciò che usa useAuth */}
       <AuthProvider>
-        <ActionProvider>
-          <AppContent />
-        </ActionProvider>
+        <SystemDateProvider>
+          <ActionProvider>
+            <AppContent />
+          </ActionProvider>
+        </SystemDateProvider>
       </AuthProvider>
     </BrowserRouter>
   );
