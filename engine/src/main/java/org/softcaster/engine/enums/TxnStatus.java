@@ -18,7 +18,8 @@ public enum TxnStatus implements IdentifiableEnum {
     TO_CANCEL(7, "TO_CANCEL", "To Cancel"),
     CANCELLED(8, "CANCELLED", "Cancelled"),
     RESTARTING(9, "RESTARTING", "Restarting"),
-    CLAIMED(10, "CLAIMED", "Claimed"); // transazioni "prenotate"
+    CLAIMED(10, "CLAIMED", "Claimed"), // transazioni "prenotate"
+    POSTED(11, "POSTED", "Posted"); // contabilizzata
 
     private final int id;
     private final String code;

@@ -421,6 +421,9 @@ CREATE TABLE instrument_valuation(
     duration numeric(15, 5) NOT NULL DEFAULT 0, -- duration 
     mod_duration numeric(15, 5) NOT NULL DEFAULT 0, -- modified duration
     theoretical_price numeric(15, 5) NOT NULL DEFAULT 0, -- prezzo teorico
+    -- corrisponde a official date del sistema. Da questa si calcola settlement 
+    -- aggiungendo business days
+    valuation_date date NOT NULL DEFAULT NOW(), 
     CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
     PRIMARY KEY (instrument_valuation_id)
 );

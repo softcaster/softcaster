@@ -2,13 +2,17 @@ package org.softcaster.core.data;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.sql.Types;
+import java.time.LocalDate;
 import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
@@ -23,8 +27,12 @@ public class InstrumentValuation implements Serializable {
     @Column(name = "instrument_valuation_id")
     private Integer instrumentValuationId;
 
-    @Column(name = "master_data", insertable = false, updatable = false)
-    private Integer masterData;
+    // --- RELAZIONE BIDIREZIONALE (LATO PROPRIETARIO) ---
+    // nullable = false indica che InstrumentValuation non puo'esistere al di fuori
+    // di un oggetto MasterData
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "master_data", referencedColumnName = "id_master_data", nullable = false)
+    private MasterData masterData;
 
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "market_price")
@@ -50,20 +58,15 @@ public class InstrumentValuation implements Serializable {
     @Column(name = "theoretical_price")
     private Double theoreticalPrice;
 
+    @Column(name = "valuation_date")
+    private LocalDate valuationDate;
+
     public Integer getInstrumentValuationId() {
         return instrumentValuationId;
     }
 
     public void setInstrumentValuationId(Integer instrumentValuationId) {
         this.instrumentValuationId = instrumentValuationId;
-    }
-
-    public Integer getMasterData() {
-        return masterData;
-    }
-
-    public void setMasterData(Integer masterData) {
-        this.masterData = masterData;
     }
 
     public Double getMarketPrice() {
@@ -129,5 +132,33 @@ public class InstrumentValuation implements Serializable {
     @Override
     public int hashCode() {
         return instrumentValuationId == null ? 0 : instrumentValuationId.hashCode();
+    }
+
+    /**
+     * @return the masterData
+     */
+    public MasterData getMasterData() {
+        return masterData;
+    }
+
+    /**
+     * @param masterData the masterData to set
+     */
+    public void setMasterData(MasterData masterData) {
+        this.masterData = masterData;
+    }
+
+    /**
+     * @return the valuationDate
+     */
+    public LocalDate getValuationDate() {
+        return valuationDate;
+    }
+
+    /**
+     * @param valuationDate the valuationDate to set
+     */
+    public void setValuationDate(LocalDate valuationDate) {
+        this.valuationDate = valuationDate;
     }
 }

@@ -232,7 +232,9 @@ public class GlAccount implements Serializable {
     }
 
     public void addChild(GlAccount child) {
-        children.add(child);
-        child.setParent(this);
+        if (!children.contains(child)) {
+            children.add(child);
+            child.setParent(this);
+        }
     }
 }

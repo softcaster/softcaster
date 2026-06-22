@@ -12,19 +12,21 @@ public interface MasterDataRepository extends JpaRepository<MasterData, Integer>
     public MasterData findByCode(String code);
 
     // left join ottiene l'oggetto MasterData anche quando instrumentValuation non è presente
+    // Ricerca per ID con caricamento immediato della valutazione
     @Query("""
-    select md
-    from MasterData md
-    left join fetch md.instrumentValuations iv
-    where md.idMasterData = :id
-    """)           
+        select md
+        from MasterData md
+        left join fetch md.instrumentValuation iv
+        where md.idMasterData = :id
+    """)
     Optional<MasterData> findByIdWithInstrumentValuation(@Param("id") Integer id);
-    
+
+    // Ricerca per Codice con caricamento immediato della valutazione
     @Query("""
-    select md
-    from MasterData md
-    left join fetch md.instrumentValuations iv
-    where md.code = :code
+        select md
+        from MasterData md
+        left join fetch md.instrumentValuation iv
+        where md.code = :code
     """)
     Optional<MasterData> findByCodeWithInstrumentValuation(@Param("code") String code);
 

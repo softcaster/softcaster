@@ -12,16 +12,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.softcaster.core.data.converters.AccrualScheduleTypeConverter;
 import org.softcaster.core.data.converters.AmortizationScheduleConverter;
@@ -49,8 +43,8 @@ public class MasterData implements Serializable {
 
     @Id
     @SequenceGenerator(name = "master_data_seq", sequenceName = "master_data_s", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "master_data_seq")
-    @Column(name = "id_master_data", columnDefinition = "INTEGER")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "master_data_seq")
+    @Column(name = "id_master_data")
     private Integer idMasterData;
 
     @Column(name = "code")
@@ -59,11 +53,10 @@ public class MasterData implements Serializable {
     @Column(name = "description")
     private String description;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    // Aggiungiamo nullable = false per forzare Hibernate a includere il valore dell'ID 
-    // direttamente nella INSERT iniziale, senza fare l'update successivo
-    @JoinColumn(name = "master_data", referencedColumnName = "id_master_data", nullable = false)
-    private List<InstrumentValuation> instrumentValuations = new ArrayList<>();
+    // --- RELAZIONE BIDIREZIONALE (LATO INVERSO) ---
+    // mappedBy punta al nome del campo Java dentro la classe InstrumentValuation
+    @OneToOne(mappedBy = "masterData", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private InstrumentValuation instrumentValuation;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "currency", nullable = true)
@@ -385,22 +378,17 @@ public class MasterData implements Serializable {
         this.accrualScheduleType = accrualScheduleType;
     }
 
-    // --- GETTER & SETTER APPARENTI (Inizializzano il Proxy solo quando chiamati) ---
+    /**
+     * @return the instrumentValuation
+     */
     public InstrumentValuation getInstrumentValuation() {
-        if (this.instrumentValuations != null && !this.instrumentValuations.isEmpty()) {
-            return this.instrumentValuations.get(0);
-        }
-        return null;
+        return instrumentValuation;
     }
 
-    public void setInstrumentValuation(InstrumentValuation valuation) {
-        if (this.instrumentValuations == null) {
-            this.instrumentValuations = new ArrayList<>();
-        }
-        this.instrumentValuations.clear();
-        if (valuation != null) {
-            this.instrumentValuations.add(valuation);
-        }
+    /**
+     * @param instrumentValuation the instrumentValuation to set
+     */
+    public void setInstrumentValuation(InstrumentValuation instrumentValuation) {
+        this.instrumentValuation = instrumentValuation;
     }
-
 }
