@@ -4,6 +4,9 @@
  */
 package org.softcaster.easy_pricer_srv.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.softcaster.easy_pricer_srv.services.EngineStateManager;
 import org.softcaster.easy_pricer_srv.services.SystemDateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,13 +17,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class InternalSystem {
+
+    private static final Logger log = LoggerFactory.getLogger(InternalSystem.class);
+
+    @Autowired
+    private EngineStateManager stateManager;
+
     @Autowired
     SystemDateManager systemDateManager;
     
     @PostMapping(value = "/internal/system/suspend")
     public ResponseEntity<String> suspend() {
-        System.out.println("Service suspended...");
+        // Cambia lo stato centralizzato
+        stateManager.suspend();
+        log.info("Service suspended...");
         return new ResponseEntity<>("Service suspended", HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/internal/system/resume")
+    public ResponseEntity<String> resume() {
+        // Cambia lo stato centralizzato
+        stateManager.resume();
+        log.info("Service resumed...");
+        return new ResponseEntity<>("Service resumed", HttpStatus.OK);
     }
     
     @GetMapping(value = "/internal/system/official_date")

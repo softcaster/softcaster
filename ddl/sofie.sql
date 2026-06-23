@@ -907,7 +907,6 @@ CREATE TABLE position_detail (
     notional_value_sell numeric(15, 5) NOT NULL, -- controvalore di vendita (incrementale)
     sell_fees numeric(15, 5) NOT NULL, -- commissioni di vendita (incrementale)
     sell_taxes numeric(15, 5) NOT NULL, -- tasse di transazione sulla vendita
-    multiplier numeric(15, 5) NOT NULL DEFAULT 1, -- nel caso dei Bond sara 0.01
     market_price numeric(15, 5) NOT NULL, -- prezzo di mercato a cui potrei vendere (sempre bid)
     buy_accrual numeric(15, 5) NOT NULL DEFAULT 0, -- rateo maturato posizione long
     sell_accrual numeric(15, 5) NOT NULL DEFAULT 0, -- rateo maturato posizione short

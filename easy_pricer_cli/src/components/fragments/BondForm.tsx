@@ -1,11 +1,11 @@
-import { useEffect } from 'react'; // <-- Importa useEffect per gestire l'inizializzazione
 import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
 import { SideSelector } from './SideSelector';
 import { InstrumentField, CounterpartyField, PositionField } from './FormFields';
 import type { FinancialTxnDto } from '../services/dto';
-import { useSystemDate } from '../../context/SystemDateContext';
+// import { useEffect } from 'react'; // <-- Importa useEffect per gestire l'inizializzazione
+// import { useSystemDate } from '../../context/SystemDateContext';
 
 interface BondFormProps {
     data: FinancialTxnDto | null;
@@ -17,6 +17,7 @@ interface BondFormProps {
 //Il modulo riceve l'oggetto trade come prop
 export const BondForm = ({ data, masterDataList, positions, counterparties, onChange }: BondFormProps) => {
 
+    /*
     const { businessDate, loading } = useSystemDate();
     // EFFECT DI INIZIALIZZAZIONE: Se stiamo creando un nuovo trade (tradeDate vuoto),
     // iniettiamo automaticamente la data ufficiale di sistema non appena è disponibile.
@@ -34,7 +35,7 @@ export const BondForm = ({ data, masterDataList, positions, counterparties, onCh
             }
         }
     }, [businessDate, loading, data?.financialTxnId]); // Scatta all'avvio o se cambia la transazione aperta
-
+*/
     if (!data) return null;
 
     // 1. ADATTATORI IN LETTURA: Trovano l'oggetto intero nelle liste usando gli ID del DTO

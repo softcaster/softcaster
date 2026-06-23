@@ -16,6 +16,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.softcaster.core.data.converters.AccrualScheduleTypeConverter;
 import org.softcaster.core.data.converters.AmortizationScheduleConverter;
@@ -390,5 +392,15 @@ public class MasterData implements Serializable {
      */
     public void setInstrumentValuation(InstrumentValuation instrumentValuation) {
         this.instrumentValuation = instrumentValuation;
+    }
+    
+    public List<Currency> getCurrencyList() {
+        List<Currency> currencies = null;
+        if(currency != null) {
+            currencies = new ArrayList<>();
+            currencies.add(currency);
+        }
+        
+        return currencies;
     }
 }

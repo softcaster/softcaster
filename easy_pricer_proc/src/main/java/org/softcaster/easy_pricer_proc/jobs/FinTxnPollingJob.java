@@ -6,7 +6,9 @@ package org.softcaster.easy_pricer_proc.jobs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -45,31 +47,47 @@ public class FinTxnPollingJob {
     private TaskExecutor taskExecutor;
 
     protected boolean elabFinancialTxnList(List<FinancialTxn> financialTxnList) {
+
+        // Raggruppiamo i trade in base alla chiave univoca della loro posizione
+        Map<String, List<FinancialTxn>> tradesByPosition = financialTxnList.stream()
+                .collect(Collectors.groupingBy(txn
+                        -> txn.getPositionMd().getIdPosition() + "-"
+                + txn.getMasterData().getIdMasterData() + "-"
+                + txn.getCounterparty().getIdCounterparty()
+                ));
         List<CompletableFuture<Boolean>> futures = new ArrayList<>();
 
-        for (FinancialTxn txn : financialTxnList) {
+        // Per ogni POSIZIONE distinta, lanciamo un flusso ASINCRONO
+        for (Map.Entry<String, List<FinancialTxn>> entry : tradesByPosition.entrySet()) {
+            List<FinancialTxn> positionTrades = entry.getValue();
+
             CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
-                try {
-                    finTxnExecutionService.elabFinancialTxn(txn.getIdFinancialTxn());
-                    return true;
-                } catch (Exception e) {
-                    // Non si puo spostare la funzione updateStatusOnFailure all'interno della classe
-                    // perchè In Spring, l'annotazione @Transactional funziona tramite proxy.
-                    // usare un metodo della stessa classe per chiamare  un altro metodo della stessa classe 
-                    // non funziona perche'il proxy di Spring viene saltato completamente.
-                    // Di conseguenza, REQUIRES_NEW viene ignorato. Il codice girerà senza una transazione autonoma 
-                    // o tenterà di usare quella precedente (che è fallita e marcata per il rollback), 
-                    // impedendo il salvataggio dello stato REJECTED
-                    log.error("### ERROR ID {}: {}", txn.getIdFinancialTxn(), e.getMessage());
-                    LoggerMgr.logError(e.getLocalizedMessage());
-                    finTxnExecutionService.updateStatusOnFailure(txn.getIdFinancialTxn(), TxnStatus.REJECTED);
-                    return false;
+                boolean positionAllSuccess = true;
+
+                // CRITICO: I trade della STESSA posizione vengono elaborati 
+                // in modo SEQUENZIALE (uno dopo l'altro) dentro questo thread!
+                for (FinancialTxn txn : positionTrades) {
+                    try {
+                        finTxnExecutionService.elabFinancialTxn(txn.getIdFinancialTxn());
+                    } catch (Exception e) {
+                        // Non si puo spostare la funzione updateStatusOnFailure all'interno della classe
+                        // perchè In Spring, l'annotazione @Transactional funziona tramite proxy.
+                        // usare un metodo della stessa classe per chiamare  un altro metodo della stessa classe 
+                        // non funziona perche'il proxy di Spring viene saltato completamente.
+                        // Di conseguenza, REQUIRES_NEW viene ignorato. Il codice girerà senza una transazione autonoma 
+                        // o tenterà di usare quella precedente (che è fallita e marcata per il rollback), 
+                        // impedendo il salvataggio dello stato REJECTED
+                        log.error("### ERROR ID {}: {}", txn.getIdFinancialTxn(), e.getMessage());
+                        LoggerMgr.logError(e.getLocalizedMessage());
+                        finTxnExecutionService.updateStatusOnFailure(txn.getIdFinancialTxn(), TxnStatus.REJECTED);
+                        positionAllSuccess = false;
+                    }
                 }
+                return positionAllSuccess;
             }, taskExecutor);
 
             futures.add(future);
         }
-
         // Attende che TUTTI i thread della lista corrente abbiano finito 
         // prima di restituire il controllo al chiamante
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();

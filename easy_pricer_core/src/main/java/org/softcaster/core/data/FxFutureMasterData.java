@@ -7,6 +7,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
@@ -85,4 +87,14 @@ public class FxFutureMasterData extends FutureMasterData {
     public String toString() {
         return getCode();
     }    
+
+    @Override
+    public List<Currency> getCurrencyList() {
+        List<Currency> currencies = null;
+        if (underlying != null) {
+            currencies = underlying.getCurrencyList();
+        }
+
+        return currencies;
+    }
 }

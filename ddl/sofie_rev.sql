@@ -106,5 +106,5 @@ alter table financial_txn add column txn_status_pre_elab integer NOT NULL DEFAUL
 ----------------------------------------------------------------------------------------------
 alter table instrument_valuation add column valuation_date date NOT NULL DEFAULT NOW();
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (11,'POSTED','Posted');
-alter table position_detail drop column  multiplier;
-
+INSERT INTO txn_status(id_txn_status,code, description) VALUES (12,'SETTLED','Settled');
+delete from txn_status where id_txn_status in(11,12);

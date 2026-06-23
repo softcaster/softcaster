@@ -6,12 +6,14 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "forex_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 
-public class ForexMasterData  extends MasterData {
+public class ForexMasterData extends MasterData {
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "bcy", nullable = true)
@@ -23,11 +25,11 @@ public class ForexMasterData  extends MasterData {
 
     @Column(name = "bcy_irc")
     private String bcyIrc;
-    
+
     @Column(name = "ccy_irc")
     private String ccyIrc;
 
-   /**
+    /**
      * @return the bcy
      */
     public Currency getBcy() {
@@ -86,5 +88,17 @@ public class ForexMasterData  extends MasterData {
     @Override
     public String toString() {
         return getCode();
-    }    
+    }
+
+    @Override
+    public List<Currency> getCurrencyList() {
+        List<Currency> currencies = null;
+        if (bcy != null && ccy != null) {
+            currencies = new ArrayList<>();
+            currencies.add(bcy);
+            currencies.add(ccy);
+        }
+
+        return currencies;
+    }
 }

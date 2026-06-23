@@ -1,6 +1,7 @@
 // src/hooks/useFinancialView.ts
 import { useState, useEffect } from 'react';
 import { useActions } from '../../context/ActionContext';
+import { useSystemDate } from '../../context/SystemDateContext';
 
 // Importa solo i tipi comuni a TUTTE le viste
 import type {
@@ -35,14 +36,46 @@ export function useFinancialView<TMaster>(
     fetchMasterData: () => Promise<TMaster[]>,
     defaultTxn: FinancialTxnDto
 ) {
+    const { businessDate, loading: dateLoading } = useSystemDate();
+
+    // Prende l'oggetto vuoto di default e sovrascrive tradeDate con la data di sistema ufficiale
+    const getSystemDefaultTxn = (): FinancialTxnDto => {
+        const baseDto = { ...defaultTxn };
+        if (businessDate && !dateLoading) {
+            const [year, month, day] = businessDate.split('-').map(Number);
+            const officialSystemDate = new Date(year, month - 1, day);
+            baseDto.tradeDate = officialSystemDate;
+            baseDto.settlement = officialSystemDate;
+        }
+        return baseDto;
+    };
+
+    // Nuovo helper dinamico che pulisce le date su QUALSIASI oggetto DTO passato
+    const applySystemDateToDto = (dto: FinancialTxnDto): FinancialTxnDto => {
+        if (businessDate && !dateLoading) {
+            const [year, month, day] = businessDate.split('-').map(Number);
+            const officialSystemDate = new Date(year, month - 1, day);
+            dto.tradeDate = officialSystemDate;
+            dto.settlement = officialSystemDate;
+        }
+        return dto;
+    };
+
     const [masterDataList, setMasterDataList] = useState<TMaster[]>([]);
     const [positionList, setPositionList] = useState<PositionMasterData[]>([]);
     const [counterpartyList, setCounterpartyList] = useState<Counterparty[]>([]);
     const [trades, setTrades] = useState<FinancialTxnDto[]>([]);
-    const [selectedTrade, setSelectedTrade] = useState<FinancialTxnDto>(defaultTxn);
+    const [selectedTrade, setSelectedTrade] = useState<FinancialTxnDto>(applySystemDateToDto(createDefaultTxnDto()));
     const { setAction } = useActions();
     const [isExporting, setIsExporting] = useState(false);
     const { showToast } = useActions(); // Recupero showToast
+
+    // Sincronizza lo stato iniziale del form non appena la data ufficiale di sistema viene scaricata via REST
+    useEffect(() => {
+        if (selectedTrade.financialTxnId === 0 && businessDate && !dateLoading) {
+            setSelectedTrade(getSystemDefaultTxn());
+        }
+    }, [businessDate, dateLoading]);
 
     const loadAll = async () => {
         try {
@@ -114,8 +147,10 @@ export function useFinancialView<TMaster>(
             }
             const result = await saveFinancialTxn(selectedTrade);
             console.log(result);
-            await loadAll(); // Ricarica tutto per sicurezza
-            setSelectedTrade(defaultTxn);
+            // Ricarica tutto per sicurezza
+            await loadAll();
+            //Resetta il modulo usando la data ufficiale di sistema invece del defaultTxn sporco
+            setSelectedTrade(getSystemDefaultTxn());
             showToast({ severity: 'success', summary: 'Saved', detail: 'Transaction registered' });
         } catch (err: any) {
             showToast({ severity: 'error', summary: 'Error', detail: 'Save failed' });
@@ -137,8 +172,8 @@ export function useFinancialView<TMaster>(
     };
 
     const handleNew = () => {
-        // 1. Resetta lo stato del trade
-        setSelectedTrade(defaultTxn);
+        //Usa l'helper sicuro con fuso orario azzerato
+        setSelectedTrade(getSystemDefaultTxn());
 
         // 2. Opzionale: Forza il reset immediato delle azioni per la Toolbar
         // Questo assicura che Save e Delete si spengano all'istante
@@ -190,7 +225,9 @@ export function useFinancialView<TMaster>(
 
         setAction({
             save: isSaveable ? handleSave : undefined,
-            new: () => setSelectedTrade(createDefaultTxnDto()), // Crea un oggetto nuovo ogni volta
+            //new: () => setSelectedTrade(createDefaultTxnDto()), // Crea un oggetto nuovo ogni volta
+            //Ritorna l'oggetto di default allineato al sistema anziché chiamare createDefaultTxnDto()
+            new: () => setSelectedTrade(getSystemDefaultTxn()),
             del: isDeletable ? handleDelete : undefined,
             export: handleExport,
             isExporting: isExporting, // <--- Passiamo anche lo stato al Context

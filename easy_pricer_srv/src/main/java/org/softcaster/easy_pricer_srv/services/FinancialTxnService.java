@@ -94,8 +94,9 @@ public class FinancialTxnService {
                         financialTxn.setIdFinancialTxn(null);
                         financialTxn.setTxnStatus(TxnStatus.PENDING);
                         financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
-                        java.sql.Date valueDate = calcValueDate(financialTxn);
-                        financialTxn.setValueDate(valueDate);
+                        java.sql.Date settlementDate = calcSettlementDate(financialTxn);
+                        financialTxn.setSettlement(settlementDate);
+                        financialTxn.setValueDate(settlementDate);
                     } else {
                         financialTxn.setIdFinancialTxn(oldTxnDto.financialTxnId());
                         financialTxn.setVersion(version);
@@ -152,21 +153,16 @@ public class FinancialTxnService {
                 && Objects.equals(oldDto.txnSide(), newDto.txnSide());
     }
 
-    private Date calcValueDate(FinancialTxn financialTxn) {
-        if (financialTxn.getMasterData() instanceof ForexMasterData fmd) {
-            if (fmd != null) {
-                Currency bcy = fmd.getBcy();
-                Currency ccy = fmd.getCcy();
-                if (bcy != null && ccy != null) {
-                    List<Currency> currencies = new ArrayList<>();
-                    currencies.add(ccy);
-                    currencies.add(bcy);
-                    Calendar calendar = new Calendar(currencies);
-                    return java.sql.Date.valueOf(calendar.getNextBusinessDate(financialTxn.getTradeDate(), fmd.getBusinessDays()));
-                }
+    private Date calcSettlementDate(FinancialTxn financialTxn) {
+
+        if (financialTxn.getMasterData() != null) {
+            List<Currency> currencies = financialTxn.getMasterData().getCurrencyList();
+            if (currencies != null && !currencies.isEmpty()) {
+                Calendar calendar = new Calendar(currencies);
+                return java.sql.Date.valueOf(calendar.getNextBusinessDate(financialTxn.getTradeDate(), financialTxn.getMasterData().getBusinessDays()));
+
             }
         }
-        
         return financialTxn.getTradeDate();
     }
 }

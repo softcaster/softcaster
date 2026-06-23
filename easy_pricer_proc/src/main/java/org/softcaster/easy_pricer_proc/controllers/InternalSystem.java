@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class InternalSystem {
-    
+
     private static final Logger log = LoggerFactory.getLogger(InternalSystem.class);
 
     @Autowired
@@ -24,11 +24,11 @@ public class InternalSystem {
     @PostMapping(value = "/internal/system/suspend")
     public ResponseEntity<String> suspend() {
         // Cambia lo stato centralizzato
-            stateManager.suspend();
+        stateManager.suspend();
         log.info("Service suspended...");
         return new ResponseEntity<>("Service suspended", HttpStatus.OK);
     }
-    
+
     @PostMapping(value = "/internal/system/resume")
     public ResponseEntity<String> resume() {
         // Cambia lo stato centralizzato
