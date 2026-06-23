@@ -914,6 +914,7 @@ CREATE TABLE position_detail (
     duration numeric(15, 5) NOT NULL DEFAULT 0, -- duration 
     mod_duration numeric(15, 5) NOT NULL DEFAULT 0, -- modified duration
     theoretical_price numeric(15, 5) NOT NULL DEFAULT 0, -- prezzo teorico
+    official_date date NOT NULL DEFAULT NOW(), 
     CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_counterparty FOREIGN KEY (counterparty) REFERENCES counterparty (id_counterparty) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_position_md FOREIGN KEY (position_md) REFERENCES position_master_data (id_position) ON DELETE NO ACTION ON UPDATE NO ACTION,

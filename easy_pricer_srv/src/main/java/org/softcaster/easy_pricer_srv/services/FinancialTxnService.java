@@ -13,14 +13,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Objects;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
-import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.dto.FinancialTxnDto;
 import org.softcaster.core.dto.FinancialTxnMapper;
 import org.softcaster.easy_pricer_mds_core.Calendar;
@@ -99,6 +97,7 @@ public class FinancialTxnService {
                         financialTxn.setValueDate(settlementDate);
                     } else {
                         financialTxn.setIdFinancialTxn(oldTxnDto.financialTxnId());
+                        financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
                         financialTxn.setVersion(version);
                     }
                     // Usiamo il DAO coerentemente con il resto dello switch

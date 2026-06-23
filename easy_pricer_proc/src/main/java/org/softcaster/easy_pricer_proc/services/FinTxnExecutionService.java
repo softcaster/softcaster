@@ -4,6 +4,7 @@
  */
 package org.softcaster.easy_pricer_proc.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
+import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
@@ -36,11 +38,14 @@ public class FinTxnExecutionService {
     @Autowired
     private FinancialTxnDAO financialTxnDAO;
     @Autowired
-    private PositionDetailDAO positionRepository;
+    private PositionDetailDAO positionDetailDAO;
     @Autowired
     private ProcessorDispatcher processorDispatcher;
     @Autowired
     AccountingEventDAO accountingEventDAO;
+
+    @Autowired
+    private SystemBusinessCalendarDAO systemBusinessCalendarDAO;
 
     // Richiede una NUOVA transazione per salvare lo stato di REJECTED 
     // anche se la transazione principale fallisce e fa rollback
@@ -97,7 +102,7 @@ public class FinTxnExecutionService {
 
         PositionDetail position = getPositionDetail(txn);
         processFinancialTxn(txn, position);
-        positionRepository.saveOrUpdate(position);
+        positionDetailDAO.saveOrUpdate(position);
     }
 
     private void generateAccountingEvent(FinancialTxn txn, TxnStatus status) {
@@ -122,7 +127,7 @@ public class FinTxnExecutionService {
             event.setSourceId(txn.getIdFinancialTxn());
             event.setEventStatus(AccountingEventStatus.NEW);
             event.setSourceType(EventSourceType.TRADE);
-            event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + status.getCode());
+            event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + "[" + status.getCode() + "]" + LocalDate.now());
             event.setCreatedAt(LocalDateTime.now());
             event.setGeneratedBy(txn.getMasterData().getIdMasterData());
             event.setGeneratedRef("");
@@ -141,13 +146,14 @@ public class FinTxnExecutionService {
     }
 
     private PositionDetail getPositionDetail(FinancialTxn txn) {
-        PositionDetail position = positionRepository.findByPositionMdAndMasterDataAndCounterparty(
+        PositionDetail position = positionDetailDAO.findByPositionMdAndMasterDataAndCounterparty(
                 txn.getPositionMd().getIdPosition(), txn.getMasterData().getIdMasterData(),
                 txn.getCounterparty().getIdCounterparty()).orElseGet(() -> {
             PositionDetail newPosition = new PositionDetail();
             newPosition.setPositionMd(txn.getPositionMd().getIdPosition());
             newPosition.setMasterData(txn.getMasterData().getIdMasterData());
             newPosition.setCounterparty(txn.getCounterparty().getIdCounterparty());
+            newPosition.setOfficialDate(systemBusinessCalendarDAO.findBySbcId(1).getOfficialDate());
             newPosition.initialize();
             return newPosition;
         });

@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.sql.Types;
+import java.time.LocalDate;
 import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
@@ -72,14 +73,14 @@ public class PositionDetail implements Serializable {
     @Column(name = "sell_taxes")
     private Double sellTaxes;
 
-   @JdbcTypeCode(Types.NUMERIC)
+    @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "market_price")
     private Double marketPrice;
 
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "buy_accrual")
     private Double buyAccrual;
-    
+
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "sell_accrual")
     private Double sellAccrual;
@@ -103,7 +104,10 @@ public class PositionDetail implements Serializable {
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "theoretical_price")
     private Double theoreticalPrice;
-    
+
+    @Column(name = "official_date")
+    private LocalDate officialDate;
+
     public Integer getIdPositionDetail() {
         return idPositionDetail;
     }
@@ -303,8 +307,8 @@ public class PositionDetail implements Serializable {
 
     public void initialize() {
         realizedPnl = unrealizedPnl = buyQty = notionalValueBuy = buyFees = buyTaxes
-                = sellQty = notionalValueSell = sellFees = sellTaxes = marketPrice 
-                = buyAccrual = sellAccrual = ytm = duration = modDuration = timeToMaturity 
+                = sellQty = notionalValueSell = sellFees = sellTaxes = marketPrice
+                = buyAccrual = sellAccrual = ytm = duration = modDuration = timeToMaturity
                 = theoreticalPrice = 0.;
     }
 
@@ -405,4 +409,20 @@ public class PositionDetail implements Serializable {
     public void setSellAccrual(Double sellAccrual) {
         this.sellAccrual = sellAccrual;
     }
+
+    /**
+     * @return the officialDate
+     */
+    public LocalDate getOfficialDate() {
+        return officialDate;
+    }
+
+    /**
+     * @param officialDate the officialDate to set
+     */
+    public void setOfficialDate(LocalDate officialDate) {
+        this.officialDate = officialDate;
+    }
+
+ 
 }

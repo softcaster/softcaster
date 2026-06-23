@@ -108,3 +108,7 @@ alter table instrument_valuation add column valuation_date date NOT NULL DEFAULT
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (11,'POSTED','Posted');
 INSERT INTO txn_status(id_txn_status,code, description) VALUES (12,'SETTLED','Settled');
 delete from txn_status where id_txn_status in(11,12);
+
+----------------------------------------------------------------------------------------------
+alter table position_detail add column official_date date NOT NULL DEFAULT NOW();
+update position_detail set official_date=(select official_date from system_business_calendar where sbc_id=1);
