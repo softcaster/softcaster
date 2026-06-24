@@ -10,9 +10,11 @@ package org.softcaster.engine.dto;
  */
 public class BondOutputData extends MarketOutputData {
 
-    private double accruedInterest = 0;
+    private double mktPrice = 0;
+    private double duration = 0;
     private double ytm = 0;
     private double modifiedDuration = 0;
+    private double accruedInterest = 0;
 
     /**
      * @return the accruedInterest
@@ -54,5 +56,33 @@ public class BondOutputData extends MarketOutputData {
      */
     public void setModifiedDuration(double modifiedDuration) {
         this.modifiedDuration = modifiedDuration;
+    }
+
+    /**
+     * @return the mktPrice
+     */
+    public double getMktPrice() {
+        return mktPrice;
+    }
+
+    /**
+     * @param mktPrice the mktPrice to set
+     */
+    public void setMktPrice(double mktPrice) {
+        this.mktPrice = mktPrice;
+    }
+
+    /**
+     * @return the duration
+     */
+    public double getDuration() {
+        return duration;
+    }
+
+    /**
+     * @param duration the duration to set
+     */
+    public void setDuration(double duration) {
+        this.duration = duration;
     }
 }
