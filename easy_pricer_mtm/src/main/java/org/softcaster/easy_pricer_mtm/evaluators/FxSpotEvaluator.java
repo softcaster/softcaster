@@ -2,23 +2,27 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package org.softcaster.easy_pricer_mtm.processors;
+package org.softcaster.easy_pricer_mtm.evaluators;
 
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
+import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.stereotype.Component;
 
 @Component("FSP")
-public class FxSpotEvaluator implements IPositionEvaluator {
+public class FxSpotEvaluator extends AbstractEvaluator implements IPositionEvaluator {
 
     @Override
-    public void evaluate(PositionDetail position, MasterData masterData, IMtmDataHelper mtmHelper) {
+    public void evaluate(PositionDetail position, MasterData masterData, IMtmDataHelper mtmHelper, ValuationContext context) {
         
-        double avgBuyPrice = position.getNotionalValueBuy()/position.getBuyQty();
+        position.initializeMtmFields();
+        
         double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.ASK);
-        double unrealized = (mktPrice - avgBuyPrice)*(position.getBuyQty() - position.getSellQty());
+        double unrealized = calcUnrealizedPL(mktPrice,position);
+        
+        position.setMarketPrice(mktPrice);
         position.setUnrealizedPnl(unrealized);
     }
     

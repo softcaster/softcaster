@@ -29,10 +29,8 @@ public class FinancialTxnService {
 
     @PersistenceContext
     private EntityManager entityManager;
-
     @Autowired
     private TransactionTemplate transactionTemplate; // Gestore manuale della transazione
-
     @Autowired
     private FinancialTxnDAO dao;
     @Autowired

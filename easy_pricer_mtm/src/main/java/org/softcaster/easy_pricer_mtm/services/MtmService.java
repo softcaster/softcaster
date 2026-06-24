@@ -12,16 +12,18 @@ import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
+import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.easy_pricer_mtm.exceptions.MtmException;
-import org.softcaster.easy_pricer_mtm.processors.EvaluatorDispatcher;
-import org.softcaster.easy_pricer_mtm.processors.IPositionEvaluator;
+import org.softcaster.easy_pricer_mtm.evaluators.EvaluatorDispatcher;
+import org.softcaster.easy_pricer_mtm.evaluators.IPositionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MtmService {
+
     private static final Logger log = LoggerFactory.getLogger(MtmService.class);
-    
+
     @Autowired
     private PositionDetailDAO positionDetailDAO;
 
@@ -29,26 +31,26 @@ public class MtmService {
     EvaluatorDispatcher evaluatorDispatcher;
 
     @Autowired
-    MasterDataDAO masterDataDAO;    
-    
+    MasterDataDAO masterDataDAO;
+
     // ogni position viene elaborata e committata singolarmente
-    @Transactional 
-    public void evaluatePosition(Integer positionMdId, Integer masterDataId, Integer counterpartyId, IMtmDataHelper mtmHelper) {
-        
-        PositionDetail position = positionDetailDAO.findByPositionMdAndMasterDataAndCounterparty(positionMdId,  masterDataId, counterpartyId).orElseGet(() -> {
-          throw new MtmException("Invalid position");
+    @Transactional
+    public void evaluatePosition(Integer positionMdId, Integer masterDataId, Integer counterpartyId, IMtmDataHelper mtmHelper, ValuationContext context) {
+
+        PositionDetail position = positionDetailDAO.findByPositionMdAndMasterDataAndCounterparty(positionMdId, masterDataId, counterpartyId).orElseGet(() -> {
+            throw new MtmException("Invalid position");
         });
 
         MasterData masterData = masterDataDAO.findByIdMasterData(masterDataId);
         String assetClass = masterData.getAssetClass().getCode();
 
         IPositionEvaluator evaluator = evaluatorDispatcher.dispatch(assetClass);
-        if(evaluator != null) {
-            evaluator.evaluate(position, masterData, mtmHelper);
+        if (evaluator != null) {
+            evaluator.evaluate(position, masterData, mtmHelper, context);
             positionDetailDAO.saveOrUpdate(position);
             log.info("Mtm intrument: " + masterData.getCode());
-        }
-        else 
+        } else {
             throw new MtmException("Invalid evaluator");
+        }
     }
 }

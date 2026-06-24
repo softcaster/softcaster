@@ -10,6 +10,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
@@ -107,6 +108,9 @@ public class PositionDetail implements Serializable {
 
     @Column(name = "official_date")
     private LocalDate officialDate;
+
+    @Column(name = "last_mtm_executed")
+    private LocalDateTime lastMtmExecuted;
 
     public Integer getIdPositionDetail() {
         return idPositionDetail;
@@ -306,12 +310,15 @@ public class PositionDetail implements Serializable {
     }
 
     public void initialize() {
-        realizedPnl = unrealizedPnl = buyQty = notionalValueBuy = buyFees = buyTaxes
+        marketPrice = realizedPnl = unrealizedPnl = buyQty = notionalValueBuy = buyFees = buyTaxes
                 = sellQty = notionalValueSell = sellFees = sellTaxes = marketPrice
                 = buyAccrual = sellAccrual = ytm = duration = modDuration = timeToMaturity
                 = theoreticalPrice = 0.;
     }
 
+    public void initializeMtmFields() {
+            marketPrice = unrealizedPnl = ytm = duration = modDuration = timeToMaturity = theoreticalPrice = 0.;
+    }    
     /**
      * @return the ytm
      */
@@ -424,5 +431,17 @@ public class PositionDetail implements Serializable {
         this.officialDate = officialDate;
     }
 
- 
+    /**
+     * @return the lastMtmExecuted
+     */
+    public LocalDateTime getLastMtmExecuted() {
+        return lastMtmExecuted;
+    }
+
+    /**
+     * @param lastMtmExecuted the lastMtmExecuted to set
+     */
+    public void setLastMtmExecuted(LocalDateTime lastMtmExecuted) {
+        this.lastMtmExecuted = lastMtmExecuted;
+    } 
 }

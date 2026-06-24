@@ -112,3 +112,7 @@ delete from txn_status where id_txn_status in(11,12);
 ----------------------------------------------------------------------------------------------
 alter table position_detail add column official_date date NOT NULL DEFAULT NOW();
 update position_detail set official_date=(select official_date from system_business_calendar where sbc_id=1);
+
+----------------------------------------------------------------------------------------------
+ALTER TABLE position_detail 
+ADD COLUMN last_mtm_executed TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW() - INTERVAL '1 hour';
