@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-@Component("BOND")
+@Component("XRB")
 public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluator {
 
     @Autowired
@@ -85,19 +85,31 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
 
         // Chiamata thread-safe personalizzata
         InstrumentValuation valuation = context.computeIfAbsentThreadSafe(masterDataId, () -> {
-            InstrumentValuation newValuation = new InstrumentValuation();
-            newValuation.setMasterData(masterData);
+            
+            // Controlliamo se MasterData ha già una valutazione caricata dal database
+            InstrumentValuation currentValuation = masterData.getInstrumentValuation();
+            
+            if (currentValuation == null) {
+                // Se non esiste, la creiamo da zero (succederà solo la primissima volta)
+                currentValuation = new InstrumentValuation();
+                currentValuation.setMasterData(masterData);
+                // Impostiamo l'ID esatto dell'anagrafica per renderlo immediatamente "not transient"
+                currentValuation.setInstrumentValuationId(masterData.getIdMasterData()); 
+                masterData.setInstrumentValuation(currentValuation); // Aggiorna il lato inverso
+            } 
 
             BondOutputData output = calculate(masterData, mtmHelper);
             if (output != null) {
-                newValuation.setMarketPrice(output.getMktPrice());
-                newValuation.setYtm(output.getYtm());
-                newValuation.setDuration(output.getDuration());
-                newValuation.setModDuration(output.getModifiedDuration());
-                newValuation.setAccruedInterest(output.getAccruedInterest());
+                currentValuation.setMarketPrice(output.getMktPrice());
+                currentValuation.setYtm(output.getYtm());
+                currentValuation.setDuration(output.getDuration());
+                currentValuation.setModDuration(output.getModifiedDuration());
+                currentValuation.setAccruedInterest(output.getAccruedInterest());
+                currentValuation.setTheoreticalPrice(output.getMktPrice());
+                currentValuation.setValuationDate(output.getValuationDate());
             }
             
-            return newValuation;
+            return currentValuation;
         });
 
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso

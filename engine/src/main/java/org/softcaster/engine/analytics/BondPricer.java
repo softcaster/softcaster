@@ -133,6 +133,9 @@ public class BondPricer extends AbstractFixedIncomePricer {
         output.setModifiedDuration(calculateModifiedDuration(input.getFlows(), output.getYtm(), input.getValuationDate(),
                 input.getDaycount(), input.getFrequency()));
 
+        output.setValuationDate(input.getValuationDate());
+        output.setMktPrice(input.getSpotPrice());
+        
         return output;
     }
     /*

@@ -4,6 +4,8 @@
  */
 package org.softcaster.engine.dto;
 
+import java.time.LocalDate;
+
 /**
  *
  * @author softc
@@ -15,6 +17,7 @@ public class BondOutputData extends MarketOutputData {
     private double ytm = 0;
     private double modifiedDuration = 0;
     private double accruedInterest = 0;
+    private LocalDate valuationDate = null;
 
     /**
      * @return the accruedInterest
@@ -84,5 +87,19 @@ public class BondOutputData extends MarketOutputData {
      */
     public void setDuration(double duration) {
         this.duration = duration;
+    }
+
+    /**
+     * @return the valuationDate
+     */
+    public LocalDate getValuationDate() {
+        return valuationDate;
+    }
+
+    /**
+     * @param valuationDate the valuationDate to set
+     */
+    public void setValuationDate(LocalDate valuationDate) {
+        this.valuationDate = valuationDate;
     }
 }

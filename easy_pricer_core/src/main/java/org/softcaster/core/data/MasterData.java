@@ -56,8 +56,8 @@ public class MasterData implements Serializable {
     private String description;
 
     // --- RELAZIONE BIDIREZIONALE (LATO INVERSO) ---
-    // mappedBy punta al nome del campo Java dentro la classe InstrumentValuation
-    @OneToOne(mappedBy = "masterData", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    // 1) mappedBy punta al nome del campo Java dentro la classe InstrumentValuation
+    @OneToOne(mappedBy = "masterData", fetch = FetchType.LAZY, orphanRemoval = true) 
     private InstrumentValuation instrumentValuation;
 
     @OneToOne(fetch = FetchType.EAGER)
@@ -393,14 +393,14 @@ public class MasterData implements Serializable {
     public void setInstrumentValuation(InstrumentValuation instrumentValuation) {
         this.instrumentValuation = instrumentValuation;
     }
-    
+
     public List<Currency> getCurrencyList() {
         List<Currency> currencies = null;
-        if(currency != null) {
+        if (currency != null) {
             currencies = new ArrayList<>();
             currencies.add(currency);
         }
-        
+
         return currencies;
     }
 }

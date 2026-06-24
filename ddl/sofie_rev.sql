@@ -116,3 +116,6 @@ update position_detail set official_date=(select official_date from system_busin
 ----------------------------------------------------------------------------------------------
 ALTER TABLE position_detail 
 ADD COLUMN last_mtm_executed TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW() - INTERVAL '1 hour';
+
+----------------------------------------------------------------------------------------------
+update position_detail set last_mtm_executed=now() where last_mtm_executed is null;

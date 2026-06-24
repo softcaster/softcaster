@@ -1,5 +1,6 @@
 package org.softcaster.core.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -7,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -22,8 +24,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 public class InstrumentValuation implements Serializable {
 
     @Id
-    @SequenceGenerator(name = "instrument_valuation_seq", sequenceName = "instrument_valuation_s", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "instrument_valuation_seq")
     @Column(name = "instrument_valuation_id")
     private Integer instrumentValuationId;
 
@@ -31,7 +31,9 @@ public class InstrumentValuation implements Serializable {
     // nullable = false indica che InstrumentValuation non puo'esistere al di fuori
     // di un oggetto MasterData
     @OneToOne(fetch = FetchType.LAZY)
+    @MapsId //Mappa l'ID copiandolo direttamente da MasterData
     @JoinColumn(name = "master_data", referencedColumnName = "id_master_data", nullable = false)
+    @JsonIgnore // IMPEDISCE A JACKSON DI TORNARE DIETRO SULL'ANAGRAFICA (soluzione tampone)
     private MasterData masterData;
 
     @JdbcTypeCode(Types.NUMERIC)

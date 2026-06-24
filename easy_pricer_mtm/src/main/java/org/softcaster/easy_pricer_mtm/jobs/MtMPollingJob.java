@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.InstrumentValuation;
 import org.softcaster.core.data.InstrumentValuationDAO;
+import org.softcaster.core.data.MasterData;
+import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.PositionMasterData;
@@ -45,6 +47,8 @@ public class MtMPollingJob implements IMtmDataHelper {
     private PositionMasterDataDAO positionMasterDataDAO;
     @Autowired
     private InstrumentValuationDAO instrumentValuationDAO;
+    @Autowired
+    private MasterDataDAO masterDataDAO;
 
     @Autowired
     @Qualifier("marketDataService")
@@ -120,9 +124,14 @@ public class MtMPollingJob implements IMtmDataHelper {
         if (!valuationsToSave.isEmpty()) {
             for (InstrumentValuation valuation : valuationsToSave) {
                 try {
-                    // Usiamo un metodo dedicato (es. saveOrUpdate) con una sua transazione pulita
-                    instrumentValuationDAO.saveOrUpdate(valuation);
-                } catch (Exception e) {
+                    // Sfruttare l'Upsert nativo (ON CONFLICT DO UPDATE) a fine ciclo è la scelta vincente 
+                    // in questo tipo di architetture asincrone [IAS 21, IFRS 9]: 
+                    // azzera i problemi causati dai proxy di Hibernate nel multithreading, 
+                    // garantisce prestazioni elevate e mantiene il database perfettamente ordinato, 
+                    // con gli ID delle valutazioni saldamente ancorati a quelli delle anagrafiche
+                    instrumentValuationDAO.upsertValuation(valuation);             
+                } 
+                catch (Exception e) {
                     log.error("### MTM error saving valuation instrument Id {}: {}", 
                         valuation.getMasterData().getIdMasterData(), e.getMessage());
                 }
