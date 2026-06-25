@@ -119,3 +119,67 @@ ADD COLUMN last_mtm_executed TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW() - INTERVA
 
 ----------------------------------------------------------------------------------------------
 update position_detail set last_mtm_executed=now() where last_mtm_executed is null;
+
+----------------------------------------------------------------------------------------------
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '9'), '120090', 'Currency Position - EUR', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'EUR'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'ASSET'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '9'), '120091', 'Currency Position - USD', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'USD'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'ASSET'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '9'), '120092', 'Currency Position - CHF', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'ASSET'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '14'), '240091', 'Currency Position Control - USD', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'USD'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'LIABILITY'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'CREDIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '14'), '240092', 'Currency Position Control - CHF', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'LIABILITY'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'CREDIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '40'), '400025', 'Realized Gain on Financial Derivatives - EUR', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'EUR'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'INCOME_STATEMENT'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'INCOME'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'CREDIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '40'), '400026', 'Realized Gain on Financial Derivatives - USD', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'USD'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'INCOME_STATEMENT'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'INCOME'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'CREDIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '13'), '130055', 'FX Spot Contracts - USD', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'USD'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'ASSET'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '13'), '130056', 'FX Spot Contracts - CHF', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'ASSET'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));

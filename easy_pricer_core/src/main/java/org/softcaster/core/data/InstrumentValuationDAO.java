@@ -37,12 +37,12 @@ public class InstrumentValuationDAO {
 
     @Transactional
     public void upsertValuation(InstrumentValuation valuation) {
-        // Query nativa SQL (sintassi standard PostgreSQL, adatta al tuo log)
+        // Query nativa SQL (sintassi standard PostgreSQ)
         // Se la riga con lo stesso ID esiste, fa UPDATE di tutti i valori calcolati, altrimenti fa INSERT
         String sql = """
             INSERT INTO instrument_valuation 
-            (instrument_valuation_id, master_data, market_price, accrued_interest, ytm, duration, mod_duration, theoretical_price)
-            VALUES (:id, :md, :price, :accrued, :ytm, :dur, :modDur, :theo)
+            (instrument_valuation_id, master_data, market_price, accrued_interest, ytm, duration, mod_duration, theoretical_price, valuation_date)
+            VALUES (:id, :md, :price, :accrued, :ytm, :dur, :modDur, :theo, :vdate)
             ON CONFLICT (instrument_valuation_id) 
             DO UPDATE SET 
                 market_price = EXCLUDED.market_price,
@@ -50,8 +50,9 @@ public class InstrumentValuationDAO {
                 ytm = EXCLUDED.ytm,
                 duration = EXCLUDED.duration,
                 mod_duration = EXCLUDED.mod_duration,
-                theoretical_price = EXCLUDED.theoretical_price
-        """;
+                theoretical_price = EXCLUDED.theoretical_price,
+                valuation_date = EXCLUDED.valuation_date
+            """;
 
         entityManager.createNativeQuery(sql)
             .setParameter("id", valuation.getInstrumentValuationId())
@@ -62,6 +63,7 @@ public class InstrumentValuationDAO {
             .setParameter("dur", valuation.getDuration())
             .setParameter("modDur", valuation.getModDuration())
             .setParameter("theo", valuation.getTheoreticalPrice())
+            .setParameter("vdate", valuation.getValuationDate())
             .executeUpdate();
     }
     

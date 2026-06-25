@@ -18,7 +18,7 @@ public class AsyncConfig {
         executor.setCorePoolSize(5);       // Numero minimo di thread sempre attivi
         executor.setMaxPoolSize(10);      // Numero massimo di thread in caso di carico
         executor.setQueueCapacity(500);   // Coda per gli eventi in attesa di un thread libero
-        executor.setThreadNamePrefix("TxnExecutor-");
+        executor.setThreadNamePrefix("MtmExecutor-");
         executor.initialize();
         return executor;
     }

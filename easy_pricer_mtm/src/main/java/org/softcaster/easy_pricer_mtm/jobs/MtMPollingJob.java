@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.InstrumentValuation;
 import org.softcaster.core.data.InstrumentValuationDAO;
-import org.softcaster.core.data.MasterData;
-import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.PositionMasterData;
@@ -47,8 +45,6 @@ public class MtMPollingJob implements IMtmDataHelper {
     private PositionMasterDataDAO positionMasterDataDAO;
     @Autowired
     private InstrumentValuationDAO instrumentValuationDAO;
-    @Autowired
-    private MasterDataDAO masterDataDAO;
 
     @Autowired
     @Qualifier("marketDataService")
@@ -112,7 +108,7 @@ public class MtMPollingJob implements IMtmDataHelper {
             log.info("=== [MMS] MTM Service is suspended ===\n");
             return;
         }
-        log.info("=== [MMS] MTM Service started ===\n");
+        log.info("=== [MMS] MTM Service started ===");
         // Creazione del contesto unico per QUESTO ciclo di polling
         ValuationContext context = new ValuationContext();
         
@@ -125,7 +121,7 @@ public class MtMPollingJob implements IMtmDataHelper {
             for (InstrumentValuation valuation : valuationsToSave) {
                 try {
                     // Sfruttare l'Upsert nativo (ON CONFLICT DO UPDATE) a fine ciclo è la scelta vincente 
-                    // in questo tipo di architetture asincrone [IAS 21, IFRS 9]: 
+                    // in questo tipo di architetture asincrone.
                     // azzera i problemi causati dai proxy di Hibernate nel multithreading, 
                     // garantisce prestazioni elevate e mantiene il database perfettamente ordinato, 
                     // con gli ID delle valutazioni saldamente ancorati a quelli delle anagrafiche

@@ -85,18 +85,18 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
 
         // Chiamata thread-safe personalizzata
         InstrumentValuation valuation = context.computeIfAbsentThreadSafe(masterDataId, () -> {
-            
+
             // Controlliamo se MasterData ha già una valutazione caricata dal database
             InstrumentValuation currentValuation = masterData.getInstrumentValuation();
-            
+
             if (currentValuation == null) {
                 // Se non esiste, la creiamo da zero (succederà solo la primissima volta)
                 currentValuation = new InstrumentValuation();
                 currentValuation.setMasterData(masterData);
                 // Impostiamo l'ID esatto dell'anagrafica per renderlo immediatamente "not transient"
-                currentValuation.setInstrumentValuationId(masterData.getIdMasterData()); 
+                currentValuation.setInstrumentValuationId(masterData.getIdMasterData());
                 masterData.setInstrumentValuation(currentValuation); // Aggiorna il lato inverso
-            } 
+            }
 
             BondOutputData output = calculate(masterData, mtmHelper);
             if (output != null) {
@@ -108,17 +108,19 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
                 currentValuation.setTheoreticalPrice(output.getMktPrice());
                 currentValuation.setValuationDate(output.getValuationDate());
             }
-            
+
             return currentValuation;
         });
 
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
         position.setMarketPrice(valuation.getMarketPrice());
+        position.setTheoreticalPrice(valuation.getMarketPrice());
         position.setYtm(valuation.getYtm());
         position.setDuration(valuation.getDuration());
+        position.setModDuration(valuation.getModDuration());
 
         // Calcola il P&L non realizzato (questo è specifico della singola posizione!)
-        double unrealized = calcUnrealizedPL(valuation.getMarketPrice(), position);
+        double unrealized = calcUnrealizedPL(valuation.getMarketPrice() * masterData.getMultiplier(), position);
         position.setUnrealizedPnl(unrealized);
 
         // Aggiorna il legame bidirezionale nell'anagrafica (opzionale, utile per JPA)
