@@ -5,10 +5,17 @@
 package org.softcaster.easy_pricer_acct.context;
 
 import java.math.BigDecimal;
+import java.util.List;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.account.AccountingEvent;
+import org.softcaster.core.data.account.GlAccountDAO;
+import org.softcaster.core.data.account.JournalEntryLines;
+import org.softcaster.core.data.account.JournalEntryLinesDAO;
+import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
+import org.softcaster.engine.enums.NormalBalance;
 import org.softcaster.engine.enums.TxnComponentType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -50,7 +57,8 @@ public class AccountingContext {
     /**
      * Helper per estrarre in sicurezza il rateo d'interesse dai componenti
      * della transazione, senza inquinare l'entità FinancialTxn.
-     * @return 
+     *
+     * @return
      */
     public double getBondAccruedInterest() {
         if (txn.getComponents() == null || txn.getComponents().isEmpty()) {
@@ -65,5 +73,42 @@ public class AccountingContext {
                 .findFirst()
                 .map(BigDecimal::doubleValue) // Converte BigDecimal in double per facilitare Groovy
                 .orElse(0.0);
+    }
+
+    String getAccountCode(Integer id) {
+        GlAccountDAO glAccountDAO = ApplicationContextHolder.getBean(GlAccountDAO.class);
+        return glAccountDAO.findByAccountId(id).getCode();
+    }
+    /**
+     * Recupera le vecchie linee dal database tramite il DAO/Repository e genera
+     * lo storno ad importo invertito nel DSL.
+     */
+    public void reverseJournal() {
+        // Recuperiamo le linee associate all'ID della transazione corrente
+        JournalEntryLinesDAO journalEntryLinesDAO = ApplicationContextHolder.getBean(JournalEntryLinesDAO.class);
+        List<JournalEntryLines> oldLines = journalEntryLinesDAO.findLinesByFinancialTxnId(this.event.getSourceId());
+
+        if (oldLines == null || oldLines.isEmpty()) {
+            String error = "No lines found Accounting Event: " + this.event.getEventId();
+            throw new AccountingException(error);
+        }
+
+        for (JournalEntryLines oldLine : oldLines) {
+            // Manteniamo lo stesso identico BalanceType (DEBIT o CREDIT)
+            NormalBalance sameBalance = (oldLine.getDebitAmount() > 0) ? NormalBalance.DEBIT : NormalBalance.CREDIT;
+
+            // Estraiamo l'importo positivo originario
+            double originalAmount = (oldLine.getDebitAmount() > 0) ? oldLine.getDebitAmount() : oldLine.getCreditAmount();
+
+            // Invertiamo il segno dell'importo (Storno in Nero / Negativo)
+            double negativeAmount = originalAmount * (-1.0);
+
+            // Inseriamo la linea di storno nel DSL contabile corrente
+            if (sameBalance == NormalBalance.DEBIT) {
+                this.journal.debit(getAccountCode(oldLine.getGlAccount()), negativeAmount, oldLine.getCurrency());
+            } else {
+                this.journal.credit(getAccountCode(oldLine.getGlAccount()), negativeAmount, oldLine.getCurrency());
+            }
+        }
     }
 }

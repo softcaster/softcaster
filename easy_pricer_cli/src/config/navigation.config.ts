@@ -67,6 +67,15 @@ export const navigationNodes: TreeNode[] = [
     ]
   },
   {
+    key: 'views',
+    label: 'Holding Views',
+    //icon: 'pi pi-fw pi-cog',
+    children: [
+      { key: 'user-key', label: 'Positions', /*icon: 'pi pi-fw pi-users',*/ data: '/position' },
+      { key: 'log-key', label: 'Accounting', /*icon: 'pi pi-fw pi-list',*/ data: '/accounting' }
+    ]
+  },
+  {
     key: 'settings',
     label: 'System Settings',
     //icon: 'pi pi-fw pi-cog',
@@ -74,5 +83,5 @@ export const navigationNodes: TreeNode[] = [
       { key: 'user-key', label: 'User Management', /*icon: 'pi pi-fw pi-users',*/ data: '/user' },
       { key: 'log-key', label: 'Audit Logs', /*icon: 'pi pi-fw pi-list',*/ data: '/log' }
     ]
-  } 
+  }
 ];

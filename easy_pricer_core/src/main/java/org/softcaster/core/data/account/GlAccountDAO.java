@@ -18,7 +18,7 @@ public class GlAccountDAO {
     public GlAccount findByAccountId(Integer accountId) {
         return repository.findByAccountId(accountId);
     }
-    
+   
     @Transactional(readOnly = true)
     public GlAccount findByCode(String code) {
         return repository.findByCode(code);

@@ -18,7 +18,7 @@ public enum EventType implements IdentifiableEnum {
     ACCRUAL(6, "ACCRUAL", "Accrual"),
     SETTLEMENT(7, "SETTLEMENT", "Settlement"),
     MATURITY(8, "MATURITY", "Maturity'"),
-    FX_REVALUATION(9, "FX_REVALUATION", "Fx Revaluation");
+    ROLLOVER(9, "ROLLOVER", "Rollover");
 
     private final int id;
     private final String code;

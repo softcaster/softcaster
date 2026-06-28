@@ -1,8 +1,26 @@
 import org.softcaster.engine.enums.EventType
 
 // 1. Global Event Validation
-if (ctx?.event?.eventType != EventType.TRADE_EXECUTED) {
-    throw new IllegalArgumentException("Accounting engine error: unsupported event type. Only TRADE_EXECUTED is allowed.")
+// Eventi mappati negli switch delle sotto-strategie
+def supportedEvents = [
+    EventType.TRADE_EXECUTED,
+    EventType.TRADE_AMENDED,
+    EventType.TRADE_CANCELED,
+    EventType.MTM,
+    EventType.ROLLOVER,
+    EventType.ACCRUAL,
+    EventType.COUPON,
+    EventType.SETTLEMENT,
+    EventType.MATURITY
+]
+
+// CONTROLLO GLOBALE AD ALTA EFFICIENZA
+// Se l'evento corrente non è contenuto nella lista, lancia l'eccezione bloccante
+if (!supportedEvents.contains(ctx?.event?.eventType)) {
+    throw new IllegalArgumentException(
+        "Accounting engine error: unsupported event type [${ctx?.event?.eventType}]. " +
+        "This event is not handled by the current accounting strategies."
+    )
 }
 
 // 2. Data Integrity Guard Clauses

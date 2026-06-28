@@ -190,6 +190,8 @@ const MainLayout = () => {
               <Route path="/bondfuture-p" element={<BondFuturePView />} />
 
               {/* Tutte le altre sezioni caricano il placeholder */}
+              <Route path="/position" element={<PlaceholderView />} />
+              <Route path="/accounting" element={<PlaceholderView />} />
               <Route path="/user" element={<PlaceholderView />} />
               <Route path="/log" element={<PlaceholderView />} />
 

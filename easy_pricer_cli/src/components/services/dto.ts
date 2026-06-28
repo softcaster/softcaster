@@ -146,3 +146,22 @@ export const createDefaultTxnDto = (): FinancialTxnDto => ({
     quantity: 0,
     price: 0
 });
+
+export interface ProspectFilter {
+    positionId: number | null;
+    counterpartyId: number | null;
+}
+
+export interface PositionProspectDto {
+    positionCode: number;
+    assetCode: string;
+    assetDescription: string;
+    counterpartyCode: string;
+    totalQuantity: number;
+    averagePrice: number;
+    marketPrice: number;
+    marketValue: number;
+    realizedPnL: number;
+    unrealizedPnL: number;
+}
+

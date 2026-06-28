@@ -29,4 +29,31 @@ public interface PositionDetailRepository extends JpaRepository<PositionDetail, 
     public List<PositionDetail> getAndLockByPositionMasterDataAndInterval(
             @Param("pmdId") Integer pmdId,
             @Param("thresholdTime") LocalDateTime thresholdTime);
+
+    // clausola WHERE (:param IS NULL OR colonna = :param)
+    // Se l'utente nel form React clicca su "Cerca" lasciando la combo di Counterparty o Position vuota, 
+    // il client invierà null. Questa specifica sintassi SQL permette a PostgreSQL di ignorare 
+    // il filtro se il parametro è nullo, comportandosi come un filtro dinamico opzionale: 
+    // se selezionata la controparte filtra, altrimenti mostra tutto.
+    @Query(value = "SELECT pmd.code AS positionCode, "
+            + "       md.code AS assetCode, "
+            + "       md.description AS assetDescription, "
+            + "       ctp.code AS counterpartyCode, "
+            + "       pd.total_quantity AS totalQuantity, "
+            + "       pd.average_price AS averagePrice, "
+            + "       pd.market_price AS marketPrice, "
+            + "       (pd.total_quantity * pd.market_price) AS marketValue, "
+            + "       pd.realized_pnl AS realizedPnL, "
+            + "       pd.unrealized_pnl AS unrealizedPnL "
+            + "FROM position_detail pd "
+            + "JOIN position_master_data pmd ON pd.position_md = pmd.id_position "
+            + "JOIN master_data md ON pd.master_data = md.id_master_data "
+            + "JOIN counterparty ctp ON pd.counterparty = ctp.id_counterparty "
+            + "WHERE (:positionMdId IS NULL OR pd.position_md = :positionMdId) "
+            + "  AND (:counterpartyId IS NULL OR pd.counterparty = :counterpartyId)",
+            nativeQuery = true)
+    List<Object[]> findPositionProspect(
+            @Param("positionMdId") Integer positionMdId,
+            @Param("counterpartyId") Integer counterpartyId
+    );
 }

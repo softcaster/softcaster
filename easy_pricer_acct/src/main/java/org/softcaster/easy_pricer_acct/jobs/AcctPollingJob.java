@@ -125,9 +125,9 @@ public class AcctPollingJob {
     }
 
     protected void pollPendingAccountingTradeEvents() {
+        poolPendingExecutedTradeEvents();
         poolPendingAmendedTradeEvents();
         poolPendingCancelledTradeEvents();
-        poolPendingExecutedTradeEvents();
     }
 
     @Scheduled(fixedDelay = 15000)

@@ -5,13 +5,13 @@
 package org.softcaster.easy_pricer_acct.services;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.transaction.Transactional;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,9 +40,12 @@ import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
 import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.JournalEntryStatus;
 import org.softcaster.engine.enums.JournalEntryType;
+import org.softcaster.engine.enums.NormalBalance;
 import static org.softcaster.engine.enums.NormalBalance.DEBIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TradeAccountingEventService {
@@ -57,7 +60,7 @@ public class TradeAccountingEventService {
 
     // Memorizza i percorsi assoluti
     private String mainScriptAbsolutePath = "";
-   
+
     @Autowired
     private ScriptEngine groovyEngine;
 
@@ -72,9 +75,12 @@ public class TradeAccountingEventService {
 
     @Autowired
     private AccountingEventDAO accountingEventDAO;
-    
+
     @Autowired
     private AccountResolverService accountResolverService;
+
+    @Autowired
+    private AccountingEventStatusService eventStatusService;
 
     /**
      * COMPILAZIONE UNICA ALL'AVVIO Avviene una sola volta, all'avvio del
@@ -158,37 +164,67 @@ public class TradeAccountingEventService {
         return jel;
     }
 
-    private void addJournalEntrie(AccountingContext ctx) {
-        List<JournalLine> lines = ctx.getJournal().build();
-        // Deve avere linee ed in numero pari
-        if (!lines.isEmpty() && lines.size() % 2 == 0) {
-            JournalEntries entry = new JournalEntries();
-            entry.setAccountingEvent(ctx.getEvent());
-            entry.setEntryStatus(JournalEntryStatus.UNCONSOLIDATED);
-            entry.setEntryType(JournalEntryType.ACCOUNTING);
-            entry.setBusinessDate(ctx.getTxn().getTradeDate());
-            entry.setCreatedAt(LocalDateTime.now());
-            entry.setDescription(ctx.getTxn().getDescription());
-            entry.setReference("txn: " + ctx.getTxn().getIdFinancialTxn());
-            for (JournalLine line : lines) {
-                JournalEntryLines jel = getJournalEntryLines(line);
-                if (jel != null) {
-                    // addLine aggiorna anche LineNo
-                    entry.addLine(jel);
-                } else {
-                    String error = "Invalid JournalEntryLines null value";
-                    log.warn(error);
-                    LoggerMgr.logWarning(error);
-                    throw new AccountingException(error);
-                }
-            }
-            journalEntriesDAO.saveOrUpdate(entry);
-        } else {
-            String warning = "Invalid Jounal Entries number!";
-            log.warn(warning);
-            LoggerMgr.logWarning(warning);
+    /**
+     * Controlla che ogni valuta coinvolta nel DSL sia perfettamente quadrata a
+     * zero. Se una valuta è sbilanciata, lancia una AccountingException
+     * bloccando il flusso.
+     */
+    private void checkCurrencyBalancing(List<JournalLine> lines) {
+        Map<Integer, Double> balanceMap = new HashMap<>();
+
+        for (JournalLine line : lines) {
+            int ccyId = line.currency();
+            double amount = line.amount();
+
+            // DEBIT incrementa il saldo del registro, CREDIT lo decrementa
+            double effect = (line.balance() == NormalBalance.DEBIT) ? amount : -amount;
+            balanceMap.put(ccyId, balanceMap.getOrDefault(ccyId, 0.0) + effect);
         }
 
+        // Tolleranza per micro-frazioni decimali (es. arrotondamenti float/double)
+        double tolerance = 0.00001;
+
+        for (Map.Entry<Integer, Double> entry : balanceMap.entrySet()) {
+            double balance = entry.getValue();
+            if (Math.abs(balance) > tolerance) {
+                String outOfBalanceError = String.format(
+                        "### CRITICAL ACCOUNTING MISMATCH: Currency ID %d is out of balance by %.5f!",
+                        entry.getKey(), balance);
+                log.error(outOfBalanceError);
+                LoggerMgr.logError(outOfBalanceError);
+                throw new AccountingException(outOfBalanceError);
+            }
+        }
+    }
+
+    private void addJournalEntrie(AccountingContext ctx) {
+        List<JournalLine> lines = ctx.getJournal().build();
+        if (lines.isEmpty()) {
+        }
+
+        checkCurrencyBalancing(lines);
+
+        JournalEntries entry = new JournalEntries();
+        entry.setAccountingEvent(ctx.getEvent());
+        entry.setEntryStatus(JournalEntryStatus.UNCONSOLIDATED);
+        entry.setEntryType(JournalEntryType.ACCOUNTING);
+        entry.setBusinessDate(ctx.getTxn().getTradeDate());
+        entry.setCreatedAt(LocalDateTime.now());
+        entry.setDescription(ctx.getTxn().getDescription());
+        entry.setReference("txn: " + ctx.getTxn().getIdFinancialTxn());
+        for (JournalLine line : lines) {
+            JournalEntryLines jel = getJournalEntryLines(line);
+            if (jel != null) {
+                // addLine aggiorna anche LineNo
+                entry.addLine(jel);
+            } else {
+                String error = "Invalid JournalEntryLines null value";
+                log.warn(error);
+                LoggerMgr.logWarning(error);
+                throw new AccountingException(error);
+            }
+        }
+        journalEntriesDAO.saveOrUpdate(entry);
     }
 
     /**
@@ -206,7 +242,7 @@ public class TradeAccountingEventService {
 
         try {
             // Carico txn
-            FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(event.getEventId());
+            FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(event.getSourceId());
             if (txn == null) {
                 throw new AccountingException(" Invalid txn!");
             }
@@ -219,7 +255,7 @@ public class TradeAccountingEventService {
             Bindings bindings = new SimpleBindings();
             bindings.put("ctx", ctx);
             bindings.put(ScriptEngine.FILENAME, this.mainScriptAbsolutePath);
-            bindings.put("accountResolver", accountResolverService); 
+            bindings.put("accountResolver", accountResolverService);
 
             // 4. Esecuzione delle regole contabili generali (Orchestratore principale)
             cachedMainScript.eval(bindings);
@@ -247,9 +283,14 @@ public class TradeAccountingEventService {
                     log.warn("No specific strategy script found cached for Asset Class: {}", assetCode);
                 }
             }
-        } catch (ScriptException ex) {
+        } catch (Exception ex) {
             String error = "Error executing script for event " + event.getEventId() + ": " + ex.getLocalizedMessage();
             LoggerMgr.logError(error);
+
+            // Chiamiamo un metodo dedicato per marcare l'evento come FAILED su una transazione pulita ed autonoma
+            eventStatusService.markEventAsFailed(event.getEventId());
+
+            // Rilanciamo la RuntimeException per costringere Hibernate a fare il ROLLBACK di tutto il resto (giornale, linee, ecc.)
             throw new AccountingException(error);
         }
     }

@@ -4,6 +4,8 @@ import java.util.List;
 import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import org.softcaster.core.dto.PositionProspectDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,4 +68,21 @@ public class PositionDetailDAO {
         repository.delete(positionDetail);
     }
 
+    @Transactional(readOnly = true)
+    public List<PositionProspectDto> getPositionProspect(Integer positionMdId, Integer counterpartyId) {
+        List<Object[]> rawResults = repository.findPositionProspect(positionMdId, counterpartyId);
+
+        return rawResults.stream().map(row -> new PositionProspectDto(
+                (String) row[0], // positionCode
+                (String) row[1], // assetCode
+                (String) row[2], // assetDescription
+                (String) row[3], // counterpartyCode
+                row[4] != null ? ((Number) row[4]).doubleValue() : 0.0, // totalQuantity
+                row[5] != null ? ((Number) row[5]).doubleValue() : 0.0, // averagePrice
+                row[6] != null ? ((Number) row[6]).doubleValue() : 0.0, // marketPrice
+                row[7] != null ? ((Number) row[7]).doubleValue() : 0.0, // marketValue
+                row[8] != null ? ((Number) row[8]).doubleValue() : 0.0, // realizedPnL
+                row[9] != null ? ((Number) row[9]).doubleValue() : 0.0 // unrealizedPnL
+        )).collect(Collectors.toList());
+    }
 }

@@ -7,7 +7,11 @@ import type {
     PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem
 } from '../data/schema'
 import type {
-    FinancialTxnDto
+    FinancialTxnDto, PositionProspectDto
+} from '../services/dto';
+
+import type {
+    ProspectFilter
 } from '../services/dto';
 
 export const fetchDaycount = async (): Promise<Daycount[]> => {
@@ -1453,5 +1457,15 @@ export const deleteYieldCurveItem = async (id: number): Promise<YieldCurveItem |
         return null;
     }
 };
+
+export async function fetchPositionProspect(filter: ProspectFilter): Promise<PositionProspectDto[]> {
+
+    try {
+        return await apiRequest<PositionProspectDto[]>('/prospects/position', 'POST', filter);
+    } catch (error) {
+        console.error('Failed to fetch position prospect data:', error);
+        return [];
+    }
+}
 
 
