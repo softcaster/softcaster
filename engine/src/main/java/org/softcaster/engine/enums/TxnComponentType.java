@@ -13,7 +13,8 @@ public enum TxnComponentType implements IdentifiableEnum {
     EXCHANGE_FEE(2, "EXCHANGE_FEE", "CME / Clearing House Regulatory Fees"),
     INITIAL_MARGIN(3, "INITIAL_MARGIN", "Initial Margin Deposit Requirement"),
     MAINTENANCE_MARGIN(4, "MAINTENANCE_MARGIN", "Maintenance Margin Requirement"),
-    OPTION_PREMIUM(5, "OPTION_PREMIUM", "Option Premium Paid or Written");
+    OPTION_PREMIUM(5, "OPTION_PREMIUM", "Option Premium Paid or Written"),
+    BOND_ACCRUAL(6, "BOND_ACCRUAL", "Bond Accrual");
 
     private final int id;
     private final String code;

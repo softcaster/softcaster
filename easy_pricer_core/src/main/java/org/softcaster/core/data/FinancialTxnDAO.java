@@ -1,7 +1,6 @@
 package org.softcaster.core.data;
 
 import java.util.List;
-import jakarta.annotation.Resource;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.stereotype.Service;
@@ -11,9 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("financialTxnDAO")
 public class FinancialTxnDAO {
 
-    @Resource
-    private FinancialTxnRepository repository;
+    private final FinancialTxnRepository repository;
 
+    public FinancialTxnDAO(FinancialTxnRepository repository) {
+        this.repository = repository;
+    }
+    
     @Transactional(readOnly = true)
     public FinancialTxn findByIdFinancialTxn(Integer idFinancialTxn) {
         return repository.findByIdFinancialTxn(idFinancialTxn);

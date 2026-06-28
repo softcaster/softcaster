@@ -227,6 +227,36 @@ ALTER SEQUENCE journal_entry_lines_s
     OWNER TO sofie;
 
 
+-- ----------------------------------------------------------------------------
+-- account_mapping mappatura per il resover utilizzato dagli script groovy
+-- ----------------------------------------------------------------------------
+CREATE TABLE account_mapping (
+    account_mapping_id INTEGER NOT NULL,
+    mapping_key VARCHAR(50) NOT NULL,
+    currency INTEGER NOT NULL,
+    gl_account INTEGER NOT NULL,
+
+    PRIMARY KEY (account_mapping_id),
+
+    CONSTRAINT uk_account_mapping
+        UNIQUE (mapping_key, currency),
+
+    CONSTRAINT fk_am_currency
+        FOREIGN KEY (currency)
+        REFERENCES currency(id_currency),
+    CONSTRAINT fk_am_account
+        FOREIGN KEY (gl_account)
+        REFERENCES gl_accounts(account_id)
+);
+ALTER TABLE account_mapping
+    OWNER TO sofie;
+
+CREATE SEQUENCE account_mapping_s
+    START WITH 1
+    INCREMENT BY 1;
+ALTER SEQUENCE account_mapping_s
+    OWNER TO sofie;
+
 /*
 DSL significa Domain Specific Language, cioè:
 un linguaggio progettato per descrivere un problema specifico di un dominio.

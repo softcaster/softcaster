@@ -67,6 +67,10 @@ public class FinancialTxn implements Serializable {
     @JoinColumn(name = "financial_txn", nullable = false) // FK in child table holiday
     private List<FinancialTxnComponent> components = new ArrayList<>();
 
+    public void addTxnComponent(FinancialTxnComponent component) {
+        components.add(component);
+    }
+    
     @Column(name = "ref_id")
     private Integer refId;
 

@@ -7,9 +7,12 @@ package org.softcaster.core.data;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
@@ -37,8 +40,15 @@ public class FinancialTxnComponent {
     @Column(name = "component_type")
     private TxnComponentType componentType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "currency", nullable = false)
+    private Currency currency;
+
     @Column(name = "amount")
     private BigDecimal amount;
+
+    @Column(name = "description")
+    private String description;
 
     /**
      * @return the txnComponentId
@@ -94,5 +104,33 @@ public class FinancialTxnComponent {
      */
     public void setFinancialTxn(Integer financialTxn) {
         this.financialTxn = financialTxn;
+    }
+
+    /**
+     * @return the currency
+     */
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    /**
+     * @param currency the currency to set
+     */
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

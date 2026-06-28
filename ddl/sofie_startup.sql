@@ -153,6 +153,7 @@ INSERT INTO txn_component_types(component_type_id,code, description) VALUES (2, 
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (3, 'INITIAL_MARGIN', 'Initial Margin Deposit Requirement');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (4, 'MAINTENANCE_MARGIN', 'Maintenance Margin Requirement');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (5, 'OPTION_PREMIUM', 'Option Premium Paid or Written');
+INSERT INTO txn_component_types(component_type_id,code, description) VALUES (6, 'BOND_ACCRUAL', 'Bond Accrual');
 
 -- ----------------------------------------------------------------------------
 -- counterparty_roles

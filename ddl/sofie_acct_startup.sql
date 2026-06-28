@@ -47,3 +47,40 @@ INSERT INTO journal_entry_types VALUES (4,'ADJUSTMENT','Adjustment entry');
 INSERT INTO journal_entry_status VALUES (1,'UNCONSOLIDATED','Unconsolidated');
 INSERT INTO journal_entry_status VALUES (2,'CONSOLIDATED','Consolidated');
 INSERT INTO journal_entry_status VALUES (3,'ERROR','Error');
+ 
+
+-- account_mapping mappatura per il resover utilizzato dagli script groovy
+-- 120090 Currency Position
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR
+    VALUES(nextval('account_mapping_s'),'CURRENCY_POSITION',1,79);
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
+    VALUES(nextval('account_mapping_s'),'CURRENCY_POSITION',2,80);
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- CHF 
+    VALUES(nextval('account_mapping_s'),'CURRENCY_POSITION',4,81);
+-- 130050 Fx Spot Asset
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR
+    VALUES(nextval('account_mapping_s'),'FX_SPOT_ASSET',1,37);
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
+    VALUES(nextval('account_mapping_s'),'FX_SPOT_ASSET',2,87);
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- CHF 
+    VALUES(nextval('account_mapping_s'),'FX_SPOT_ASSET',4,88);
+-- 240090 Currency Position Control
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR
+    VALUES(nextval('account_mapping_s'),'POSITION_CONTROL',1,51);
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
+    VALUES(nextval('account_mapping_s'),'POSITION_CONTROL',2,82);
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- CHF 
+    VALUES(nextval('account_mapping_s'),'POSITION_CONTROL',4,83);
+
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
+    VALUES(nextval('account_mapping_s'),'BOND_ASSET',1,33); -- 130010 Debt Securities - Sovereign Bonds (EUR)
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
+    VALUES(nextval('account_mapping_s'),'ACCRUED_INTEREST',1,41); -- 190010 Accrued Interest Receivable (EUR)
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
+    VALUES(nextval('account_mapping_s'),'SETTLEMENT_LIAB',1,50); -- 240050 Due to Brokers / Settlement Liabilities (EUR)
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
+    VALUES(nextval('account_mapping_s'),'INTEREST_INCOME',1,60); -- 420020 Interest Income - EUR (Coupons)
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
+    VALUES(nextval('account_mapping_s'),'CASH_ACCOUNT',1,24); -- 100010 Cash and Cash Equivalents - Base Currency (EUR)
+
+

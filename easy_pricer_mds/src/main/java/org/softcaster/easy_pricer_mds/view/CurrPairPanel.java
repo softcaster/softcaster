@@ -141,7 +141,7 @@ public class CurrPairPanel extends FndtAbstactPanel {
         // Post chiusura dialog
         if (dialog.isConfirmed()) {
             CurrPairTableModel model = (CurrPairTableModel) fxTable.getModel();
-            refreshModel(model);
+            refreshModelFromDb(model);
         }
     }
 
@@ -168,7 +168,7 @@ public class CurrPairPanel extends FndtAbstactPanel {
 
             // Post chiusura dialog
             if (dialog.isConfirmed()) {
-                refreshModel(model);
+                refreshModelFromDb(model);
             }
         }
     }

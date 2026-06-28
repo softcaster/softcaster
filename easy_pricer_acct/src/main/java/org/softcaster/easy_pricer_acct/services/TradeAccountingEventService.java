@@ -57,7 +57,7 @@ public class TradeAccountingEventService {
 
     // Memorizza i percorsi assoluti
     private String mainScriptAbsolutePath = "";
-
+   
     @Autowired
     private ScriptEngine groovyEngine;
 
@@ -72,6 +72,9 @@ public class TradeAccountingEventService {
 
     @Autowired
     private AccountingEventDAO accountingEventDAO;
+    
+    @Autowired
+    private AccountResolverService accountResolverService;
 
     /**
      * COMPILAZIONE UNICA ALL'AVVIO Avviene una sola volta, all'avvio del
@@ -216,6 +219,7 @@ public class TradeAccountingEventService {
             Bindings bindings = new SimpleBindings();
             bindings.put("ctx", ctx);
             bindings.put(ScriptEngine.FILENAME, this.mainScriptAbsolutePath);
+            bindings.put("accountResolver", accountResolverService); 
 
             // 4. Esecuzione delle regole contabili generali (Orchestratore principale)
             cachedMainScript.eval(bindings);

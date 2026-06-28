@@ -47,10 +47,12 @@ public class LoanMasterData extends MasterData {
     @Column(name = "tax_charges")
     private Double taxCharges;
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }

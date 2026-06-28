@@ -102,6 +102,7 @@ public class FinTxnExecutionService {
 
         PositionDetail position = getPositionDetail(txn);
         processFinancialTxn(txn, position);
+        position.setLastMtmExecuted(LocalDateTime.now());
         positionDetailDAO.saveOrUpdate(position);
     }
 
