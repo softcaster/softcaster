@@ -1462,17 +1462,22 @@ export async function fetchPositionProspect(filter: ProspectFilter): Promise<Pos
 
     try {
 
-const cleanPayload = {
-            positionId: filter?.positionId !== undefined 
-                ? filter.positionId 
+        const cleanPayload = {
+            positionId: filter?.positionId !== undefined
+                ? filter.positionId
                 : (typeof filter?.positionId === 'number' ? filter.positionId : null),
-                
-            counterpartyId: filter?.counterpartyId !== undefined 
-                ? filter.counterpartyId 
-                : (typeof filter?.counterpartyId === 'number' ? filter.counterpartyId : null)
+
+            counterpartyId: filter?.counterpartyId !== undefined
+                ? filter.counterpartyId
+                : (typeof filter?.counterpartyId === 'number' ? filter.counterpartyId : null),
+
+            assetClassId: filter?.assetClassId !== undefined
+                ? filter.assetClassId
+                : (typeof filter?.assetClassId === 'number' ? filter.assetClassId : null)
+
         };
 
-        console.log("Payload pulito inviato al server:", cleanPayload);        
+        console.log("Payload pulito inviato al server:", cleanPayload);
         return await apiRequest<PositionProspectDto[]>('/prospects/position', 'POST', cleanPayload);
     } catch (error) {
         console.error('Failed to fetch position prospect data:', error);

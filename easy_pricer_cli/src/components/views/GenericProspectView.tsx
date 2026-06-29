@@ -20,6 +20,7 @@ export function GenericProspectView({
     const {
         positionList,
         counterpartyList,
+        assetClassList,
         prospectData,
         filter,
         setFilter,
@@ -38,6 +39,7 @@ export function GenericProspectView({
                         filter={filter}
                         positions={positionList}
                         counterparties={counterpartyList}
+                        assetClasses={assetClassList}
                         onFilterChange={setFilter}
                         onSearch={handleSearch}
                         onReset={handleReset}

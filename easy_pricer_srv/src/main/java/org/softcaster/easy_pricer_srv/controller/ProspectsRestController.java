@@ -23,7 +23,10 @@ public class ProspectsRestController {
 
     @PostMapping(value = "/prospects/position")
     public ResponseEntity<List<PositionProspectDto>> getPositionProspect(@RequestBody ProspectFilter filter) {
-        List<PositionProspectDto> ppList = positionDetailDAO.getPositionProspect(filter.getPositionId(), filter.getCounterpartyId());
+        if (filter.getAssetClassId() == null && filter.getCounterpartyId() == null && filter.getPositionId() == null) {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+        List<PositionProspectDto> ppList = positionDetailDAO.getPositionProspect(filter.getPositionId(), filter.getCounterpartyId(), filter.getAssetClassId());
         if (ppList == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         } else {

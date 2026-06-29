@@ -1,6 +1,6 @@
 //import React from 'react';
-import type { Counterparty, PositionMasterData } from '../data/schema';
-import { CounterpartyField, PositionField } from './FormFields';
+import type { AssetClass, Counterparty, PositionMasterData } from '../data/schema';
+import { CounterpartyField, PositionField, AssetClassField } from './FormFields';
 
 import type {
     ProspectFilter
@@ -10,6 +10,7 @@ interface ProspectFilterFormProps {
     filter: ProspectFilter;
     positions: PositionMasterData[];
     counterparties: Counterparty[];
+    assetClasses: AssetClass[];
     onFilterChange: (filter: ProspectFilter) => void;
     onSearch: () => void;
     onReset: () => void;
@@ -19,11 +20,13 @@ export const ProspectFilterForm = ({
     filter,
     positions,
     counterparties,
+    assetClasses,
     onFilterChange
 }: ProspectFilterFormProps) => {
 
     const currentPosition = positions.find(p => p.idPosition === filter.positionId) || null;
     const currentCounterparty = counterparties.find(c => c.idCounterparty === filter.counterpartyId) || null;
+    const currentAssetClass = assetClasses.find(c => c.idAssetClass === filter.assetClassId) || null;
 
     return (
         <div className="bg-white p-2 border-bottom-1 surface-border w-full">
@@ -50,7 +53,21 @@ export const ProspectFilterForm = ({
                             ...filter,
                             counterpartyId: selectedCounterparty ? selectedCounterparty.idCounterparty : null
                         });
-                    }} />
+                    }}
+                />
+
+                <AssetClassField
+                    label="Asset Class" 
+                    value={currentAssetClass} // <-- Passa l'oggetto Counterparty intero
+                    options={assetClasses}
+                    onChange={(selectedAssetClasse: any) => {
+                        // Quando cambia, estre l'ID numerico per aggiornare lo stato del filtro
+                        onFilterChange({
+                            ...filter,
+                            assetClassId: selectedAssetClasse ? selectedAssetClasse.idAssetClass : null
+                        });
+                    }}
+                />
             </div>
         </div>
     );

@@ -45,7 +45,6 @@ public class InternalSystem {
     @GetMapping(value = "/internal/system/official_date")
     public ResponseEntity<String> getOfficialDate() {
         String officialDate = systemDateManager.getOfficialBusinessDate().toString();
-        System.out.println(officialDate);
         return new ResponseEntity<>(officialDate, HttpStatus.OK);
     }
 }

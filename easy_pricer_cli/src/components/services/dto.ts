@@ -150,6 +150,7 @@ export const createDefaultTxnDto = (): FinancialTxnDto => ({
 export interface ProspectFilter {
     positionId: number | null;
     counterpartyId: number | null;
+    assetClassId: number | null;
 }
 
 export interface PositionProspectDto {

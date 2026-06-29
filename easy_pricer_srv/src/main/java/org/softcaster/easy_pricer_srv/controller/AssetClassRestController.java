@@ -18,7 +18,7 @@ public class AssetClassRestController {
 
     @Autowired
 
-    @GetMapping("/asset_class/r0")
+    @GetMapping("/asset_class/r01")
     public ResponseEntity findAll() {
         List<AssetClass> listaAssetClass = dao.findAll();
         if (listaAssetClass == null) {
@@ -27,7 +27,7 @@ public class AssetClassRestController {
         return new ResponseEntity(listaAssetClass, HttpStatus.OK);
     }
 
-    @GetMapping("/asset_class/r1/{id}")
+    @GetMapping("/asset_class/r02/{id}")
     public ResponseEntity findByIdAssetClass(@PathVariable("id") Integer idAssetClass) {
         AssetClass assetClass = dao.findByIdAssetClass(idAssetClass);
         if (assetClass == null) {

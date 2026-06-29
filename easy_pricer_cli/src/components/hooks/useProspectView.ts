@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useActions } from '../../context/ActionContext'; 
-import type { PositionMasterData, Counterparty } from '../data/schema';
+import type { PositionMasterData, Counterparty, AssetClass } from '../data/schema';
 import type {
     ProspectFilter
 } from '../services/dto';
@@ -8,22 +8,25 @@ import type {
 export function useProspectView(fetchProspectData: (filter: ProspectFilter) => Promise<any[]>) {
     const [positionList, setPositionList] = useState<PositionMasterData[]>([]);
     const [counterpartyList, setCounterpartyList] = useState<Counterparty[]>([]);
+     const [assetClassList, setAssetClassList] = useState<AssetClass[]>([]);
     const [prospectData, setProspectData] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     // Stato del filtro superiore
-    const [filter, setFilter] = useState<ProspectFilter>({ positionId: null, counterpartyId: null });
+    const [filter, setFilter] = useState<ProspectFilter>({ positionId: null, counterpartyId: null, assetClassId: null });
     const { setAction } = useActions(); // Recupera setAction
 
     const loadAnagrafiche = async () => {
         try {
             // Importiamo dinamicamente le stesse funzioni che usi nell'altro hook
-            const { fetchPositionMasterData, fetchCounterparty } = await import('../services/services');
-            const [pos, cp] = await Promise.all([
+            const { fetchPositionMasterData, fetchCounterparty, fetchAssetClass} = await import('../services/services');
+            const [pos, cp, ac] = await Promise.all([
                 fetchPositionMasterData(),
-                fetchCounterparty()
+                fetchCounterparty(),
+                fetchAssetClass()
             ]);
             setPositionList(pos);
             setCounterpartyList(cp);
+            setAssetClassList(ac);
         } catch (err) {
             console.error("Errore caricamento anagrafiche prospetto:", err);
         }
@@ -53,19 +56,20 @@ export function useProspectView(fetchProspectData: (filter: ProspectFilter) => P
 
     useEffect(() => {
         loadAnagrafiche();
-        handleSearch({ positionId: null, counterpartyId: null }); // Carica tutto all'avvio
+        handleSearch({ positionId: null, counterpartyId: null, assetClassId: null }); // Carica tutto all'avvio
     }, []);
 
     return {
         positionList,
         counterpartyList,
+        assetClassList,
         prospectData,
         filter,
         setFilter,
         loading,
         handleSearch,
         handleReset: () => {
-            const resetFilter = { positionId: null, counterpartyId: null };
+            const resetFilter = { positionId: null, counterpartyId: null, assetClassId: null };
             setFilter(resetFilter);
             handleSearch(resetFilter);
         }

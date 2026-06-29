@@ -69,8 +69,8 @@ public class PositionDetailDAO {
     }
 
     @Transactional(readOnly = true)
-    public List<PositionProspectDto> getPositionProspect(Integer positionMdId, Integer counterpartyId) {
-        List<Object[]> rawResults = repository.findPositionProspect(positionMdId, counterpartyId);
+    public List<PositionProspectDto> getPositionProspect(Integer positionMdId, Integer counterpartyId, Integer assetClassId) {
+        List<Object[]> rawResults = repository.findPositionProspect(positionMdId, counterpartyId, assetClassId);
 
         return rawResults.stream().map(row -> new PositionProspectDto(
                 (String) row[0], // positionCode

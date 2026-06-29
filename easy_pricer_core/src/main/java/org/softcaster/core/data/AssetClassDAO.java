@@ -2,6 +2,7 @@ package org.softcaster.core.data;
 
 import java.util.List;
 import jakarta.annotation.Resource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +11,8 @@ public class AssetClassDAO {
 
     @Resource
     private AssetClassRepository repository;
+    
+    private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
     @Transactional(readOnly = true)
     public AssetClass findByIdAssetClass(Integer idAssetClass) {
@@ -33,6 +36,6 @@ public class AssetClassDAO {
 
     @Transactional(readOnly = true)
     public List<AssetClass> findAll() {
-        return repository.findAll();
+        return repository.findAll(sortByCode);
     }
 }

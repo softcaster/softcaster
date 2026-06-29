@@ -124,6 +124,48 @@ export const InstrumentField = ({ label, value, options, onChange
     </div>
 );
 
+interface AssetClassFieldProps {
+    label: string;
+    value: any;
+    options: any[];
+    onChange: (value: any) => void; // Aggiungi il tipo qui
+}
+
+// Questo combo gestisce i vari Asset Class Forex, FxFuture, Bond ...
+export const AssetClassField = ({ label, value, options, onChange
+}: AssetClassFieldProps) => (
+    <div className="col-12 md:col-3">
+        <label className="text-sm font-bold block mb-2">{label}</label>
+        <Dropdown
+            value={value}
+            options={options}
+            dataKey="idAssetClass"
+            optionLabel="code"
+            onChange={(e) => onChange(e.value)}
+            placeholder={`Select ${label}`}
+            filter
+            className="w-full"
+            emptyMessage={options.length === 0 ? "Loading..." : "No data"}
+            // 1. Cosa mostrare quando la combo è chiusa (elemento selezionato)
+            valueTemplate={(option, props) => {
+                if (option) {
+                    return <span>{option.code}</span>;
+                }
+                return <span>{props.placeholder}</span>;
+            }}
+
+            // 2. Cosa mostrare nelle righe della lista quando è aperta
+            itemTemplate={(option) => {
+                return (
+                    <div className="flex flex-column">
+                        <span className="font-bold">{option.code}</span>
+                        <small className="text-500">{option.description}</small>
+                    </div>
+                );
+            }} />
+    </div>
+);
+
 interface DateFieldProps {
     label: string;
     value: Date | string | null | undefined;

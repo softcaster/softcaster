@@ -11,6 +11,7 @@ package org.softcaster.core.dto;
 public class ProspectFilter {
     private Integer positionId;
     private Integer counterpartyId;
+    private Integer assetClassId;
 
     /**
      * @return the positionId
@@ -39,6 +40,18 @@ public class ProspectFilter {
     public void setCounterpartyId(Integer counterpartyId) {
         this.counterpartyId = counterpartyId;
     }
-    
-    
+
+    /**
+     * @return the assetClassId
+     */
+    public Integer getAssetClassId() {
+        return assetClassId;
+    }
+
+    /**
+     * @param assetClassId the assetClassId to set
+     */
+    public void setAssetClassId(Integer assetClassId) {
+        this.assetClassId = assetClassId;
+    }    
 }
