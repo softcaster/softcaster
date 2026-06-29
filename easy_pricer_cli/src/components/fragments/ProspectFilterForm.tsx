@@ -1,12 +1,10 @@
 //import React from 'react';
-import { Dropdown } from 'primereact/dropdown';
-import { Button } from 'primereact/button';
 import type { Counterparty, PositionMasterData } from '../data/schema';
+import { CounterpartyField, PositionField } from './FormFields';
 
-interface ProspectFilter {
-    positionMdId: number | null;
-    counterpartyId: number | null;
-}
+import type {
+    ProspectFilter
+} from '../services/dto';
 
 interface ProspectFilterFormProps {
     filter: ProspectFilter;
@@ -21,59 +19,40 @@ export const ProspectFilterForm = ({
     filter,
     positions,
     counterparties,
-    onFilterChange,
-    onSearch,
-    onReset
+    onFilterChange
 }: ProspectFilterFormProps) => {
+
+    const currentPosition = positions.find(p => p.idPosition === filter.positionId) || null;
+    const currentCounterparty = counterparties.find(c => c.idCounterparty === filter.counterpartyId) || null;
+
     return (
-        <div className="p-fluid grid p-2 gap-3 align-items-end">
-            {/* Combo Position */}
-            <div className="col-3 field m-0">
-                <label className="font-bold block mb-1">Position (MD)</label>
-                <Dropdown
-                    value={filter.positionMdId}
+        <div className="bg-white p-2 border-bottom-1 surface-border w-full">
+            {/* Forza la riga in flex-layout orizzontale nativo */}
+            <div className="grid p-fluid flex flex-row gap-2 align-items-end">
+                <PositionField
+                    value={currentPosition} // <-- Passa l'oggetto PositionMasterData intero
                     options={positions}
-                    optionValue="idPosition"
-                    optionLabel="code"
-                    onChange={(e) => onFilterChange({ ...filter, positionMdId: e.value })}
-                    placeholder="Seleziona Posizione"
-                    showClear
-                    className="p-dropdown-sm"
+                    onChange={(selectedPosition: any) => {
+                        // Quando cambia, estre l'ID numerico per aggiornare lo stato del filtro
+                        onFilterChange({
+                            ...filter,
+                            positionId: selectedPosition ? selectedPosition.idPosition : null
+                        });
+                    }}
                 />
-            </div>
 
-            {/* Combo Counterparty */}
-            <div className="col-3 field m-0">
-                <label className="font-bold block mb-1">Counterparty</label>
-                <Dropdown
-                    value={filter.counterpartyId}
+                <CounterpartyField
+                    value={currentCounterparty} // <-- Passa l'oggetto Counterparty intero
                     options={counterparties}
-                    optionValue="idCounterparty"
-                    optionLabel="code"
-                    onChange={(e) => onFilterChange({ ...filter, counterpartyId: e.value })}
-                    placeholder="Seleziona Controparte"
-                    showClear
-                    className="p-dropdown-sm"
-                />
-            </div>
-
-            {/* Pulsanti di Azione */}
-            <div className="col-3 flex gap-2">
-                <Button 
-                    label="Cerca" 
-                    icon="pi pi-search" 
-                    className="p-button-sm p-button-info" 
-                    style={{ height: '34px' }} 
-                    onClick={onSearch} 
-                />
-                <Button 
-                    label="Reset" 
-                    icon="pi pi-filter-slash" 
-                    className="p-button-sm p-button-secondary p-button-outlined" 
-                    style={{ height: '34px' }} 
-                    onClick={onReset} 
-                />
+                    onChange={(selectedCounterparty: any) => {
+                        // Quando cambia, estre l'ID numerico per aggiornare lo stato del filtro
+                        onFilterChange({
+                            ...filter,
+                            counterpartyId: selectedCounterparty ? selectedCounterparty.idCounterparty : null
+                        });
+                    }} />
             </div>
         </div>
     );
 };
+

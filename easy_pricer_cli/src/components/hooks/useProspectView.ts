@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useActions } from '../../context/ActionContext'; 
 import type { PositionMasterData, Counterparty } from '../data/schema';
 import type {
     ProspectFilter
@@ -9,9 +10,9 @@ export function useProspectView(fetchProspectData: (filter: ProspectFilter) => P
     const [counterpartyList, setCounterpartyList] = useState<Counterparty[]>([]);
     const [prospectData, setProspectData] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-
     // Stato del filtro superiore
     const [filter, setFilter] = useState<ProspectFilter>({ positionId: null, counterpartyId: null });
+    const { setAction } = useActions(); // Recupera setAction
 
     const loadAnagrafiche = async () => {
         try {
@@ -39,6 +40,16 @@ export function useProspectView(fetchProspectData: (filter: ProspectFilter) => P
             setLoading(false);
         }
     };
+
+    // Sincronizza l'azione di refresh della Toolbar con la ricerca attuale
+    useEffect(() => {
+        setAction({
+            refresh: () => handleSearch(filter), // Mappa la funzione sulla toolbar
+            new: undefined,  // Disattiva i bottoni di scrittura non necessari in questa vista analitica
+            save: undefined,
+            del: undefined
+        });
+    }, [filter]); // Si aggiorna se l'utente cambia i parametri nei dropdown
 
     useEffect(() => {
         loadAnagrafiche();

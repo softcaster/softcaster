@@ -1461,7 +1461,19 @@ export const deleteYieldCurveItem = async (id: number): Promise<YieldCurveItem |
 export async function fetchPositionProspect(filter: ProspectFilter): Promise<PositionProspectDto[]> {
 
     try {
-        return await apiRequest<PositionProspectDto[]>('/prospects/position', 'POST', filter);
+
+const cleanPayload = {
+            positionId: filter?.positionId !== undefined 
+                ? filter.positionId 
+                : (typeof filter?.positionId === 'number' ? filter.positionId : null),
+                
+            counterpartyId: filter?.counterpartyId !== undefined 
+                ? filter.counterpartyId 
+                : (typeof filter?.counterpartyId === 'number' ? filter.counterpartyId : null)
+        };
+
+        console.log("Payload pulito inviato al server:", cleanPayload);        
+        return await apiRequest<PositionProspectDto[]>('/prospects/position', 'POST', cleanPayload);
     } catch (error) {
         console.error('Failed to fetch position prospect data:', error);
         return [];
