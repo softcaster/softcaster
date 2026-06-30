@@ -70,12 +70,13 @@ export function useProspectView(fetchProspectData: (filter: ProspectFilter) => P
     // Sincronizza l'azione di refresh della Toolbar con la ricerca attuale
     useEffect(() => {
         setAction({
-            refresh:handleSearch,
+            refresh: handleSearch,
             export: handleExport,
             isExporting: isExporting,
             new: undefined,  // Disattiva i bottoni di scrittura non necessari in questa vista analitica
             save: undefined,
-            del: undefined
+            del: undefined,
+            calculate: undefined
         });
     }, [filter, isExporting, handleSearch, handleExport]); // Si aggiorna se l'utente cambia i parametri nei dropdown
 
