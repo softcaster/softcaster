@@ -26,6 +26,7 @@ export function GenericProspectView({
         setFilter,
         loading,
         handleSearch,
+        handleExport,
         handleReset
     } = useProspectView(fetchProspectData);
 
@@ -43,6 +44,7 @@ export function GenericProspectView({
                         onFilterChange={setFilter}
                         onSearch={handleSearch}
                         onReset={handleReset}
+                        onExport={handleExport}
                     />
                 </SplitterPanel>
 

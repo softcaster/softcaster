@@ -14,6 +14,7 @@ interface ProspectFilterFormProps {
     onFilterChange: (filter: ProspectFilter) => void;
     onSearch: () => void;
     onReset: () => void;
+    onExport: () => void;
 }
 
 export const ProspectFilterForm = ({

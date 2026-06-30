@@ -1483,6 +1483,34 @@ export async function fetchPositionProspect(filter: ProspectFilter): Promise<Pos
         console.error('Failed to fetch position prospect data:', error);
         return [];
     }
+};
+
+/**
+ * Richiede il PDF al server inviando i filtri nel body e restituisce un Blob binario
+ */
+export async function downloadPositionProspectPdf(filter: any): Promise<Blob> {
+    // Purifichiamo il payload esattamente come fatto per la griglia
+    const cleanPayload = {
+        positionId: filter?.positionId && typeof filter.positionId === 'object' ? filter.positionId.idPosition : (typeof filter?.positionId === 'number' ? filter.positionId : null),
+        counterpartyId: filter?.counterpartyId && typeof filter.counterpartyId === 'object' ? filter.counterpartyId.idCounterparty : (typeof filter?.counterpartyId === 'number' ? filter.counterpartyId : null),
+        assetClassId: filter?.assetClassId && typeof filter.assetClassId === 'object' ? filter.assetClassId.idAssetClass : (typeof filter?.assetClassId === 'number' ? filter.assetClassId : null)
+    };
+
+    try {
+        // Usiamo la tua apiRequest nativa per andare sulla porta corretta (es. 8080)
+        // Passiamo come quarto parametro le opzioni di configurazione di Axios per gestire il binario
+        const responseData = await apiRequest<any>('/prospects/position/pdf', 'POST', cleanPayload, {
+            responseType: 'blob'
+        });
+
+        // Creiamo il Blob binario finale pronti per il browser
+        return new Blob([responseData], { type: 'application/pdf' });
+
+    } catch (error) {
+        console.error('Failed to download PDF via apiRequest:', error);
+        throw new Error('Impossibile scaricare il PDF');
+    }
 }
+
 
 

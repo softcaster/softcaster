@@ -20,11 +20,12 @@ apiClient.interceptors.response.use(
 );
 
 // Define a generic API function
-export const apiRequest = async <T>(url: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', data?: any): Promise<T> => {
+export const apiRequest = async <T>(url: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', data?: any, options?: any): Promise<T> => {
     const response: AxiosResponse<T> = await apiClient({
         method,
         url,
         data,
+         ...options
     });
 
     return response.data;
