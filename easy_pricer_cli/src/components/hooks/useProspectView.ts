@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useActions } from '../../context/ActionContext';
 import type { PositionMasterData, Counterparty, AssetClass } from '../data/schema';
 import type {
@@ -16,6 +16,14 @@ export function useProspectView(fetchProspectData: (filter: ProspectFilter) => P
     // Stato del filtro superiore
     const [filter, setFilter] = useState<ProspectFilter>({ positionId: null, counterpartyId: null, assetClassId: null });
     const { setAction } = useActions(); // Recupera setAction
+
+    //  CREA UNA REFERENZA SUL FILTRO: Manterrà il valore freschissimo a ogni digitazione
+    const filterRef = useRef(filter);
+
+    // Aggiorna il valore della referenza ogni volta che lo stato del filtro cambia
+    useEffect(() => {
+        filterRef.current = filter;
+    }, [filter]);
 
     const loadAnagrafiche = async () => {
         try {
@@ -41,7 +49,7 @@ export function useProspectView(fetchProspectData: (filter: ProspectFilter) => P
         }
     };
 
-    const handleSearch = useCallback(async (activeFilter = filter) => {
+    const handleSearch = useCallback(async (activeFilter = filterRef.current) => {
         try {
             setLoading(true);
             const data = await fetchProspectData(activeFilter).catch(() => []);
@@ -57,7 +65,7 @@ export function useProspectView(fetchProspectData: (filter: ProspectFilter) => P
     const handleExport = useCallback(async () => {
         try {
             setIsExporting(true);
-            const blob = await downloadPositionProspectPdf(filter);
+            const blob = await downloadPositionProspectPdf(filterRef.current);
 
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -117,7 +125,7 @@ export function useProspectView(fetchProspectData: (filter: ProspectFilter) => P
         assetClassList,
         prospectData,
         filter,
-        setFilter, // Sblocca l'errore del build!
+        setFilter,
         loading,
         handleSearch,
         handleExport,

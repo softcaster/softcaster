@@ -98,19 +98,19 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
                 masterData.setInstrumentValuation(currentValuation); // Aggiorna il lato inverso
             }
 
-            BondOutputData output = calculate(masterData, mtmHelper);
-            if (output != null) {
-                currentValuation.setMarketPrice(output.getMktPrice());
-                currentValuation.setYtm(output.getYtm());
-                currentValuation.setDuration(output.getDuration());
-                currentValuation.setModDuration(output.getModifiedDuration());
-                currentValuation.setAccruedInterest(output.getAccruedInterest());
-                currentValuation.setTheoreticalPrice(output.getMktPrice());
-                currentValuation.setValuationDate(output.getValuationDate());
-            }
-
             return currentValuation;
         });
+
+        BondOutputData output = calculate(masterData, mtmHelper);
+        if (output != null) {
+            valuation.setMarketPrice(output.getMktPrice());
+            valuation.setYtm(output.getYtm());
+            valuation.setDuration(output.getDuration());
+            valuation.setModDuration(output.getModifiedDuration());
+            valuation.setAccruedInterest(output.getAccruedInterest());
+            valuation.setTheoreticalPrice(output.getMktPrice());
+            valuation.setValuationDate(output.getValuationDate());
+        }
 
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
         position.setMarketPrice(valuation.getMarketPrice());

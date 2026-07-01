@@ -143,7 +143,7 @@ public class FxFutPanel extends FndtAbstactPanel {
         // Post chiusura dialog
         if (dialog.isConfirmed()) {
             FxFutTableModel model = (FxFutTableModel) fxFutTable.getModel();
-            refreshModel(model);
+            refreshModelFromDb(model);
         }
     }
 
@@ -170,7 +170,7 @@ public class FxFutPanel extends FndtAbstactPanel {
 
             // Post chiusura dialog
             if (dialog.isConfirmed()) {
-                refreshModel(model);
+                refreshModelFromDb(model);
             }
         }
     }

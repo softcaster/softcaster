@@ -40,7 +40,7 @@ public class CmeGroupProviderTest {
         }
 
         System.out.println("");
-*/
+
         System.out.println("========== TERM ESTR ==========");
         LocalDate today = LocalDate.now();
         List<Node> nodes = provider.getTermSofrRates();
@@ -49,9 +49,10 @@ public class CmeGroupProviderTest {
                 System.out.println(n.getSymbol() + "\t" + n.maturity(today) + "\t" + n.getData().bid());
             }
         }
-        
+*/        
         System.out.println("");
-        Node node = provider.getQuote("58@6EM6", Market.FUTURES);
+        // fx fut settembre 2674@M6EU6
+        Node node = provider.getQuote("2674@M6EU6", Market.FUTURES);
         System.out.println(node.getSymbol() + "\t" + node.getData().bid());
     }
 }

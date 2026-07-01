@@ -16,12 +16,11 @@ import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.stereotype.Component;
 
-@Component("FSP")
-public class FxSpotEvaluator extends AbstractEvaluator implements IPositionEvaluator {
+@Component("FFU")
+public class FxFutureEvaluator extends AbstractEvaluator implements IPositionEvaluator {
 
     @Override
     public void evaluate(PositionDetail position, MasterData masterData, IMtmDataHelper mtmHelper, ValuationContext context) {
-        position.initializeMtmFields();
         Integer masterDataId = masterData.getIdMasterData();
 
         // Chiamata thread-safe personalizzata
@@ -38,10 +37,9 @@ public class FxSpotEvaluator extends AbstractEvaluator implements IPositionEvalu
                 currentValuation.setInstrumentValuationId(masterData.getIdMasterData());
                 masterData.setInstrumentValuation(currentValuation); // Aggiorna il lato inverso
             }
-
             return currentValuation;
         });
-
+        
         List<Currency> currencies = masterData.getCurrencyList();
         Calendar calendar = new Calendar(currencies);
         LocalDate valuationDate = calendar.getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays());
@@ -53,7 +51,7 @@ public class FxSpotEvaluator extends AbstractEvaluator implements IPositionEvalu
         valuation.setModDuration(0.);
         valuation.setAccruedInterest(0.);
         valuation.setValuationDate(valuationDate);
-        
+
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
         position.setMarketPrice(valuation.getMarketPrice());
         position.setTheoreticalPrice(valuation.getTheoreticalPrice());
