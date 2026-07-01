@@ -31,7 +31,7 @@ export function GenericProspectView({
     } = useProspectView(fetchProspectData);
 
     return (
-        <div style={{ height: 'calc(100vh - 45px)', padding: '1rem', boxSizing: 'border-box' }} className="flex flex-column">
+        <div className="h-full w-full flex flex-column p-2 bg-white">
             <Splitter layout="vertical" style={{ height: '100%' }} className="border-none">
 
                 {/* Pannello superiore per il Form di Filtro */}

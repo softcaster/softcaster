@@ -9,14 +9,14 @@ import { ActionProvider, useActions } from './context/ActionContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import {
   navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView,
-  BondView, XNoteView, BondPView, BondFutureView, BondFuturePView,PositionProspectView
+  BondView, XNoteView, BondPView, BondFutureView, BondFuturePView, PositionProspectView
 } from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { SystemDateProvider, useSystemDate } from './context/SystemDateContext';
 
 const ToolbarWrapper = () => {
-  const { onSave, onNew, onDel, onExport, isExporting, onCalculate, onRefresh } = useActions(); // Hook che abbiamo creato prima
+  const { onSave, onNew, onDel, onExport, isExporting, onCalculate, onRefresh, onPrint } = useActions(); // Hook che abbiamo creato prima
   const { user, logout } = useAuth();
   const { businessDate, loading: dateLoading } = useSystemDate();
 
@@ -60,7 +60,11 @@ const ToolbarWrapper = () => {
       />
 
       <span className="border-left-1 surface-border mx-2"></span>
-      <Button icon="pi pi-print" className="p-button-text p-button-plain p-1" tooltip="Print" />
+      <Button icon="pi pi-print" className="p-button-text p-button-plain p-1"
+        onClick={() => onPrint?.()}
+        disabled={!onPrint}
+        tooltip="Print"
+      />
       <Button
         icon={isExporting ? "pi pi-spin pi-spinner" : "pi pi-download"}
         className="p-button-text p-button-plain p-1"
@@ -74,6 +78,7 @@ const ToolbarWrapper = () => {
         icon={"pi pi-calculator"}
         className="p-button-text p-button-plain p-1"
         onClick={() => onCalculate?.()}
+        disabled={!onCalculate}
         tooltip="Calculate" />
     </div>
   );
@@ -191,7 +196,6 @@ const MainLayout = () => {
               <Route path="/position" element={<PositionProspectView />} />
 
               {/* Tutte le altre sezioni caricano il placeholder */}
-              <Route path="/position" element={<PlaceholderView />} />
               <Route path="/accounting" element={<PlaceholderView />} />
               <Route path="/user" element={<PlaceholderView />} />
               <Route path="/log" element={<PlaceholderView />} />
