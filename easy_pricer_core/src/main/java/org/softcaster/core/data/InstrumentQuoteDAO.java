@@ -34,6 +34,11 @@ public class InstrumentQuoteDAO {
         return repository.findByMasterDataCode(code);
     }
 
+    @Transactional(readOnly = true)
+    public InstrumentQuote findByMasterDataId(Integer masterDataId) {
+        return repository.findByMasterDataIdMasterData(masterDataId);
+    }
+
     @Transactional
     public InstrumentQuote saveOrUpdate(InstrumentQuote instrumentQuote) {
         return repository.save(instrumentQuote);

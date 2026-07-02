@@ -37,10 +37,10 @@ public class MarketDataService {
 
     @Autowired
     InstrumentQuoteDAO instrumentQuoteDAO;
-    
+
     @Autowired
     SystemBusinessCalendarDAO systemBusinessCalendarDAO;
-            
+
     private final ConcurrentHashMap<String, SpotPrice> spotPrices = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, YieldCurve> yieldCurves = new ConcurrentHashMap<>();
 
@@ -71,6 +71,15 @@ public class MarketDataService {
         } else {
             throw new MarketDataNotFoundException("Ticker " + ticker + " not found");
         }
+    }
+
+    public double getSpotPrice(Integer masterDataId, RequestType request) {
+        double spotPrice = 0.;
+        InstrumentQuote iq = instrumentQuoteDAO.findByMasterDataId(masterDataId);
+        if (iq != null) {
+            spotPrice = getSpotPrice(iq.getCode(), request);
+        }
+        return spotPrice;
     }
 
     public double getSpotPrice(String ticker, RequestType request) {
@@ -129,7 +138,7 @@ public class MarketDataService {
             updatePrice(quote.getCode(), quote.getBid(), quote.getAsk(), (quote.getBid() + quote.getAsk()) / 2.);
         }
     }
-    
+
     /**
      * Aggiorna una curva di rendimento esistente nella cache con i nuovi dati
      * dal provider.
@@ -144,7 +153,7 @@ public class MarketDataService {
             throw new IllegalArgumentException("L'ID curva e i nuovi input non possono essere nulli.");
         }
 
-        if(newInputs.isEmpty()) {
+        if (newInputs.isEmpty()) {
             return false;
         }
         // compute viene eseguito SEMPRE, sia se la mappa è vuota sia se è piena computeIfPresent 
@@ -195,18 +204,21 @@ public class MarketDataService {
         List<CurveNodeInput> newInput = yieldCurveBuilder.getNewInput(curveId);
         updateYieldCurveInCache(curveId, newInput);
     }
-    
+
     // Il risultato viene salvato nella cache chiamata "businessCalendar"
     @Cacheable(value = "businessCalendar")
     public LocalDate getOfficialDate() {
         SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
-        if(sbc != null)
+        if (sbc != null) {
             return sbc.getOfficialDate();
+        }
         return null;
     }
+
     // Metodo da chiamare (o esporre via endpoint/scheduler) quando cambia il giorno sul DB
     @CacheEvict(value = "businessCalendar", allEntries = true)
     public void refreshOfficialDate() {
         // Questo metodo svuota la cache, costringendo la chiamata successiva a getOfficialDate() a rifare la select
         // Nota che non serve implementare nulla nel corpo della funzione
-    }}
+    }
+}

@@ -14,5 +14,6 @@ import org.softcaster.provider.enums.RequestType;
 public interface IMtmDataHelper {    
     
     public double getSpotPrice(String ticker, RequestType request);
+    public double getSpotPrice(Integer masterDataId, RequestType request);
     public LocalDate getOfficialDate();
 }

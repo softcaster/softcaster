@@ -12,6 +12,8 @@ import org.softcaster.core.data.PositionDetail;
  */
 public class AbstractEvaluator {
     
+    private boolean calculated = false;
+    
     protected double calcUnrealizedPL(double mktPrice, PositionDetail position) {
        
         // Calcolo solo su qty buy rimanente o potenziale
@@ -27,5 +29,19 @@ public class AbstractEvaluator {
         double unrealizedPnL = (mktPrice - avgBuyPrice) * capacity;
         
         return unrealizedPnL;
+    }
+
+    /**
+     * @return the calculated
+     */
+    public boolean isCalculated() {
+        return calculated;
+    }
+
+    /**
+     * @param calculated the calculated to set
+     */
+    public void setCalculated(boolean calculated) {
+        this.calculated = calculated;
     }
 }

@@ -22,4 +22,6 @@ public interface InstrumentQuoteRepository extends JpaRepository<InstrumentQuote
     public void deleteInstrumentQuoteHist(@Param("id") Integer masterData);
 
     public InstrumentQuote findByMasterDataCode(String code);
+
+    public InstrumentQuote findByMasterDataIdMasterData(Integer masterDataId);
 }

@@ -145,4 +145,9 @@ public class MtMPollingJob implements IMtmDataHelper {
     public LocalDate getOfficialDate() {
         return marketDataService.getOfficialDate();
     }
+
+    @Override
+    public double getSpotPrice(Integer masterDataId, RequestType request) {
+        return marketDataService.getSpotPrice(masterDataId, request);
+    }
 }
