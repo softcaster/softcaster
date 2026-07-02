@@ -93,6 +93,10 @@ public class FinancialTxn implements Serializable {
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "price")
     private Double price;
+    
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "fx_rate")
+    private Double fxRate;
 
     @Version
     @Column(name = "version")
@@ -295,5 +299,19 @@ public class FinancialTxn implements Serializable {
      */
     public void setTxnStatusPreElab(TxnStatus txnStatusPreElab) {
         this.txnStatusPreElab = txnStatusPreElab;
+    }
+
+    /**
+     * @return the fxRate
+     */
+    public Double getFxRate() {
+        return fxRate;
+    }
+
+    /**
+     * @param fxRate the fxRate to set
+     */
+    public void setFxRate(Double fxRate) {
+        this.fxRate = fxRate;
     }
 }

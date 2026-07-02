@@ -45,15 +45,17 @@ public class FxSpotEvaluator extends AbstractEvaluator implements IPositionEvalu
         List<Currency> currencies = masterData.getCurrencyList();
         Calendar calendar = new Calendar(currencies);
         LocalDate valuationDate = calendar.getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays());
-        double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
-        valuation.setTheoreticalPrice(mktPrice);
-        valuation.setMarketPrice(mktPrice);
-        valuation.setYtm(0.);
-        valuation.setDuration(0.);
-        valuation.setModDuration(0.);
-        valuation.setAccruedInterest(0.);
+        if (!isCalculated()) {
+            double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
+            valuation.setTheoreticalPrice(mktPrice);
+            valuation.setMarketPrice(mktPrice);
+            valuation.setYtm(0.);
+            valuation.setDuration(0.);
+            valuation.setModDuration(0.);
+            valuation.setAccruedInterest(0.);
+        }
         valuation.setValuationDate(valuationDate);
-        
+
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
         position.setMarketPrice(valuation.getMarketPrice());
         position.setTheoreticalPrice(valuation.getTheoreticalPrice());

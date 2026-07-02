@@ -6,6 +6,7 @@ package org.softcaster.easy_pricer_acct.context;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.account.AccountingEvent;
@@ -15,7 +16,6 @@ import org.softcaster.core.data.account.JournalEntryLinesDAO;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
 import org.softcaster.engine.enums.NormalBalance;
 import org.softcaster.engine.enums.TxnComponentType;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -75,10 +75,24 @@ public class AccountingContext {
                 .orElse(0.0);
     }
 
+    public double getFutureInitialMargin() {
+        if (txn.getComponents() == null || txn.getComponents().isEmpty()) {
+            return 0.0;
+        }
+        return txn.getComponents().stream()
+                .filter(c -> c.getComponentType() == TxnComponentType.INITIAL_MARGIN)
+                .map(FinancialTxnComponent::getAmount)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .map(BigDecimal::doubleValue)
+                .orElse(0.0);
+    }
+
     String getAccountCode(Integer id) {
         GlAccountDAO glAccountDAO = ApplicationContextHolder.getBean(GlAccountDAO.class);
         return glAccountDAO.findByAccountId(id).getCode();
     }
+
     /**
      * Recupera le vecchie linee dal database tramite il DAO/Repository e genera
      * lo storno ad importo invertito nel DSL.

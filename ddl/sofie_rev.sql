@@ -190,3 +190,18 @@ VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code =
     (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
     (SELECT nature_id FROM account_natures WHERE code = 'ASSET'), 
     (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
+
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '13'), '630035', 'Realized Loss on Futures -EUR', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'ASSET'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
+INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
+VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '13'), '630035', 'Realized Loss on Futures -EUR', TRUE, 
+    (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), 
+    (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
+    (SELECT nature_id FROM account_natures WHERE code = 'ASSET'), 
+    (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
+
+alter table financial_txn add column fx_rate numeric(15, 5) NOT NULL DEFAULT 1;

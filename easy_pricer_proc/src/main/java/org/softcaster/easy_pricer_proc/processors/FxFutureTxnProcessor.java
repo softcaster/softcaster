@@ -44,7 +44,7 @@ public class FxFutureTxnProcessor extends AbstractTxnProcessor implements ITxnPr
         // Aggiungo component initial margin
         FinancialTxnComponent initialMargin = new FinancialTxnComponent();
         initialMargin.setCurrency(ffmd.getCurrency());
-        initialMargin.setDescription("Accruals txn: " + txn.getIdFinancialTxn());
+        initialMargin.setDescription("Initial Margin txn: " + txn.getIdFinancialTxn());
         initialMargin.setComponentType(TxnComponentType.INITIAL_MARGIN);
         initialMargin.setAmount(BigDecimal.valueOf(txn.getQuantity() * ffmd.getInitialMargin()));
         txn.addTxnComponent(initialMargin);

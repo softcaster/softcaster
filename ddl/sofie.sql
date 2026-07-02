@@ -983,6 +983,7 @@ CREATE TABLE financial_txn (
     settlement date NOT NULL, -- regolamento/contabilizzazione
     quantity numeric(15, 5) NOT NULL,
     price numeric(15, 5) NOT NULL,
+    fx_rate numeric(15, 5) NOT NULL DEFAULT 1, -- cambio al momento del trade
     ref_id integer NOT NULL,
     version integer DEFAULT 0,
     PRIMARY KEY (id_financial_txn),

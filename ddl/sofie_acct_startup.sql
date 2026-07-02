@@ -83,4 +83,14 @@ INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) 
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
     VALUES(nextval('account_mapping_s'),'CASH_ACCOUNT',1,24); -- 100010 Cash and Cash Equivalents - Base Currency (EUR)
 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
+    VALUES(nextval('account_mapping_s'),'INITIAL_MARGIN',2,30); -- 120055 Initial Margin Deposit - USD
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
+    VALUES(nextval('account_mapping_s'),'VARIATION_MARGIN',2,32); -- 120065 Variation Margin Account - USD
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
+    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_LOSS',1,19); -- 500010 Realized Loss on Financial Derivatives - EUR
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
+    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_GAIN ',1,16); -- 400010 Realized Gain on Financial Derivatives - EUR
+
+
 
