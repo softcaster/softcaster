@@ -4,12 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.io.Serializable;
@@ -34,6 +31,10 @@ public class SystemBusinessCalendar implements Serializable {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar", nullable = true)
     private Calendar calendar;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "currency", nullable = false)
+    private Currency currency;
 
     @Convert(converter = SbcStatusConverter.class)
     @Column(name = "status")
@@ -161,5 +162,19 @@ public class SystemBusinessCalendar implements Serializable {
      */
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    /**
+     * @return the currency
+     */
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    /**
+     * @param currency the currency to set
+     */
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
     }
 }

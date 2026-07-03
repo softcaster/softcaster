@@ -32,6 +32,9 @@ public class JournalEntryLines implements Serializable {
     @Column(name = "gl_account")
     private Integer glAccount;
 
+    @Column(name = "currency")
+    private Integer currency;
+
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "debit_amount")
     private Double debitAmount;
@@ -39,9 +42,6 @@ public class JournalEntryLines implements Serializable {
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "credit_amount")
     private Double creditAmount;
-
-    @Column(name = "currency")
-    private Integer currency;
 
     @Column(name = "description")
     private String description;

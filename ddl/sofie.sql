@@ -1122,7 +1122,8 @@ ALTER TABLE sbc_status OWNER TO sofie;
 CREATE TABLE system_business_calendar (
     sbc_id integer NOT NULL,
     description varchar(50) NOT NULL,
-    calendar integer NOT NULL UNIQUE, 
+    calendar integer, 
+    currency integer NOT NULL UNIQUE, 
     status integer NOT NULL,  
     official_date       DATE NOT NULL,
     next_business_date  DATE,
@@ -1131,7 +1132,8 @@ CREATE TABLE system_business_calendar (
 
     PRIMARY KEY (sbc_id),
     CONSTRAINT fk_status FOREIGN KEY (status) REFERENCES sbc_status (sbc_status_id),
-    CONSTRAINT fk_calendar FOREIGN KEY (calendar) REFERENCES calendar (id_calendar)
+    CONSTRAINT fk_calendar FOREIGN KEY (calendar) REFERENCES calendar (id_calendar),
+    CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency)
 );
 
 ALTER TABLE system_business_calendar OWNER TO sofie;

@@ -179,6 +179,7 @@ CREATE TABLE journal_entries (
     entry_type integer NOT NULL, -- ACCOUNTING MEMO  REVERSAL ADJUSTMENT
     entry_status integer NOT NULL, -- UNCONSOLIDATED CONSOLIDATED ERROR
     business_date date NOT NULL,
+    posting_date date, -- data posting a ledger
     reference varchar(100),
     description varchar(500),
     reversal_of integer NULL,
@@ -257,6 +258,71 @@ CREATE SEQUENCE account_mapping_s
 ALTER SEQUENCE account_mapping_s
     OWNER TO sofie;
 
+-- ----------------------------------------------------------------------------
+-- ledger_balances giornale a rim.ini flussi rim.fin
+-- ----------------------------------------------------------------------------
+CREATE TABLE ledger_balances (
+    ledger_balance_id      INTEGER NOT NULL,
+    gl_account             INTEGER NOT NULL,
+    currency               INTEGER NOT NULL,
+    opening_balance        NUMERIC(20,8) DEFAULT 0,
+    debit_turnover         NUMERIC(20,8) DEFAULT 0,
+    credit_turnover        NUMERIC(20,8) DEFAULT 0,
+    closing_balance        NUMERIC(20,8) GENERATED ALWAYS AS (
+        opening_balance + debit_turnover - credit_turnover
+    ) STORED,
+    updated_at timestamp NOT NULL DEFAULT now(),
+
+    PRIMARY KEY (ledger_balance_id),
+
+    CONSTRAINT fk_ledger_account
+        FOREIGN KEY (gl_account)
+        REFERENCES gl_accounts(account_id),
+
+    CONSTRAINT fk_ledger_currency
+        FOREIGN KEY (currency)
+        REFERENCES currency(id_currency),
+
+    CONSTRAINT uk_ledger UNIQUE (business_date, gl_account)
+);
+ALTER TABLE ledger_balances
+    OWNER TO sofie;
+CREATE SEQUENCE ledger_balances_s
+    START WITH 1
+    INCREMENT BY 1;
+ALTER SEQUENCE ledger_balances_s
+    OWNER TO sofie;
+
+/*
+CREATE TABLE gl_ledger_balances (
+    ledger_balance_id      BIGSERIAL PRIMARY KEY,
+
+    business_date          DATE NOT NULL,
+
+    gl_account             INTEGER NOT NULL,
+
+    currency               INTEGER NOT NULL,
+
+    opening_balance        NUMERIC(20,8) DEFAULT 0,
+    debit_turnover         NUMERIC(20,8) DEFAULT 0,
+    credit_turnover        NUMERIC(20,8) DEFAULT 0,
+    closing_balance        NUMERIC(20,8) GENERATED ALWAYS AS (
+        opening_balance + debit_turnover - credit_turnover
+    ) STORED,
+
+    created_at             TIMESTAMP NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_ledger_account
+        FOREIGN KEY (gl_account)
+        REFERENCES gl_accounts(account_id),
+
+    CONSTRAINT fk_ledger_currency
+        FOREIGN KEY (currency)
+        REFERENCES currency(id_currency),
+
+    CONSTRAINT uk_ledger UNIQUE (business_date, gl_account)
+);
+*/
 /*
 DSL significa Domain Specific Language, cioè:
 un linguaggio progettato per descrivere un problema specifico di un dominio.

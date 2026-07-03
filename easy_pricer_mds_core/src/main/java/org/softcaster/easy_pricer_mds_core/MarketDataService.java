@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.SystemBusinessCalendar;
@@ -220,5 +221,18 @@ public class MarketDataService {
     public void refreshOfficialDate() {
         // Questo metodo svuota la cache, costringendo la chiamata successiva a getOfficialDate() a rifare la select
         // Nota che non serve implementare nulla nel corpo della funzione
+    }
+    
+    @Cacheable(value = "systemCurrency")
+    public Currency getSystemCurrency() {
+        SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
+        if (sbc != null) {
+            return sbc.getCurrency();
+        }
+        return null;
+    }
+
+    @CacheEvict(value = "systemCurrency", allEntries = true)
+    public void refreshSystemCurrency() {
     }
 }

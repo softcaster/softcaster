@@ -205,3 +205,11 @@ VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code =
     (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
 
 alter table financial_txn add column fx_rate numeric(15, 5) NOT NULL DEFAULT 1;
+alter table system_business_calendar add column currency integer  DEFAULT 1;
+alter table system_business_calendar add CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency);
+alter table system_business_calendar alter column calendar drop not null;
+alter table system_business_calendar alter column currency set not null;
+
+alter table ledger_balances drop column business_date;
+alter table ledger_balances drop column created_at;
+alter table ledger_balances add column updated_at timestamp NOT NULL DEFAULT now();

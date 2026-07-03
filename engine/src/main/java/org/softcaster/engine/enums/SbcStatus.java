@@ -4,10 +4,6 @@
  */
 package org.softcaster.engine.enums;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 /**
  *
  * @author softc
