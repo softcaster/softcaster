@@ -1,6 +1,5 @@
 package org.softcaster.core.data;
 
-import jakarta.persistence.CascadeType;
 import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -40,7 +39,6 @@ import org.softcaster.engine.enums.TypeOfInterest;
 @Inheritance(
         strategy = InheritanceType.JOINED
 )
-
 public class MasterData implements Serializable {
 
     @Id
@@ -57,7 +55,7 @@ public class MasterData implements Serializable {
 
     // --- RELAZIONE BIDIREZIONALE (LATO INVERSO) ---
     // 1) mappedBy punta al nome del campo Java dentro la classe InstrumentValuation
-    @OneToOne(mappedBy = "masterData", fetch = FetchType.LAZY, orphanRemoval = true) 
+    @OneToOne(mappedBy = "masterData", fetch = FetchType.LAZY, orphanRemoval = true)
     private InstrumentValuation instrumentValuation;
 
     @OneToOne(fetch = FetchType.EAGER)

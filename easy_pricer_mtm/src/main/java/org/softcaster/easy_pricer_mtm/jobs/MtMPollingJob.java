@@ -98,8 +98,7 @@ public class MtMPollingJob implements IMtmDataHelper {
             for (PositionMasterData pmd : positions) {
                 fetchPositionDetails(pmd, context);
             }
-        }
-        
+        }        
     }
 
     @Scheduled(fixedDelay = 15000)

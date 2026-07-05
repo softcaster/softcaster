@@ -958,13 +958,17 @@ CREATE TABLE txn_side (
 CREATE UNIQUE INDEX idx_txn_side_code ON txn_side (code);
 ALTER TABLE txn_side OWNER TO sofie;
 
--- Creo sequenza
-CREATE SEQUENCE txn_status_s
-    START WITH 1
-    INCREMENT BY 1;
-
-ALTER SEQUENCE txn_status_s
-    OWNER TO sofie;
+-- ----------------------------------------------------------------------------
+-- txn_accounting_phase - stato contabile
+-- ----------------------------------------------------------------------------
+CREATE TABLE txn_accounting_phase (
+    acct_phase_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(255) NOT NULL,
+    PRIMARY KEY (acct_phase_id)
+);
+CREATE UNIQUE INDEX idx_acct_phase_code ON txn_accounting_phase (code);
+ALTER TABLE txn_accounting_phase OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- financial_txn - transazione finanziaria
@@ -976,6 +980,7 @@ CREATE TABLE financial_txn (
     master_data integer NOT NULL, -- identificativo strumento
     txn_status integer NOT NULL, -- stato transazione
     txn_status_pre_elab integer NOT NULL, -- stato transazione pre processamento (iniziale)
+    txn_acct_phase integer NOT NULL DEFAULT 1, -- stato contabile transazione
     txn_side smallint NOT NULL, -- (Buy/Sell)
     description varchar(255) NOT NULL,
     trade_date date NOT NULL DEFAULT NOW(), -- esecuzione deal
@@ -990,7 +995,8 @@ CREATE TABLE financial_txn (
     CONSTRAINT fk_counterparty FOREIGN KEY (counterparty) REFERENCES counterparty (id_counterparty) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_position_md FOREIGN KEY (position_md) REFERENCES position_master_data (id_position) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_txn_status FOREIGN KEY (txn_status) REFERENCES txn_status (id_txn_status) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_txn_status FOREIGN KEY (txn_status) REFERENCES txn_status (id_txn_status) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_txn_acct_phase FOREIGN KEY (txn_acct_phase) REFERENCES txn_accounting_phase(acct_phase_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 ALTER TABLE financial_txn OWNER TO sofie;
@@ -1002,6 +1008,33 @@ CREATE SEQUENCE financial_txn_s
 
 ALTER SEQUENCE financial_txn_s
     OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- position_txn_links - link position txn
+-- ----------------------------------------------------------------------------
+CREATE TABLE position_txn_links (
+    pos_txn_link_id integer NOT NULL,
+    position_detail integer NOT NULL,
+    financial_txn integer NOT NULL,
+    txn_acct_phase integer NOT NULL, 
+    settlement date NOT NULL, -- regolamento/contabilizzazione
+    quantity numeric(15, 5) NOT NULL,
+    price numeric(15, 5) NOT NULL,
+    fx_rate numeric(15, 5) NOT NULL DEFAULT 1, -- cambio al momento del trade
+    PRIMARY KEY (pos_txn_link_id),
+    CONSTRAINT fk_link_pos FOREIGN KEY (position_detail) REFERENCES position_detail (id_position_detail) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_link_txn FOREIGN KEY (financial_txn) REFERENCES financial_txn (id_financial_txn) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_link_acct_phase FOREIGN KEY (txn_acct_phase) REFERENCES txn_accounting_phase(acct_phase_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+ALTER TABLE position_txn_links OWNER TO sofie;
+
+-- Creo sequenza
+CREATE SEQUENCE position_txn_links_s
+   START WITH 1
+   INCREMENT BY 1;
+
+ALTER SEQUENCE position_txn_links_s
+   OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- txn_component_type - tabella lookup component type mappada da enum ComponentType

@@ -146,12 +146,16 @@ export function useFinancialView<TMaster>(
                 return; // Interrompe la funzione handleSave e non esegue il salvataggio
             }
             const result = await saveFinancialTxn(selectedTrade);
+            if (result == null) {
+                showToast({ severity: 'error', summary: 'Error', detail: 'Transaction not registered' });
+            } else {
+                showToast({ severity: 'success', summary: 'Saved', detail: 'Transaction registered' });
+            }
             console.log(result);
             // Ricarica tutto per sicurezza
             await loadAll();
             //Resetta il modulo usando la data ufficiale di sistema invece del defaultTxn sporco
             setSelectedTrade(getSystemDefaultTxn());
-            showToast({ severity: 'success', summary: 'Saved', detail: 'Transaction registered' });
         } catch (err: any) {
             showToast({ severity: 'error', summary: 'Error', detail: 'Save failed' });
             console.error(err);

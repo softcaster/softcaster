@@ -144,6 +144,13 @@ INSERT INTO txn_status(id_txn_status,code, description) VALUES (11,'POSTED','Pos
 INSERT INTO txn_side(id_txn_side,code, description) VALUES (1,'BUY','Buy');
 INSERT INTO txn_side(id_txn_side,code, description) VALUES (2,'SELL','Sell');
 
+-- ----------------------------------------------------------------------------
+-- accounting_phase
+-- ----------------------------------------------------------------------------
+INSERT INTO txn_accounting_phase(acct_phase_id,code, description) VALUES (1,'NONE','Not accounted');
+INSERT INTO txn_accounting_phase(acct_phase_id,code, description) VALUES (2,'MEMO_POSTED','Memo accounting posted');
+INSERT INTO txn_accounting_phase(acct_phase_id,code, description) VALUES (3,'OFFICIAL_POSTED','Official accounting posted');
+
 
 -- ----------------------------------------------------------------------------
 -- txn_component_types

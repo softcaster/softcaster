@@ -21,8 +21,10 @@ import java.util.List;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.AccountingPhaseConverter;
 import org.softcaster.core.data.converters.TxnSideConverter;
 import org.softcaster.core.data.converters.TxnStatusConverter;
+import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.TxnSide;
 import org.softcaster.engine.enums.TxnStatus;
 
@@ -57,6 +59,10 @@ public class FinancialTxn implements Serializable {
     @Convert(converter = TxnStatusConverter.class)
     @Column(name = "txn_status_pre_elab")
     private TxnStatus txnStatusPreElab;
+    
+    @Convert(converter = AccountingPhaseConverter.class)
+    @Column(name = "txn_acct_phase")
+    private AccountingPhase txnAcctPhase;
 
     @Convert(converter = TxnSideConverter.class)
     @Column(name = "txn_side")
@@ -313,5 +319,19 @@ public class FinancialTxn implements Serializable {
      */
     public void setFxRate(Double fxRate) {
         this.fxRate = fxRate;
+    }
+
+    /**
+     * @return the txnAcctPhase
+     */
+    public AccountingPhase getTxnAcctPhase() {
+        return txnAcctPhase;
+    }
+
+    /**
+     * @param txnAcctPhase the txnAcctPhase to set
+     */
+    public void setTxnAcctPhase(AccountingPhase txnAcctPhase) {
+        this.txnAcctPhase = txnAcctPhase;
     }
 }

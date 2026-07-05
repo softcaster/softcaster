@@ -40,7 +40,7 @@ public interface PositionDetailRepository extends JpaRepository<PositionDetail, 
             + "       md.description AS assetDescription, "
             + "       ctp.code AS counterpartyCode, "
             + "       (pd.buy_qty - pd.sell_qty) AS totalQuantity, "
-            + "       ((notional_value_buy - notional_value_sell) / (pd.buy_qty - pd.sell_qty))/md.multiplier  AS averagePrice, "
+            + "       COALESCE(((notional_value_buy - notional_value_sell) / NULLIF(pd.buy_qty - pd.sell_qty, 0)) / md.multiplier, 0) AS averagePrice, "
             + "       pd.market_price AS marketPrice, "
             + "       ((pd.buy_qty - pd.sell_qty) * (pd.market_price * md.multiplier)) AS marketValue, "
             + "       pd.realized_pnl AS realizedPnL, "

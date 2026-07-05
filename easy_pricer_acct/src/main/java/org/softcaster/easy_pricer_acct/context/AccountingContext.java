@@ -14,6 +14,7 @@ import org.softcaster.core.data.account.GlAccountDAO;
 import org.softcaster.core.data.account.JournalEntryLines;
 import org.softcaster.core.data.account.JournalEntryLinesDAO;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
+import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.NormalBalance;
 import org.softcaster.engine.enums.TxnComponentType;
 
@@ -26,11 +27,13 @@ public class AccountingContext {
     private final FinancialTxn txn;
     private final JournalDsl journal;
     private final AccountingEvent event;
+    private AccountingPhase accountingPhase;
 
     public AccountingContext(FinancialTxn txn, JournalDsl journal, AccountingEvent event) {
         this.txn = txn;
         this.journal = journal;
         this.event = event;
+        this.accountingPhase = AccountingPhase.NONE;
     }
 
     /**
@@ -124,5 +127,19 @@ public class AccountingContext {
                 this.journal.credit(getAccountCode(oldLine.getGlAccount()), negativeAmount, oldLine.getCurrency());
             }
         }
+    }
+
+    /**
+     * @return the accountingPhase
+     */
+    public AccountingPhase getAccountingPhase() {
+        return accountingPhase;
+    }
+
+    /**
+     * @param accountingPhase the accountingPhase to set
+     */
+    public void setAccountingPhase(AccountingPhase accountingPhase) {
+        this.accountingPhase = accountingPhase;
     }
 }

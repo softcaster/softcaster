@@ -44,7 +44,6 @@ import org.softcaster.engine.enums.NormalBalance;
 import static org.softcaster.engine.enums.NormalBalance.DEBIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -279,6 +278,9 @@ public class TradeAccountingEventService {
                     // Aggiorno stato accounting event
                     event.setEventStatus(AccountingEventStatus.PROCESSED);
                     accountingEventDAO.saveOrUpdate(event);
+                    // Aggiorno stato contabile
+                    txn.setTxnAcctPhase(ctx.getAccountingPhase());
+                    financialTxnDAO.saveOrUpdate(txn);
                 } else {
                     log.warn("No specific strategy script found cached for Asset Class: {}", assetCode);
                 }

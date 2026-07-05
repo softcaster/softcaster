@@ -92,5 +92,12 @@ INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) 
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
     VALUES(nextval('account_mapping_s'),'FUT_REALIZED_GAIN ',1,16); -- 400010 Realized Gain on Financial Derivatives - EUR
 
-
-
+-- =========================================================================
+-- 1. BOND_COMMITMENT_BUY (Impegni di acquisto titoli - es. 600010)
+-- =========================================================================
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'FXSPOT_COMMITMENT', 1, 99); -- EUR (es. 600040)
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'FXSPOT_COMMITMENT', 2, 100); -- USD (es. 600041)
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'FXSPOT_COMMITMENT', 4, 101); -- CHF (es. 600042)

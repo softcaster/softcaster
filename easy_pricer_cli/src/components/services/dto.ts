@@ -101,6 +101,8 @@ export interface FinancialTxnDto {
     settlement: Date;
     quantity: number;
     price: number;
+    fxRate: number;
+    txnAcctPhase: number | null
 };
 
 export const DEFAULT_TXN_DTO: FinancialTxnDto = {
@@ -122,7 +124,9 @@ export const DEFAULT_TXN_DTO: FinancialTxnDto = {
     tradeDate: new Date,
     settlement: new Date,
     quantity: 0,
-    price: 0
+    price: 0,
+    fxRate: 1,
+    txnAcctPhase: 1
 };
 
 export const createDefaultTxnDto = (): FinancialTxnDto => ({
@@ -144,7 +148,9 @@ export const createDefaultTxnDto = (): FinancialTxnDto => ({
     tradeDate: new Date,
     settlement: new Date,
     quantity: 0,
-    price: 0
+    price: 0,
+    fxRate: 1,
+    txnAcctPhase: 1
 });
 
 export interface ProspectFilter {

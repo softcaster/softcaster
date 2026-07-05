@@ -2,6 +2,7 @@ package org.softcaster.easy_pricer_srv.controller;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.dto.FinancialTxnDto;
@@ -83,6 +84,7 @@ public class FinancialTxnRestController {
         } catch (Exception e) {
             // Se il service lancia una qualsiasi eccezione, la transazione fallisce,
             // viene eseguito il rollback automatico sul DB e restituisci l'errore al client.
+            LoggerMgr.logError(e.getLocalizedMessage());
             return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
         }
     }

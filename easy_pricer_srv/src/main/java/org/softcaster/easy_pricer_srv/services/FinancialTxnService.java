@@ -16,13 +16,21 @@ import java.sql.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Objects;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
+import org.softcaster.core.data.SystemBusinessCalendar;
+import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.dto.FinancialTxnDto;
 import org.softcaster.core.dto.FinancialTxnMapper;
 import org.softcaster.easy_pricer_mds_core.Calendar;
+import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_srv.exceptions.FinancialTxnException;
+import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.TxnStatus;
+import org.softcaster.provider.enums.RequestType;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @Service
 public class FinancialTxnService {
@@ -35,6 +43,11 @@ public class FinancialTxnService {
     private FinancialTxnDAO dao;
     @Autowired
     private FinancialTxnMapper mapper;
+    @Autowired
+    private SystemBusinessCalendarDAO systemBusinessCalendarDAO;
+    @Autowired
+    @Qualifier("marketDataService") 
+    private MarketDataService marketDataService;
 
     // Cancellazione logica marca solamente la transazione a TO_CANCEL ma
     // non la rimuove fisicamente da DB
@@ -93,6 +106,8 @@ public class FinancialTxnService {
                         java.sql.Date settlementDate = calcSettlementDate(financialTxn);
                         financialTxn.setSettlement(settlementDate);
                         financialTxn.setValueDate(settlementDate);
+                        financialTxn.setTxnAcctPhase(AccountingPhase.NONE);
+                        financialTxn.setFxRate(getFxRate(financialTxn));
                     } else {
                         financialTxn.setIdFinancialTxn(oldTxnDto.financialTxnId());
                         financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
@@ -116,6 +131,8 @@ public class FinancialTxnService {
                         financialTxn.setRefId(oldTxnToCancel.getIdFinancialTxn()); // Copia l'ID originale (es. 34)
                         financialTxn.setTxnStatus(TxnStatus.PENDING);
                         financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
+                        financialTxn.setTxnAcctPhase(AccountingPhase.NONE);
+                        financialTxn.setFxRate(getFxRate(financialTxn));
 
                         dao.saveOrUpdate(financialTxn);
                     } else {
@@ -150,6 +167,21 @@ public class FinancialTxnService {
                 && Objects.equals(oldDto.txnSide(), newDto.txnSide());
     }
 
+    private Double getFxRate(FinancialTxn financialTxn) {
+        try {
+            SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
+            if(financialTxn.getMasterData().getCurrency().getIdCurrency().equals(sbc.getCurrency().getIdCurrency()))
+                return 1.;
+            else {
+                double rate = marketDataService.getSpotPrice(financialTxn.getMasterData().getIdMasterData(), RequestType.BID);
+                return rate;
+            }
+        } catch(Exception ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            throw new FinancialTxnException(ex.getLocalizedMessage());
+        }        
+    }
+    
     private Date calcSettlementDate(FinancialTxn financialTxn) {
 
         if (financialTxn.getMasterData() != null) {

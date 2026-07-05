@@ -1,8 +1,6 @@
 package org.softcaster.core.data.account;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.EventSourceType;
@@ -13,9 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("accountingEventsDAO")
 public class AccountingEventDAO {
 
-    @Resource
-    private AccountingEventRepository repository;
+    private final AccountingEventRepository repository;
 
+    public AccountingEventDAO(AccountingEventRepository repository) {
+        this.repository = repository;
+    }
+    
     @Transactional(readOnly = true)
     public List<AccountingEvent> findAll() {
         return repository.findAll();
@@ -26,37 +27,45 @@ public class AccountingEventDAO {
         return repository.findByEventId(eventId);
     }
 
-    @Transactional
-    public List<AccountingEvent> findTradeEvents(EventSourceType sourceType,
-            Collection<EventType> eventTypes, AccountingEventStatus eventStatus) {
-        return repository.findTradeEvents(sourceType, eventTypes, eventStatus);
-    }
-
+    // Manteniamo la firma originale del metodo per non rompere altre chiamate esterne
     @Transactional
     public List<AccountingEvent> findTradeEvents(EventSourceType sourceType,
             EventType eventType, AccountingEventStatus eventStatus) {
-        return repository.findTradeEvents(sourceType, eventType, eventStatus);
+        List<Integer> lockedIds = repository.findAndLockTradeEventIds(sourceType, eventType, eventStatus);
+        if (lockedIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return repository.findAllByIds(lockedIds);
     }
 
     @Transactional
     public List<AccountingEvent> fetchAndClaimEvents(EventSourceType sourceType,
             EventType eventType) {
-        // 1. Legge dal DB applicando il Lock
-        List<AccountingEvent> pendingEvents = repository.findTradeEvents(
-                sourceType, eventType, AccountingEventStatus.NEW); // Lo stato NEW è fisso qui!
+        
+        // 1. Estrae e applica il Lock atomico SOLO sugli ID tramite SQL nativo (PostgreSQL esegue SKIP LOCKED senza impedimenti)
+        List<Integer> lockedIds = repository.findAndLockTradeEventIds(
+                sourceType, eventType, AccountingEventStatus.NEW);
+
+        if (lockedIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 1b. Ricarica le entità polimorfiche complete (Hibernate valorizza correttamente la colonna clazz_)
+        // Avendo già acquisito il lock al punto 1, queste righe sono blindate nella transazione corrente
+        List<AccountingEvent> pendingEvents = repository.findAllByIds(lockedIds);
 
         List<AccountingEvent> claimedEvents = new ArrayList<>();
 
-        // 2. Modifica lo stato e salva ogni record all'istante
+        // 2. Modifica lo stato e salva ogni record all'istante (Logica originale invariata)
         for (AccountingEvent event : pendingEvents) {
             event.setEventStatus(AccountingEventStatus.PROCESSING);
 
-            // 3. Usa il metodo saveOrUpdate per persistere il cambio di stato
+            // 3. Persiste il cambio di stato
             AccountingEvent updatedEvent = repository.save(event);
             claimedEvents.add(updatedEvent);
         }
 
-        return claimedEvents; // Ritorna la lista pronta per essere inviata al TaskExecutor
+        return claimedEvents; 
     }
 
     @Transactional

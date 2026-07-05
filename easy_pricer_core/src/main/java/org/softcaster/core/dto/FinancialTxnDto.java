@@ -30,6 +30,8 @@ public record FinancialTxnDto(
         java.sql.Date tradeDate,
         java.sql.Date settlement,
         Double quantity,
-        Double price) {
+        Double price,
+        Double fxRate,
+        Integer txnAcctPhase) {
 
 }

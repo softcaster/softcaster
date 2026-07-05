@@ -147,6 +147,21 @@ ALTER SEQUENCE accounting_events_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
+-- accounting_event_accruals - dettaglio evento contabile accrual
+-- ----------------------------------------------------------------------------
+CREATE TABLE accounting_event_accruals (
+    event_id integer NOT NULL,
+    accounting_nominal numeric(23, 10) NOT NULL,
+    accrual_amount numeric(23, 10) NOT NULL,
+    coupon_rate numeric(23, 10) NOT NULL,
+    daycount integer NOT NULL,
+    days integer NOT NULL,   
+    PRIMARY KEY (event_id),
+    CONSTRAINT fk_aea_daycount FOREIGN KEY (daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+ALTER TABLE accounting_event_accruals OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
 -- journal_entry_types
 -- ----------------------------------------------------------------------------
 CREATE TABLE journal_entry_types (

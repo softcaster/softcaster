@@ -6,6 +6,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.io.Serializable;
@@ -20,7 +22,9 @@ import org.softcaster.engine.enums.EventSourceType;
 @Entity
 @Table(name = "accounting_events")
 @SuppressWarnings("PersistenceUnitPresent")
-
+@Inheritance(
+        strategy = InheritanceType.JOINED
+)
 public class AccountingEvent implements Serializable {
     
     @Id

@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
 
-package org.softcaster.easy_pricer_acct;
+package org.softcaster.easy_pricer_lc;
 
 import org.softcaster.commons.utils.FileUtil;
 import org.springframework.boot.SpringApplication;
@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 // Scansiona tutti i componenti nei package org.softcaster (sia proc che core)
 @ComponentScan(basePackages = {
-    "org.softcaster.easy_pricer_acct",
+    "org.softcaster.easy_pricer_lc",
     "org.softcaster.easy_pricer_mds_core",
     "org.softcaster.core.data", // Il pacchetto della libreria core
     "org.softcaster.engine" // Il pacchetto della libreria engine
@@ -25,17 +25,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableJpaRepositories("org.softcaster.core.data")
 // Trova le entità (AssetClass, ecc.) nel JAR core
 @EntityScan(basePackages = "org.softcaster.core.data") 
-public class Easy_pricer_acct {
+public class Easy_pricer_lc {
 
     public static void main(String[] args) {
         // Inizializzazione Logger
         FileUtil.initializeLogger();
 
-        SpringApplication.run(Easy_pricer_acct.class, args);
+        SpringApplication.run(Easy_pricer_lc.class, args);
 
-        System.out.println("===========================================");
-        System.out.println("   EASY PRICER ACCT STARTED SUCCESSFULLY   ");
-        System.out.println("   Endpoint: http://localhost:8082/api/v1  ");
-        System.out.println("===========================================");
+        System.out.println("================================================");
+        System.out.println("   EASY PRICER LIFECYCLE STARTED SUCCESSFULLY   ");
+        System.out.println("   Endpoint: http://localhost:8085/api/v1  ");
+        System.out.println("================================================");
     }
+    
 }

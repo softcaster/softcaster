@@ -213,3 +213,10 @@ alter table system_business_calendar alter column currency set not null;
 alter table ledger_balances drop column business_date;
 alter table ledger_balances drop column created_at;
 alter table ledger_balances add column updated_at timestamp NOT NULL DEFAULT now();
+
+alter table financial_txn add column txn_acct_phase integer NOT NULL DEFAULT 1;
+alter table financial_txn add CONSTRAINT fk_txn_acct_phase FOREIGN KEY (txn_acct_phase) REFERENCES txn_accounting_phase(acct_phase_id) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+alter table position_txn_links add column price numeric(15, 5) NOT NULL;
+alter table position_txn_links add column fx_rate numeric(15, 5) NOT NULL;
+

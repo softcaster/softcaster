@@ -13,6 +13,8 @@ import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
+import org.softcaster.core.data.PositionTxnLinks;
+import org.softcaster.core.data.PositionTxnLinksDAO;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventDAO;
@@ -22,6 +24,7 @@ import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
 import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.EventSourceType;
 import org.softcaster.engine.enums.EventType;
+import org.softcaster.engine.enums.TxnSide;
 import org.softcaster.engine.enums.TxnStatus;
 import static org.softcaster.engine.enums.TxnStatus.EXECUTED;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +46,8 @@ public class FinTxnExecutionService {
     private ProcessorDispatcher processorDispatcher;
     @Autowired
     AccountingEventDAO accountingEventDAO;
-
+    @Autowired
+    PositionTxnLinksDAO positionTxnLinksDAO;
     @Autowired
     private SystemBusinessCalendarDAO systemBusinessCalendarDAO;
 
@@ -98,12 +102,27 @@ public class FinTxnExecutionService {
         }
     }
 
+    private void insertLink(FinancialTxn txn, PositionDetail position) {
+        PositionTxnLinks link = new PositionTxnLinks();
+        link.setFinancialTxn(txn.getIdFinancialTxn());
+        link.setTxnAcctPhase(txn.getTxnAcctPhase());
+        double sign = txn.getTxnSide() == TxnSide.BUY ? 1. : -1.;
+        link.setQuantity(txn.getQuantity() * sign);
+        link.setPrice(txn.getPrice());
+        link.setFxRate(txn.getFxRate());
+        link.setSettlement(txn.getSettlement());
+        link.setPositionDetail(position.getIdPositionDetail());
+        positionTxnLinksDAO.saveOrUpdate(link);
+    }
+
     private void elabFinancialTxn(FinancialTxn txn) {
 
         PositionDetail position = getPositionDetail(txn);
         processFinancialTxn(txn, position);
         position.setLastMtmExecuted(LocalDateTime.now());
         positionDetailDAO.saveOrUpdate(position);
+        // A questo punto salvo il link
+        insertLink(txn, position);
     }
 
     private void generateAccountingEvent(FinancialTxn txn, TxnStatus status) {

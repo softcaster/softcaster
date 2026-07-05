@@ -12,6 +12,7 @@ import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.core.data.PositionMasterDataDAO;
+import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.TxnSide;
 import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,11 +55,13 @@ public class FinancialTxnMapper {
                 entity.getTxnStatus() != null ? entity.getTxnStatus().getCode() : null,
                 entity.getTxnStatus() != null ? entity.getTxnStatus().getDescription() : null,
                 entity.getRefId(),
-                entity.getTxnSide() != null ? (short)(entity.getTxnSide().getId()) : null,
+                entity.getTxnSide() != null ? (short) (entity.getTxnSide().getId()) : null,
                 entity.getTradeDate(),
                 entity.getSettlement(),
                 entity.getQuantity(),
-                entity.getPrice()
+                entity.getPrice(),
+                entity.getFxRate(),
+                entity.getTxnAcctPhase() != null ? entity.getTxnAcctPhase().getId() : null
         );
     }
 
@@ -91,7 +94,9 @@ public class FinancialTxnMapper {
         financialTxn.setTxnSide(TxnSide.fromId(financialTxnDto.txnSide()));
         TxnStatus status = TxnStatus.fromId(financialTxnDto.txnStatusId());
         financialTxn.setTxnStatus(status);
-        // Aggiorno counterparty, position, segno ...
+        AccountingPhase phase = AccountingPhase.fromId(financialTxnDto.txnAcctPhase());
+        financialTxn.setTxnAcctPhase(phase);
+        financialTxn.setFxRate(financialTxnDto.fxRate());
         return financialTxn;
     }
 
