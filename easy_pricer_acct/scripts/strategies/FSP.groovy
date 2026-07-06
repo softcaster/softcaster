@@ -97,6 +97,7 @@ switch(event.eventType) {
 
     case EventType.TRADE_AMENDED:
     case EventType.TRADE_CANCELED:
+        ctx.accountingPhase = txn.txnAcctPhase
         ctx.reverseJournal()
         break
 }
