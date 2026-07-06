@@ -1,5 +1,7 @@
 package org.softcaster.core.data;
 
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +25,13 @@ public class PositionTxnLinksDAO {
         return repository.save(positionTxnLinks);
     }
 
-    @Transactional
+    @Transactional 
     public void delete(PositionTxnLinks positionTxnLinks) {
         repository.delete(positionTxnLinks);
     }
 
+    @Transactional // Transactional mantiene attivo il lock su Postgres
+    public List<PositionTxnLinks> fetchAndClaimLinks(LocalDate officialDate) {
+        return repository.fetchAndClaimLinks(officialDate);
+    }            
 }

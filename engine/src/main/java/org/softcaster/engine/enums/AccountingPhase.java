@@ -11,7 +11,8 @@ package org.softcaster.engine.enums;
 public enum AccountingPhase implements IdentifiableEnum {
     NONE(1, "NONE", "Not accounted"),
     MEMO_POSTED(2, "MEMO_POSTED", "Memo accounting posted"),
-    OFFICIAL_POSTED(3, "OFFICIAL_POSTED", "Official accounting posted");
+    OFFICIAL_POSTED(3, "OFFICIAL_POSTED", "Official accounting posted"),
+    REVERSED(4, "REVERSED", "Skipped"); // relativa a transazioni amended/cancelled
 
     private final int id;
     private final String code;

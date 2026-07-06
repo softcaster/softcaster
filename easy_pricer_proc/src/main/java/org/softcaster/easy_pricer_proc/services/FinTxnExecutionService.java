@@ -6,6 +6,7 @@ package org.softcaster.easy_pricer_proc.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -92,7 +93,7 @@ public class FinTxnExecutionService {
         }
 
         try {
-            elabFinancialTxn(txn);
+            elabFinancialTxn(txn, newStatus);
             generateAccountingEvent(txn, newStatus);
             updateStatus(txn, newStatus);
 
@@ -115,14 +116,16 @@ public class FinTxnExecutionService {
         positionTxnLinksDAO.saveOrUpdate(link);
     }
 
-    private void elabFinancialTxn(FinancialTxn txn) {
+    private void elabFinancialTxn(FinancialTxn txn, TxnStatus status) {
 
         PositionDetail position = getPositionDetail(txn);
         processFinancialTxn(txn, position);
         position.setLastMtmExecuted(LocalDateTime.now());
         positionDetailDAO.saveOrUpdate(position);
         // A questo punto salvo il link
-        insertLink(txn, position);
+        if (status == TxnStatus.EXECUTED) {
+            insertLink(txn, position);
+        }
     }
 
     private void generateAccountingEvent(FinancialTxn txn, TxnStatus status) {

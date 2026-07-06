@@ -20,6 +20,11 @@ public class CounterpartyDAO {
     }
 
     @Transactional(readOnly = true)
+    public Counterparty findByCode(String code) {
+        return repository.findByCode(code);
+    }
+
+    @Transactional(readOnly = true)
     public List<Counterparty> findAll() {
         //return repository.findAll(sortByCode);
         return repository.findAllWithRoles(sortByCode);

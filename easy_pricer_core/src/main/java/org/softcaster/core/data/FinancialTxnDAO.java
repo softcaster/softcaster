@@ -1,6 +1,7 @@
 package org.softcaster.core.data;
 
 import java.util.List;
+import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.stereotype.Service;
@@ -79,6 +80,7 @@ public class FinancialTxnDAO {
         // Setto a TO_CANCEL
         financialTxn.setTxnStatus(TxnStatus.TO_CANCEL);
         financialTxn.setTxnStatusPreElab(TxnStatus.TO_CANCEL);
+        financialTxn.setTxnAcctPhase(AccountingPhase.REVERSED);
         // Salvo
         return saveOrUpdate(financialTxn);
     }

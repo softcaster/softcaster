@@ -124,6 +124,7 @@ public class FinancialTxnService {
                         FinancialTxn oldTxnToCancel = dao.findByIdFinancialTxn(oldTxnDto.financialTxnId());
                         oldTxnToCancel.setTxnStatus(TxnStatus.TO_AMEND);
                         oldTxnToCancel.setTxnStatusPreElab(TxnStatus.TO_AMEND);
+                        oldTxnToCancel.setTxnAcctPhase(AccountingPhase.REVERSED);
                         dao.saveOrUpdate(oldTxnToCancel);
 
                         // Crea un record Java nuovo (Nasce slegato dalla sessione di Hibernate)

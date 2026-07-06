@@ -4,18 +4,28 @@
  */
 package org.softcaster.easy_pricer_lc.jobs;
 
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import org.slf4j.LoggerFactory;
+import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.core.data.PositionMasterDataDAO;
+import org.softcaster.core.data.PositionTxnLinks;
+import org.softcaster.core.data.PositionTxnLinksDAO;
+import org.softcaster.core.data.SystemBusinessCalendar;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
+import org.softcaster.core.data.account.AccountingEvent;
+import org.softcaster.core.data.account.AccountingEventDAO;
+import org.softcaster.easy_pricer_lc.exceptions.LifeCycleException;
 import org.softcaster.easy_pricer_lc.services.EngineStateManager;
+import org.softcaster.easy_pricer_lc.services.SettlementEventInfo;
+import org.softcaster.easy_pricer_lc.services.SettlementLyfeCycleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
@@ -28,35 +38,69 @@ public class LifeCycleJob {
 
     @Autowired
     private EngineStateManager engineStateManager;
+
+    @Autowired
+    private FinancialTxnDAO financialTxnDAO;
+
     @Autowired
     private PositionDetailDAO positionDetailDAO;
+
     @Autowired
     private PositionMasterDataDAO positionMasterDataDAO;
+
     @Autowired
-    SystemBusinessCalendarDAO sbc;
+    SystemBusinessCalendarDAO sbcDAO;
+
     // Iniezione del pool di thread 
     @Autowired
     @Qualifier("lifeCycleExecutor")
     private TaskExecutor taskExecutor;
+
+    @Autowired
+    PositionTxnLinksDAO positionTxnLinksDAO;
+
+    @Autowired
+    AccountingEventDAO accountingEventDAO;
+
+    @Autowired
+    SettlementLyfeCycleService slc;
+
+    private SystemBusinessCalendar sbc = null;
+
+    @PostConstruct
+    public void init() {
+        sbc = sbcDAO.findBySbcId(1);
+    }
 
     public void runLifeCycles() {
         runSettlementLyfeCycle();
     }
 
     private void runSettlementLyfeCycle() {
-        List<PositionMasterData> positions = positionMasterDataDAO.findAll();
-
-        if (!positions.isEmpty()) {
-            for (PositionMasterData pmd : positions) {
-                fetchPositionDetails(pmd,this::generateSettlementEvent);
+        List<PositionTxnLinks> links = positionTxnLinksDAO.fetchAndClaimLinks(sbc.getOfficialDate());
+        if (!links.isEmpty()) {
+            for (PositionTxnLinks link : links) {
+                generateSettlementEvent(link);
             }
         }
     }
 
-    void generateSettlementEvent(PositionDetail detail) {
+    void generateSettlementEvent(PositionTxnLinks link) {
+
+        try {
+            SettlementEventInfo info = new SettlementEventInfo();
+            info.setLink(link);
+            AccountingEvent event = slc.generateEvent(info);
+            accountingEventDAO.saveOrUpdate(event);
+        } catch (Exception e) {
+            log.error("### Error processing txn: " + link.getFinancialTxn());
+            throw new LifeCycleException(e.getLocalizedMessage());
+        }
 
     }
 
+    // Esempio chiamata
+    //fetchPositionDetails(pmd,this::generateSettlementEvent);
     private void fetchPositionDetails(PositionMasterData pmd, Consumer<PositionDetail> processor) {
         List<PositionDetail> details = positionDetailDAO.fetchAndClaimByPositionMasterData(pmd, 15).orElse(null);
 

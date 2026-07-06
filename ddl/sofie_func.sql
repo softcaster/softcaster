@@ -82,3 +82,28 @@ BEFORE INSERT OR UPDATE ON financial_txn
 FOR EACH ROW
 EXECUTE FUNCTION fn_manage_ref_id();
 ALTER FUNCTION fn_manage_ref_id() OWNER TO sofie;
+
+-------------------------------------------------------------------------------
+-- Aggiornamento position_txn_links.txn_acct_phase all'aggiornamento 
+-- di financial_txn.txn_acct_phase
+-------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION update_position_txn_links_phase()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Aggiorna la fase nei link associati alla transazione finanziaria appena modificata
+    UPDATE position_txn_links
+    SET txn_acct_phase = NEW.txn_acct_phase
+    WHERE financial_txn = NEW.id_financial_txn;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_sync_financial_txn_phase
+AFTER UPDATE OF txn_acct_phase ON financial_txn
+FOR EACH ROW
+WHEN (OLD.txn_acct_phase IS DISTINCT FROM NEW.txn_acct_phase)
+EXECUTE FUNCTION update_position_txn_links_phase();
+-------------------------------------------------------------------------------
+-- End
+-------------------------------------------------------------------------------

@@ -35,7 +35,7 @@ public class Easy_pricer_lc {
 
         System.out.println("================================================");
         System.out.println("   EASY PRICER LIFECYCLE STARTED SUCCESSFULLY   ");
-        System.out.println("   Endpoint: http://localhost:8085/api/v1  ");
+        System.out.println("   Endpoint: http://localhost:8084/api/v1  ");
         System.out.println("================================================");
     }
     

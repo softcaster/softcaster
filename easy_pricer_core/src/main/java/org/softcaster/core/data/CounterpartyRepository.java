@@ -17,4 +17,6 @@ public interface CounterpartyRepository extends JpaRepository<Counterparty, Inte
     // select dei roles. 
     @Query("SELECT DISTINCT c FROM Counterparty c LEFT JOIN FETCH c.roles")
     public List<Counterparty> findAllWithRoles(Sort sort);
+
+    public Counterparty findByCode(String code);
 }

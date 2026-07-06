@@ -150,6 +150,7 @@ INSERT INTO txn_side(id_txn_side,code, description) VALUES (2,'SELL','Sell');
 INSERT INTO txn_accounting_phase(acct_phase_id,code, description) VALUES (1,'NONE','Not accounted');
 INSERT INTO txn_accounting_phase(acct_phase_id,code, description) VALUES (2,'MEMO_POSTED','Memo accounting posted');
 INSERT INTO txn_accounting_phase(acct_phase_id,code, description) VALUES (3,'OFFICIAL_POSTED','Official accounting posted');
+INSERT INTO txn_accounting_phase(acct_phase_id,code, description) VALUES (4,'REVERSED','Reversed');
 
 
 -- ----------------------------------------------------------------------------

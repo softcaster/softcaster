@@ -40,6 +40,21 @@ public class AcctPollingJob {
     @Qualifier("acctEventExecutor")
     private TaskExecutor taskExecutor;
 
+    private void elabSettlementTradeEvents(List<AccountingEvent> settlementEvents) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (AccountingEvent event : settlementEvents) {
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    tradeAccountingEventService.processEvent(event);
+                } catch (Exception e) {
+                    log.error("### ERROR AMENDED ID {}: {}", event.getEventId(), e.getMessage());
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                }
+            }, taskExecutor));
+        }
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+    }
+    
     // Raddoppiato il pattern asincrono anche per gli Amended
     private void elabAmendedTradeEvents(List<AccountingEvent> pendingEvents) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -130,6 +145,17 @@ public class AcctPollingJob {
         poolPendingCancelledTradeEvents();
     }
 
+    protected void pollPendingSettlementTradeEvents() {
+        List<AccountingEvent> settlementEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.TRADE,
+                EventType.SETTLEMENT);
+
+        if (!settlementEvents.isEmpty()) {
+            log.info("=== [BATCH START] find {} MEMO POSTED transaction(s) ===", settlementEvents.size());
+            elabSettlementTradeEvents(settlementEvents);
+            log.info("=== [BATCH END] Processing completed ===\n");
+        }
+    }
+
     @Scheduled(fixedDelay = 15000)
     public void pollAccountinEvents() {
         if (engineStateManager.isSuspended()) {
@@ -137,5 +163,6 @@ public class AcctPollingJob {
             return;
         }
         pollPendingAccountingTradeEvents();
+        pollPendingSettlementTradeEvents();
     }
 }
