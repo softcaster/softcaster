@@ -40,5 +40,6 @@ public class Easy_pricer_srv {
         System.out.println("   EASY PRICER SRV STARTED SUCCESSFULLY    ");
         System.out.println("   Endpoint: http://localhost:8080/api/v1  ");
         System.out.println("===========================================");
+        System.out.println(System.getProperty("user.dir"));
     }
 }

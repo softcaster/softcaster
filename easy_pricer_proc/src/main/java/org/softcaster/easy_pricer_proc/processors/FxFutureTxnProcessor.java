@@ -13,10 +13,6 @@ import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.engine.enums.TxnComponentType;
 import org.springframework.stereotype.Component;
 
-/**
- *
- * @author softc
- */
 @Component("FFU")
 public class FxFutureTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
 

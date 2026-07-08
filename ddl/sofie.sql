@@ -1141,8 +1141,7 @@ ALTER SEQUENCE broker_instrument_rules_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- broker_instrument_rules
--- definisce le regole di costo per quella specifica combinazione di Broker, Strumento e Lato (Buy/Sell).
+-- sbc_status
 -- ----------------------------------------------------------------------------
 CREATE TABLE sbc_status (
     sbc_status_id integer NOT NULL,
@@ -1152,6 +1151,9 @@ CREATE TABLE sbc_status (
 );
 ALTER TABLE sbc_status OWNER TO sofie;
 
+-- ----------------------------------------------------------------------------
+-- system_business_calendar
+-- ----------------------------------------------------------------------------
 CREATE TABLE system_business_calendar (
     sbc_id integer NOT NULL,
     description varchar(50) NOT NULL,
@@ -1168,6 +1170,32 @@ CREATE TABLE system_business_calendar (
     CONSTRAINT fk_calendar FOREIGN KEY (calendar) REFERENCES calendar (id_calendar),
     CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency)
 );
-
 ALTER TABLE system_business_calendar OWNER TO sofie;
 
+-- ----------------------------------------------------------------------------
+-- commodity_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE commodity_type (
+    commodity_type_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(25) NOT NULL,
+    PRIMARY KEY (commodity_type_id)
+);
+CREATE UNIQUE INDEX commodity_type_code ON daycount (code);
+ALTER TABLE commodity_type OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- cmd_future_master_data - anagrafica commodity future
+-- ----------------------------------------------------------------------------
+CREATE TABLE cmd_future_master_data (
+    id_master_data integer NOT NULL,
+    commodity_type integer NOT NULL,
+    contract_value numeric(15, 5) NOT NULL,
+    tick_size numeric(15, 5) NOT NULL,
+    initial_margin numeric(15, 5) NOT NULL,
+    maintenance_margin numeric(15, 5) NOT NULL,
+    CONSTRAINT fk_commodity_type FOREIGN KEY (commodity_type) REFERENCES commodity_type (commodity_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    PRIMARY KEY (id_master_data)
+);
+
+ALTER TABLE cmd_future_master_data OWNER TO sofie;

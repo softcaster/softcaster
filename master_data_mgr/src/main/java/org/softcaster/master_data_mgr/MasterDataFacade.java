@@ -8,6 +8,7 @@ import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.BrokerInstrumentRulesDAO;
+import org.softcaster.core.data.CmdFutureMasterDataDAO;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
@@ -33,6 +34,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class MasterDataFacade {
 
+    /**
+     * @return the cmdFutureMasterDataDAO
+     */
+    public CmdFutureMasterDataDAO getCmdFutureMasterDataDAO() {
+        return cmdFutureMasterDataDAO;
+    }
+
     @Autowired
     private SecurityMasterDataDAO securityMasterDataDAO;
     @Autowired
@@ -43,6 +51,8 @@ public class MasterDataFacade {
     private FxFutureMasterDataDAO fxFutureMasterDataDAO;
     @Autowired
     private MmFutureMasterDataDAO mmFutureMasterDataDAO;
+    @Autowired
+    private CmdFutureMasterDataDAO cmdFutureMasterDataDAO;
 
     @Autowired
     private IssuerDAO issuerDAO;

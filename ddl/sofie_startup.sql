@@ -105,6 +105,7 @@ INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (n
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FFW','Forex Forward',(SELECT id_super_class FROM super_class WHERE code='FX'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FFU','Forex Future',(SELECT id_super_class FROM super_class WHERE code='FX'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'MFU','MM Future',(SELECT id_super_class FROM super_class WHERE code='CCE'));
+INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'CFU','Commodity Future',(SELECT id_super_class FROM super_class WHERE code='DER'));
 
 -- ----------------------------------------------------------------------------
 -- settlement_type - tipo consegna
@@ -344,3 +345,14 @@ INSERT INTO system_business_calendar(sbc_id,description,calendar,status,official
         (SELECT sbc_status_id FROM sbc_status WHERE code='OPEN' LIMIT 1),
          NOW()
 );
+
+-- ----------------------------------------------------------------------------
+-- commodity_type
+-- ----------------------------------------------------------------------------
+INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (1,'CRUDE_OIL','Crude Oil');
+INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (2,'POWER','Power');
+INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (3,'NATGAS','Natural Gas');
+INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (4,'GOLD','Gold');
+INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (5,'SILVER','Silver');
+INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (6,'PLATINUM','Platinum');
+INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (7,'PALLADIUM','Palladium');

@@ -1,24 +1,23 @@
 package org.softcaster.core.data;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.sql.Types;
-import java.util.List;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.CommodityTypeConverter;
+import org.softcaster.engine.enums.CommodityType;
 
 @Entity
-@Table(name = "fx_future_master_data")
+@Table(name = "cmd_future_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 
-public class FxFutureMasterData extends FutureMasterData {
+public class CmdFutureMasterData extends FutureMasterData {
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "underlying", nullable = true)
-    private ForexMasterData underlying;
+    @Convert(converter = CommodityTypeConverter.class)
+    @Column(name = "commodity_type")
+    private CommodityType commodityType;
 
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "contract_value")
@@ -35,6 +34,14 @@ public class FxFutureMasterData extends FutureMasterData {
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "maintenance_margin")
     private Double maintenanceMargin;
+
+    public CommodityType getCommodityType() {
+        return commodityType;
+    }
+
+    public void setCommodityType(CommodityType commodityType) {
+        this.commodityType = commodityType;
+    }
 
     public Double getContractValue() {
         return contractValue;
@@ -66,34 +73,5 @@ public class FxFutureMasterData extends FutureMasterData {
 
     public void setMaintenanceMargin(Double maintenanceMargin) {
         this.maintenanceMargin = maintenanceMargin;
-    }
-
-    /**
-     * @return the underlying
-     */
-    public ForexMasterData getUnderlying() {
-        return underlying;
-    }
-
-    /**
-     * @param underlying the underlying to set
-     */
-    public void setUnderlying(ForexMasterData underlying) {
-        this.underlying = underlying;
-    }
-
-    @Override
-    public String toString() {
-        return getCode();
-    }    
-
-    @Override
-    public List<Currency> getCurrencyList() {
-        List<Currency> currencies = null;
-        if (underlying != null) {
-            currencies = underlying.getCurrencyList();
-        }
-
-        return currencies;
     }
 }

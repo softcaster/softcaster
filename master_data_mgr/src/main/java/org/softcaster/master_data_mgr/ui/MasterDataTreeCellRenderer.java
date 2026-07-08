@@ -40,7 +40,7 @@ public class MasterDataTreeCellRenderer extends DefaultTreeCellRenderer {
                     setIcon(securityIcon);
                 case CURRENCY, CURR_PAIR ->
                     setIcon(forexIcon);
-                case BOND_FUTURE, MM_FUTURE, FX_FUTURE ->
+                case BOND_FUTURE, MM_FUTURE, FX_FUTURE, CMD_FUTURE ->
                     setIcon(futureIcon);
                 case BOND_OPTION, MM_OPTION, FX_OPTION ->
                     setIcon(optionIcon);

@@ -33,8 +33,9 @@ public class TreeModel {
         DefaultMutableTreeNode derivatives = new DefaultMutableTreeNode("Derivatives");
         DefaultMutableTreeNode futures = new DefaultMutableTreeNode("Futures");
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Futures", AppTreeItem.BOND_FUTURE)));
-        futures.add(new DefaultMutableTreeNode(new MasterDataNode("MM Futures", AppTreeItem.MM_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Mm Futures", AppTreeItem.MM_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Futures", AppTreeItem.FX_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Cmd Futures", AppTreeItem.CMD_FUTURE)));
         derivatives.add(futures);
 
         DefaultMutableTreeNode options = new DefaultMutableTreeNode("Options");

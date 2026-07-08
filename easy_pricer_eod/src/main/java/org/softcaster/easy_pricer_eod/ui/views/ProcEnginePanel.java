@@ -119,7 +119,7 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
         descriptor = new RestServiceDescriptor();
         descriptor.setServiceName("PSRV");
         descriptor.setJarPath(params[0]);
-        descriptor.setActiveProfile(params[1]);
+        descriptor.setActiveProfile(params[0]);
         descriptor.setServiceInfo(this);
     }
 
