@@ -43,7 +43,7 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
                         setIcon(securityIcon);
                     case YC_UPDATE, YC_DEFINE ->
                         setIcon(forexIcon);
-                    case BOND_FUTURE, MM_FUTURE, FX_FUTURE ->
+                    case BOND_FUTURE, MM_FUTURE, FX_FUTURE, CMD_FUTURE ->
                         setIcon(futureIcon);
                     default -> {
                         setIcon(getDefaultLeafIcon()); // Torna al "pallino" o icona di default

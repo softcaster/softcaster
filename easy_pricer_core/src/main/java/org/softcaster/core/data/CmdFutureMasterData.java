@@ -74,4 +74,9 @@ public class CmdFutureMasterData extends FutureMasterData {
     public void setMaintenanceMargin(Double maintenanceMargin) {
         this.maintenanceMargin = maintenanceMargin;
     }
+    
+    @Override
+    public String toString() {
+        return getCode();
+    }    
 }

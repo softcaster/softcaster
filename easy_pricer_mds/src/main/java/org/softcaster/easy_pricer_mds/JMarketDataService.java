@@ -27,6 +27,7 @@ import org.softcaster.easy_pricer_mds.ui.model.TreeModel;
 import org.softcaster.easy_pricer_mds.ui.MDSTreeCellRenderer;
 import org.softcaster.easy_pricer_mds.view.BondFutPanel;
 import org.softcaster.easy_pricer_mds.view.BondPanel;
+import org.softcaster.easy_pricer_mds.view.CmdFutPanel;
 import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
 import org.softcaster.easy_pricer_mds.view.FxFutPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
@@ -111,6 +112,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                             case FX_FUTURE -> {
                                 cl.show(mainPanel, AppCard.FX_FUTURE_CARD.name());
                                 currentCard = AppCard.FX_FUTURE_CARD;
+                            }
+                            case CMD_FUTURE -> {
+                                cl.show(mainPanel, AppCard.CMD_FUTURE_CARD.name());
+                                currentCard = AppCard.CMD_FUTURE_CARD;
                             }
                             case MM_FUTURE -> {
                                 cl.show(mainPanel, AppCard.MM_FUTURE_CARD.name());
@@ -354,6 +359,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.FX_FUTURE_CARD, fxFutPanel);
         JPanel mmFutPanel = new MmFutPanel(mDSFacade);
         cardMap.put(AppCard.MM_FUTURE_CARD, mmFutPanel);
+        JPanel cmdFutPanel = new CmdFutPanel(mDSFacade);
+        cardMap.put(AppCard.CMD_FUTURE_CARD, cmdFutPanel);
         JPanel bondFutPanel = new BondFutPanel(mDSFacade);
         cardMap.put(AppCard.BOND_FUTURE_CARD, bondFutPanel);
         JPanel bondPanel = new BondPanel(mDSFacade);
@@ -368,6 +375,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(cpPanel, AppCard.CURR_PAIR_CARD.name());
         mainPanel.add(fxFutPanel, AppCard.FX_FUTURE_CARD.name());
         mainPanel.add(mmFutPanel, AppCard.MM_FUTURE_CARD.name());
+        mainPanel.add(cmdFutPanel, AppCard.CMD_FUTURE_CARD.name());
         mainPanel.add(bondFutPanel, AppCard.BOND_FUTURE_CARD.name());
         mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
         mainPanel.add(ycPanel, AppCard.YC_DEFINE_CARD.name());

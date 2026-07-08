@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_mds;
 import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
+import org.softcaster.core.data.CmdFutureMasterDataDAO;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
@@ -33,6 +34,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class MDSFacade {
 
+    /**
+     * @return the cmdFutureMasterDataDAO
+     */
+    public CmdFutureMasterDataDAO getCmdFutureMasterDataDAO() {
+        return cmdFutureMasterDataDAO;
+    }
+
     @Autowired
     private InstrumentQuoteDAO instrumentQuoteDAO;
 
@@ -46,6 +54,8 @@ public class MDSFacade {
     private FxFutureMasterDataDAO fxFutureMasterDataDAO;
     @Autowired
     private MmFutureMasterDataDAO mmFutureMasterDataDAO;
+    @Autowired
+    private CmdFutureMasterDataDAO cmdFutureMasterDataDAO;
 
     @Autowired
     private IssuerDAO issuerDAO;

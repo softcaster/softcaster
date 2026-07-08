@@ -8,6 +8,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.easy_pricer_mds.AppTreeItem;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.CMD_FUTURE;
 
 /**
  *
@@ -35,6 +36,7 @@ public class TreeModel {
         futures.add(new DefaultMutableTreeNode(new FndtNode<>("Bond Futures", AppTreeItem.BOND_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new FndtNode<>("MM Futures", AppTreeItem.MM_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new FndtNode<>("Fx Futures", AppTreeItem.FX_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new FndtNode<>("Cmd Futures", AppTreeItem.CMD_FUTURE)));
         derivatives.add(futures);
 
         instruments.add(derivatives);
