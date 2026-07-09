@@ -6,6 +6,7 @@ package org.softcaster.easy_pricer_mds_core.config;
 
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.YieldCurveBuilder;
+import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.annotation.EnableCaching;
@@ -27,6 +28,12 @@ public class MdsCoreAutoConfiguration {
         // Qui hai il controllo totale: puoi passare parametri al costruttore,
         // settare variabili, o loggare l'inizializzazione.
         return new MarketDataService();
+    }
+    
+    @Bean(name = "bondForwardCalculator")
+    @ConditionalOnMissingBean 
+    public BondForwardCalculator bondForwardCalculator() {
+        return new BondForwardCalculator();
     }
     
     @Bean(name = "YieldCurveBuilder")

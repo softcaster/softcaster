@@ -18,7 +18,7 @@ public class BondOutputData extends MarketOutputData {
     private double modifiedDuration = 0;
     private double accruedInterest = 0;
     private LocalDate valuationDate = null;
-
+    private double DV01 = 0.;
     /**
      * @return the accruedInterest
      */
@@ -101,5 +101,19 @@ public class BondOutputData extends MarketOutputData {
      */
     public void setValuationDate(LocalDate valuationDate) {
         this.valuationDate = valuationDate;
+    }
+    
+    /**
+     * @return the DV01
+     */
+    public double getDV01() {
+        return DV01;
+    }
+
+    /**
+     * @param DV01 the DV01 to set
+     */
+    public void setDV01(double DV01) {
+        this.DV01 = DV01;
     }
 }

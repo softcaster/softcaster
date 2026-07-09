@@ -43,16 +43,15 @@ public class FxFutureEvaluator extends AbstractEvaluator implements IPositionEva
         List<Currency> currencies = masterData.getCurrencyList();
         Calendar calendar = new Calendar(currencies);
         LocalDate valuationDate = calendar.getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays());
-        if (!isCalculated()) {
-            double mktPrice = mtmHelper.getSpotPrice(masterData.getIdMasterData(), RequestType.BID);
-            valuation.setTheoreticalPrice(mktPrice);
-            valuation.setMarketPrice(mktPrice);
-            valuation.setYtm(0.);
-            valuation.setDuration(0.);
-            valuation.setModDuration(0.);
-            valuation.setAccruedInterest(0.);
-            setCalculated(true);
-        }
+        double mktPrice = mtmHelper.getSpotPrice(masterData.getIdMasterData(), RequestType.BID);
+        valuation.setTheoreticalPrice(mktPrice);
+        valuation.setMarketPrice(mktPrice);
+        valuation.setYtm(0.);
+        valuation.setDuration(0.);
+        valuation.setModDuration(0.);
+        valuation.setAccruedInterest(0.);
+        setCalculated(true);
+
         valuation.setValuationDate(valuationDate);
 
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso

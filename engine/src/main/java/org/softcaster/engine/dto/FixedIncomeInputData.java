@@ -19,6 +19,7 @@ public class FixedIncomeInputData extends MarketInputData {
     /**
      * @return the frequency
      */
+    @Override
     public Frequency getFrequency() {
         return frequency;
     }

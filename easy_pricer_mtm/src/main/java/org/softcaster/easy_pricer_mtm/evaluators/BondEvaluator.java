@@ -100,34 +100,31 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
             return currentValuation;
         });
 
-        double mktPrice = valuation.getMarketPrice();
-        if (!isCalculated()) {
-            mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
+        double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
 
-            BondOutputData output = calculate(masterData, mktPrice, mtmHelper.getOfficialDate());
-            if (output != null) {
-                valuation.setMarketPrice(output.getMktPrice());
-                valuation.setYtm(output.getYtm());
-                valuation.setDuration(output.getDuration());
-                valuation.setModDuration(output.getModifiedDuration());
-                valuation.setAccruedInterest(output.getAccruedInterest());
-                valuation.setTheoreticalPrice(output.getMktPrice());
-                valuation.setValuationDate(output.getValuationDate());
-            }
-
-            // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
-            position.setMarketPrice(valuation.getMarketPrice());
-            position.setTheoreticalPrice(valuation.getMarketPrice());
-            position.setYtm(valuation.getYtm());
-            position.setDuration(valuation.getDuration());
-            position.setModDuration(valuation.getModDuration());
-
-            // Calcola il P&L non realizzato (questo è specifico della singola posizione!)
-            double unrealized = calcUnrealizedPL(valuation.getMarketPrice() * masterData.getMultiplier(), position);
-            position.setUnrealizedPnl(unrealized);
-
-            // Aggiorna il legame bidirezionale nell'anagrafica (opzionale, utile per JPA)
-            masterData.setInstrumentValuation(valuation);
+        BondOutputData output = calculate(masterData, mktPrice, mtmHelper.getOfficialDate());
+        if (output != null) {
+            valuation.setMarketPrice(output.getMktPrice());
+            valuation.setYtm(output.getYtm());
+            valuation.setDuration(output.getDuration());
+            valuation.setModDuration(output.getModifiedDuration());
+            valuation.setAccruedInterest(output.getAccruedInterest());
+            valuation.setTheoreticalPrice(output.getMktPrice());
+            valuation.setValuationDate(output.getValuationDate());
         }
+
+        // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
+        position.setMarketPrice(valuation.getMarketPrice());
+        position.setTheoreticalPrice(valuation.getMarketPrice());
+        position.setYtm(valuation.getYtm());
+        position.setDuration(valuation.getDuration());
+        position.setModDuration(valuation.getModDuration());
+
+        // Calcola il P&L non realizzato (questo è specifico della singola posizione!)
+        double unrealized = calcUnrealizedPL(valuation.getMarketPrice() * masterData.getMultiplier(), position);
+        position.setUnrealizedPnl(unrealized);
+
+        // Aggiorna il legame bidirezionale nell'anagrafica (opzionale, utile per JPA)
+        masterData.setInstrumentValuation(valuation);
     }
 }

@@ -22,7 +22,7 @@ public class AbstractEvaluator {
             capacity *= (-1.);
         }
 
-        double avgBuyPrice = 0.;
+        double avgBuyPrice = mktPrice;
         if (position.getBuyQty() > 0) {
             avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
         }

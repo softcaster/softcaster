@@ -14,8 +14,9 @@ import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.BondFutureMasterData;
+import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.DeliverableBonds;
-import org.softcaster.core.data.DeliverableBondsDAO;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.MasterDataDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,22 +26,11 @@ import org.springframework.stereotype.Service;
 public class DeliverableBondsImportMgr implements IImportMgr {
 
     @Autowired
-    DeliverableBondsDAO deliverableBondsDAO;
-
-    @Autowired
     MasterDataDAO masterDataDAO;
+    @Autowired
+    BondFutureMasterDataDAO bondFutureMasterDataDAO;
 
     public DeliverableBondsImportMgr() {
-    }
-
-    private int getIdMasterData(String isin) {
-
-        MasterData md = masterDataDAO.findByCode(isin);
-        if (md != null) {
-            return md.getIdMasterData();
-        } else {
-            return 0;
-        }
     }
 
     private java.sql.Date decodeDate(String date) {
@@ -64,7 +54,7 @@ public class DeliverableBondsImportMgr implements IImportMgr {
         Path path = Paths.get(IMPORT_PATH + "/deliverable_bonds.csv");
 
         ImportConfig config = new ImportConfig();
-        config.setSeparator(';');
+        config.setSeparator(',');
         config.setFilePath(path);
         config.setStartData(0);
         config.setCharset(StandardCharsets.UTF_8); // utf-8
@@ -82,30 +72,21 @@ public class DeliverableBondsImportMgr implements IImportMgr {
                 }
 
                 MasterData md = masterDataDAO.findByCode(s[1].trim());
-                if (md != null) {
-
-                }
-
-                idMasterData = getIdMasterData(s[1].trim());
-                if(idMasterData == 0)
-                    continue;
-                DeliverableBonds deliverable = deliverableBondsDAO.findByMasterDataAndIsin(idMasterData, s[3].trim()).orElse(new DeliverableBonds());
-                if (deliverable.getIdDeliverableBonds() != null && deliverable.getIdDeliverableBonds() > 0) {
-                    deliverable.setBondCf(Converter.toDouble(s[6].trim(), false));
-                } else {                    
+                if (md instanceof BondFutureMasterData bfmd) {
+                    DeliverableBonds deliverable = new DeliverableBonds();
                     deliverable.setMasterData(idMasterData);
                     deliverable.setBondCf(Converter.toDouble(s[6].trim(), false));
                     deliverable.setExpirationDate(decodeDate(s[2].trim()));
                     deliverable.setIsin(s[3].trim());
                     deliverable.setCouponRate(Converter.toDouble(s[4].trim(), false));
                     deliverable.setBondMaturity(decodeDate(s[5].trim()));
+                    bfmd.getDeliverables().add(deliverable);
+                    bondFutureMasterDataDAO.saveOrUpdate(bfmd);
                 }
-                
-                deliverableBondsDAO.saveOrUpdate(deliverable);
 
                 // 2. Aggiorna il progresso ogni X righe o calcola la percentuale
                 int percent = (int) ((current / (double) total) * 100);
-                progressInfo.updateProgress("Importing " + s[3].trim() + " (" + current + "/" + total + ")", percent);            
+                progressInfo.updateProgress("Importing " + s[3].trim() + " (" + current + "/" + total + ")", percent);
                 current++;
             }
 

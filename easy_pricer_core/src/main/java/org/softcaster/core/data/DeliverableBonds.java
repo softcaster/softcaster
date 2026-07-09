@@ -19,8 +19,8 @@ public class DeliverableBonds implements Serializable {
 
     @Id
     @SequenceGenerator(name = "deliverable_bonds_seq", sequenceName = "deliverable_bonds_s", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "deliverable_bonds_seq")
-    @Column(name = "id_deliverable_bonds", columnDefinition = "INTEGER")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "deliverable_bonds_seq")
+    @Column(name = "id_deliverable_bonds")
     private Integer idDeliverableBonds;
 
     @Column(name = "master_data", insertable = false, updatable = false)
