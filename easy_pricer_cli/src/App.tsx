@@ -8,7 +8,7 @@ import { Button } from 'primereact/button';
 import { ActionProvider, useActions } from './context/ActionContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import {
-  navigationNodes, ForexView, FxFutureView, HomeView, PlaceholderView,
+  navigationNodes, ForexView, FxFutureView, CmdFutureView, HomeView, PlaceholderView,
   BondView, XNoteView, BondPView, BondFutureView, BondFuturePView, PositionProspectView
 } from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
@@ -188,6 +188,7 @@ const MainLayout = () => {
               <Route path="/" element={<HomeView />} />
               <Route path="/forex" element={<ForexView />} />
               <Route path="/fxfuture" element={<FxFutureView />} />
+              <Route path="/cmdfuture" element={<CmdFutureView />} />
               <Route path="/bond" element={<BondView />} />
               <Route path="/xnote" element={<XNoteView />} />
               <Route path="/bond-p" element={<BondPView />} />

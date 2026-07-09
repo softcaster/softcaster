@@ -639,6 +639,7 @@ CREATE TABLE future_master_data (
     isin varchar(25) NOT NULL, -- isin contratto principale
     exchange_contract_code varchar(25) NOT NULL DEFAULT '',
     settlement_type integer NOT NULL,
+    last_trading_date date NOT NULL,
     CONSTRAINT fk_settlement_type FOREIGN KEY (settlement_type) REFERENCES settlement_type (id_settlement_type) ON DELETE NO ACTION ON UPDATE NO ACTION,
     PRIMARY KEY (id_master_data)
 );

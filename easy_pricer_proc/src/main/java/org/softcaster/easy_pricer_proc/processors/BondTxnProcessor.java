@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component("XRB")
-public class XBondTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
+public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
 
     @Autowired
     @Qualifier("bondPricer")

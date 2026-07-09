@@ -205,18 +205,10 @@ VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code =
     (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
 
 alter table financial_txn add column fx_rate numeric(15, 5) NOT NULL DEFAULT 1;
-alter table system_business_calendar add column currency integer  DEFAULT 1;
-alter table system_business_calendar add CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency);
 alter table system_business_calendar alter column calendar drop not null;
 alter table system_business_calendar alter column currency set not null;
 
-alter table ledger_balances drop column business_date;
-alter table ledger_balances drop column created_at;
-alter table ledger_balances add column updated_at timestamp NOT NULL DEFAULT now();
-
-alter table financial_txn add column txn_acct_phase integer NOT NULL DEFAULT 1;
-alter table financial_txn add CONSTRAINT fk_txn_acct_phase FOREIGN KEY (txn_acct_phase) REFERENCES txn_accounting_phase(acct_phase_id) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
-alter table position_txn_links add column price numeric(15, 5) NOT NULL;
-alter table position_txn_links add column fx_rate numeric(15, 5) NOT NULL;
+alter table future_master_data add column last_trading_date date;
+update future_master_data fmd set last_trading_date=(select md.maturity_date from master_data md where md.id_master_data=fmd.id_master_data);
+alter table future_master_data alter column last_trading_date set not null;
 

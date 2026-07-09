@@ -4,7 +4,7 @@ import type {
     Calendar, Holiday, Currency, Country, Issuer, SuperClass, AssetClass, MasterData, LoanMasterData, SecurityMasterData, CashFlowItem,
     CashFlowReset, SettlementType, FutureMasterData, BondFutureMasterData, DeliverableBonds, FxFutureMasterData, MmFutureMasterData,
     InstrumentQuote, InstrumentQuoteHist, ForexMasterData, CounterpartyType, Counterparty, PortfolioMasterData, PositionMasterData,
-    PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem
+    PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem,CmdFutureMasterData
 } from '../data/schema'
 import type {
     FinancialTxnDto, PositionProspectDto
@@ -931,6 +931,15 @@ export const fetchFxFutureMasterData = async (): Promise<FxFutureMasterData[]> =
         return await apiRequest<FxFutureMasterData[]>('/fx_future_master_data/r01', 'GET');
     } catch (error) {
         console.error('Failed to fetch fx_future_master_data:', error);
+        return [];
+    }
+};
+
+export const fetchCmdFutureMasterData = async (): Promise<CmdFutureMasterData[]> => {
+    try {
+        return await apiRequest<CmdFutureMasterData[]>('/cmd_future_master_data/r01', 'GET');
+    } catch (error) {
+        console.error('Failed to fetch cmd_future_master_data:', error);
         return [];
     }
 };

@@ -5,7 +5,7 @@
 package org.softcaster.easy_pricer_proc.processors;
 
 import java.math.BigDecimal;
-import org.softcaster.core.data.CmdFutureMasterData;
+import org.softcaster.core.data.BondFutureMasterData;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.PositionDetail;
@@ -13,8 +13,8 @@ import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.engine.enums.TxnComponentType;
 import org.springframework.stereotype.Component;
 
-@Component("CFU")
-public class CmdFutureTxnProcessor  extends AbstractTxnProcessor implements ITxnProcessor {
+@Component("BFU")
+public class BondFutureTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
 
     @Override
     protected boolean shortSellEnabled() {
@@ -23,14 +23,15 @@ public class CmdFutureTxnProcessor  extends AbstractTxnProcessor implements ITxn
 
     @Override
     public void process(FinancialTxn txn, PositionDetail position) {
-        CmdFutureMasterData cfmd = (CmdFutureMasterData) txn.getMasterData();
-        if (cfmd == null) {
+
+        BondFutureMasterData bfmd = (BondFutureMasterData) txn.getMasterData();
+        if (bfmd == null) {
             throw new TxnProcessingException("Invalid processor");
         }
 
         ProcInputData input = new ProcInputData();
-        input.setPrice(txn.getPrice() * cfmd.getMultiplier());
-        input.setQuantity(txn.getQuantity() * cfmd.getContractValue());
+        input.setPrice(txn.getPrice() * bfmd.getMultiplier());
+        input.setQuantity(txn.getQuantity() * bfmd.getContractValue());
         input.setSide(txn.getTxnSide());
         input.setStatus(txn.getTxnStatus());
 
@@ -38,10 +39,12 @@ public class CmdFutureTxnProcessor  extends AbstractTxnProcessor implements ITxn
 
         // Aggiungo component initial margin
         FinancialTxnComponent initialMargin = new FinancialTxnComponent();
-        initialMargin.setCurrency(cfmd.getCurrency());
+        initialMargin.setCurrency(bfmd.getCurrency());
         initialMargin.setDescription("Initial Margin txn: " + txn.getIdFinancialTxn());
         initialMargin.setComponentType(TxnComponentType.INITIAL_MARGIN);
-        initialMargin.setAmount(BigDecimal.valueOf(txn.getQuantity() * cfmd.getInitialMargin()));
+        initialMargin.setAmount(BigDecimal.valueOf(txn.getQuantity() * bfmd.getInitialMargin()));
         txn.addTxnComponent(initialMargin);
+
     }
+
 }

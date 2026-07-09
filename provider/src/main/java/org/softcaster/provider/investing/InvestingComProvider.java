@@ -14,6 +14,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -37,8 +39,10 @@ import org.softcaster.provider.interpreter.ProviderHelper;
  */
 public class InvestingComProvider extends AbstractProvider {
 
+    // https://www.widgets.investing.com/live-currency-cross-rates?cols=bid,ask,high,low&pairs=1,6,9,10,16,15
     private final String baseUrl = "https://www.investing.com/";
-    private final String currenciesUrl = baseUrl + "currencies/streaming-forex-rates-majors";
+    //private final String currenciesUrl = baseUrl + "currencies/streaming-forex-rates-majors";
+    private final String currenciesUrl = "https://www.widgets.investing.com/live-currency-cross-rates?cols=bid,ask,high,low&pairs=1,6,9,10,16,15";
     private final String itRatesUrl = baseUrl + "rates-bonds/italy-government-bonds";
     private final String usRatesUrl = baseUrl + "rates-bonds/usa-government-bonds";
 
@@ -214,6 +218,43 @@ public class InvestingComProvider extends AbstractProvider {
     /////////////////////////////////////////////////////////////////////////////////////
     // Forex
     /////////////////////////////////////////////////////////////////////////////////////
+    private void addCurrencyPair2(String bcy, String ccy) {
+        try {
+            String ric = bcy + "/" + ccy;
+            String[] base = response.split(ric);
+
+            Pattern pattern = Pattern.compile(">(\\d+\\.\\d+)<");
+            Matcher matcher = pattern.matcher(base[1]);
+
+            // Estrazione dei valori trovati
+            String bid = "";
+            String ask = "";
+            int cnt = 0;
+            while (matcher.find() && cnt < 2) {
+                switch (cnt) {
+                    case 0 -> {
+                        bid = matcher.group(1);
+                        cnt++;
+                    }
+                    case 1 -> {
+                        ask = matcher.group(1);
+                        cnt++;
+                    }
+                    default -> {
+                    }
+                }
+            }
+            double bidValue = Converter.toDouble(bid, false);
+            double askValue = Converter.toDouble(ask, false);
+            
+            Node node = new Node(bcy + ccy, null, new Data(bidValue, askValue), "", "");
+            addQuote(CURRENCIES, node);
+             
+        } catch (ParseException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+        }
+    }
+
     private void addCurrencyPair(String bcy, String ccy) {
         try {
             String ric = bcy + "/" + ccy;
@@ -233,12 +274,12 @@ public class InvestingComProvider extends AbstractProvider {
 
     private void parseResponseForex() {
 
-        addCurrencyPair("EUR", "USD");
-        addCurrencyPair("EUR", "CHF");
-        addCurrencyPair("EUR", "GBP");
-        addCurrencyPair("EUR", "JPY");
-        addCurrencyPair("EUR", "CAD");
-        addCurrencyPair("EUR", "AUD");
+        addCurrencyPair2("EUR", "USD");
+        addCurrencyPair2("EUR", "CHF");
+        addCurrencyPair2("EUR", "GBP");
+        addCurrencyPair2("EUR", "JPY");
+        addCurrencyPair2("EUR", "CAD");
+        addCurrencyPair2("EUR", "AUD");
     }
 
     @Override

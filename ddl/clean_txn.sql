@@ -7,8 +7,8 @@ delete from financial_txn_components;
 delete from financial_txn;
 delete from instrument_valuation;
 delete from instrument_valuation;
-delete from instrument_quote_hist;
-delete from instrument_quote;
+--delete from instrument_quote_hist;
+--delete from instrument_quote;
 
 ALTER SEQUENCE journal_entry_lines_s RESTART WITH 1;
 ALTER SEQUENCE journal_entries_s RESTART WITH 1;
@@ -17,5 +17,5 @@ ALTER SEQUENCE position_detail_s RESTART WITH 1;
 ALTER SEQUENCE position_txn_links_s RESTART WITH 1;
 ALTER SEQUENCE financial_txn_components_s RESTART WITH 1;
 ALTER SEQUENCE financial_txn_s RESTART WITH 1;
-ALTER SEQUENCE instrument_quote_s RESTART WITH 1;
-ALTER SEQUENCE instrument_quote_s RESTART WITH 1;
+--ALTER SEQUENCE instrument_quote_s RESTART WITH 1;
+--ALTER SEQUENCE instrument_quote_s RESTART WITH 1;

@@ -271,9 +271,21 @@ export interface DeliverableBonds {
 //----------------------------------------------------------------------
 // FxFutureMasterData
 //----------------------------------------------------------------------
-export interface FxFutureMasterData {
+export interface FxFutureMasterData extends FutureMasterData {
     idMasterData: number;
     underlying: ForexMasterData;
+    contractValue: number;
+    tickSize: number;
+    initialMargin: number;
+    maintenanceMargin: number;
+}
+
+//----------------------------------------------------------------------
+// CmdFutureMasterData
+//----------------------------------------------------------------------
+export interface CmdFutureMasterData extends FutureMasterData {
+    idMasterData: number;
+    commodityType: string;
     contractValue: number;
     tickSize: number;
     initialMargin: number;

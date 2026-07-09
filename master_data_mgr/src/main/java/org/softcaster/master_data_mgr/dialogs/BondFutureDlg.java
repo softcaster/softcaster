@@ -540,7 +540,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
             txtInitMargin.setText(Converter.fromDouble(bean.getBondFutureMasterData().getInitialMargin()));
             txtIssueDate.setText(new Date(bean.getBondFutureMasterData().getIssueDate()).toString());
             txtExpiryDate.setText(new Date(bean.getBondFutureMasterData().getMaturityDate()).toString());
-            txtLastTradingDate.setText(new Date(bean.getBondFutureMasterData().getMaturityDate()).toString());
+            txtLastTradingDate.setText(new Date(bean.getBondFutureMasterData().getLastTradingDate()).toString());
             txtContractCode.setText(bean.getBondFutureMasterData().getExchangeContractCode());
             cbCurrency.setSelectedItem(bean.getBondFutureMasterData().getCurrency());
             cbDaycount.setSelectedItem(bean.getBondFutureMasterData().getDaycount());
@@ -625,6 +625,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
             bfmd.setExchangeContractCode(txtContractCode.getText());
             bfmd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             bfmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
+            bfmd.setLastTradingDate(new Date(txtLastTradingDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             bfmd.setCurrency(currency);
             bfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());

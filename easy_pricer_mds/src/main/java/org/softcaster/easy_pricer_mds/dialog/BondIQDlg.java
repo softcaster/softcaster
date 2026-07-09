@@ -172,6 +172,11 @@ public class BondIQDlg extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         detailPanel.add(filler2, gridBagConstraints);
 
+        cbBond.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbBondActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -298,6 +303,13 @@ public class BondIQDlg extends javax.swing.JDialog {
     private void txtAskFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtAskFocusLost
         DialogHelper.textFieldDoubleFocusLost(txtAsk);
     }//GEN-LAST:event_txtAskFocusLost
+
+    private void cbBondActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbBondActionPerformed
+        // TODO add your handling code here:
+        if(cbBond.getSelectedItem() instanceof MasterData md) {
+            txtCode.setText(md.getCode());
+        }
+    }//GEN-LAST:event_cbBondActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

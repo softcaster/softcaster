@@ -17,12 +17,15 @@ public class EuronextTest {
     }
 
     private static void testEuronext() {
-        
         EuroNextProvider provider = EuroNextProvider.getInstance();
-        double value = provider.getBondQuote("IT0001086567").getData().bid();
+        double value = 0.;
+        /*
+        EuroNextProvider provider = EuroNextProvider.getInstance();
+        value = provider.getBondQuote("IT0001086567").getData().bid();
         System.out.println(value);
-        
-        String symbol = "IT0024832682@MBTP-DMIL?fOrO=F&md=01-06-2026";
+        */
+        //String symbol = "IT0024832682@MBTP-DMIL?fOrO=F&md=01-06-2026";
+        String symbol = "IT0025480929@MBTP-DMIL?fOrO=F&md=01-09-2026";
         provider = EuroNextProvider.getInstance();
         value = provider.getFutureQuote(symbol).getData().bid();
         System.out.println(value);

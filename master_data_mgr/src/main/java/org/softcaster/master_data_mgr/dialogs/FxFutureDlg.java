@@ -604,7 +604,7 @@ public class FxFutureDlg extends javax.swing.JDialog {
             txtInitMargin.setText(Converter.fromDouble(bean.getFxFutureMasterData().getInitialMargin()));
             txtIssueDate.setText(new Date(bean.getFxFutureMasterData().getIssueDate()).toString());
             txtExpiryDate.setText(new Date(bean.getFxFutureMasterData().getMaturityDate()).toString());
-            txtLastTradingDate.setText(new Date(bean.getFxFutureMasterData().getMaturityDate()).toString());
+            txtLastTradingDate.setText(new Date(bean.getFxFutureMasterData().getLastTradingDate()).toString());
             txtContractCode.setText(bean.getFxFutureMasterData().getExchangeContractCode());
             cbCurrency.setSelectedItem(bean.getFxFutureMasterData().getCurrency());
             cbDaycount.setSelectedItem(bean.getFxFutureMasterData().getDaycount());
@@ -695,6 +695,7 @@ public class FxFutureDlg extends javax.swing.JDialog {
             ffmd.setExchangeContractCode(txtContractCode.getText());
             ffmd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             ffmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
+            ffmd.setLastTradingDate(new Date(txtLastTradingDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             ffmd.setCurrency(currency);
             ffmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());

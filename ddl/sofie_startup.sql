@@ -288,6 +288,11 @@ INSERT INTO country(id_country,country_name,official_state_name,alfa_2_code,alfa
     VALUES (nextval('country_s'),'JP','Japan','JP','JPN',392,
     (SELECT id_currency FROM currency WHERE iso_code='JPY' LIMIT 1),
     (SELECT id_calendar FROM calendar WHERE code='USD' LIMIT 1));
+INSERT INTO country(id_country,country_name,official_state_name,alfa_2_code,alfa_3_code,country_numeric_code,
+    currency,calendar) 
+    VALUES (nextval('country_s'),'DEU','Germany','DE','DEU',276,
+    (SELECT id_currency FROM currency WHERE iso_code='EUR' LIMIT 1),
+    (SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1));
 
 -- ----------------------------------------------------------------------------
 -- issuer

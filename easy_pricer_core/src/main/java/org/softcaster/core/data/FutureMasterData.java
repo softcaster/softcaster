@@ -23,6 +23,9 @@ public class FutureMasterData extends MasterData {
     @JoinColumn(name = "settlement_type", nullable = true)
     private SettlementType settlementType;
 
+    @Column(name = "last_trading_date")
+    private java.sql.Date lastTradingDate;
+    
     public String getIsin() {
         return isin;
     }
@@ -59,5 +62,17 @@ public class FutureMasterData extends MasterData {
         this.exchangeContractCode = exchangeContractCode;
     }
     
-    
+    /**
+     * @return the lastTradingDate
+     */
+    public java.sql.Date getLastTradingDate() {
+        return lastTradingDate;
+    }
+
+    /**
+     * @param lastTradingDate the lastTradingDate to set
+     */
+    public void setLastTradingDate(java.sql.Date lastTradingDate) {
+        this.lastTradingDate = lastTradingDate;
+    }
 }

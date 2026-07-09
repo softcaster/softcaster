@@ -20,11 +20,6 @@ public class InvestingComTest {
         double bid = provider.getCurrencyQuote("EURUSD").getData().bid();
         double ask = provider.getCurrencyQuote("EURUSD").getData().ask();
         System.out.println(bid + "\t" + ask);
-
-        bid = provider.getCurrencyQuote("EURUSD").getData().bid();
-        ask = provider.getCurrencyQuote("EURUSD").getData().ask();
-        System.out.println(bid + "\t" + ask);
-
     }
 
     private static void testItaYieldCurves() {
@@ -53,10 +48,13 @@ public class InvestingComTest {
         // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
         FileUtil.initializePython();
 
+        testCurrencyPairs();
+        /*
         System.out.println("########## IT Yield Curve ##########");
         testItaYieldCurves();
         System.out.println("");
         System.out.println("########## US Yield Curve ##########");
         testUsaYieldCurves();
+        */
     }
 }

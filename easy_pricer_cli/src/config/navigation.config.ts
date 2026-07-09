@@ -4,6 +4,7 @@ import type { TreeNode } from 'primereact/treenode';
 // 1. Definiamo i Lazy Components (le importazioni rimangono qui)
 export const ForexView = lazy(() => import('../components/views/ForexView'));
 export const FxFutureView = lazy(() => import('../components/views/FxFutureView'));
+export const CmdFutureView = lazy(() => import('../components/views/CmdFutureView'));
 export const HomeView = lazy(() => import('../components/views/HomeView'));
 export const PlaceholderView = lazy(() => import('../components/views/PlaceholderView'));
 export const BondView = lazy(() => import('../components/views/BondView.tsx'));
@@ -46,6 +47,15 @@ export const navigationNodes: TreeNode[] = [
           { key: 'bond-key', label: 'X Bonds', /*icon: 'pi pi-fw pi-building',*/ data: '/bond' },
           { key: 'xnote-key', label: 'X Rate notes', /*icon: 'pi pi-fw pi-building',*/ data: '/xnote' },
           { key: 'bondfuture-key', label: 'Bond Futures', /*icon: 'pi pi-fw pi-building',*/ data: '/bondfuture' }
+        ]
+      },
+      {
+        key: 'commodity',
+        label: 'Commodities',
+        //icon: 'pi pi-fw pi-briefcase',
+        children: [
+          { key: 'cmd-key', label: 'Commodities', /*icon: 'pi pi-fw pi-building',*/ data: '/bond' },
+          { key: 'cmdfuture-key', label: 'Commodities Futures', /*icon: 'pi pi-fw pi-building',*/ data: '/cmdfuture' }
         ]
       }
     ]

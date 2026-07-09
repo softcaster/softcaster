@@ -6,7 +6,7 @@ import { DEFAULT_TXN_DTO } from '../services/dto';
 
 const BondFutureView = () => (
     <GenericAssetView
-        assetClass="FFU"
+        assetClass="BFU"
         fetchMasterData={fetchBondFutureMasterData}
         defaultTxn={DEFAULT_TXN_DTO}
         FormComponent={BondFutureForm}
