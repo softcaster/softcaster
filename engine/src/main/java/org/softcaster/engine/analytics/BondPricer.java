@@ -7,8 +7,8 @@ package org.softcaster.engine.analytics;
 import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
-import org.softcaster.engine.dto.BondInputData;
-import org.softcaster.engine.dto.BondOutputData;
+import org.softcaster.engine.dto.XRBInputData;
+import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
@@ -68,7 +68,7 @@ public class BondPricer extends AbstractFixedIncomePricer {
         return solveInternalRateOfReturn(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency);
     }
 
-    public double calculateModifiedDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
+    public double calculateMacaulayDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
         double dirtyPrice = 0.0;
         double weightedSum = 0.0;
 
@@ -89,12 +89,21 @@ public class BondPricer extends AbstractFixedIncomePricer {
             weightedSum += t * pv;
         }
 
-        double macaulayDuration = weightedSum / dirtyPrice;
+        if (dirtyPrice <= 0.) {
+            return 0.;
+        } else {
+            return (weightedSum / dirtyPrice);
+        }
+    }
+
+    public double calculateModifiedDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
+
+        double macaulayDuration = calculateMacaulayDuration(flows, ytm, valuationDate, dcb, freq);
 
         // 2. Calcolo Modified Duration
         // Nota: per i bond la formula standard usa la capitalizzazione composta annua 
         // o legata alla frequenza (k). Per i BTP si usa spesso k=1 o k=frequenza.
-        int k = freq.getYearFraction();
+        int k = freq.getYearFraction() > 0 ? freq.getYearFraction() : 1;
         return macaulayDuration / (1 + (ytm / k));
     }
 
@@ -118,11 +127,11 @@ public class BondPricer extends AbstractFixedIncomePricer {
         return weightedSum / (dirtyPrice * Math.pow(1 + ytm, 2));
     }
 
-    public BondOutputData calculate(BondInputData input) {
-        BondOutputData output = new BondOutputData();
+    public XRBOutputData calculate(XRBInputData input) {
+        XRBOutputData output = new XRBOutputData();
 
         // ytm
-        output.setYtm(calculateYtm(input.getFlows(), input.getSpotPrice(), input.getValuationDate(),
+        output.setYtm(calculateYtm(input.getFlows(), input.getReferencePrice(), input.getValuationDate(),
                 input.getDaycount(), input.getCompounding(), input.getFrequency()));
 
         // accruals 
@@ -134,10 +143,10 @@ public class BondPricer extends AbstractFixedIncomePricer {
                 input.getDaycount(), input.getFrequency()));
 
         output.setValuationDate(input.getValuationDate());
-        output.setMktPrice(input.getSpotPrice());
-        
-        double DV01 = output.getMktPrice() * output.getModifiedDuration() * 0.0001;
-        output.setDV01(DV01);
+        output.setMktPrice(input.getReferencePrice());
+
+        double dv01 = output.getMktPrice() * output.getModifiedDuration() * 0.0001;
+        output.setDv01(dv01);
         return output;
     }
     /*

@@ -10,15 +10,15 @@ import java.time.LocalDate;
  *
  * @author softc
  */
-public class BondOutputData extends MarketOutputData {
+public class XRBOutputData extends MarketOutputData {
 
-    private double mktPrice = 0;
-    private double duration = 0;
-    private double ytm = 0;
-    private double modifiedDuration = 0;
-    private double accruedInterest = 0;
+    private double mktPrice = 0.;
+    private double duration = 0.;
+    private double ytm = 0.;
+    private double modifiedDuration = 0.;
+    private double macaulayDuration = 0.;
+    private double accruedInterest = 0.;
     private LocalDate valuationDate = null;
-    private double DV01 = 0.;
     /**
      * @return the accruedInterest
      */
@@ -104,16 +104,16 @@ public class BondOutputData extends MarketOutputData {
     }
     
     /**
-     * @return the DV01
+     * @return the macaulayDuration
      */
-    public double getDV01() {
-        return DV01;
+    public double getMacaulayDuration() {
+        return macaulayDuration;
     }
 
     /**
-     * @param DV01 the DV01 to set
+     * @param macaulayDuration the macaulayDuration to set
      */
-    public void setDV01(double DV01) {
-        this.DV01 = DV01;
+    public void setMacaulayDuration(double macaulayDuration) {
+        this.macaulayDuration = macaulayDuration;
     }
 }

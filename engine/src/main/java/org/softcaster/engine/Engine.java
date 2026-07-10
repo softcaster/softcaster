@@ -107,7 +107,7 @@ public class Engine {
 
         input.setDomesticRate(0.05);
         input.setForeignRate(0.03);
-        input.setSpotPrice(1.1);
+        input.setUnderlyingReferencePrice(1.1);
         input.setDaycount(DaycountBasis.ACT_365);
         OptionData od = new OptionData(1.1, 0.1, OptionStyle.EUROPEAN, OptionType.CALL);
         input.setOptionData(od);
@@ -129,7 +129,7 @@ public class Engine {
 
         input.setDomesticRate(0.05);
         input.setForeignRate(0.03);
-        input.setSpotPrice(1.1);
+        input.setUnderlyingReferencePrice(1.1);
         input.setDaycount(DaycountBasis.ACT_365);
         OptionData od = new OptionData(1.1, 0.1, OptionStyle.EUROPEAN, OptionType.CALL);
         input.setOptionData(od);
@@ -144,7 +144,7 @@ public class Engine {
         input.setValuationDate(settlement);
         LocalDate maturity = LocalDate.of(2027, 5, 11);
         input.setMaturityDate(maturity);
-        input.setSpotPrice(101.);
+        input.setUnderlyingReferencePrice(101.);
         input.setDaycount(DaycountBasis.ACT_365);
         OptionData od = new OptionData(100., 0.2, OptionStyle.EUROPEAN, OptionType.CALL);
         input.setOptionData(od);
@@ -225,13 +225,13 @@ public class Engine {
 
         input.setDomesticRate(0.05);
         input.setForeignRate(0.03);
-        input.setSpotPrice(1.1);
+        input.setUnderlyingReferencePrice(1.1);
         input.setDaycount(DaycountBasis.ACT_365);
         input.setCompounding(Compounding.SIMPLE);
 
         double F = fxForwardPricer.forwardPrice(input);
         System.out.println(F);
-        System.out.println((F - input.getSpotPrice()) * 10000);
+        System.out.println((F - input.getUnderlyingReferencePrice()) * 10000);
     }
 
     private void testBondForwardPricer() {

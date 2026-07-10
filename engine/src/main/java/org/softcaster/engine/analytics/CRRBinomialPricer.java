@@ -32,7 +32,7 @@ public class CRRBinomialPricer implements IOptionPricer<FxOptionInputData> {
 
     private double price(FxOptionInputData input) {
 
-        double S = input.getSpotPrice();
+        double S = input.getUnderlyingReferencePrice();
         double K = input.getStrike();
         double T = OptionUtil.getTimeToMaturity(input);
 

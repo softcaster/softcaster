@@ -12,6 +12,10 @@ import org.softcaster.engine.curve.YieldCurve;
  * @author softc
  */
 public class ForwardBaseInputData extends MarketInputData {
+    
+    // Prezzo sottostante
+    private double underlyingReferencePrice;
+    
     // 1) in generale tasso free-risk
     // 2) In caso di fx, rappresenta il tasso free-risk della ccy
     private double domesticRate = 0; 
@@ -95,5 +99,19 @@ public class ForwardBaseInputData extends MarketInputData {
      */
     public void setForeignRateCurve(YieldCurve foreignRateCurve) {
         this.foreignRateCurve = foreignRateCurve;
+    }
+
+    /**
+     * @return the underlyingReferencePrice
+     */
+    public double getUnderlyingReferencePrice() {
+        return underlyingReferencePrice;
+    }
+
+    /**
+     * @param underlyingReferencePrice the underlyingReferencePrice to set
+     */
+    public void setUnderlyingReferencePrice(double underlyingReferencePrice) {
+        this.underlyingReferencePrice = underlyingReferencePrice;
     }
 }

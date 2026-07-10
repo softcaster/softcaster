@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("masterDataDAO")
-public class MasterDataDAO {
+    public class MasterDataDAO {
 
     private final MasterDataRepository repository;
 

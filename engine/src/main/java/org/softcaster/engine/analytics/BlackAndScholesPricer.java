@@ -23,7 +23,7 @@ public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData>
     public OptionOutputData priceCall(BondOptionInputData input) {
         OptionOutputData output = new OptionOutputData();
         double t = OptionUtil.getTimeToMaturity(input);
-        double s = input.getSpotPrice();
+        double s = input.getUnderlyingReferencePrice();
         double k = input.getStrike();
         double r = input.getDomesticRate();
         double vol = input.getVolatility();
@@ -61,7 +61,7 @@ public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData>
         double t = OptionUtil.getTimeToMaturity(input);
         double r = input.getDomesticRate();
         double k = input.getStrike();
-        double s = input.getSpotPrice();
+        double s = input.getUnderlyingReferencePrice();
 
         if (t <= 0) {
             output.setPrice((k - s > 0 ? (k - s) : 0));
@@ -91,7 +91,7 @@ public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData>
     public double calculateImpliedVolatility(BondOptionInputData input, double targetPrice, OptionType type) {
 
         //double t = OptionUtil.getTimeToMaturity(input);
-        double s = input.getSpotPrice();
+        double s = input.getUnderlyingReferencePrice();
         double k = input.getStrike();
         // 1. Validazione finanziaria preventiva
         double intrinsicValue = type == OptionType.CALL ? Math.max(0, s - k) : Math.max(0, k - s);
@@ -144,7 +144,7 @@ public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData>
     // Metodo di supporto per il cloning dei dati di input
     private BondOptionInputData cloneInput(BondOptionInputData src) {
         BondOptionInputData dest = new BondOptionInputData();
-        dest.setSpotPrice(src.getSpotPrice());
+        dest.setUnderlyingReferencePrice(src.getUnderlyingReferencePrice());
         dest.setOptionData(src.getOptionData());
         dest.setDomesticRate(src.getDomesticRate());
         dest.setValuationDate(src.getValuationDate());

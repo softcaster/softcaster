@@ -62,7 +62,7 @@ public class TestMarketDataService {
         ForwardBaseInputData input = new ForwardBaseInputData();
         input.setForeignRateCurve(foreignYC);
         input.setDomesticRateCurve(domesticYC);
-        input.setSpotPrice(marketDataService.getSpotPrice("EURUSD", RequestType.BID));
+        input.setUnderlyingReferencePrice(marketDataService.getSpotPrice("EURUSD", RequestType.BID));
         input.setValuationDate(LocalDate.now());
         input.setMaturityDate(LocalDate.of(2026, 06, 05));
         

@@ -13,7 +13,7 @@ import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
 import org.softcaster.easy_pricer_srv.dto.ForwardPricingRequest;
 import org.softcaster.easy_pricer_srv.dto.PricingRequest;
 import org.softcaster.easy_pricer_srv.util.CommonData;
-import org.softcaster.engine.dto.BondOutputData;
+import org.softcaster.engine.dto.XRBOutputData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,7 +73,7 @@ public class HelperController {
     @SuppressWarnings("unchecked")
     public ResponseEntity getBondsData() {
         if (bondCalculator != null) {
-            List<BondOutputData> output = bondCalculator.bondsValuation();
+            List<XRBOutputData> output = bondCalculator.bondsValuation();
             if (output != null) {
                 return new ResponseEntity(output, HttpStatus.OK);
             } else {

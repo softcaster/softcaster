@@ -16,7 +16,7 @@ public class Black76Pricer implements IOptionPricer<FxOptionInputData> {
 
     private OptionOutputData price(FxOptionInputData input) {
         // F = Prezzo Forward o Future del sottostante
-        double F = input.getSpotPrice(); // Nota che questo e'un prezzo Forward/Futures
+        double F = input.getUnderlyingReferencePrice(); // Nota che questo e'un prezzo Forward/Futures
         double K = input.getStrike();
         double r = input.getDomesticRate();
         double sigma = input.getVolatility();

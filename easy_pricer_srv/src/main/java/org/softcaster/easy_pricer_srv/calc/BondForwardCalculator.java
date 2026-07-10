@@ -17,7 +17,7 @@ import org.softcaster.easy_pricer_srv.dto.ForwardPricingResponse;
 import org.softcaster.easy_pricer_srv.dto.ForwardPricingRequest;
 import org.softcaster.engine.analytics.BondForwardPricer;
 import org.softcaster.engine.cashflow.CashFlow;
-import org.softcaster.engine.dto.BondForwardInputData;
+import org.softcaster.engine.dto.XRBForwardInputData;
 import org.softcaster.engine.dto.MarketOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
@@ -58,8 +58,8 @@ public class BondForwardCalculator {
         CTDData ctdData = getCTD(request);
         if (ctdData != null && !ctdData.underlyingIsin.isBlank()) {
 
-            BondForwardInputData input = new BondForwardInputData();
-            input.setSpotPrice(ctdData.cleanSpotPrice);
+            XRBForwardInputData input = new XRBForwardInputData();
+            input.setUnderlyingReferencePrice(ctdData.cleanSpotPrice);
             input.setValuationDate(request.referenceDate.toLocalDate());
             input.setDaycount(ctdData.accrualDaycount);
             input.setDomesticRate(request.domesticRate);

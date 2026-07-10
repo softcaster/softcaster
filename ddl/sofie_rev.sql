@@ -212,3 +212,5 @@ alter table future_master_data add column last_trading_date date;
 update future_master_data fmd set last_trading_date=(select md.maturity_date from master_data md where md.id_master_data=fmd.id_master_data);
 alter table future_master_data alter column last_trading_date set not null;
 
+alter table instrument_valuation add column dv01 numeric(15, 5) NOT NULL DEFAULT 0;
+

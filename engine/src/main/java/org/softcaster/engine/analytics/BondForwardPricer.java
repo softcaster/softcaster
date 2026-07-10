@@ -7,8 +7,8 @@ package org.softcaster.engine.analytics;
 import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
-import org.softcaster.engine.dto.BondForwardInputData;
-import org.softcaster.engine.dto.MarketOutputData;
+import org.softcaster.engine.dto.XRBForwardInputData;
+import org.softcaster.engine.dto.XRBForwardOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
@@ -20,9 +20,9 @@ import org.softcaster.engine.math.MathUtil;
  */
 public class BondForwardPricer {
 
-    public MarketOutputData calculateForwardPrice(BondForwardInputData input) {
+    public XRBForwardOutputData calculateForwardPrice(XRBForwardInputData input) {
 
-        MarketOutputData output = new MarketOutputData();
+        XRBForwardOutputData output = new XRBForwardOutputData();
         LocalDate settlement = input.getValuationDate();
         double shortRate = input.getDomesticRate();
         LocalDate maturity = input.getMaturityDate();
@@ -31,7 +31,7 @@ public class BondForwardPricer {
         DaycountBasis daycount = input.getDaycount();
         Frequency frequency = input.getFrequency();
         Compounding compounding = input.getCompounding();
-        double cleanSpotPrice = input.getSpotPrice();
+        double cleanSpotPrice = input.getUnderlyingReferencePrice();
         double cf = input.getConversionFactor();
 
         double forwardPrice = calculateTheoreticalFuturePrice(

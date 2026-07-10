@@ -17,8 +17,8 @@ import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
-import org.softcaster.engine.dto.BondInputData;
-import org.softcaster.engine.dto.BondOutputData;
+import org.softcaster.engine.dto.XRBInputData;
+import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.TxnComponentType;
 import static org.softcaster.engine.enums.TxnSide.BUY;
@@ -62,15 +62,15 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
 
         Calendar calendar = new Calendar(smd.getCurrency());
         LocalDate valuationDate = calendar.getNextBusinessDate(txn.getTradeDate().toLocalDate(), smd.getBusinessDays());
-        BondInputData bondInputData = new BondInputData();
-        bondInputData.setSpotPrice(txn.getPrice());
+        XRBInputData bondInputData = new XRBInputData();
+        bondInputData.setReferencePrice(txn.getPrice());
         bondInputData.setValuationDate(valuationDate);
         bondInputData.setCompounding(Compounding.COMPOUNDED);
         bondInputData.setDaycount(smd.getAccrualDaycount());
         bondInputData.setFrequency(smd.getFrequency());
         List<CashFlow> flows = getFlows(smd.getCashFlows());
         bondInputData.setFlows(flows);
-        BondOutputData bondOutputData = bondPricer.calculate(bondInputData);
+        XRBOutputData bondOutputData = bondPricer.calculate(bondInputData);
 
         // Per accrual stessa gestione di quantity e notionalValue
         // Se transazione cancellata o modificata, inverto quantita, 

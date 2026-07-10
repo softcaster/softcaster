@@ -422,6 +422,7 @@ CREATE TABLE instrument_valuation(
     duration numeric(15, 5) NOT NULL DEFAULT 0, -- duration 
     mod_duration numeric(15, 5) NOT NULL DEFAULT 0, -- modified duration
     theoretical_price numeric(15, 5) NOT NULL DEFAULT 0, -- prezzo teorico
+    dv01 numeric(15, 5) NOT NULL DEFAULT 0, -- dv01
     -- corrisponde a official date del sistema. Da questa si calcola settlement 
     -- aggiungendo business days
     valuation_date date NOT NULL DEFAULT NOW(), 

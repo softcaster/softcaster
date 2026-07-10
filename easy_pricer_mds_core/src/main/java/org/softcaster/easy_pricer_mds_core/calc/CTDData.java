@@ -18,5 +18,6 @@ public class CTDData {
     public DaycountBasis accrualDaycount = null;
     public Frequency frequency = null;
     public double cleanSpotPrice = 0;
-    
+    public double netBasis = 0;
+    public double irr = 0;
 }

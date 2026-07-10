@@ -17,8 +17,8 @@ import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
 import org.softcaster.engine.analytics.BondPricer;
-import org.softcaster.engine.dto.BondInputData;
-import org.softcaster.engine.dto.BondOutputData;
+import org.softcaster.engine.dto.XRBInputData;
+import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.utils.DateParser;
 
@@ -327,8 +327,8 @@ public class BondPricerDlg extends javax.swing.JDialog {
         try {
             refPrice = Converter.toDouble(txtRefPrice.getText(), false);
             LocalDate refDate = DateParser.parse(txtRefDate.getText());
-            BondInputData input = new BondInputData();
-            input.setSpotPrice(refPrice);
+            XRBInputData input = new XRBInputData();
+            input.setReferencePrice(refPrice);
             input.setValuationDate(refDate);
             input.setFrequency(bean.getInstrumentQuote().getMasterData().getFrequency());
             input.setCompounding(Compounding.COMPOUNDED);
@@ -338,7 +338,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
             input.setFlows(cashFlow(bean.getInstrumentQuote().getMasterData()));
             
             BondPricer bondPricer = mDSFacade.getBondPricer();
-            BondOutputData output = bondPricer.calculate(input);
+            XRBOutputData output = bondPricer.calculate(input);
             txtAccrued.setText(Converter.fromDouble(output.getAccruedInterest()));
             txtYield.setText(Converter.fromDouble(output.getYtm()));
             txtModDuration.setText(Converter.fromDouble(output.getModifiedDuration()));

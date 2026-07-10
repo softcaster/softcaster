@@ -24,7 +24,7 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
     public OptionOutputData priceCall(FxOptionInputData input) {
         OptionOutputData output = new OptionOutputData();
         double t = OptionUtil.getTimeToMaturity(input);
-        double s = input.getSpotPrice();
+        double s = input.getUnderlyingReferencePrice();
         double k = input.getStrike();
         double rd = input.getDomesticRate(); // Domestic
         double rf = input.getForeignRate(); // Foreign
@@ -62,7 +62,7 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
         OptionOutputData output = new OptionOutputData();
 
         double t = OptionUtil.getTimeToMaturity(input);
-        double s = input.getSpotPrice();
+        double s = input.getUnderlyingReferencePrice();
         double k = input.getStrike();
         double rd = input.getDomesticRate(); // Domestic Rate (es. USD)
         double rf = input.getForeignRate(); // Foreign Rate (es. EUR)
@@ -151,7 +151,7 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
     // Metodo di supporto per il cloning dei dati di input
     private FxOptionInputData cloneInput(FxOptionInputData src) {
         FxOptionInputData dest = new FxOptionInputData();
-        dest.setSpotPrice(src.getSpotPrice());
+        dest.setUnderlyingReferencePrice(src.getUnderlyingReferencePrice());
         dest.setOptionData(src.getOptionData());
         dest.setDomesticRate(src.getDomesticRate()); // Domestic
         dest.setForeignRate(src.getForeignRate()); // Foreign

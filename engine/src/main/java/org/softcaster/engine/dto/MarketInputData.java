@@ -11,25 +11,13 @@ import org.softcaster.engine.enums.Frequency;
 
 public abstract class MarketInputData implements IMarketInputData{
 
-    private double spotPrice;      // Prezzo attuale (Cambio FX, Stock Price o Bond Clean Price)
-    private LocalDate valuationDate; // Data "As-of"
+    private String code;      // ISIN
+    private double referencePrice;      // Prezzo attuale (Cambio FX, Stock Price o Bond Clean Price)
+    private LocalDate referenceDate; // Data "As-of"
+    private LocalDate valuationDate; 
     private DaycountBasis daycount;
     private Frequency Frequency; // Necessaria se daycount ACT_ACT_ICMA
     private Compounding compounding;
-
-    /**
-     * @return the spotPrice
-     */
-    public double getSpotPrice() {
-        return spotPrice;
-    }
-
-    /**
-     * @param spotPrice the spotPrice to set
-     */
-    public void setSpotPrice(double spotPrice) {
-        this.spotPrice = spotPrice;
-    }
 
     /**
      * @return the valuationDate
@@ -86,5 +74,46 @@ public abstract class MarketInputData implements IMarketInputData{
     public void setFrequency(Frequency Frequency) {
         this.Frequency = Frequency;
     }
-    
+
+    /**
+     * @return the code
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * @param code the code to set
+     */
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    /**
+     * @return the referenceDate
+     */
+    public LocalDate getReferenceDate() {
+        return referenceDate;
+    }
+
+    /**
+     * @param referenceDate the referenceDate to set
+     */
+    public void setReferenceDate(LocalDate referenceDate) {
+        this.referenceDate = referenceDate;
+    }
+
+    /**
+     * @return the referencePrice
+     */
+    public double getReferencePrice() {
+        return referencePrice;
+    }
+
+    /**
+     * @param referencePrice the referencePrice to set
+     */
+    public void setReferencePrice(double referencePrice) {
+        this.referencePrice = referencePrice;
+    }
 }

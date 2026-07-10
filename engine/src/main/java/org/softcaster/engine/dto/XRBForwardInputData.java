@@ -11,7 +11,7 @@ import org.softcaster.engine.cashflow.CashFlow;
  *
  * @author softc
  */
-public class BondForwardInputData extends ForwardBaseInputData {
+public class XRBForwardInputData extends ForwardBaseInputData {
     
     // Lista cedole sottostante
     private List<CashFlow> underliyngCashFlows = null;

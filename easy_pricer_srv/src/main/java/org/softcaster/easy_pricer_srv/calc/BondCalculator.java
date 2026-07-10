@@ -17,8 +17,8 @@ import org.softcaster.easy_pricer_srv.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
-import org.softcaster.engine.dto.BondInputData;
-import org.softcaster.engine.dto.BondOutputData;
+import org.softcaster.engine.dto.XRBInputData;
+import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
@@ -46,11 +46,11 @@ public class BondCalculator {
         if (smdDAO != null) {
             SecurityMasterData securityMasterData = smdDAO.findByIsin(request.isin);
             if (securityMasterData != null) {
-                BondInputData input = new BondInputData();
+                XRBInputData input = new XRBInputData();
                 Calendar calendar = new Calendar(securityMasterData.getCurrency());
                 LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, securityMasterData.getBusinessDays());
                 input.setValuationDate(valuationDate);
-                input.setSpotPrice(request.referencePrice);
+                input.setReferencePrice(request.referencePrice);
                 input.setFrequency(Frequency.fromCode(securityMasterData.getFrequency().getCode()));
                 //input.setDaycount(DaycountBasis.fromCode(securityMasterData.getDaycount().getCode(
                 input.setDaycount(DaycountBasis.ACT_365);
@@ -74,7 +74,7 @@ public class BondCalculator {
                     input.setFlows(flows);
                 }
 
-                BondOutputData output = bondPricer.calculate(input);
+                XRBOutputData output = bondPricer.calculate(input);
                 if (output != null) {
                     response = new BondPricingResponse();
                     response.accruedInterest = output.getAccruedInterest();
@@ -91,14 +91,14 @@ public class BondCalculator {
         return response;
     }
     
-    public List<BondOutputData> bondsValuation() {
-        List<BondOutputData> bondList = new ArrayList<>();
+    public List<XRBOutputData> bondsValuation() {
+        List<XRBOutputData> bondList = new ArrayList<>();
         BondPricingRequest request = new BondPricingRequest();
         org.softcaster.commons.types.Date referenceDate = new org.softcaster.commons.types.Date();
         //dbProvider.refresh(referenceDate.sqlDate());
 
         // Lista bond su db
-        BondOutputData output = null;
+        XRBOutputData output = null;
         List<SecurityMasterData> securitiesList = smdDAO.findAll();
         for (SecurityMasterData bond : securitiesList) {
             /*

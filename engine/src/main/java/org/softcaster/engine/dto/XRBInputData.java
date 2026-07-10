@@ -12,7 +12,7 @@ import org.softcaster.engine.enums.Frequency;
  *
  * @author ep
  */
-public class BondInputData extends MarketInputData {
+public class XRBInputData extends MarketInputData {
 
     private List<CashFlow> flows;
     private Frequency frequency;

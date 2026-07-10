@@ -17,8 +17,8 @@ import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
-import org.softcaster.engine.dto.BondInputData;
-import org.softcaster.engine.dto.BondOutputData;
+import org.softcaster.engine.dto.XRBInputData;
+import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.provider.enums.RequestType;
@@ -33,8 +33,8 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
     @Qualifier("bondPricer") // Indica a Spring esattamente QUALE bean usare
     private BondPricer bondPricer;
 
-    private BondOutputData calculate(MasterData masterData, double mktPrice, LocalDate officialDate) {
-        BondOutputData output = null;
+    private XRBOutputData calculate(MasterData masterData, double mktPrice, LocalDate officialDate) {
+        XRBOutputData output = null;
 
         if (masterData != null) {
             if (masterData instanceof SecurityMasterData smd) {
@@ -45,9 +45,9 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
                     Calendar calendar = new Calendar(currencies);
                     valuationDate = calendar.getNextBusinessDate(officialDate, smd.getBusinessDays());
 
-                    BondInputData input = new BondInputData();
+                    XRBInputData input = new XRBInputData();
                     input.setValuationDate(valuationDate);
-                    input.setSpotPrice(mktPrice);
+                    input.setReferencePrice(mktPrice);
                     input.setFrequency(Frequency.fromCode(smd.getFrequency().getCode()));
                     input.setDaycount(smd.getAccrualDaycount());
                     input.setCompounding(Compounding.COMPOUNDED);
@@ -102,7 +102,7 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
 
         double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
 
-        BondOutputData output = calculate(masterData, mktPrice, mtmHelper.getOfficialDate());
+        XRBOutputData output = calculate(masterData, mktPrice, mtmHelper.getOfficialDate());
         if (output != null) {
             valuation.setMarketPrice(output.getMktPrice());
             valuation.setYtm(output.getYtm());
@@ -111,6 +111,7 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
             valuation.setAccruedInterest(output.getAccruedInterest());
             valuation.setTheoreticalPrice(output.getMktPrice());
             valuation.setValuationDate(output.getValuationDate());
+            valuation.setDv01(output.getDv01());
         }
 
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso

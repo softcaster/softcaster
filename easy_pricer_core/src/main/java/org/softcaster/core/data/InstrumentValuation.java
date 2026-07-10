@@ -57,6 +57,10 @@ public class InstrumentValuation implements Serializable {
     @Column(name = "theoretical_price")
     private Double theoreticalPrice;
 
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "dv01")
+    private Double dv01;
+
     @Column(name = "valuation_date")
     private LocalDate valuationDate;
 
@@ -159,5 +163,19 @@ public class InstrumentValuation implements Serializable {
      */
     public void setValuationDate(LocalDate valuationDate) {
         this.valuationDate = valuationDate;
+    }
+
+    /**
+     * @return the dv01
+     */
+    public Double getDv01() {
+        return dv01;
+    }
+
+    /**
+     * @param dv01 the dv01 to set
+     */
+    public void setDv01(Double dv01) {
+        this.dv01 = dv01;
     }
 }
