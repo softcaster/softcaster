@@ -768,16 +768,22 @@ public class BondDlg extends javax.swing.JDialog {
 
     private void btnGenerateCFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateCFActionPerformed
 
-        boolean showMessage = bean != null
-                && bean.getSecurityMasterData().getCashFlows() != null
-                && !bean.getSecurityMasterData().getCashFlows().isEmpty();
+        boolean proceed = false;
+
+        boolean showMessage = bean != null;
         if (showMessage) {
+            // Se l'utente clicca YES, showConfirmDialog restituisce YES_OPTION
             if (JOptionPane.showConfirmDialog(this,
                     "Cash Flows already present.\n Are you sure? ", JMasterDataMgr.TITLE,
                     JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION) {
+                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                proceed = true;
             }
         } else {
+            // Se non serve mostrare il messaggio, procedi direttamente
+            proceed = true;
+        }
+        if (proceed) {
             try {
                 BackwardScheduleGenerator bsg = new BackwardScheduleGenerator();
                 BulletAmortizationStrategy bas = new BulletAmortizationStrategy();
@@ -805,15 +811,30 @@ public class BondDlg extends javax.swing.JDialog {
                     item.setStartDate(java.sql.Date.valueOf(flow.accrualStart()));
                     item.setEndDate(java.sql.Date.valueOf(flow.accrualEnd()));
                     item.setInterest(flow.interest());
-                    item.setAmount(flow.principal());   
+                    item.setAmount(flow.principal());
                     items.add(item);
                 }
+
+                // 1. Sgancia i vecchi elementi impostando esplicitamente la lista a vuoto o rimuovendo il back-reference se presente
+                if (bean.getSecurityMasterData().getCashFlows() != null) {
+                    bean.getSecurityMasterData().getCashFlows().clear();
+                }
+
+                // 2. Salva l'entità SVUOTATA per far fare a Hibernate la cancellazione standard pulita dei vecchi id (es. 2051)
+                SecurityMasterData emptyMasterData = masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(bean.getSecurityMasterData());
+                
+                // 3. Ora che la sessione ha rimosso formalmente il vecchio ID, aggiungi i nuovi flussi all'entità pulita
+                emptyMasterData.getCashFlows().addAll(items);
+                
+                // 4. Salva definitivamente i nuovi flussi e aggiorna il bean
+                SecurityMasterData finalMasterData = masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(emptyMasterData);
+                bean = new SecurityBean(finalMasterData); // Sovrascrive il vecchio bean non sincronizzato
+
                 MasterDataTableModel<CashFlowBean> model = (MasterDataTableModel<CashFlowBean>) tableCF.getModel();
                 this.refreshModel(model, items);
             } catch (ParseException ex) {
                 System.getLogger(BondDlg.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
             }
-
         }
     }//GEN-LAST:event_btnGenerateCFActionPerformed
 

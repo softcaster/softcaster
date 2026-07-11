@@ -39,7 +39,7 @@ public class SecurityMasterDataDAO {
     public List<SecurityMasterData> findAll() {
         return repository.findAll(sortByMaturity);
     }
-    
+
     @Transactional(readOnly = true)
     public List<SecurityMasterData> findAllByAssetClass(String code) {
         return repository.findAllByAssetClass(code);
@@ -55,7 +55,18 @@ public class SecurityMasterDataDAO {
         return repository.findByCurrencyIsoCode(currencyCode);
     }
 
+    @Transactional(readOnly = true)
     public List<SecurityMasterData> findByDescriptionContaining(String issueDescriptionFragment) {
         return repository.findByDescriptionContaining(issueDescriptionFragment);
+    }
+
+    @Transactional
+    public SecurityMasterData saveAndFlush(SecurityMasterData securityMasterData) {
+        return repository.saveAndFlush(securityMasterData);
+    }
+
+    @Transactional
+    public void deleteCashFlowItems(Integer idMasterData) {
+        repository.deleteCashFlowsByMasterDataId(idMasterData);
     }
 }

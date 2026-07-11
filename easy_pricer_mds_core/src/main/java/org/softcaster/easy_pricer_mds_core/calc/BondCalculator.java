@@ -87,6 +87,7 @@ public class BondCalculator {
                     response.macaulayDuration = 0.;
                     response.yieldToMaturity = output.getYtm();
                     response.modifiedDuration = output.getModifiedDuration();
+                    response.dv01 = output.getDv01();
                     response.convexity = 0.;
                     response.presentValue = 0.;
                     response.yieldToMaturityPV = 0.;

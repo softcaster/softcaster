@@ -19,4 +19,5 @@ public class BondPricingResponse implements Serializable {
     public double convexity = 0.;
     public double presentValue = 0.;
     public double yieldToMaturityPV = 0.;
+    public double dv01 = 0.;
 }

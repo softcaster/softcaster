@@ -54,7 +54,7 @@ export const BondPForm = ({ masterDataList , data, results, onChange }: BondPric
                 </div>
 
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">Reference price date</label>
+                    <label className="block mb-2 font-bold text-sm">Reference date</label>
                     <Calendar
                         value={data.referenceDate}
                         onChange={(e) => updateRequest('referenceDate', e.value as Date)}
@@ -94,6 +94,16 @@ export const BondPForm = ({ masterDataList , data, results, onChange }: BondPric
                     <label className="block mb-2 font-bold text-sm">Modified Duration</label>
                     <InputNumber 
                         value={results.modifiedDuration}
+                        readOnly
+                        disabled
+                        mode="decimal" minFractionDigits={5} placeholder="0.00000"
+                        inputStyle={{ textAlign: 'right' }}
+                        className="w-full" />
+                </div>
+                <div className="col-12 md:col-3">
+                    <label className="block mb-2 font-bold text-sm">DV01</label>
+                    <InputNumber 
+                        value={results.dv01}
                         readOnly
                         disabled
                         mode="decimal" minFractionDigits={5} placeholder="0.00000"

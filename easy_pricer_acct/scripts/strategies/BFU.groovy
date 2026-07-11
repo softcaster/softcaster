@@ -1,5 +1,6 @@
 import org.softcaster.engine.enums.TxnSide
 import org.softcaster.engine.enums.EventType
+import org.softcaster.engine.enums.AccountingPhase
 
 def txn = ctx.txn
 def event = ctx.event

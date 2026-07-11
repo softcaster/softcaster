@@ -49,7 +49,7 @@ public class ValuationRestController {
     
     @PostMapping(value = "/pricing/future" , produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("unchecked")
-    public ResponseEntity<ForwardPricingResponse> calculateBondPricing(@RequestBody ForwardPricingRequest request) {
+    public ResponseEntity<ForwardPricingResponse> calculateFwdBondPricing(@RequestBody ForwardPricingRequest request) {
        
         if (bondForwardCalculator != null) {
             ForwardPricingResponse response = bondForwardCalculator.bondFwdValuation(request);

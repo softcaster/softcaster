@@ -91,10 +91,8 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
                     valuation.setDv01(output.getDv01());
                 }
 
-                double priceYieldUp = bondCalculator.repriceBondForYieldShift(smd, mtmHelper.getOfficialDate(), output.getYtm(), 1.);
-                double priceYieldDown = bondCalculator.repriceBondForYieldShift(smd, mtmHelper.getOfficialDate(), output.getYtm(), -1.);
-                System.out.println(output.getMktPrice() - priceYieldUp);
-                System.out.println(output.getMktPrice() - priceYieldDown);
+                //double priceYieldUp = bondCalculator.repriceBondForYieldShift(smd, mtmHelper.getOfficialDate(), output.getYtm(), 1.);
+
                 // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
                 position.setMarketPrice(valuation.getMarketPrice());
                 position.setTheoreticalPrice(valuation.getMarketPrice());

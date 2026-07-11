@@ -12,7 +12,7 @@ import java.time.LocalDate;
  */
 public class XRBOutputData extends MarketOutputData {
 
-    private double mktPrice = 0.;
+   private double mktPrice = 0.;
     private double duration = 0.;
     private double ytm = 0.;
     private double modifiedDuration = 0.;
@@ -116,4 +116,4 @@ public class XRBOutputData extends MarketOutputData {
     public void setMacaulayDuration(double macaulayDuration) {
         this.macaulayDuration = macaulayDuration;
     }
-}
+  }

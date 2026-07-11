@@ -30,6 +30,7 @@ export interface BondPricingResponse extends PricingResponse {
     convexity: number;
     presentValue: number;
     yieldToMaturityPV: number;
+    dv01: number;
 }
 
 export interface ForwardPricingResponse extends PricingResponse {
@@ -61,7 +62,8 @@ export const DEFAULT_BOND_PRICING_RESPONSE: BondPricingResponse = {
     macaulayDuration: 0,
     convexity: 0,
     presentValue: 0,
-    yieldToMaturityPV: 0
+    yieldToMaturityPV: 0,
+    dv01: 0
 };
 
 export const DEFAULT_FWD_PRICING_RESPONSE: ForwardPricingResponse = {
