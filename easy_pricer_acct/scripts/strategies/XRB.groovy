@@ -30,6 +30,7 @@ if (tradeCcy == eurCcy) {
                 ctx.journal.debit(accObsClearing, totalAmt, eurCcy)
                 ctx.journal.credit(accCommitCcy, totalAmt, eurCcy)
             }
+            ctx.accountingPhase = AccountingPhase.MEMO_POSTED
             break
 
         case EventType.SETTLEMENT:
@@ -53,6 +54,7 @@ if (tradeCcy == eurCcy) {
                 ctx.journal.credit(accBondAsset, bondValue, eurCcy)
                 ctx.journal.credit(accAccruedInt, accruedBuy, eurCcy)
             }
+            ctx.accountingPhase = AccountingPhase.MEMO_POSTED
             break
 
         case EventType.ACCRUAL:
@@ -70,10 +72,12 @@ if (tradeCcy == eurCcy) {
         case EventType.MATURITY:
             ctx.journal.debit(accCashReal, txn.quantity, eurCcy)
             ctx.journal.credit(accBondAsset, txn.quantity, eurCcy)
+            ctx.accountingPhase = txn.txnAcctPhase
             break
 
         case EventType.TRADE_AMENDED:
         case EventType.TRADE_CANCELED:
+            ctx.accountingPhase = txn.txnAcctPhase
             ctx.reverseJournal()
             break
     }
@@ -114,6 +118,7 @@ switch(event.eventType) {
             ctx.journal.debit(accCommitEUR, totalEUR, eurCcy)
             ctx.journal.credit(accObsClearingEUR, totalEUR, eurCcy)
         }
+        ctx.accountingPhase = AccountingPhase.MEMO_POSTED
         break
 
     case EventType.SETTLEMENT:
@@ -149,6 +154,7 @@ switch(event.eventType) {
             ctx.journal.debit(accCashReal, totalEUR, eurCcy)
             ctx.journal.credit(accCtrlEUR, totalEUR, eurCcy)
         }
+        ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
         break
 
     case EventType.ACCRUAL:
@@ -184,10 +190,12 @@ switch(event.eventType) {
             
         ctx.journal.debit(accPosCcy, faceValueCcy, tradeCcy)
         ctx.journal.credit(accCtrlEUR, faceValueEUR, eurCcy)
+        ctx.accountingPhase = txn.txnAcctPhase
         break
 
     case EventType.TRADE_AMENDED:
     case EventType.TRADE_CANCELED:
         ctx.reverseJournal()
+        ctx.accountingPhase = txn.txnAcctPhase
         break
 }

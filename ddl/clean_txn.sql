@@ -6,7 +6,6 @@ delete from position_detail;
 delete from financial_txn_components;
 delete from financial_txn;
 delete from instrument_valuation;
-delete from instrument_valuation;
 --delete from instrument_quote_hist;
 --delete from instrument_quote;
 

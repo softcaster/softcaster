@@ -5,13 +5,10 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_srv.calc.BondCalculator;
-import org.softcaster.easy_pricer_srv.calc.BondForwardCalculator;
-import org.softcaster.easy_pricer_srv.calc.FxForwardCalculator;
-import org.softcaster.easy_pricer_srv.dto.BondPricingRequest;
-import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
-import org.softcaster.easy_pricer_srv.dto.ForwardPricingRequest;
-import org.softcaster.easy_pricer_srv.dto.PricingRequest;
+import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
+import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.softcaster.engine.dto.XRBOutputData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +29,6 @@ public class HelperController {
 
     @Autowired
     private BondCalculator bondCalculator;
-    @Autowired
-    private BondForwardCalculator bondForwardCalculator;
-    @Autowired
-    private FxForwardCalculator fxForwardCalculator;
     
     //
     // Bond
@@ -43,7 +36,7 @@ public class HelperController {
     @GetMapping("/helper/bond/quote/{isin}")
     public ResponseEntity getBondIrr(@PathVariable("isin") String isin) {
         if (bondCalculator != null) {
-            BondPricingResponse output = bondCalculator.bondValuation(isin);
+            BondPricingResponse output = null; //bondCalculator.bondValuation(isin);
             if (output != null) {
                 return new ResponseEntity(output, HttpStatus.OK);
             } else {
@@ -73,7 +66,7 @@ public class HelperController {
     @SuppressWarnings("unchecked")
     public ResponseEntity getBondsData() {
         if (bondCalculator != null) {
-            List<XRBOutputData> output = bondCalculator.bondsValuation();
+            List<XRBOutputData> output = null;//bondCalculator.bondsValuation();
             if (output != null) {
                 return new ResponseEntity(output, HttpStatus.OK);
             } else {
@@ -83,36 +76,4 @@ public class HelperController {
             return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
         }
     }
-
-    //
-    // Forward
-    //
-    @PostMapping("/helper/bondfwd/request")
-    @SuppressWarnings("unchecked")
-    public ResponseEntity bondFwdValuation(@RequestBody ForwardPricingRequest request) {
-            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
-            /*
-        if (bondForwardCalculator != null) {
-            MarketOutputData output = bondForwardCalculator.bondFwdValuation(request);
-            return new ResponseEntity(output, HttpStatus.OK);
-        } else {
-            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
-        }
-            */
-    }
-
-    @PostMapping("/helper/fxfwd/request")
-    @SuppressWarnings("unchecked")
-    public ResponseEntity forexFwdValuation(@RequestBody PricingRequest request) {
-            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
-/*
-        if (fxForwardCalculator != null) {
-            ForexFwdOutputData output = fxForwardCalculator.forexFwdValuation(request);
-            return new ResponseEntity(output, HttpStatus.OK);
-        } else {
-            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
-        }
-*/
-    }
-
 }

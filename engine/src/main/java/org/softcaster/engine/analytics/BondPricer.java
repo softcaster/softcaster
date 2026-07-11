@@ -68,6 +68,23 @@ public class BondPricer extends AbstractFixedIncomePricer {
         return solveInternalRateOfReturn(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency);
     }
 
+    public double calculatePrice(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency) {
+        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
+        double dirtyPrice = 0;
+
+        // Filtriamo solo i flussi futuri per l'attualizzazione
+        List<CashFlow> futureFlows = flows.stream()
+                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
+                .toList();
+
+        for (CashFlow cf : futureFlows) {
+            double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
+            dirtyPrice += cf.getTotalAmount() * MathUtil.getDiscountFactor(compounding, ytm, t);
+        }
+
+        return dirtyPrice - accrued;
+    }
+
     public double calculateMacaulayDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
         double dirtyPrice = 0.0;
         double weightedSum = 0.0;

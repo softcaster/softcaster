@@ -4,12 +4,12 @@
  */
 package org.softcaster.easy_pricer_srv.controller;
 
-import org.softcaster.easy_pricer_srv.calc.BondCalculator;
-import org.softcaster.easy_pricer_srv.calc.BondForwardCalculator;
-import org.softcaster.easy_pricer_srv.dto.ForwardPricingResponse;
-import org.softcaster.easy_pricer_srv.dto.BondPricingRequest;
-import org.softcaster.easy_pricer_srv.dto.BondPricingResponse;
-import org.softcaster.easy_pricer_srv.dto.ForwardPricingRequest;
+import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
+import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_mds_core.dto.ForwardPricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.ForwardPricingResponse;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -85,8 +85,12 @@ INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) 
 
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
     VALUES(nextval('account_mapping_s'),'INITIAL_MARGIN',2,30); -- 120055 Initial Margin Deposit - USD
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'INITIAL_MARGIN', 1, 29); -- 120050 Initial Margin Deposit - EUR
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
     VALUES(nextval('account_mapping_s'),'VARIATION_MARGIN',2,32); -- 120065 Variation Margin Account - USD
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
+    VALUES(nextval('account_mapping_s'),'VARIATION_MARGIN',1,31); -- 120060 Variation Margin Account - EUR
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
     VALUES(nextval('account_mapping_s'),'FUT_REALIZED_LOSS',1,19); -- 500010 Realized Loss on Financial Derivatives - EUR
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
@@ -101,3 +105,4 @@ INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_accoun
     VALUES(nextval('account_mapping_s'), 'FXSPOT_COMMITMENT', 2, 100); -- USD (es. 600041)
 INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
     VALUES(nextval('account_mapping_s'), 'FXSPOT_COMMITMENT', 4, 101); -- CHF (es. 600042)
+
