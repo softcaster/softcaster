@@ -32,7 +32,7 @@ public class CmdFutureTxnProcessor  extends AbstractTxnProcessor implements ITxn
         input.setPrice(txn.getPrice() * cfmd.getMultiplier());
         input.setQuantity(txn.getQuantity() * cfmd.getContractValue());
         input.setSide(txn.getTxnSide());
-        input.setStatus(txn.getTxnStatus());
+        input.setStatus(txn.getTxnStatusPreElab());
 
         super.process(input, position);
 

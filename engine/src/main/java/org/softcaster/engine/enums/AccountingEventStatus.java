@@ -10,7 +10,7 @@ package org.softcaster.engine.enums;
  */
 public enum AccountingEventStatus implements IdentifiableEnum {
     NEW(1, "PENDING", "New"),
-    PROCESSING(2, "PROCESSED", "Processed"),
+    PROCESSING(2, "PROCESSING", "Processing"),
     PROCESSED(3, "PROCESSED", "Processed"),
     FAILED(4, "FAILED", "Failed");
 

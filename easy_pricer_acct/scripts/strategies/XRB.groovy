@@ -106,7 +106,8 @@ switch(event.eventType) {
         double bondValueCcy  = txn.quantity * txn.price * (txn.masterData.multiplier ?: 1.0)
         double accruedBuyCcy = ctx.bondAccruedInterest    
         double totalCcy      = bondValueCcy + accruedBuyCcy
-        double totalEUR      = totalCcy / txn.fxRate      
+        double rate = (txn.fxRate != null && txn.fxRate > 0) ? txn.fxRate : 1.0
+        double totalEUR      = totalCcy / rate      
 
         if (txn.txnSide == TxnSide.BUY) {
             ctx.journal.debit(accCommitCcy, totalCcy, tradeCcy)
@@ -126,7 +127,8 @@ switch(event.eventType) {
         double bondValueCcy  = txn.quantity * txn.price * (txn.masterData.multiplier ?: 1.0)
         double accruedBuyCcy = ctx.bondAccruedInterest    
         double totalCcy      = bondValueCcy + accruedBuyCcy
-        double totalEUR      = totalCcy / txn.fxRate      
+    double rate = (txn.fxRate != null && txn.fxRate > 0) ? txn.fxRate : 1.0
+        double totalEUR      = totalCcy / rate      
 
         if (txn.txnSide == TxnSide.BUY) {
             // 1. Storno impegni fuori bilancio
@@ -160,7 +162,8 @@ switch(event.eventType) {
 
     case EventType.ACCRUAL:
         double dailyAccrualCcy = ctx.getDailyAccrualAmount() 
-        double dailyAccrualEUR = dailyAccrualCcy / ctx.getFxRate() 
+        double rate = (txn.fxRate != null && txn.fxRate > 0) ? txn.fxRate : 1.0
+        double dailyAccrualEUR = dailyAccrualCcy / rate
 
         ctx.journal.debit(accAccruedInt, dailyAccrualCcy, tradeCcy)
         ctx.journal.credit(accPosCcy, dailyAccrualCcy, tradeCcy)
@@ -171,7 +174,8 @@ switch(event.eventType) {
 
     case EventType.COUPON:
         double couponAmountCcy = ctx.getCouponAmount() 
-        double couponAmountEUR = couponAmountCcy / ctx.getFxRate()
+        double rate = (txn.fxRate != null && txn.fxRate > 0) ? txn.fxRate : 1.0
+        double couponAmountEUR = couponAmountCcy / rate
         String accCashCcy       = accountResolver.resolve("CASH_ACCOUNT", tradeCcy)
 
         ctx.journal.debit(accCashCcy, couponAmountCcy, tradeCcy)
@@ -183,7 +187,8 @@ switch(event.eventType) {
 
     case EventType.MATURITY:
         double faceValueCcy = txn.quantity 
-        double faceValueEUR = faceValueCcy / ctx.getFxRate()
+        double rate = (txn.fxRate != null && txn.fxRate > 0) ? txn.fxRate : 1.0
+        double faceValueEUR = faceValueCcy / rate
         String accCashCcy     = accountResolver.resolve("CASH_ACCOUNT", tradeCcy)
 
         ctx.journal.debit(accCashCcy, faceValueCcy, tradeCcy)

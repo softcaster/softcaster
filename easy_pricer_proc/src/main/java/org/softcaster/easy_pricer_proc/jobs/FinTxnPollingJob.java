@@ -110,7 +110,7 @@ public class FinTxnPollingJob {
     }
 
     protected void pollToAmendTrades() {
-        // 1. Cerca le transazioni PENDING
+        // 1. Cerca le transazioni TO_AMEND
         List<FinancialTxn> pendingTxn = financialTxnDAO.findAndClaimByTxnStatusCode("TO_AMEND");
 
         if (!pendingTxn.isEmpty()) {
