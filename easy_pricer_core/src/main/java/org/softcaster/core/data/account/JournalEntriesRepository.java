@@ -1,5 +1,6 @@
 package org.softcaster.core.data.account;
 
+import java.util.Collection;
 import java.util.List;
 import org.softcaster.core.dto.AccountDetailsBalanceDto;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +13,7 @@ public interface JournalEntriesRepository extends JpaRepository<JournalEntries, 
 
     @Query("""
         SELECT new org.softcaster.core.dto.AccountDetailsBalanceDto(
+            ae.positionDetail,
             ga.accountId,
             ga.code,
             ga.description,
@@ -22,9 +24,9 @@ public interface JournalEntriesRepository extends JpaRepository<JournalEntries, 
         JOIN je.accountingEvent ae
         JOIN JournalEntryLines jel ON jel.journalEntry = je.journalEntryId
         JOIN GlAccount ga ON jel.glAccount = ga.accountId
-        WHERE ae.positionDetail = :positionDetail
+        WHERE ae.positionDetail IN :positionDetails
         GROUP BY ga.accountId, ga.code, ga.description ORDER BY ga.code
     """)
-    List<AccountDetailsBalanceDto> findBalanceWithDetailsByPositionDetail(
-            @Param("positionDetail") Integer positionDetail);
+    List<AccountDetailsBalanceDto> findBalanceWithDetailsByPositionDetails(
+            @Param("positionDetails") Collection<Integer> positionDetails);
 }

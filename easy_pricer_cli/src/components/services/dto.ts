@@ -175,11 +175,12 @@ export interface PositionProspectDto {
 }
 
 export interface AccountDetailsBalanceDto {
-  accountId: number;
-  code: string;
-  description: string;
-  totalDebit: number;
-  totalCredit: number;
+    positionDetail: number;
+    accountId: number;
+    code: string;
+    description: string;
+    totalDebit: number;
+    totalCredit: number;
 }
 
 

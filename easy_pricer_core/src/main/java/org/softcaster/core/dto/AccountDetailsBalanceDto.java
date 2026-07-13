@@ -7,9 +7,11 @@ package org.softcaster.core.dto;
 import java.math.BigDecimal;
 
 public record AccountDetailsBalanceDto(
-    Integer accountId,
-    String code,
-    String description,
-    BigDecimal totalDebit,
-    BigDecimal totalCredit
-) {}
+        Integer positionDetail,
+        Integer accountId,
+        String code,
+        String description,
+        BigDecimal totalDebit,
+        BigDecimal totalCredit) {
+
+}

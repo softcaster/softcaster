@@ -58,4 +58,20 @@ public interface PositionDetailRepository extends JpaRepository<PositionDetail, 
             @Param("counterpartyId") Integer counterpartyId,
             @Param("assetClassId") Integer assetClassId
     );
+
+    @Query(value = """
+    SELECT pd.id_position_detail 
+    FROM position_detail pd 
+    JOIN master_data md ON pd.master_data = md.id_master_data 
+    WHERE (:positionMdId IS NULL OR pd.position_md = :positionMdId) 
+      AND (:counterpartyId IS NULL OR pd.counterparty = :counterpartyId)
+      AND (:assetClassId IS NULL OR md.asset_class = :assetClassId)
+    """,
+            nativeQuery = true)
+    List<Integer> findPositionId(
+            @Param("positionMdId") Integer positionMdId,
+            @Param("counterpartyId") Integer counterpartyId,
+            @Param("assetClassId") Integer assetClassId
+    );
+
 }

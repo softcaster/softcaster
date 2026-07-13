@@ -58,6 +58,11 @@ public class PositionDetailDAO {
         return repository.findAll();
     }
 
+    @Transactional(readOnly = true)
+    public List<Integer> findPositionId(Integer positionMdId, Integer counterpartyId, Integer assetClassId) {
+        return repository.findPositionId(positionMdId, counterpartyId, assetClassId);
+    }   
+    
     @Transactional
     public PositionDetail saveOrUpdate(PositionDetail positionDetail) {
         return repository.save(positionDetail);

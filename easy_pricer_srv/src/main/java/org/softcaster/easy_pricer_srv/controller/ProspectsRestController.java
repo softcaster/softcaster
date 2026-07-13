@@ -4,6 +4,7 @@
  */
 package org.softcaster.easy_pricer_srv.controller;
 
+import java.util.Collections;
 import java.util.List;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.PositionDetailDAO;
@@ -28,7 +29,7 @@ public class ProspectsRestController {
 
     @Autowired
     PositionDetailDAO positionDetailDAO;
-    
+
     @Autowired
     JournalEntriesDAO journalEntriesDAO;
 
@@ -40,6 +41,7 @@ public class ProspectsRestController {
         if (filter.getAssetClassId() == null && filter.getCounterpartyId() == null && filter.getPositionId() == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
+
         List<PositionProspectDto> ppList = positionDetailDAO.getPositionProspect(filter.getPositionId(), filter.getCounterpartyId(), filter.getAssetClassId());
         if (ppList == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
@@ -79,26 +81,24 @@ public class ProspectsRestController {
         }
     }
 
-    @GetMapping("/prospects/accounting/r01/{id}")
-    public ResponseEntity findBalanceWithDetailsByPositionDetail(@PathVariable("id") Integer idPositionDetail) {
-        List<AccountDetailsBalanceDto>  listAccountDetailsBalance = journalEntriesDAO.findBalanceWithDetailsByPositionDetail(idPositionDetail);
-        if (listAccountDetailsBalance == null) {
-            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity(listAccountDetailsBalance, HttpStatus.OK);
-    }
-
-    @PostMapping(value = "/prospects/accounting/r02")
+    @PostMapping(value = "/prospects/accounting/r01")
     public ResponseEntity<List<AccountDetailsBalanceDto>> getAccountingProspect(@RequestBody ProspectFilter filter) {
         if (filter.getAssetClassId() == null && filter.getCounterpartyId() == null && filter.getPositionId() == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
-        List<AccountDetailsBalanceDto>  listAccountDetailsBalance = journalEntriesDAO.findBalanceWithDetailsByPositionDetail(1);
+
+        List<Integer> positionIds = positionDetailDAO.findPositionId(filter.getAssetClassId(),filter.getCounterpartyId(),filter.getPositionId());
+
+        if (positionIds.isEmpty()) {
+            return null; // Evita del tutto di chiamare la seconda query
+        }
+        
+        List<AccountDetailsBalanceDto> listAccountDetailsBalance = journalEntriesDAO.findBalanceWithDetailsByPositionDetails(positionIds);
         if (listAccountDetailsBalance == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         } else {
             return new ResponseEntity(listAccountDetailsBalance, HttpStatus.OK);
         }
     }
-    
+
 }

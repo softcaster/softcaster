@@ -1,6 +1,7 @@
 package org.softcaster.core.data.account;
 
 import jakarta.annotation.Resource;
+import java.util.Collection;
 import java.util.List;
 import org.softcaster.core.dto.AccountDetailsBalanceDto;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class JournalEntriesDAO {
     }
 
     @Transactional(readOnly = true)
-    public List<AccountDetailsBalanceDto> findBalanceWithDetailsByPositionDetail(Integer positionDetail) {
-        return repository.findBalanceWithDetailsByPositionDetail(positionDetail);
+    public List<AccountDetailsBalanceDto> findBalanceWithDetailsByPositionDetails(Collection<Integer> positionDetails) {
+        return repository.findBalanceWithDetailsByPositionDetails(positionDetails);
     }
 }
