@@ -60,9 +60,13 @@ public class PositionDetailDAO {
 
     @Transactional(readOnly = true)
     public List<Integer> findPositionId(Integer positionMdId, Integer counterpartyId, Integer assetClassId) {
-        return repository.findPositionId(positionMdId, counterpartyId, assetClassId);
-    }   
-    
+        List<Object[]> rows = repository.findPositionId(positionMdId, counterpartyId, assetClassId);
+        List<Integer> ids = rows.stream()
+                .map(row -> (Integer) row[0])
+                .toList();
+        return ids;
+    }
+
     @Transactional
     public PositionDetail saveOrUpdate(PositionDetail positionDetail) {
         return repository.save(positionDetail);

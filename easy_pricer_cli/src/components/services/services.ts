@@ -1485,7 +1485,7 @@ export async function fetchBalanceByPositionDetail(filter: ProspectFilter): Prom
 
         };
 
-        return await apiRequest<AccountDetailsBalanceDto[]>('/prospects/accounting/r02', 'POST', cleanPayload);
+        return await apiRequest<AccountDetailsBalanceDto[]>('/prospects/accounting/r01', 'POST', cleanPayload);
     } catch (error) {
         console.error('Failed to fetch accounting prospect data:', error);
         return [];

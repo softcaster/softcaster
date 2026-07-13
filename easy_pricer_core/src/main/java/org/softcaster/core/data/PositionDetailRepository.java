@@ -60,18 +60,21 @@ public interface PositionDetailRepository extends JpaRepository<PositionDetail, 
     );
 
     @Query(value = """
-    SELECT pd.id_position_detail 
+    SELECT pd.id_position_detail AS id 
     FROM position_detail pd 
+    JOIN position_master_data pmd ON pd.position_md = pmd.id_position 
     JOIN master_data md ON pd.master_data = md.id_master_data 
+    JOIN counterparty ctp ON pd.counterparty = ctp.id_counterparty 
     WHERE (:positionMdId IS NULL OR pd.position_md = :positionMdId) 
       AND (:counterpartyId IS NULL OR pd.counterparty = :counterpartyId)
       AND (:assetClassId IS NULL OR md.asset_class = :assetClassId)
     """,
             nativeQuery = true)
-    List<Integer> findPositionId(
+    // Non torno Integer perchè Spring Data vede un tipo singolo non-entità, attiva un meccanismo interno di unwrap e 
+    // conversione del tipo (Type Boxing/Unwrapping Analysis) che rallenta mortalmente la start in modalita debug
+    List<Object[]> findPositionId(
             @Param("positionMdId") Integer positionMdId,
             @Param("counterpartyId") Integer counterpartyId,
             @Param("assetClassId") Integer assetClassId
     );
-
 }

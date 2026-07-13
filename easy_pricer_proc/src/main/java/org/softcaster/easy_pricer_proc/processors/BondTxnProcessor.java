@@ -90,17 +90,13 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
             }
         }
 
-        // Calcolo accrual transazione. Sono calcolati a trade date non a trade + 2
+        // Aggiorno accrual transazione. Sono calcolati sempre a trade + 2
         if (txn.getTxnStatusPreElab() == PENDING || txn.getTxnStatusPreElab() == RESTARTING) {
-            double txnAccruals = bondPricer.calculateAccruedInterest(flows,
-                    txn.getTradeDate().toLocalDate(),
-                    smd.getAccrualDaycount(), smd.getFrequency());
-            txnAccruals *= (quantity * smd.getMultiplier());
             FinancialTxnComponent accrualComponent = new FinancialTxnComponent();
             accrualComponent.setCurrency(smd.getCurrency());
             accrualComponent.setDescription("Accruals txn: " + txn.getIdFinancialTxn());
             accrualComponent.setComponentType(TxnComponentType.BOND_ACCRUAL);
-            accrualComponent.setAmount(BigDecimal.valueOf(txnAccruals));
+            accrualComponent.setAmount(BigDecimal.valueOf(accruals));
             txn.addTxnComponent(accrualComponent);
         }
         position.setYtm(bondOutputData.getYtm());

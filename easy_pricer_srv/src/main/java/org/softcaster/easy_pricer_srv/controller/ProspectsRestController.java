@@ -4,7 +4,6 @@
  */
 package org.softcaster.easy_pricer_srv.controller;
 
-import java.util.Collections;
 import java.util.List;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.PositionDetailDAO;
@@ -18,8 +17,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -86,19 +83,19 @@ public class ProspectsRestController {
         if (filter.getAssetClassId() == null && filter.getCounterpartyId() == null && filter.getPositionId() == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
-
-        List<Integer> positionIds = positionDetailDAO.findPositionId(filter.getAssetClassId(),filter.getCounterpartyId(),filter.getPositionId());
-
+        List<Integer> positionIds = positionDetailDAO.findPositionId(filter.getPositionId(), filter.getCounterpartyId(), filter.getAssetClassId());
+        
         if (positionIds.isEmpty()) {
             return null; // Evita del tutto di chiamare la seconda query
         }
-        
+
         List<AccountDetailsBalanceDto> listAccountDetailsBalance = journalEntriesDAO.findBalanceWithDetailsByPositionDetails(positionIds);
         if (listAccountDetailsBalance == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         } else {
             return new ResponseEntity(listAccountDetailsBalance, HttpStatus.OK);
         }
+
     }
 
 }
