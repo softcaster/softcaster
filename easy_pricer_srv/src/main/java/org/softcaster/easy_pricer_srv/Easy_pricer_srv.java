@@ -33,7 +33,7 @@ public class Easy_pricer_srv {
         FileUtil.initializeLogger();
 
         // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
-        FileUtil.initializePython();
+        // FileUtil.initializePython();
         
         SpringApplication.run(Easy_pricer_srv.class, args);
         System.out.println("===========================================");

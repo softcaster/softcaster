@@ -41,7 +41,7 @@ public class AccountResolverService {
      * Può essere chiamato a run-time tramite un endpoint REST se l'utente modifica la tabella.
      */
     public synchronized void refreshCache() {
-        log.info("=== [AMS] Account Mapping cache loading in progress... ===");
+        log.info("=== [AccountResolverService] Account Mapping cache loading in progress... ===");
         try {
             List<AccountMapping> allMappings = accountMappingDAO.findAllWithAssociations();
             
@@ -58,9 +58,9 @@ public class AccountResolverService {
                     cache.put(key, accountCode);
                 }
             }
-            log.info("=== [AMS] Cache successfully loaded. Inserted records: {} ===", cache.size());
+            log.info("=== [AccountResolverService] Cache successfully loaded. Inserted records: {} ===", cache.size());
         } catch (Exception e) {
-            log.error("CRITICAL: Failed to load General Ledger account mapping cache!", e);
+            log.error("CRITICAL: Failed to load General Ledger Account mapping cache!", e);
         }
     }
 
@@ -75,7 +75,7 @@ public class AccountResolverService {
         String accountCode = cache.get(key);
 
         if (accountCode == null) {
-            String errorMsg = String.format("### ACCOUNTING ERROR: No General Ledger account mapped for rule '%s' and currency ID '%d' in memory cache!", 
+            String errorMsg = String.format("### ACCOUNTING ERROR: No General Ledger Account mapped for rule '%s' and currency ID '%d' in memory cache!", 
                 mappingKey, currencyId);
             log.error(errorMsg);
             throw new AccountingException(errorMsg);

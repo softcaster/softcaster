@@ -9,10 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.dialogs.BondDlg;
+import org.softcaster.master_data_mgr.dialogs.BondFilterDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.SecurityBean;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
@@ -175,12 +177,41 @@ public class BondPanel extends AbstactMDPanel {
         }
         model.setData(securityBeanList);
     }
-    
+
     @Override
     public void downloadAction() {
     }
 
     @Override
     public void filterAction() {
+        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+        java.awt.Frame parentFrame = null;
+
+        if (parentWindow instanceof java.awt.Frame frame) {
+            parentFrame = frame;
+        }
+
+        BondFilterDlg dialog = new BondFilterDlg(parentFrame, true);
+        dialog.setSize(600, 200);
+        // Centra la dialog rispetto al pannello
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+        List<MasterData> bonds = masterDataFacade.getMasterDataDAO().findByCriteria(
+                dialog.getFilterCriteria().getIsinContains(), 
+                dialog.getFilterCriteria().getMaturityLE(), 
+                dialog.getFilterCriteria().getMaturityGE());
+        if (!bonds.isEmpty()) {
+            List<SecurityBean> securityBeanList = new ArrayList<>();
+            SecurityBean bean = null;
+            for (MasterData bond : bonds) {
+                if (bond instanceof SecurityMasterData smd) {
+                    bean = new SecurityBean(smd);
+                    securityBeanList.add(bean);
+                }
+            }
+            MasterDataTableModel<SecurityBean> model = (MasterDataTableModel<SecurityBean>) bondTable.getModel();
+            model.setData(securityBeanList);
+        }
     }
 }

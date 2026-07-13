@@ -4,10 +4,10 @@ import type {
     Calendar, Holiday, Currency, Country, Issuer, SuperClass, AssetClass, MasterData, LoanMasterData, SecurityMasterData, CashFlowItem,
     CashFlowReset, SettlementType, FutureMasterData, BondFutureMasterData, DeliverableBonds, FxFutureMasterData, MmFutureMasterData,
     InstrumentQuote, InstrumentQuoteHist, ForexMasterData, CounterpartyType, Counterparty, PortfolioMasterData, PositionMasterData,
-    PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem,CmdFutureMasterData
+    PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem, CmdFutureMasterData
 } from '../data/schema'
 import type {
-    FinancialTxnDto, PositionProspectDto
+    FinancialTxnDto, PositionProspectDto, AccountDetailsBalanceDto
 } from '../services/dto';
 
 import type {
@@ -1464,6 +1464,31 @@ export const deleteYieldCurveItem = async (id: number): Promise<YieldCurveItem |
     } catch (error) {
         console.error('Failed to delete yield_curve_item:', error);
         return null;
+    }
+};
+
+export async function fetchBalanceByPositionDetail(filter: ProspectFilter): Promise<AccountDetailsBalanceDto[]> {
+    try {
+
+        const cleanPayload = {
+            positionId: filter?.positionId !== undefined
+                ? filter.positionId
+                : (typeof filter?.positionId === 'number' ? filter.positionId : null),
+
+            counterpartyId: filter?.counterpartyId !== undefined
+                ? filter.counterpartyId
+                : (typeof filter?.counterpartyId === 'number' ? filter.counterpartyId : null),
+
+            assetClassId: filter?.assetClassId !== undefined
+                ? filter.assetClassId
+                : (typeof filter?.assetClassId === 'number' ? filter.assetClassId : null)
+
+        };
+
+        return await apiRequest<AccountDetailsBalanceDto[]>('/prospects/accounting/r02', 'POST', cleanPayload);
+    } catch (error) {
+        console.error('Failed to fetch accounting prospect data:', error);
+        return [];
     }
 };
 

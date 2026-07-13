@@ -174,3 +174,12 @@ export interface PositionProspectDto {
     unrealizedPnL: number;
 }
 
+export interface AccountDetailsBalanceDto {
+  accountId: number;
+  code: string;
+  description: string;
+  totalDebit: number;
+  totalCredit: number;
+}
+
+

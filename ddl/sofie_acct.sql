@@ -114,6 +114,7 @@ CREATE TABLE accounting_events (
     event_status integer NOT NULL, -- NEW IN_PROGRESS PROCESSED FAILED
     source_type integer NOT NULL, -- TRADE INSTRUMENT POSITION_DETAIL(caso MTM)->  id_position_detail
     source_id integer NOT NULL, -- 12345 (txn)
+    position_detail integer NOT NULL DEFAULT 0, -- id position_detail
     event_key varchar(100) NOT NULL, -- es 'TRADE_EXECUTION:txn12345' garantisce idemponenza
     generated_by integer NOT NULL, -- POSITION_ENGINE/LAYER (FinTxnPollingJob) / SCHEDULER_ENGINE, VALUATION_ENGINE
     generated_ref varchar(100), -- batch_20260530_01

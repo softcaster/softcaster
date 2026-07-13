@@ -238,6 +238,11 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         btnFilter.setFocusable(false);
         btnFilter.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnFilter.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFilterActionPerformed(evt);
+            }
+        });
         toolBar.add(btnFilter);
 
         btnDown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/download_16dp.png"))); // NOI18N
@@ -259,6 +264,11 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         itemFilter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.ALT_DOWN_MASK));
         itemFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/filter_alt_16dp.png"))); // NOI18N
         itemFilter.setText("Filter");
+        itemFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemFilterActionPerformed(evt);
+            }
+        });
         fileMenu.add(itemFilter);
 
         itemDownLoad.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.ALT_DOWN_MASK));
@@ -305,6 +315,14 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         downloadAction();
     }//GEN-LAST:event_itemDownLoadActionPerformed
 
+    private void itemFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemFilterActionPerformed
+        filterAction();
+    }//GEN-LAST:event_itemFilterActionPerformed
+
+    private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
+        filterAction();
+    }//GEN-LAST:event_btnFilterActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDown;
     private javax.swing.JButton btnExit;
@@ -342,7 +360,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
     }
 
     private void filterAction() {
-
+        AbstactMDPanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.filterAction();
+        }
     }
 
     private AbstactMDPanel getActiveCard() {

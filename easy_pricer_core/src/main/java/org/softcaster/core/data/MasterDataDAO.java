@@ -1,12 +1,14 @@
 package org.softcaster.core.data;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("masterDataDAO")
-    public class MasterDataDAO {
+public class MasterDataDAO {
 
     private final MasterDataRepository repository;
 
@@ -60,4 +62,9 @@ import org.springframework.transaction.annotation.Transactional;
         return repository.findAll();
     }
 
+    @Transactional(readOnly = true)
+    public List<MasterData> findByCriteria(String code, Date maturityLessEq, Date maturityGreatEq) {
+        Specification<MasterData> spec = MasterDataSpecifications.withFilters(code, maturityLessEq, maturityGreatEq);
+        return repository.findAll(spec);
+    }
 }

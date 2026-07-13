@@ -13,6 +13,7 @@ export const BondPView = lazy(() => import('../components/views/BondPView'));
 export const BondFutureView = lazy(() => import('../components/views/BondFutureView'));
 export const BondFuturePView = lazy(() => import('../components/views/BondFuturePView.tsx'));
 export const PositionProspectView = lazy(() => import('../components/views/PositionProspectView'));
+export const AccountingProspectView = lazy(() => import('../components/views/AccountingProspectView'));
 
 export const navigationNodes: TreeNode[] = [
   {

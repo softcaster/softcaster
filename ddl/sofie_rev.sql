@@ -213,4 +213,5 @@ update future_master_data fmd set last_trading_date=(select md.maturity_date fro
 alter table future_master_data alter column last_trading_date set not null;
 
 alter table instrument_valuation add column dv01 numeric(15, 5) NOT NULL DEFAULT 0;
+alter table accounting_events add column position_detail integer NOT NULL DEFAULT 0;
 

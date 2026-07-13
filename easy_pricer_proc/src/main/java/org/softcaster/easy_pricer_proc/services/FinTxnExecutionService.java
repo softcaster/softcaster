@@ -94,9 +94,9 @@ public class FinTxnExecutionService {
 
         try {
             elabFinancialTxn(txn, newStatus);
-            generateAccountingEvent(txn, newStatus);
+            //generateAccountingEvent(txn, newStatus);
             updateStatus(txn, newStatus);
-
+            log.info("Processed transaction: " + txn.getIdFinancialTxn());
         } catch (Exception e) {
             log.error(e.getLocalizedMessage());
             throw e;
@@ -121,14 +121,16 @@ public class FinTxnExecutionService {
         PositionDetail position = getPositionDetail(txn);
         processFinancialTxn(txn, position);
         position.setLastMtmExecuted(LocalDateTime.now());
-        positionDetailDAO.saveOrUpdate(position);
+        PositionDetail lastSaved = positionDetailDAO.saveOrUpdate(position);
         // A questo punto salvo il link
         if (status == TxnStatus.EXECUTED) {
             insertLink(txn, position);
         }
+        // Genero accounting event 
+        generateAccountingEvent(txn, lastSaved.getIdPositionDetail(), status);
     }
 
-    private void generateAccountingEvent(FinancialTxn txn, TxnStatus status) {
+    private void generateAccountingEvent(FinancialTxn txn, Integer positionDetailId, TxnStatus status) {
         if (txn == null) {
             log.error("Invalid Txn");
             throw new TxnProcessingException("Invalid Txn");
@@ -154,6 +156,7 @@ public class FinTxnExecutionService {
             event.setCreatedAt(LocalDateTime.now());
             event.setGeneratedBy(txn.getMasterData().getIdMasterData());
             event.setGeneratedRef("");
+            event.setPositionDetail(positionDetailId);
             accountingEventDAO.saveOrUpdate(event);
         } catch (Exception ex) {
             LoggerMgr.logInfo(ex.getLocalizedMessage());

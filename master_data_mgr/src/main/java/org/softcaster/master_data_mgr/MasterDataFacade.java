@@ -15,6 +15,7 @@ import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.ForexMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.IssuerDAO;
+import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.MmFutureMasterDataDAO;
 import org.softcaster.core.data.PortfolioMasterDataDAO;
 import org.softcaster.core.data.PositionMasterDataDAO;
@@ -41,6 +42,8 @@ public class MasterDataFacade {
         return cmdFutureMasterDataDAO;
     }
 
+    @Autowired
+    private MasterDataDAO masterDataDAO;
     @Autowired
     private SecurityMasterDataDAO securityMasterDataDAO;
     @Autowired
@@ -203,5 +206,19 @@ public class MasterDataFacade {
      */
     public BackwardScheduleGenerator getBackwardScheduleGenerator() {
         return backwardScheduleGenerator;
+    }
+
+    /**
+     * @return the masterDataDAO
+     */
+    public MasterDataDAO getMasterDataDAO() {
+        return masterDataDAO;
+    }
+
+    /**
+     * @param masterDataDAO the masterDataDAO to set
+     */
+    public void setMasterDataDAO(MasterDataDAO masterDataDAO) {
+        this.masterDataDAO = masterDataDAO;
     }
 }

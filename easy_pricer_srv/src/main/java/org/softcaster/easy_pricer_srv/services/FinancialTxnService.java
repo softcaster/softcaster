@@ -8,6 +8,7 @@ package org.softcaster.easy_pricer_srv.services;
  *
  * @author softc
  */
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import jakarta.persistence.EntityManager;
@@ -46,8 +47,13 @@ public class FinancialTxnService {
     @Autowired
     private SystemBusinessCalendarDAO systemBusinessCalendarDAO;
     @Autowired
-    @Qualifier("marketDataService") 
+    @Qualifier("marketDataService")
     private MarketDataService marketDataService;
+
+    @PostConstruct
+    public void init() {
+        this.marketDataService.loadSpotPrice();
+    }
 
     // Cancellazione logica marca solamente la transazione a TO_CANCEL ma
     // non la rimuove fisicamente da DB
@@ -171,18 +177,24 @@ public class FinancialTxnService {
     private Double getFxRate(FinancialTxn financialTxn) {
         try {
             SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
-            if(financialTxn.getMasterData().getCurrency().getIdCurrency().equals(sbc.getCurrency().getIdCurrency()))
-                return 1.;
-            else {
-                double rate = marketDataService.getSpotPrice(financialTxn.getMasterData().getIdMasterData(), RequestType.BID);
-                return rate;
+            // Per Fx Spot torno cambio contrattuale
+            if (financialTxn.getMasterData().getAssetClass().getCode().equals("FSP")) {
+                return financialTxn.getPrice();
+            } else {
+                if (financialTxn.getMasterData().getCurrency().getIdCurrency().equals(sbc.getCurrency().getIdCurrency())) {
+                    return 1.;
+                } else {
+                    String pair = sbc.getCurrency().getIsoCode() + financialTxn.getMasterData().getCurrency().getIsoCode();
+                    double rate = marketDataService.getSpotPrice(pair, RequestType.BID);
+                    return rate;
+                }
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new FinancialTxnException(ex.getLocalizedMessage());
-        }        
+        }
     }
-    
+
     private Date calcSettlementDate(FinancialTxn financialTxn) {
 
         if (financialTxn.getMasterData() != null) {

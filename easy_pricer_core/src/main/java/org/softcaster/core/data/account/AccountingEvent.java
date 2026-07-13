@@ -63,6 +63,9 @@ public class AccountingEvent implements Serializable {
     @Column(name = "processed_at")
     private LocalDateTime  processedAt;
     
+    @Column(name = "position_detail")
+    private Integer positionDetail;
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -220,5 +223,19 @@ public class AccountingEvent implements Serializable {
      */
     public void setProcessedAt(LocalDateTime processedAt) {
         this.processedAt = processedAt;
+    }
+
+    /**
+     * @return the positionDetail
+     */
+    public Integer getPositionDetail() {
+        return positionDetail;
+    }
+
+    /**
+     * @param positionDetail the positionDetail to set
+     */
+    public void setPositionDetail(Integer positionDetail) {
+        this.positionDetail = positionDetail;
     }
 }
