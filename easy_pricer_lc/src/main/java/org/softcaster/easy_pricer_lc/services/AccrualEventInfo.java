@@ -4,6 +4,7 @@
  */
 package org.softcaster.easy_pricer_lc.services;
 
+import java.time.LocalDate;
 import org.softcaster.core.data.PositionDetail;
 
 /**
@@ -12,6 +13,8 @@ import org.softcaster.core.data.PositionDetail;
  */
 public class AccrualEventInfo extends EventInfo {
     private PositionDetail detail;
+    private LocalDate from;
+    private LocalDate to;
 
     /**
      * @return the detail
@@ -27,4 +30,31 @@ public class AccrualEventInfo extends EventInfo {
         this.detail = detail;
     }
 
+    /**
+     * @return the from
+     */
+    public LocalDate getFrom() {
+        return from;
+    }
+
+    /**
+     * @param from the from to set
+     */
+    public void setFrom(LocalDate from) {
+        this.from = from;
+    }
+
+    /**
+     * @return the to
+     */
+    public LocalDate getTo() {
+        return to;
+    }
+
+    /**
+     * @param to the to to set
+     */
+    public void setTo(LocalDate to) {
+        this.to = to;
+    }
 }

@@ -39,7 +39,7 @@ public class LifeCycleJob {
 
     @Autowired
     private PositionDetailDAO positionDetailDAO;
-    
+
     @Autowired
     private PositionMasterDataDAO positionMasterDataDAO;
 
@@ -59,7 +59,7 @@ public class LifeCycleJob {
 
     @Autowired
     private SettlementLyfeCycleService slc;
-    
+
     @Autowired
     private AccrualLyfeCycleService alc;
 
@@ -71,8 +71,8 @@ public class LifeCycleJob {
     public void runLifeCycles() {
         runSettlementLyfeCycle();
         runAccrualLyfeCycle();
-    }    
-    
+    }
+
     // -------------------------------------------------------------------------
     //  Settlement LifeCycle
     // -------------------------------------------------------------------------
@@ -84,7 +84,7 @@ public class LifeCycleJob {
             }
         }
     }
-    
+
     void generateSettlementEvent(PositionTxnLinks link) {
 
         try {
@@ -113,7 +113,7 @@ public class LifeCycleJob {
             for (PositionMasterData pmd : positions) {
                 fetchPositionDetails(pmd);
             }
-        }        
+        }
     }
 
     private void fetchPositionDetails(PositionMasterData pmd) {
@@ -135,21 +135,24 @@ public class LifeCycleJob {
             CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
         }
     }
-    
+
     private void generateAccrualEvent(PositionDetail detail) {
         try {
             AccrualEventInfo info = new AccrualEventInfo();
             info.setDetail(detail);
+            info.setFrom(sbc.getLastOfficialDate());
+            info.setTo(sbc.getOfficialDate());
             AccountingEvent event = alc.generateEvent(info);
-            accountingEventDAO.saveOrUpdate(event);
+            if (event != null) {
+                accountingEventDAO.saveOrUpdate(event);
+            }
         } catch (Exception e) {
             log.error("### Error processing position: " + detail.getIdPositionDetail());
             throw new LifeCycleException(e.getLocalizedMessage());
         }
     }
     // -------------------------------------------------------------------------
-    
-    
+
     // Esempio chiamata
     //fetchPositionDetails(pmd,this::generateSettlementEvent);
     private void fetchPositionDetails(PositionMasterData pmd, Consumer<PositionDetail> processor) {

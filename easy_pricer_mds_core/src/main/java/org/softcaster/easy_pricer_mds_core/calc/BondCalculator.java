@@ -18,6 +18,7 @@ import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -98,6 +99,12 @@ public class BondCalculator {
         return response;
     }
 
+    public double getAccruals(SecurityMasterData securityMasterData, LocalDate accrualDate) {
+        double accruals = 0.;
+        List<CashFlow> flows = getCashFlow(securityMasterData.getCashFlows());
+        accruals = bondPricer.calculateAccruedInterest(flows, accrualDate, securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
+        return accruals;
+    }
     public double repriceBondForYieldShift(SecurityMasterData securityMasterData, LocalDate officialDate, double ytm, double basisPoints) {
 
         double yieldShift = basisPoints / 100.;
