@@ -10,7 +10,7 @@ import org.softcaster.core.data.PositionTxnLinks;
  *
  * @author ep
  */
-public class SettlementEventInfo extends EventInfo {
+public class LinkEventInfo extends EventInfo {
     private PositionTxnLinks link;
 
     /**
@@ -26,6 +26,4 @@ public class SettlementEventInfo extends EventInfo {
     public void setLink(PositionTxnLinks link) {
         this.link = link;
     }
-    
-    
 }

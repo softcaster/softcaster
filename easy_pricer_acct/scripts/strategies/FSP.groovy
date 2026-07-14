@@ -20,7 +20,7 @@ String accCommitQuote  = accountResolver.resolve("FXSPOT_COMMITMENT", quoteCcy)
 String accObsClearingQuote = accountResolver.resolve("OBS_CLEARING", quoteCcy)
 
 // Conti Reali di Stato Patrimoniale (Serie 120000 / 130000 / 240000)
-String accPositionControl = accountResolver.resolve("POSITION_CONTROL", eurCcy) 
+String accPositionControl = accountResolver.resolve("CURRENCY_POSITION", eurCcy) 
 String accSpotBase         = accountResolver.resolve("FX_SPOT_ASSET", baseCcy)     
 String accSpotQuote        = accountResolver.resolve("FX_SPOT_ASSET", quoteCcy)    
 String accPosition         = accountResolver.resolve("CURRENCY_POSITION", quoteCcy) 
@@ -54,7 +54,7 @@ switch(event.eventType) {
 
     case EventType.SETTLEMENT:
         // =========================================================================
-        // GIORNO T+2: STORNO MEMORANDUM + ACCENSIONE REGISTRI REALI
+        // GIORNO T+2: STORNO MEMORANDUM + ACCENSIONE REGISTRI REALI 
         // =========================================================================
         if (txn.txnSide == TxnSide.BUY) {
             // 1. STORNO IN NERO DEI CONTI MEMORANDUM (* -1.0) -> Gli impegni muoiono
@@ -63,23 +63,25 @@ switch(event.eventType) {
             ctx.journal.debit(accObsClearingQuote, quoteAmount * (-1.0), quoteCcy)
             ctx.journal.credit(accCommitQuote, quoteAmount * (-1.0), quoteCcy)
 
-            // 2. ACCENSIONE DELLA CONTABILITÀ REALE PATRIMONIALE (I saldi entrano nei libri)
-            ctx.journal.debit(accPositionControl, baseAmount, baseCcy)
-            ctx.journal.credit(accSpotBase, baseAmount, baseCcy)
-            ctx.journal.debit(accSpotQuote, quoteAmount, quoteCcy)
-            ctx.journal.credit(accPosition, quoteAmount, quoteCcy)
-        } else if (txn.txnSide == TxnSide.SELL) {
+            // 2. ACCENSIONE DELLA CONTABILITÀ REALE PATRIMONIALE
+            ctx.journal.debit(accSpotBase, baseAmount, baseCcy)
+            ctx.journal.credit(accPositionControl, baseAmount, baseCcy)
+
+            ctx.journal.debit(accPosition, quoteAmount, quoteCcy)
+            ctx.journal.credit(accSpotQuote, quoteAmount, quoteCcy)
+        } 
+        else if (txn.txnSide == TxnSide.SELL) {
             // 1. STORNO IN NERO DEI CONTI MEMORANDUM (* -1.0)
             ctx.journal.debit(accObsClearingBase, baseAmount * (-1.0), baseCcy)
             ctx.journal.credit(accCommitBase, baseAmount * (-1.0), baseCcy)
             ctx.journal.debit(accCommitQuote, quoteAmount * (-1.0), quoteCcy)
             ctx.journal.credit(accObsClearingQuote, quoteAmount * (-1.0), quoteCcy)
 
-            // 2. ACCENSIONE DELLA CONTABILITÀ REALE PATRIMONIALE
-            ctx.journal.debit(accSpotBase, baseAmount, baseCcy)
-            ctx.journal.credit(accPositionControl, baseAmount, baseCcy)
-            ctx.journal.debit(accPosition, quoteAmount, quoteCcy)
-            ctx.journal.credit(accSpotQuote, quoteAmount, quoteCcy)
+            ctx.journal.debit(accPositionControl, baseAmount, baseCcy)     
+            ctx.journal.credit(accSpotBase, baseAmount, baseCcy)           
+
+            ctx.journal.debit(accSpotQuote, quoteAmount, quoteCcy)         
+            ctx.journal.credit(accPosition, quoteAmount, quoteCcy)          
         }
         
         ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED        
@@ -96,6 +98,8 @@ switch(event.eventType) {
             ctx.journal.debit(accPosition, unrealizedAmt, quoteCcy)
             ctx.journal.credit(accUnrealizedGain, unrealizedAmt, eurCcy)
         }
+
+        ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
         break
 
     case EventType.ROLLOVER:
@@ -103,6 +107,8 @@ switch(event.eventType) {
         double swapCost = ctx.getSwapPointsCost() 
         ctx.journal.debit(accRealizedLoss, swapCost, quoteCcy)
         ctx.journal.credit(accPosition, swapCost, quoteCcy)
+
+        ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
         break
 
     case EventType.TRADE_AMENDED:

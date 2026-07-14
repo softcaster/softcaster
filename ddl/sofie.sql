@@ -1162,6 +1162,7 @@ CREATE TABLE system_business_calendar (
     calendar integer, 
     currency integer NOT NULL UNIQUE, 
     status integer NOT NULL,  
+    last_official_date  DATE NOT NULL,
     official_date       DATE NOT NULL,
     next_business_date  DATE,
     version INTEGER NOT NULL DEFAULT 0,

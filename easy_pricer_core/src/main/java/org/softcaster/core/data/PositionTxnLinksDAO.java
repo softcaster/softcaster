@@ -25,7 +25,7 @@ public class PositionTxnLinksDAO {
         return repository.save(positionTxnLinks);
     }
 
-    @Transactional 
+    @Transactional
     public void delete(PositionTxnLinks positionTxnLinks) {
         repository.delete(positionTxnLinks);
     }
@@ -33,5 +33,16 @@ public class PositionTxnLinksDAO {
     @Transactional // Transactional mantiene attivo il lock su Postgres
     public List<PositionTxnLinks> fetchAndClaimLinks(LocalDate officialDate) {
         return repository.fetchAndClaimLinks(officialDate);
-    }            
+    }
+
+    @Transactional(readOnly = true)
+    public Integer findMasterDataIdByTxnLinkId(Integer posTxnLinkId) {
+        if (posTxnLinkId == null) {
+            return null;
+        }
+
+        // Ritorna l'id se presente, altrimenti null (cardinalità singola)
+        return repository.findMasterDataIdByTxnLinkIdNative(posTxnLinkId)
+                .orElse(null);
+    }
 }

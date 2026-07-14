@@ -215,3 +215,6 @@ alter table future_master_data alter column last_trading_date set not null;
 alter table instrument_valuation add column dv01 numeric(15, 5) NOT NULL DEFAULT 0;
 alter table accounting_events add column position_detail integer NOT NULL DEFAULT 0;
 
+alter table system_business_calendar add column last_official_date  DATE;
+update system_business_calendar set last_official_date = official_date;
+alter table system_business_calendar alter column last_official_date set not null;

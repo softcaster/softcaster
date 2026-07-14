@@ -30,7 +30,7 @@ public class SettlementLyfeCycleService implements LifeCycleHandler {
     @Override
     public AccountingEvent generateEvent(EventInfo info) throws LifeCycleException {
 
-        if (!(info instanceof SettlementEventInfo settlementEventInfo)) {
+        if (!(info instanceof LinkEventInfo settlementEventInfo)) {
             String error = "### Invalid EventInfo";
             log.error(error);
             throw new LifeCycleException(error);
@@ -59,6 +59,7 @@ public class SettlementLyfeCycleService implements LifeCycleHandler {
             event.setSourceType(EventSourceType.TRADE);
             event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + "[" + EventType.SETTLEMENT.getCode() + "]" + LocalDate.now());
             event.setCreatedAt(LocalDateTime.now());
+            event.setPositionDetail(link.getPositionDetail());
             event.setGeneratedBy(txn.getMasterData().getIdMasterData());
             event.setGeneratedRef("");
         } catch (Exception e) {

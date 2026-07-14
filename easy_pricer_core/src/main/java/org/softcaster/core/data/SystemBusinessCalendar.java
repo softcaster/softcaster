@@ -40,6 +40,9 @@ public class SystemBusinessCalendar implements Serializable {
     @Column(name = "status")
     private SbcStatus status;
 
+    @Column(name = "last_official_date")
+    private LocalDate lastOfficialDate;
+
     @Column(name = "official_date")
     private LocalDate officialDate;
 
@@ -176,5 +179,19 @@ public class SystemBusinessCalendar implements Serializable {
      */
     public void setCurrency(Currency currency) {
         this.currency = currency;
+    }
+
+    /**
+     * @return the lastOfficialDate
+     */
+    public LocalDate getLastOfficialDate() {
+        return lastOfficialDate;
+    }
+
+    /**
+     * @param lastOfficialDate the lastOfficialDate to set
+     */
+    public void setLastOfficialDate(LocalDate lastOfficialDate) {
+        this.lastOfficialDate = lastOfficialDate;
     }
 }

@@ -53,6 +53,19 @@ public class PositionDetailDAO {
         return Optional.of(details);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Optional<List<PositionDetail>> fetchAndClaimByPositionMasterData(PositionMasterData pmd) {
+
+        // 1. Legge e blocca i dettagli scaduti, ignorando quelli bloccatida eventuale altro server
+        List<PositionDetail> details = repository.getAndLockByPositionMasterData(pmd.getIdPosition());
+
+        if (details.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(details);
+    }
+
     @Transactional(readOnly = true)
     public List<PositionDetail> findAll() {
         return repository.findAll();

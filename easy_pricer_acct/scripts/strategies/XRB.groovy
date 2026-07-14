@@ -55,13 +55,15 @@ if (tradeCcy == eurCcy) {
                 ctx.journal.credit(accBondAsset, bondValue, eurCcy)
                 ctx.journal.credit(accAccruedInt, accruedBuy, eurCcy)
             }
-            ctx.accountingPhase = AccountingPhase.MEMO_POSTED
+            ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
             break
 
         case EventType.ACCRUAL:
             double dailyAccrual = ctx.getDailyAccrualAmount()
             ctx.journal.debit(accAccruedInt, dailyAccrual, eurCcy)
             ctx.journal.credit(accInterestInc, dailyAccrual, eurCcy)
+
+            ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
             break
 
         case EventType.COUPON:
@@ -74,6 +76,8 @@ if (tradeCcy == eurCcy) {
             ctx.journal.debit(accCashReal, txn.quantity, eurCcy)
             ctx.journal.credit(accBondAsset, txn.quantity, eurCcy)
             ctx.accountingPhase = txn.txnAcctPhase
+
+            ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
             break
 
         case EventType.TRADE_AMENDED:
@@ -170,6 +174,8 @@ switch(event.eventType) {
             
         ctx.journal.debit(accCtrlEUR, dailyAccrualEUR, eurCcy)
         ctx.journal.credit(accInterestInc, dailyAccrualEUR, eurCcy)
+        
+        ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
         break
 
     case EventType.COUPON:
@@ -183,6 +189,8 @@ switch(event.eventType) {
             
         ctx.journal.debit(accPosCcy, couponAmountCcy, tradeCcy)
         ctx.journal.credit(accCtrlEUR, couponAmountEUR, eurCcy)
+        
+        ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
         break
 
     case EventType.MATURITY:
@@ -196,7 +204,8 @@ switch(event.eventType) {
             
         ctx.journal.debit(accPosCcy, faceValueCcy, tradeCcy)
         ctx.journal.credit(accCtrlEUR, faceValueEUR, eurCcy)
-        ctx.accountingPhase = txn.txnAcctPhase
+        
+        ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
         break
 
     case EventType.TRADE_AMENDED:

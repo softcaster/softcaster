@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import org.slf4j.LoggerFactory;
-import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.PositionMasterData;
@@ -23,8 +22,9 @@ import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.easy_pricer_lc.exceptions.LifeCycleException;
-import org.softcaster.easy_pricer_lc.services.EngineStateManager;
-import org.softcaster.easy_pricer_lc.services.SettlementEventInfo;
+import org.softcaster.easy_pricer_lc.services.AccrualEventInfo;
+import org.softcaster.easy_pricer_lc.services.AccrualLyfeCycleService;
+import org.softcaster.easy_pricer_lc.services.LinkEventInfo;
 import org.softcaster.easy_pricer_lc.services.SettlementLyfeCycleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,21 +35,22 @@ import org.springframework.stereotype.Component;
 public class LifeCycleJob {
 
     private static final Logger log = LoggerFactory.getLogger(LifeCycleJob.class);
-
-    @Autowired
-    private EngineStateManager engineStateManager;
-
-    @Autowired
-    private FinancialTxnDAO financialTxnDAO;
+    private SystemBusinessCalendar sbc = null;
 
     @Autowired
     private PositionDetailDAO positionDetailDAO;
-
+    
     @Autowired
     private PositionMasterDataDAO positionMasterDataDAO;
 
     @Autowired
-    SystemBusinessCalendarDAO sbcDAO;
+    private PositionTxnLinksDAO positionTxnLinksDAO;
+
+    @Autowired
+    private AccountingEventDAO accountingEventDAO;
+
+    @Autowired
+    private SystemBusinessCalendarDAO sbcDAO;
 
     // Iniezione del pool di thread 
     @Autowired
@@ -57,15 +58,10 @@ public class LifeCycleJob {
     private TaskExecutor taskExecutor;
 
     @Autowired
-    PositionTxnLinksDAO positionTxnLinksDAO;
-
+    private SettlementLyfeCycleService slc;
+    
     @Autowired
-    AccountingEventDAO accountingEventDAO;
-
-    @Autowired
-    SettlementLyfeCycleService slc;
-
-    private SystemBusinessCalendar sbc = null;
+    private AccrualLyfeCycleService alc;
 
     @PostConstruct
     public void init() {
@@ -74,8 +70,12 @@ public class LifeCycleJob {
 
     public void runLifeCycles() {
         runSettlementLyfeCycle();
-    }
-
+        runAccrualLyfeCycle();
+    }    
+    
+    // -------------------------------------------------------------------------
+    //  Settlement LifeCycle
+    // -------------------------------------------------------------------------
     private void runSettlementLyfeCycle() {
         List<PositionTxnLinks> links = positionTxnLinksDAO.fetchAndClaimLinks(sbc.getOfficialDate());
         if (!links.isEmpty()) {
@@ -84,11 +84,11 @@ public class LifeCycleJob {
             }
         }
     }
-
+    
     void generateSettlementEvent(PositionTxnLinks link) {
 
         try {
-            SettlementEventInfo info = new SettlementEventInfo();
+            LinkEventInfo info = new LinkEventInfo();
             info.setLink(link);
             AccountingEvent event = slc.generateEvent(info);
             accountingEventDAO.saveOrUpdate(event);
@@ -96,9 +96,60 @@ public class LifeCycleJob {
             log.error("### Error processing txn: " + link.getFinancialTxn());
             throw new LifeCycleException(e.getLocalizedMessage());
         }
+    }
+    // -------------------------------------------------------------------------
 
+    // -------------------------------------------------------------------------
+    //  Accrual LifeCycle
+    // -------------------------------------------------------------------------
+    private void runAccrualLyfeCycle() {
+        fetchPosition();
     }
 
+    private void fetchPosition() {
+        List<PositionMasterData> positions = positionMasterDataDAO.findAll();
+
+        if (!positions.isEmpty()) {
+            for (PositionMasterData pmd : positions) {
+                fetchPositionDetails(pmd);
+            }
+        }        
+    }
+
+    private void fetchPositionDetails(PositionMasterData pmd) {
+        List<PositionDetail> details = positionDetailDAO.fetchAndClaimByPositionMasterData(pmd).orElse(null);
+
+        if (details != null && !details.isEmpty()) {
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+            for (PositionDetail detail : details) {
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    try {
+                        generateAccrualEvent(detail);
+                    } catch (Exception e) {
+                        log.error("### Life Cycle error for position {}: {}", detail.getIdPositionDetail(), e.getMessage());
+                    }
+                }, taskExecutor);
+                futures.add(future);
+            }
+            CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+        }
+    }
+    
+    private void generateAccrualEvent(PositionDetail detail) {
+        try {
+            AccrualEventInfo info = new AccrualEventInfo();
+            info.setDetail(detail);
+            AccountingEvent event = alc.generateEvent(info);
+            accountingEventDAO.saveOrUpdate(event);
+        } catch (Exception e) {
+            log.error("### Error processing position: " + detail.getIdPositionDetail());
+            throw new LifeCycleException(e.getLocalizedMessage());
+        }
+    }
+    // -------------------------------------------------------------------------
+    
+    
     // Esempio chiamata
     //fetchPositionDetails(pmd,this::generateSettlementEvent);
     private void fetchPositionDetails(PositionMasterData pmd, Consumer<PositionDetail> processor) {
