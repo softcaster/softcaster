@@ -9,10 +9,12 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
+import org.softcaster.core.data.PositionTxnLinksDAO;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.account.AccountingEventAccruals;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.engine.enums.AccountingEventStatus;
+import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.EventSourceType;
 import org.softcaster.engine.enums.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ public class BondScheduler implements IScheduler {
 
     @Autowired
     private BondCalculator bondCalculator;
+    @Autowired
+    PositionTxnLinksDAO positionTxnLinksDAO;
 
     /**
      *
@@ -37,13 +41,19 @@ public class BondScheduler implements IScheduler {
         AccountingEventAccruals accountingEvent = null;
         if (masterData instanceof SecurityMasterData smd) {
             accountingEvent = new AccountingEventAccruals();
-
+            
+            // Gestisco back-dated transaction con differenza tra nominale operativo e 
+            // nominale memo
+            double memoAmount = positionTxnLinksDAO.sumQuantityByPhase(detail.getIdPositionDetail(),
+                    AccountingPhase.MEMO_POSTED);
+            double operationalAmount = (detail.getBuyQty() - detail.getSellQty());
+            double accrualAmount = (operationalAmount-memoAmount)* smd.getMultiplier();
+            // accrual in vase 100
             double accrualsFrom = bondCalculator.getAccruals(smd, from);
             double accrualsTo = bondCalculator.getAccruals(smd, to);
-            double quantity = (detail.getBuyQty() - detail.getSellQty()) * smd.getMultiplier();
-            double accruals = (accrualsTo - accrualsFrom) * quantity;
+            double accruals = (accrualsTo - accrualsFrom) * accrualAmount;
             accountingEvent.setAccrualAmount(accruals);
-            accountingEvent.setAccountingNominal(quantity);
+            accountingEvent.setAccountingNominal(accrualAmount);
             accountingEvent.setCouponRate(smd.getInterestRate());
             accountingEvent.setDaycount(smd.getAccrualDaycount());
             long days = ChronoUnit.DAYS.between(from, to);

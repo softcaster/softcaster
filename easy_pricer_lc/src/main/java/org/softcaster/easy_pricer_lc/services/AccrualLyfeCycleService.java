@@ -61,9 +61,6 @@ public class AccrualLyfeCycleService implements LifeCycleHandler {
                 IScheduler scheduler = schedulerDispatcher.dispatch(masterData.getAssetClass().getCode());
                 if (scheduler != null) {
                     event = scheduler.getAccountingEventAccrual(detail, masterData, from, to);
-                    if (event != null) {
-                        accountingEventAccrualsDAO.saveOrUpdate(event);
-                    }
                 }
             }
         }

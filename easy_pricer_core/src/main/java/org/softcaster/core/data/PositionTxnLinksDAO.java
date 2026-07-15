@@ -2,6 +2,7 @@ package org.softcaster.core.data;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.softcaster.engine.enums.AccountingPhase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,4 +46,10 @@ public class PositionTxnLinksDAO {
         return repository.findMasterDataIdByTxnLinkIdNative(posTxnLinkId)
                 .orElse(null);
     }
+
+    @Transactional(readOnly = true)
+    public double sumQuantityByPhase(Integer positionDetailId, AccountingPhase phase) {
+        return repository.sumQuantityByPhase(positionDetailId, phase);
+    }
+
 }

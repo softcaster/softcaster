@@ -20,12 +20,14 @@ import org.softcaster.core.data.PositionTxnLinksDAO;
 import org.softcaster.core.data.SystemBusinessCalendar;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.data.account.AccountingEvent;
+import org.softcaster.core.data.account.AccountingEventAccruals;
 import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.easy_pricer_lc.exceptions.LifeCycleException;
 import org.softcaster.easy_pricer_lc.services.AccrualEventInfo;
 import org.softcaster.easy_pricer_lc.services.AccrualLyfeCycleService;
 import org.softcaster.easy_pricer_lc.services.LinkEventInfo;
 import org.softcaster.easy_pricer_lc.services.SettlementLyfeCycleService;
+import org.softcaster.engine.utils.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
@@ -70,7 +72,7 @@ public class LifeCycleJob {
 
     public void runLifeCycles() {
         runSettlementLyfeCycle();
-        //runAccrualLyfeCycle();
+        runAccrualLyfeCycle();
     }
 
     // -------------------------------------------------------------------------
@@ -144,7 +146,11 @@ public class LifeCycleJob {
             info.setTo(sbc.getOfficialDate());
             AccountingEvent event = alc.generateEvent(info);
             if (event != null) {
-                accountingEventDAO.saveOrUpdate(event);
+                if (event instanceof AccountingEventAccruals aea) {
+                    if (!NumberUtils.isZero(aea.getAccrualAmount())) {
+                        accountingEventDAO.saveOrUpdate(event);
+                    }
+                }
             }
         } catch (Exception e) {
             log.error("### Error processing position: " + detail.getIdPositionDetail());

@@ -5,6 +5,7 @@ import jakarta.persistence.QueryHint;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.softcaster.engine.enums.AccountingPhase;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -34,4 +35,14 @@ public interface PositionTxnLinksRepository extends JpaRepository<PositionTxnLin
         """,
             nativeQuery = true)
     Optional<Integer> findMasterDataIdByTxnLinkIdNative(@Param("posTxnLinkId") Integer posTxnLinkId);
+
+    @Query("""
+        select coalesce(sum(p.quantity), 0)
+        from PositionTxnLinks p
+        where p.positionDetail = :positionDetailId
+          and p.txnAcctPhase = :phase
+    """)
+    double sumQuantityByPhase(
+            @Param("positionDetailId") Integer positionDetailId,
+            @Param("phase") AccountingPhase phase);
 }
