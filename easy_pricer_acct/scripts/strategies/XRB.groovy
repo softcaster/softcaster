@@ -5,7 +5,7 @@ import org.softcaster.engine.enums.AccountingPhase
 def txn = ctx.txn
 def event = ctx.event
 
-int tradeCcy = txn.masterData.currency?.idCurrency 
+int tradeCcy = ctx.currency
 int eurCcy   = 1 // ID fisso dell'Euro
 
 // =========================================================================

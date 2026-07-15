@@ -55,6 +55,9 @@ public class BondScheduler implements IScheduler {
             accountingEvent.setSourceId(detail.getIdPositionDetail());
             accountingEvent.setSourceType(EventSourceType.INSTRUMENT);
             accountingEvent.setEventKey(smd.getCode() + " [" + detail.getIdPositionDetail() + "] " + "[" +EventType.ACCRUAL.getCode() + "]" + LocalDate.now());
+            accountingEvent.setGeneratedBy(smd.getIdMasterData());
+            accountingEvent.setGeneratedRef(smd.getCode());
+            accountingEvent.setSourceId(detail.getIdPositionDetail());
         }
 
         return accountingEvent;

@@ -70,7 +70,7 @@ public class LifeCycleJob {
 
     public void runLifeCycles() {
         runSettlementLyfeCycle();
-        runAccrualLyfeCycle();
+        //runAccrualLyfeCycle();
     }
 
     // -------------------------------------------------------------------------

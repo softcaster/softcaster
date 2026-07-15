@@ -238,4 +238,5 @@ public class AccountingEvent implements Serializable {
     public void setPositionDetail(Integer positionDetail) {
         this.positionDetail = positionDetail;
     }
+
 }

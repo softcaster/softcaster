@@ -120,10 +120,12 @@ CREATE TABLE accounting_events (
     generated_ref varchar(100), -- batch_20260530_01
     created_at timestamp NOT NULL DEFAULT now(),
     processed_at timestamp NULL, -- null fino a quando event nonè processato
+    currency integer NOT NULL,
     PRIMARY KEY (event_id),
     CONSTRAINT fk_event_type FOREIGN KEY (event_type) REFERENCES accounting_event_types (event_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_event_status FOREIGN KEY (event_status) REFERENCES accounting_event_status (event_status_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_source_type FOREIGN KEY (source_type) REFERENCES event_source_types (source_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_source_type FOREIGN KEY (source_type) REFERENCES event_source_types (source_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_acct_event_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 -- Per garantire idemponenza (1 event_key per record)

@@ -10,6 +10,7 @@ import java.util.Objects;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.account.AccountingEvent;
+import org.softcaster.core.data.account.AccountingEventAccruals;
 import org.softcaster.core.data.account.GlAccountDAO;
 import org.softcaster.core.data.account.JournalEntryLines;
 import org.softcaster.core.data.account.JournalEntryLinesDAO;
@@ -28,10 +29,12 @@ public class AccountingContext {
     private final JournalDsl journal;
     private final AccountingEvent event;
     private AccountingPhase accountingPhase;
+    private Integer currency;
 
-    public AccountingContext(FinancialTxn txn, JournalDsl journal, AccountingEvent event) {
+    public AccountingContext(FinancialTxn txn, JournalDsl journal, Integer currency, AccountingEvent event) {
         this.txn = txn;
         this.journal = journal;
+        this.currency = currency;
         this.event = event;
         this.accountingPhase = AccountingPhase.NONE;
     }
@@ -55,6 +58,15 @@ public class AccountingContext {
      */
     public AccountingEvent getEvent() {
         return event;
+    }
+
+    public double getDailyAccrualAmount() {
+        double dailyAccrualAmount = 0.;
+        if (event instanceof AccountingEventAccruals accrualEvent) {
+            dailyAccrualAmount = accrualEvent.getAccrualAmount();
+        }
+
+        return dailyAccrualAmount;
     }
 
     /**
@@ -141,5 +153,19 @@ public class AccountingContext {
      */
     public void setAccountingPhase(AccountingPhase accountingPhase) {
         this.accountingPhase = accountingPhase;
+    }
+
+    /**
+     * @return the currency
+     */
+    public Integer getCurrency() {
+        return currency;
+    }
+
+    /**
+     * @param currency the currency to set
+     */
+    public void setCurrency(Integer currency) {
+        this.currency = currency;
     }
 }

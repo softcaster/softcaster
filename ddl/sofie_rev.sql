@@ -218,3 +218,16 @@ alter table accounting_events add column position_detail integer NOT NULL DEFAUL
 alter table system_business_calendar add column last_official_date  DATE;
 update system_business_calendar set last_official_date = official_date;
 alter table system_business_calendar alter column last_official_date set not null;
+
+alter table accounting_events add column currency integer;
+update accounting_events set currency = (select id_currency from currency where iso_code='EUR');
+alter table accounting_events alter column currency set not null;
+alter table accounting_events add CONSTRAINT fk_acct_event_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+alter table accounting_events drop CONSTRAINT fk_acct_event_currency;
+alter table accounting_events drop column currency;
+
+delete from accounting_event_accruals where event_id=7;
+delete from journal_entry_lines where journal_entry=(select journal_entry_id from journal_entries where accounting_event = 7);
+delete from journal_entries where accounting_event = 7;
+delete from accounting_events where event_id=7;

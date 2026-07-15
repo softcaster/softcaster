@@ -1,5 +1,6 @@
 delete from journal_entry_lines;
 delete from journal_entries;
+delete from accounting_event_accruals;
 delete from accounting_events;
 delete from position_txn_links;
 delete from position_detail;

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventDAO;
+import org.softcaster.easy_pricer_acct.services.AccrualAccountingEventService;
 import org.softcaster.easy_pricer_acct.services.EngineStateManager;
 import org.softcaster.engine.enums.EventSourceType;
 import org.softcaster.engine.enums.EventType;
@@ -35,7 +36,10 @@ public class AcctPollingJob {
 
     @Autowired
     private TradeAccountingEventService tradeAccountingEventService;
-
+    
+    @Autowired
+    private AccrualAccountingEventService accrualAccountingEventService;
+    
     @Autowired
     @Qualifier("acctEventExecutor")
     private TaskExecutor taskExecutor;
@@ -106,6 +110,25 @@ public class AcctPollingJob {
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
     }
 
+    private void elabAccrualEvents(List<AccountingEvent> accrualEvents) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        for (AccountingEvent event : accrualEvents) {
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    accrualAccountingEventService.processEvent(event);
+                } catch (Exception e) {
+                    log.error("### ERROR EXECUTED ID {}: {}", event.getEventId(), e.getMessage());
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                }
+            }, taskExecutor);
+
+            futures.add(future);
+        }
+
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+    }
+    
     private void poolPendingAmendedTradeEvents() {
         List<AccountingEvent> pendingEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.TRADE,
                 EventType.TRADE_AMENDED);
@@ -156,6 +179,17 @@ public class AcctPollingJob {
         }
     }
 
+    protected void pollPendingAccrualEvents() {
+        List<AccountingEvent> accrualEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.INSTRUMENT,
+                EventType.ACCRUAL);
+
+        if (!accrualEvents.isEmpty()) {
+            log.info("=== [BATCH START] find {} ACCRUAL event(s) ===", accrualEvents.size());
+            elabAccrualEvents(accrualEvents);
+            log.info("=== [BATCH END] Processing completed ===\n");
+        }
+    }
+
     @Scheduled(fixedDelay = 15000)
     public void pollAccountinEvents() {
         if (engineStateManager.isSuspended()) {
@@ -164,5 +198,7 @@ public class AcctPollingJob {
         }
         pollPendingAccountingTradeEvents();
         pollPendingSettlementTradeEvents();
+        pollPendingAccrualEvents();
     }
+
 }
