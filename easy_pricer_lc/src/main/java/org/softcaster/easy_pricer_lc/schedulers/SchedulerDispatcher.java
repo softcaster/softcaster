@@ -15,8 +15,6 @@ public class SchedulerDispatcher {
 
     private static final Logger log = LoggerFactory.getLogger(SchedulerDispatcher.class);
     
-    // Spring riempie automaticamente questa mappa con tutti i Bean 
-    // che implementano IPositionEvaluator, usando il nome nel @Component come chiave.
     @Autowired
     private Map<String, IScheduler> schedulersMap;
 

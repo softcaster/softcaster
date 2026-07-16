@@ -16,7 +16,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_eod.ui.models.TreeModel;
+import org.softcaster.easy_pricer_eod.ui.views.AcctEnginePanel;
 import org.softcaster.easy_pricer_eod.ui.views.HomePanel;
+import org.softcaster.easy_pricer_eod.ui.views.LifeCycleEnginePanel;
+import org.softcaster.easy_pricer_eod.ui.views.MtmEnginePanel;
 import org.softcaster.easy_pricer_eod.ui.views.ProcEnginePanel;
 import org.softcaster.easy_pricer_eod.ui.views.RestEnginePanel;
 import org.softcaster.easy_pricer_eod.ui.views.ServiceInfo;
@@ -148,11 +151,20 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         cardMap.put(AppCard.REST_ENGINE_CARD, rePanel);
         JPanel pePanel = new ProcEnginePanel(eodFacade);
         cardMap.put(AppCard.TRADE_PROCESSOR_CARD, pePanel);
+        JPanel lcPanel = new LifeCycleEnginePanel(eodFacade);
+        cardMap.put(AppCard.SCHEDULER_CARD, lcPanel);
+        JPanel mtmPanel = new MtmEnginePanel(eodFacade);
+        cardMap.put(AppCard.MTM_ENGINE_CARD, mtmPanel);
+        JPanel acctPanel = new AcctEnginePanel(eodFacade);
+        cardMap.put(AppCard.ACCT_ENGINE_CARD, acctPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
         mainPanel.add(rePanel, AppCard.REST_ENGINE_CARD.name());
         mainPanel.add(pePanel, AppCard.TRADE_PROCESSOR_CARD.name());
+        mainPanel.add(lcPanel, AppCard.SCHEDULER_CARD.name());
+        mainPanel.add(mtmPanel, AppCard.MTM_ENGINE_CARD.name());
+        mainPanel.add(acctPanel, AppCard.ACCT_ENGINE_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

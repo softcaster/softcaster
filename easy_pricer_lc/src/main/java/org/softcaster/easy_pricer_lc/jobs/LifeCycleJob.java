@@ -70,20 +70,44 @@ public class LifeCycleJob {
         sbc = sbcDAO.findBySbcId(1);
     }
 
+    public String runSettlementLyfeCycleOnLine() {
+        String result = "";
+        try {
+            runSettlementLyfeCycle();
+        } catch (Exception ex) {
+            result = ex.getLocalizedMessage();
+        }
+        return result;
+    }
+
+    public String runAccrualLyfeCycleOnLine() {
+        String result = "";
+        try {
+            runAccrualLyfeCycle();
+        } catch (Exception ex) {
+            result = ex.getLocalizedMessage();
+        }
+        return result;
+    }
+
     public void runLifeCycles() {
-        runSettlementLyfeCycle();
         runAccrualLyfeCycle();
+        runSettlementLyfeCycle();
     }
 
     // -------------------------------------------------------------------------
     //  Settlement LifeCycle
     // -------------------------------------------------------------------------
     private void runSettlementLyfeCycle() {
-        List<PositionTxnLinks> links = positionTxnLinksDAO.fetchAndClaimLinks(sbc.getOfficialDate());
-        if (!links.isEmpty()) {
-            for (PositionTxnLinks link : links) {
-                generateSettlementEvent(link);
+        try {
+            List<PositionTxnLinks> links = positionTxnLinksDAO.fetchAndClaimLinks(sbc.getOfficialDate());
+            if (!links.isEmpty()) {
+                for (PositionTxnLinks link : links) {
+                    generateSettlementEvent(link);
+                }
             }
+        } catch (Exception ex) {
+            throw ex;
         }
     }
 
@@ -92,8 +116,12 @@ public class LifeCycleJob {
         try {
             LinkEventInfo info = new LinkEventInfo();
             info.setLink(link);
-            AccountingEvent event = slc.generateEvent(info);
-            accountingEventDAO.saveOrUpdate(event);
+            List<AccountingEvent> events = slc.generateEvents(info);
+            if (events != null && !events.isEmpty()) {
+                for (AccountingEvent event : events) {
+                    accountingEventDAO.saveOrUpdate(event);
+                }
+            }
         } catch (Exception e) {
             log.error("### Error processing txn: " + link.getFinancialTxn());
             throw new LifeCycleException(e.getLocalizedMessage());
@@ -105,16 +133,24 @@ public class LifeCycleJob {
     //  Accrual LifeCycle
     // -------------------------------------------------------------------------
     private void runAccrualLyfeCycle() {
-        fetchPosition();
+        try {
+            fetchPosition();
+        } catch (Exception ex) {
+            throw ex;
+        }
     }
 
     private void fetchPosition() {
         List<PositionMasterData> positions = positionMasterDataDAO.findAll();
 
-        if (!positions.isEmpty()) {
-            for (PositionMasterData pmd : positions) {
-                fetchPositionDetails(pmd);
+        try {
+            if (!positions.isEmpty()) {
+                for (PositionMasterData pmd : positions) {
+                    fetchPositionDetails(pmd);
+                }
             }
+        } catch (Exception ex) {
+            throw ex;
         }
     }
 
@@ -128,8 +164,9 @@ public class LifeCycleJob {
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
                         generateAccrualEvent(detail);
-                    } catch (Exception e) {
-                        log.error("### Life Cycle error for position {}: {}", detail.getIdPositionDetail(), e.getMessage());
+                    } catch (Exception ex) {
+                        log.error("### Life Cycle error for position {}: {}", detail.getIdPositionDetail(), ex.getMessage());
+                        throw ex;
                     }
                 }, taskExecutor);
                 futures.add(future);
@@ -144,11 +181,13 @@ public class LifeCycleJob {
             info.setDetail(detail);
             info.setFrom(sbc.getLastOfficialDate());
             info.setTo(sbc.getOfficialDate());
-            AccountingEvent event = alc.generateEvent(info);
-            if (event != null) {
-                if (event instanceof AccountingEventAccruals aea) {
-                    if (!NumberUtils.isZero(aea.getAccrualAmount())) {
-                        accountingEventDAO.saveOrUpdate(event);
+            List<AccountingEvent> events = alc.generateEvents(info);
+            if (events != null && !events.isEmpty()) {
+                for (AccountingEvent event : events) {
+                    if (event instanceof AccountingEventAccruals aea) {
+                        if (!NumberUtils.isZero(aea.getAccrualAmount())) {
+                            accountingEventDAO.saveOrUpdate(event);
+                        }
                     }
                 }
             }
@@ -173,6 +212,7 @@ public class LifeCycleJob {
                         processor.accept(detail);
                     } catch (Exception e) {
                         log.error("### LIFECYCLE ERROR FOR POSITION DETAIL ID {}: {}", detail.getIdPositionDetail(), e.getMessage());
+                        throw e;
                     }
                 }, taskExecutor);
                 futures.add(future);

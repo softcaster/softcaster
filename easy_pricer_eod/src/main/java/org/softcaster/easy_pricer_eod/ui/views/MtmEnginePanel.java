@@ -16,7 +16,7 @@ import org.springframework.web.client.RestClient;
  *
  * @author softc
  */
-public final class ProcEnginePanel extends javax.swing.JPanel implements ServicePanel, ServiceInfo {
+public final class MtmEnginePanel extends javax.swing.JPanel implements ServicePanel, ServiceInfo {
 
     RestServiceDescriptor descriptor = null;
     EODFacade eodFacade;
@@ -29,13 +29,13 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
      *
      * @param eodFacade
      */
-    public ProcEnginePanel(EODFacade eodFacade) {
+    public MtmEnginePanel(EODFacade eodFacade) {
         initComponents();
         this.eodFacade = eodFacade;
         messageList.setModel(listModel);
         messageList.setBorder(new EmptyBorder(10, 15, 10, 15));
         loadServiceDescriptor();
-        appendMessage("Trade Processing ready...");
+        appendMessage("MtM Service ready...");
     }
 
     /**
@@ -89,13 +89,13 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void startService() {
-        appendMessage("Starting Processor service");
+        appendMessage("Starting Mtm service");
         eodFacade.getMicroserviceLauncher().startService(descriptor);
     }
 
     @Override
     public void stopService() {
-        appendMessage("Closing Processor service");
+        appendMessage("Closing Mtm service");
         eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
     }
 
@@ -105,7 +105,7 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public String getServiceName() {
-        return "PSRV";
+        return "MSRV";
     }
 
     @Override
@@ -115,11 +115,11 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
 
     private void loadServiceDescriptor() {
         ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String[] params = paramsMgr.getParamValue("PSRV").split(";");
+        String[] params = paramsMgr.getParamValue("MSRV").split(";");
         descriptor = new RestServiceDescriptor();
-        descriptor.setServiceName("PSRV");
+        descriptor.setServiceName("MSRV");
         descriptor.setJarPath(params[0]);
-        descriptor.setActiveProfile(params[0]);
+        descriptor.setActiveProfile(params[1]);
         descriptor.setServiceInfo(this);
     }
 
@@ -135,19 +135,13 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void suspendService() {
-        appendMessage("Sending suspend request via HTTP to Processor service...");
+        appendMessage("Sending suspension request via HTTP to Mtm service...");
 
         // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
         new Thread(() -> {
             try {
-                // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
                 RestClient restClient = RestClient.create();
-
-                // 2. Ipotizziamo l'URL del microservizio REST (es. porta 8080)
-                // Puoi anche recuperare la porta dinamicamente da ParamsMgr se configurata lì
-                String baseUrl = "http://localhost:8081/api/v1/internal/system/suspend";
-
-                // 3. Esegui la chiamata POST sincrona
+                String baseUrl = "http://localhost:8083/api/v1/internal/system/suspend";
                 restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)
@@ -169,35 +163,5 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void restoreService() {
-        appendMessage("Sending resume request via HTTP to Processor service...");
-
-        // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
-        new Thread(() -> {
-            try {
-                // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
-                RestClient restClient = RestClient.create();
-
-                // 2. Ipotizziamo l'URL del microservizio REST (es. porta 8080)
-                // Puoi anche recuperare la porta dinamicamente da ParamsMgr se configurata lì
-                String baseUrl = "http://localhost:8081/api/v1/internal/system/resume";
-
-                // 3. Esegui la chiamata POST sincrona
-                restClient.post()
-                        .uri(baseUrl)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .retrieve()
-                        .toBodilessEntity(); // Invia la richiesta e attende la risposta (200 OK)
-
-                appendMessage("Service resumed successfully via HTTP.");
-
-            } catch (Exception e) {
-                // Gestione dell'errore se il server è già spento o irraggiungibile
-                logError("HTTP resuming failed: " + e.getLocalizedMessage());
-
-                // Consiglio: se l'HTTP fallisce (es. server bloccato), proviamo comunque a killare il processo OS
-                appendMessage("Force closing OS process due to HTTP failure...");
-                eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
-            }
-        }).start();
     }
 }

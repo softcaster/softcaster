@@ -35,7 +35,7 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
         messageList.setModel(listModel);
         messageList.setBorder(new EmptyBorder(10, 15, 10, 15));
         loadServiceDescriptor();
-        appendMessage("Rest Service ready...");
+        appendMessage("Trade Capture ready...");
     }
 
     /**

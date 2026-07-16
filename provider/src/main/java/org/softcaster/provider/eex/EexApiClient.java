@@ -23,7 +23,6 @@ public class EexApiClient {
 
         return restClient.get()
                 .uri(urlPath)
-                // INIEZIONE DEGLI HEADERS VISTI NELL'INSPECT (Risolve il 403 Forbidden)
                 .header("Origin", "https://www.eex.com")
                 .header("Referer", "https://www.eex.com/")
                 .header("Accept", "application/json, text/javascript, */*; q=0.01")

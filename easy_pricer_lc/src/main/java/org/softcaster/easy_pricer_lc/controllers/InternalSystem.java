@@ -45,11 +45,26 @@ public class InternalSystem {
     @GetMapping("/internal/system/settlement")
     public ResponseEntity<String> settlement() {
         try {
-            lcJob.runLifeCycles();
-            return new ResponseEntity("Success!", HttpStatus.OK);
+            String result = lcJob.runSettlementLyfeCycleOnLine();
+            if(result.isBlank()) {
+                result = "Process SettlementLyfeCycle ends successfully!";
+            }
+            return new ResponseEntity(result, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
+    @GetMapping("/internal/system/accrual")
+    public ResponseEntity<String> accrual() {
+        try {
+            String result = lcJob.runAccrualLyfeCycleOnLine();
+            if(result.isBlank()) {
+                result = "Process AccrualLyfeCycle ends successfully!";
+            }
+            return new ResponseEntity(result, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
 }

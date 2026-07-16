@@ -20,11 +20,11 @@ public class TreeModel {
         // Risk Engine
         DefaultMutableTreeNode services = new DefaultMutableTreeNode("Services");
         // Foglie
-        services.add(new DefaultMutableTreeNode(new FndtNode<>("Rest Engine", AppTreeItem.REST_ENGINE)));
-        services.add(new DefaultMutableTreeNode(new FndtNode<>("Trade Processor", AppTreeItem.TRADE_PROCESSOR)));
-        services.add(new DefaultMutableTreeNode(new FndtNode<>("Mtm Engine", AppTreeItem.MTM_ENGINE)));
-        services.add(new DefaultMutableTreeNode(new FndtNode<>("Scheduler", AppTreeItem.SCHEDULER)));
-        services.add(new DefaultMutableTreeNode(new FndtNode<>("Acct Engine", AppTreeItem.ACCT_ENGINE)));
+        services.add(new DefaultMutableTreeNode(new FndtNode<>("Trade Capture", AppTreeItem.REST_ENGINE)));
+        services.add(new DefaultMutableTreeNode(new FndtNode<>("Trade Processing", AppTreeItem.TRADE_PROCESSOR)));
+        services.add(new DefaultMutableTreeNode(new FndtNode<>("MtM Service", AppTreeItem.MTM_ENGINE)));
+        services.add(new DefaultMutableTreeNode(new FndtNode<>("LifeCycle Scheduling", AppTreeItem.SCHEDULER)));
+        services.add(new DefaultMutableTreeNode(new FndtNode<>("Accounting Processing", AppTreeItem.ACCT_ENGINE)));
 
         root.add(services);
 

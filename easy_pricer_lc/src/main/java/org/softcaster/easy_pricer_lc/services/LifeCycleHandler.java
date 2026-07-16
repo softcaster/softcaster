@@ -4,9 +4,17 @@
  */
 package org.softcaster.easy_pricer_lc.services;
 
+import java.util.List;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.easy_pricer_lc.exceptions.LifeCycleException;
 
 public interface LifeCycleHandler {
-    public AccountingEvent generateEvent(EventInfo info) throws LifeCycleException;
+
+    /**
+     *
+     * @param info
+     * @return
+     * @throws LifeCycleException
+     */
+    public List<AccountingEvent> generateEvents(EventInfo info) throws LifeCycleException;
 }

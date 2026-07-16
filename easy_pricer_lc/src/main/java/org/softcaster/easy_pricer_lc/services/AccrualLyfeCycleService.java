@@ -5,6 +5,7 @@
 package org.softcaster.easy_pricer_lc.services;
 
 import java.time.LocalDate;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.MasterData;
@@ -12,10 +13,10 @@ import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventAccruals;
-import org.softcaster.core.data.account.AccountingEventAccrualsDAO;
 import org.softcaster.easy_pricer_lc.exceptions.LifeCycleException;
 import org.softcaster.easy_pricer_lc.schedulers.IScheduler;
 import org.softcaster.easy_pricer_lc.schedulers.SchedulerDispatcher;
+import org.softcaster.engine.enums.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,11 +31,8 @@ public class AccrualLyfeCycleService implements LifeCycleHandler {
     @Autowired
     SchedulerDispatcher schedulerDispatcher;
 
-    @Autowired
-    AccountingEventAccrualsDAO accountingEventAccrualsDAO;
-
     @Override
-    public AccountingEvent generateEvent(EventInfo info) throws LifeCycleException {
+    public List<AccountingEvent> generateEvents(EventInfo info) throws LifeCycleException {
         if (!(info instanceof AccrualEventInfo accrualEventInfo)) {
             String error = "### Invalid EventInfo";
             log.error(error);
@@ -51,8 +49,7 @@ public class AccrualLyfeCycleService implements LifeCycleHandler {
         return generateAccountingEventAccruals(detail, accrualEventInfo.getFrom(), accrualEventInfo.getTo());
     }
 
-    private AccountingEvent generateAccountingEventAccruals(PositionDetail detail, LocalDate from, LocalDate to) {
-        AccountingEventAccruals event = null;
+    private List<AccountingEvent> generateAccountingEventAccruals(PositionDetail detail, LocalDate from, LocalDate to) {
 
         Integer masterDataId = detail.getMasterData();
         if (masterDataId != null && masterDataId > 0) {
@@ -60,11 +57,12 @@ public class AccrualLyfeCycleService implements LifeCycleHandler {
             if (masterData != null) {
                 IScheduler scheduler = schedulerDispatcher.dispatch(masterData.getAssetClass().getCode());
                 if (scheduler != null) {
-                    event = scheduler.getAccountingEventAccrual(detail, masterData, from, to);
+                    List<AccountingEvent> events = scheduler.getAccountingEvents(EventType.ACCRUAL, detail, masterData, from, to);
+                    return events;
                 }
             }
         }
 
-        return event;
+        return null;
     }
 }

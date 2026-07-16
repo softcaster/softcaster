@@ -6,6 +6,8 @@ package org.softcaster.easy_pricer_lc.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.FinancialTxn;
@@ -28,7 +30,7 @@ public class SettlementLyfeCycleService implements LifeCycleHandler {
     private FinancialTxnDAO financialTxnDAO;
 
     @Override
-    public AccountingEvent generateEvent(EventInfo info) throws LifeCycleException {
+    public List<AccountingEvent> generateEvents(EventInfo info) throws LifeCycleException {
 
         if (!(info instanceof LinkEventInfo settlementEventInfo)) {
             String error = "### Invalid EventInfo";
@@ -37,12 +39,12 @@ public class SettlementLyfeCycleService implements LifeCycleHandler {
         }
 
         PositionTxnLinks link = settlementEventInfo.getLink();
-        if(link == null) {
+        if (link == null) {
             String error = "### Invalid PositionTxnLinks";
             log.error(error);
             throw new LifeCycleException(error);
         }
-        
+
         AccountingEvent event = null;
         try {
             FinancialTxn txn = financialTxnDAO.findByIdFinancialTxn(link.getFinancialTxn());
@@ -66,7 +68,12 @@ public class SettlementLyfeCycleService implements LifeCycleHandler {
             log.error("### Error processing txn: " + link.getFinancialTxn());
             throw new LifeCycleException(e.getLocalizedMessage());
         }
-
-        return event;
+        if (event != null) {
+            List<AccountingEvent> events = new ArrayList<>();
+            events.add(event);
+            return events;
+        } else {
+            return null;
+        }
     }
 }
