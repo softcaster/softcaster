@@ -4,7 +4,6 @@
  */
 package org.softcaster.easy_pricer_lc.services;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +13,7 @@ import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.PositionTxnLinks;
 import org.softcaster.core.data.account.AccountingEvent;
+import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.easy_pricer_lc.exceptions.LifeCycleException;
 import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.EventSourceType;
@@ -28,7 +28,15 @@ public class SettlementLyfeCycleService implements LifeCycleHandler {
 
     @Autowired
     private FinancialTxnDAO financialTxnDAO;
+    
+    @Autowired
+    AccountingEventDAO accountingEventDAO;
 
+    private String getEventKey(FinancialTxn txn) {        
+        String eventKey = txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + "[" + EventType.SETTLEMENT.getCode() + "]" + txn.getSettlement();
+        return eventKey;
+    }
+    
     @Override
     public List<AccountingEvent> generateEvents(EventInfo info) throws LifeCycleException {
 
@@ -53,13 +61,22 @@ public class SettlementLyfeCycleService implements LifeCycleHandler {
                 log.error(error);
                 throw new LifeCycleException(error);
             }
+            
+            String eventKey = getEventKey(txn);
+            // Controlla se evento e`gia`stato generato
+            event = accountingEventDAO.findByEventKey(eventKey);
+            if(event != null) {
+                log.error("Event already generated.");
+                return null;
+            }
+            
             // Genero AccountingEvent
             event = new AccountingEvent();
             event.setSourceId(link.getFinancialTxn());
             event.setEventStatus(AccountingEventStatus.NEW);
             event.setEventType(EventType.SETTLEMENT);
             event.setSourceType(EventSourceType.TRADE);
-            event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + "[" + EventType.SETTLEMENT.getCode() + "]" + LocalDate.now());
+            event.setEventKey(eventKey);
             event.setCreatedAt(LocalDateTime.now());
             event.setPositionDetail(link.getPositionDetail());
             event.setGeneratedBy(txn.getMasterData().getIdMasterData());

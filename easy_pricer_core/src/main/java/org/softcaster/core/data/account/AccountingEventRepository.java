@@ -27,4 +27,6 @@ public interface AccountingEventRepository extends JpaRepository<AccountingEvent
     // Query JPQL standard per riprendere le entità polimorfiche JOINED partendo dagli ID già bloccati
     @Query("SELECT ae FROM AccountingEvent ae WHERE ae.eventId IN :ids")
     List<AccountingEvent> findAllByIds(@Param("ids") Collection<Integer> ids);
+
+    public AccountingEvent findByEventKey(String eventKey);
 }

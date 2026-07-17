@@ -27,6 +27,11 @@ public class AccountingEventDAO {
         return repository.findByEventId(eventId);
     }
 
+    @Transactional(readOnly = true)
+    public AccountingEvent findByEventKey(String eventKey) {
+        return repository.findByEventKey(eventKey);
+    }
+
     // Manteniamo la firma originale del metodo per non rompere altre chiamate esterne
     @Transactional
     public List<AccountingEvent> findTradeEvents(EventSourceType sourceType,

@@ -13,8 +13,10 @@ import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.provider.enums.Market;
@@ -51,21 +53,21 @@ public class TestMarketDataService {
     YieldCurveDAO yieldCurveDAO;
 
     private void testYieldCurve() {
-        
+
         marketDataService.loadCurveCurveRates("TERMSOFR");
         marketDataService.loadCurveCurveRates("TERMESTR");
         marketDataService.loadSpotPrice();
-        
+
         org.softcaster.engine.curve.YieldCurve domesticYC = marketDataService.getYieldCurve("TERMSOFR");
         org.softcaster.engine.curve.YieldCurve foreignYC = marketDataService.getYieldCurve("TERMESTR");
-        
+
         ForwardBaseInputData input = new ForwardBaseInputData();
         input.setForeignRateCurve(foreignYC);
         input.setDomesticRateCurve(domesticYC);
         input.setUnderlyingReferencePrice(marketDataService.getSpotPrice("EURUSD", RequestType.BID));
         input.setValuationDate(LocalDate.now());
         input.setMaturityDate(LocalDate.of(2026, 06, 05));
-        
+
         FxForwardPricer pricer = new FxForwardPricer();
         double f = pricer.forwardPrice2(input);
         System.out.println(f);
@@ -75,8 +77,8 @@ public class TestMarketDataService {
         Map<String, List<String>> tokenList = new HashMap<>();
         tokenList.computeIfAbsent("EuroNextProvider", k -> new ArrayList<>()).add("IT0001086567");
         List<TokenItem> tokens = new ArrayList<>();
-        tokens.add(new TokenItem("EuroNextProvider","IT0001086567"));
-        marketDataService.updateSpotPrice(tokens,Market.BONDS);
+        tokens.add(new TokenItem("EuroNextProvider", "IT0001086567"));
+        marketDataService.updateSpotPrice(tokens, Market.BONDS);
     }
 
     private void testSpotPrice() {
@@ -94,8 +96,8 @@ public class TestMarketDataService {
 
     public static void main(String[] args) {
         FileUtil.initializeLogger();
-        FileUtil.initializePython();
-        
+        // FileUtil.initializePython();
+
         // 1. Avvio il contesto di Spring Boot caricando l'application.properties di test
         ApplicationContext context = SpringApplication.run(TestMarketDataService.class, args);
 
@@ -106,6 +108,28 @@ public class TestMarketDataService {
         //testRunner.testUpdateBondPrice();
         //testRunner.testSpotPrice();
         //testRunner.testDbAccess();
-        testRunner.testYieldCurve();
+        //testRunner.testYieldCurve();
+        testRunner.testDiscountFactor();
+    }
+
+    private void testDiscountFactor() {
+        List<LocalDate> maturities = new ArrayList<>();
+        LocalDate today = marketDataService.getOfficialDate();
+        LocalDate monthPlus = today.plusMonths(1);
+        maturities.add(monthPlus);
+
+        monthPlus = monthPlus.plusMonths(1);
+        maturities.add(monthPlus);
+
+        monthPlus = monthPlus.plusMonths(1);
+        maturities.add(monthPlus);
+
+        marketDataService.loadCurveCurveRates("TERMESTR");
+        List<DiscountFactorNode> nodes = YieldCurveHelper.getDiscountFactors("TERMSOFR", marketDataService, maturities);
+        if (nodes != null) {
+            for (DiscountFactorNode node : nodes) {
+                System.out.println(node.maturity() + " - " + node.bid());
+            }
+        }
     }
 }

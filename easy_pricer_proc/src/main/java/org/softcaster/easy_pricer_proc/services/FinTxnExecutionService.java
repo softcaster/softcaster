@@ -4,9 +4,7 @@
  */
 package org.softcaster.easy_pricer_proc.services;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -130,14 +128,29 @@ public class FinTxnExecutionService {
         generateAccountingEvent(txn, lastSaved.getIdPositionDetail(), status);
     }
 
+    private String getEventKey(FinancialTxn txn, TxnStatus status) {
+
+        String eventKey = txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + "[" + status.getCode() + "]" + txn.getSettlement();
+        return eventKey;
+    }
+
     private void generateAccountingEvent(FinancialTxn txn, Integer positionDetailId, TxnStatus status) {
         if (txn == null) {
             log.error("Invalid Txn");
             throw new TxnProcessingException("Invalid Txn");
         }
+
+        String eventKey = getEventKey(txn, status);
+        // Controlla se evento e`gia`stato generato
+        AccountingEvent event = accountingEventDAO.findByEventKey(eventKey);
+        if (event != null) {
+            log.error("Event already generated.");
+            return;
+        }
+
         try {
             // Genero AccountingEvent
-            AccountingEvent event = new AccountingEvent();
+            event = new AccountingEvent();
             switch (status) {
                 case EXECUTED ->
                     event.setEventType(EventType.TRADE_EXECUTED);
@@ -152,7 +165,7 @@ public class FinTxnExecutionService {
             event.setSourceId(txn.getIdFinancialTxn());
             event.setEventStatus(AccountingEventStatus.NEW);
             event.setSourceType(EventSourceType.TRADE);
-            event.setEventKey(txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + "[" + status.getCode() + "]" + LocalDate.now());
+            event.setEventKey(eventKey);
             event.setCreatedAt(LocalDateTime.now());
             event.setGeneratedBy(txn.getMasterData().getIdMasterData());
             event.setGeneratedRef("");

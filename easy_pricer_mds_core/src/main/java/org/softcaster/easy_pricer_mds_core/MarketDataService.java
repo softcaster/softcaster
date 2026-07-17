@@ -41,7 +41,7 @@ public class MarketDataService {
 
     @Autowired
     SystemBusinessCalendarDAO systemBusinessCalendarDAO;
-
+    
     private final ConcurrentHashMap<String, SpotPrice> spotPrices = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, YieldCurve> yieldCurves = new ConcurrentHashMap<>();
 
@@ -162,7 +162,7 @@ public class MarketDataService {
         YieldCurve updatedCurve = this.yieldCurves.compute(curveId, (id, existingCurve) -> {
             if (existingCurve == null) {
                 // Se la curva non c'è in cache, la creiamo ex-novo tramite il builder
-                return yieldCurveBuilder.buildYieldCurve(id, newInputs, LocalDate.now());
+                return yieldCurveBuilder.buildYieldCurve(id, newInputs, getOfficialDate());
             } else {
                 // Se esiste già, sfruttiamo il metodo synchronized esistente
                 existingCurve.updateCurve(newInputs);
