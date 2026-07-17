@@ -65,6 +65,7 @@ public class InvestingComProvider extends AbstractProvider {
 
             Request request = new Request(baseUrl, NONE);
             info.getRequests().add(request);
+            connect(info, NONE);
 
             request = new Request(itRatesUrl, RATES);
             info.getRequests().add(request);

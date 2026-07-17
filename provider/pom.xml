@@ -68,5 +68,10 @@
             <artifactId>playwright-stealth-4j</artifactId>
             <version>1.1.2</version>
         </dependency>          
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.3.1</version> <!-- o l'ultima versione disponibile -->
+        </dependency>        
     </dependencies>
 </project>
