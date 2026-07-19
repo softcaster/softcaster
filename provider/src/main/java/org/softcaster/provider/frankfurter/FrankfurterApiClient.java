@@ -29,9 +29,10 @@ public class FrankfurterApiClient {
         return List.of(rates);
     }
 
+    //?providers=ECB
     public String fetchMarketData() {
         return restClient.get()
-                .uri("/v2/rates?providers=ECB")
+                .uri("/v2/rates")
                 .header("Accept", "application/json")
                 .header("User-Agent", "Mozilla/5.0")
                 .retrieve()

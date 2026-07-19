@@ -19,80 +19,28 @@ class PyProviderHelper(IProviderHelper):
     def getItYieldNodes(self):
         nodes= list()
        
-        offset = Offset(1,OffsetType.MONTHS);
-        node = Node("Italy 1M",offset, None, "ACT_365", "SIMPLE");
-        nodes.append(node);
-
-        offset = Offset(3,OffsetType.MONTHS);
-        node = Node("Italy 3M",offset, None, "ACT_365", "SIMPLE");
-        nodes.append(node);
-
-        offset = Offset(6,OffsetType.MONTHS);
-        node = Node("Italy 6M",offset, None, "ACT_365", "SIMPLE");
-        nodes.append(node);
-
-        offset = Offset(9,OffsetType.MONTHS);
-        node = Node("Italy 9M",offset, None, "ACT_365", "SIMPLE");
-        nodes.append(node);
-
         offset = Offset(1,OffsetType.YEARS);
-        node = Node("Italy 1Y",offset, None, "ACT_365", "COMPOUNDED");
-        nodes.append(node);
-
-        offset = Offset(2,OffsetType.YEARS);
-        node = Node("Italy 2Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT1Y",offset, None, "ACT_365", "COMPOUNDED");
         nodes.append(node);
 
         offset = Offset(3,OffsetType.YEARS);
-        node = Node("Italy 3Y",offset, None, "ACT_365", "COMPOUNDED");
-        nodes.append(node);
-
-        offset = Offset(4,OffsetType.YEARS);
-        node = Node("Italy 4Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT3Y",offset, None, "ACT_365", "COMPOUNDED");
         nodes.append(node);
 
         offset = Offset(5,OffsetType.YEARS);
-        node = Node("Italy 5Y",offset, None, "ACT_365", "COMPOUNDED");
-        nodes.append(node);
-
-        offset = Offset(6,OffsetType.YEARS);
-        node = Node("Italy 6Y",offset, None, "ACT_365", "COMPOUNDED");
-        nodes.append(node);
-
-        offset = Offset(7,OffsetType.YEARS);
-        node = Node("Italy 7Y",offset, None, "ACT_365", "COMPOUNDED");
-        nodes.append(node);
-
-        offset = Offset(8,OffsetType.YEARS);
-        node = Node("Italy 8Y",offset, None, "ACT_365", "COMPOUNDED");
-        nodes.append(node);
-
-        offset = Offset(9,OffsetType.YEARS);
-        node = Node("Italy 9Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT5Y",offset, None, "ACT_365", "COMPOUNDED");
         nodes.append(node);
 
         offset = Offset(10,OffsetType.YEARS);
-        node = Node("Italy 10Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT10Y",offset, None, "ACT_365", "COMPOUNDED");
         nodes.append(node);
 
         offset = Offset(15,OffsetType.YEARS);
-        node = Node("Italy 15Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT15Y",offset, None, "ACT_365", "COMPOUNDED");
         nodes.append(node);
 
         offset = Offset(20,OffsetType.YEARS);
-        node = Node("Italy 20Y",offset, None, "ACT_365", "COMPOUNDED");
-        nodes.append(node);
-
-        offset = Offset(25,OffsetType.YEARS);
-        node = Node("Italy 25Y",offset, None, "ACT_365", "COMPOUNDED");
-        nodes.append(node);
-
-        offset = Offset(30,OffsetType.YEARS);
-        node = Node("Italy 30Y",offset, None, "ACT_365", "COMPOUNDED");
-        nodes.append(node);
-
-        offset = Offset(50,OffsetType.YEARS);
-        node = Node("Italy 50Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT20Y",offset, None, "ACT_365", "COMPOUNDED");
         nodes.append(node);
 
         return nodes;

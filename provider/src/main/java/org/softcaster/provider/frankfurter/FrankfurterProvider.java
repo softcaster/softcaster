@@ -17,7 +17,6 @@ import org.softcaster.provider.bricks.ProviderInfo;
 import org.softcaster.provider.bricks.Request;
 import org.softcaster.provider.enums.Market;
 import static org.softcaster.provider.enums.Market.CURRENCIES;
-import static org.softcaster.provider.enums.Market.FUTURES;
 import org.softcaster.provider.exceptions.MarketDataProviderException;
 
 /**
@@ -28,7 +27,7 @@ public class FrankfurterProvider extends AbstractProvider {
 
     private final FrankfurterApiClient apiClient = new FrankfurterApiClient();
     private static FrankfurterProvider _instance = null;
-    
+
     private FrankfurterProvider() {
     }
 
@@ -39,7 +38,7 @@ public class FrankfurterProvider extends AbstractProvider {
 
         return _instance;
     }
-    
+
     @Override
     protected void parseResponse(ProviderInfo info, Market market) {
         switch (market) {
@@ -73,23 +72,25 @@ public class FrankfurterProvider extends AbstractProvider {
     public List<Node> getYieldCurveNodes(String idCurve) {
         return null;
     }
-    
+
     @Override
     public void connect(ProviderInfo info, Market market) throws MalformedURLException, IOException {
         response = apiClient.fetchMarketData();
         parseResponse(info, market);
     }
-    
 
     private void parseCurrencyResponse(ProviderInfo info, Market market) {
-        
+
         try {
             ObjectMapper om = new ObjectMapper();
             ExchRate[] ratesArray = om.readValue(response, ExchRate[].class);
             List<ExchRate> ratesList = List.of(ratesArray);
-            for(ExchRate exchRate: ratesList) {
-                Node node = new Node(info.getExtraParameters().get(0), null, new Data(exchRate.rate, exchRate.rate), "", "");
-                addQuote(market, node);
+            for (ExchRate exchRate : ratesList) {
+                if (info.getExtraParameters().get(0).equals(exchRate.base + exchRate.quote)) {
+                    Node node = new Node(info.getExtraParameters().get(0), null, new Data(exchRate.rate, exchRate.rate), "", "");
+                    addQuote(market, node);
+                    break;
+                }
             }
         } catch (JsonProcessingException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
@@ -101,14 +102,15 @@ public class FrankfurterProvider extends AbstractProvider {
             ProviderInfo info = new ProviderInfo();
             Request request = new Request("", CURRENCIES);
             info.getRequests().add(request);
+            info.getExtraParameters().add(symbol);
             connect(info, CURRENCIES);
 
-            return getQuote(symbol, FUTURES);
+            return getQuote(symbol, CURRENCIES);
 
         } catch (IOException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new MarketDataProviderException(ex.getLocalizedMessage());
         }
     }
-    
+
 }

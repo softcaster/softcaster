@@ -6,12 +6,10 @@ package investing_test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.provider.bricks.Node;
-import org.softcaster.provider.frankfurter.ExchRate;
-import org.softcaster.provider.frankfurter.FrankfurterApiClient;
+import org.softcaster.provider.cnbc.CnbcApiClient;
+import org.softcaster.provider.cnbc.CnbcProvider;
 import org.softcaster.provider.investing.InvestingComProvider;
 
 /**
@@ -61,16 +59,11 @@ public class InvestingComTest {
         System.out.println("########## US Yield Curve ##########");
         testUsaYieldCurves();
          */
-        FrankfurterApiClient client = new FrankfurterApiClient();
-
-        List<ExchRate> rates;
-        try {
-            rates = client.getExchangeRates();
-            for (ExchRate rate : rates) {
-                System.out.println(rate.base + rate.quote + ":" + rate.rate);
-            }
-        } catch (JsonProcessingException ex) {
-            Logger.getLogger(InvestingComTest.class.getName()).log(Level.SEVERE, null, ex);
+        
+        CnbcProvider provider = CnbcProvider.getInstance();
+        List<Node> nodes = provider.getYieldCurveNodes("ITYIELD");
+        for(Node node:nodes) {
+            System.out.println(node.getSymbol() + " " + node.getData().bid());
         }
     }
 }

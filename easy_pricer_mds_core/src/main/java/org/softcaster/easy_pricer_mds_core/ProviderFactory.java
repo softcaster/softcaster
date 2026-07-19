@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.provider.cme.CmeGroupProvider;
+import org.softcaster.provider.cnbc.CnbcProvider;
 import org.softcaster.provider.eex.EexProvider;
 import org.softcaster.provider.euronext.EuroNextProvider;
 import org.softcaster.provider.investing.InvestingComProvider;
@@ -26,7 +27,7 @@ public class ProviderFactory {
     static {
         REGISTRY.put("EuroNextProvider", EuroNextProvider::getInstance);
         REGISTRY.put("CmeGroupProvider", CmeGroupProvider::getInstance);
-        REGISTRY.put("InvestingComProvider", InvestingComProvider::getInstance);
+        REGISTRY.put("CnbcProvider", CnbcProvider::getInstance);
         REGISTRY.put("Sole24hProvider", Sole24hProvider::getInstance);
         REGISTRY.put("EexProvider", EexProvider::getInstance);
     }
