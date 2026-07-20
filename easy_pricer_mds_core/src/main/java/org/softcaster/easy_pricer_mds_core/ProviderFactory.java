@@ -12,8 +12,8 @@ import org.softcaster.provider.cme.CmeGroupProvider;
 import org.softcaster.provider.cnbc.CnbcProvider;
 import org.softcaster.provider.eex.EexProvider;
 import org.softcaster.provider.euronext.EuroNextProvider;
-import org.softcaster.provider.investing.InvestingComProvider;
 import org.softcaster.provider.sole24h.Sole24hProvider;
+import org.softcaster.provider.twelvedata.TwelvedataProvider;
 /**
  *
  * @author softc
@@ -30,6 +30,7 @@ public class ProviderFactory {
         REGISTRY.put("CnbcProvider", CnbcProvider::getInstance);
         REGISTRY.put("Sole24hProvider", Sole24hProvider::getInstance);
         REGISTRY.put("EexProvider", EexProvider::getInstance);
+        REGISTRY.put("TwelvedataProvider", TwelvedataProvider::getInstance);
     }
 
     // Metodo statico per ottenere l'istanza

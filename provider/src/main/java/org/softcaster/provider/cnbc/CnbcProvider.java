@@ -9,16 +9,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.List;
-import org.jsoup.Jsoup;
-import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.provider.bricks.AbstractProvider;
 import org.softcaster.provider.bricks.Data;
 import org.softcaster.provider.bricks.Node;
-import org.softcaster.provider.bricks.Offset;
 import org.softcaster.provider.bricks.ProviderInfo;
 import org.softcaster.provider.bricks.RateKey;
-import org.softcaster.provider.cme.EsterOvn;
 import org.softcaster.provider.enums.Market;
 import static org.softcaster.provider.enums.Market.BONDS;
 import static org.softcaster.provider.enums.Market.COMMODITIES;
@@ -26,7 +22,6 @@ import static org.softcaster.provider.enums.Market.CURRENCIES;
 import static org.softcaster.provider.enums.Market.EQUITIES;
 import static org.softcaster.provider.enums.Market.FUTURES;
 import static org.softcaster.provider.enums.Market.RATES;
-import org.softcaster.provider.enums.OffsetType;
 import org.softcaster.provider.exceptions.MarketDataProviderException;
 import org.softcaster.provider.interpreter.ProviderHelper;
 
@@ -80,15 +75,20 @@ public class CnbcProvider extends AbstractProvider {
 
     @Override
     public List<Node> getYieldCurveNodes(String idCurve) {
-        switch (idCurve) {
-            case "ITYIELD" -> {
-                return getItYieldCurveNodes();
-            }
-            case "USYIELD" -> {
-                return getItYieldCurveNodes();
-            }
+        try {
+            ProviderInfo info = new ProviderInfo();
+
+            info.getExtraParameters().clear();
+            info.getExtraParameters().add(idCurve);
+
+            connect(info, RATES);
+
+            RateKey key = new RateKey(idCurve, RATES);
+            return getRates(key);
+        } catch (IOException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            throw new MarketDataProviderException(ex.getLocalizedMessage());
         }
-        return null;
     }
 
     private void parseResponseYieldCurve(String idCurve) {
@@ -114,37 +114,9 @@ public class CnbcProvider extends AbstractProvider {
                     addRate(key, node);
                     pos++;
                 }
-                // Aggiungo tasso ester ovn
-                String jsonResponse = Jsoup.connect("https://api.estr.dev/latest")
-                        .ignoreContentType(true) // Obbligatorio per evitare errori con MIME type JSON
-                        .execute()
-                        .body();
-                EsterOvn esterOvn = om.readValue(jsonResponse, EsterOvn.class);
-                data = new Data(esterOvn.value / 100., esterOvn.value / 100.);
-                Offset offset = new Offset(1, OffsetType.DAYS);
-                Node nodeOvn = new Node("Ovn", offset, data, "ACT_360", "SIMPLE");
-                addRate(key, nodeOvn);
             } catch (IOException ex) {
                 LoggerMgr.logError(ex.getLocalizedMessage());
             }
         }
     }
-
-    private List<Node> getItYieldCurveNodes() {
-        try {
-            ProviderInfo info = new ProviderInfo();
-
-            info.getExtraParameters().clear();
-            info.getExtraParameters().add("ITYIELD");
-
-            connect(info, RATES);
-
-            RateKey key = new RateKey("ITYIELD", RATES);
-            return getRates(key);
-        } catch (IOException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-            throw new MarketDataProviderException(ex.getLocalizedMessage());
-        }
-    }
-
 }
