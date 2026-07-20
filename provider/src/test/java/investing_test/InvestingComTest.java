@@ -89,8 +89,10 @@ public class InvestingComTest {
         Map<String, Double> curvaPulita = parser.parseAndFilterCurve(rawJson);
 
         System.out.println("=== STRUTTURA PULITA DEI TASSI SPOT BCE ===");
-        curvaPulita.forEach((scadenza, tasso) -> {
-            System.out.println(scadenza + " -> " + tasso + "%");
+        curvaPulita.forEach((maturity, rate) -> {
+            String offset = maturity.split("-")[0];
+            String offsetType = maturity.split("-")[1].split(" ")[0];
+            System.out.println(offset + ":" + offsetType + ":" + rate);
         });
     }
 }
