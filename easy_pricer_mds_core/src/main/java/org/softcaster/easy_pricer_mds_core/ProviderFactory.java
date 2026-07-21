@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.provider.cme.CmeGroupProvider;
 import org.softcaster.provider.cnbc.CnbcProvider;
+import org.softcaster.provider.ecb.ECBProvider;
 import org.softcaster.provider.eex.EexProvider;
 import org.softcaster.provider.euronext.EuroNextProvider;
 import org.softcaster.provider.sole24h.Sole24hProvider;
@@ -31,6 +32,7 @@ public class ProviderFactory {
         REGISTRY.put("Sole24hProvider", Sole24hProvider::getInstance);
         REGISTRY.put("EexProvider", EexProvider::getInstance);
         REGISTRY.put("TwelvedataProvider", TwelvedataProvider::getInstance);
+        REGISTRY.put("ECBProvider", ECBProvider::getInstance);
     }
 
     // Metodo statico per ottenere l'istanza
