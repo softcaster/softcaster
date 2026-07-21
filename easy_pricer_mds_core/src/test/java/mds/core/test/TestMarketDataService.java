@@ -5,8 +5,8 @@
 package mds.core.test;
 
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,11 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.engine.analytics.FxForwardPricer;
+import org.softcaster.engine.curve.CurveNodeInput;
+import org.softcaster.engine.curve.OrderedDiscountFactor;
 import org.softcaster.engine.dto.ForwardBaseInputData;
+import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.ecb.ECBProvider;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,9 +113,12 @@ public class TestMarketDataService {
         //testRunner.testSpotPrice();
         //testRunner.testDbAccess();
         //testRunner.testYieldCurve();
-        testRunner.testDiscountFactor();
+        //testRunner.testDiscountFactor();
+        testRunner.testEcbYieldCurve();
     }
 
+    // Ricava i DF per una serie di date passate in input (ipotetiche scadenze
+    // di coupons)
     private void testDiscountFactor() {
         List<LocalDate> maturities = new ArrayList<>();
         LocalDate today = marketDataService.getOfficialDate();
@@ -130,6 +137,21 @@ public class TestMarketDataService {
             for (DiscountFactorNode node : nodes) {
                 System.out.println(node.maturity() + " - " + node.bid());
             }
+        }
+    }
+
+    private void testEcbYieldCurve() {
+
+        ECBProvider provider = ECBProvider.getInstance();
+        List<Node> nodes = provider.getYieldCurveNodes("EcbYiedCurve");
+
+        List<CurveNodeInput> rawNodes = YieldCurveHelper.getCNIList(nodes);
+        LocalDate officialDate = marketDataService.getOfficialDate();
+        org.softcaster.engine.curve.YieldCurve yc = new org.softcaster.engine.curve.YieldCurve(officialDate, Currency.getInstance("EUR"), rawNodes);
+
+        List<OrderedDiscountFactor> dfs = yc.getOrderedDiscountFactors();
+        for (OrderedDiscountFactor odf : dfs) {
+            System.out.println(odf.date() + " : " + odf.discountFactor());
         }
     }
 }

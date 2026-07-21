@@ -11,7 +11,13 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataNotFoundException;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.engine.curve.CurveNodeInput;
+import org.softcaster.engine.curve.Offset;
 import org.softcaster.engine.curve.YieldCurve;
+import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.OffsetType;
+import org.softcaster.provider.bricks.Node;
 
 public class YieldCurveHelper {
 
@@ -30,5 +36,20 @@ public class YieldCurveHelper {
             System.out.println(ex.getLocalizedMessage());
             return null;
         }
+    }
+
+    public static List<CurveNodeInput> getCNIList(List<Node> nodes) {
+        List<CurveNodeInput> cniList = new ArrayList<>();
+        CurveNodeInput cni = null;
+        for (Node node : nodes) {
+            OffsetType offsetType = OffsetType.fromCode(node.getOffset().offsetType().getCode());
+            Offset offset = new Offset(node.getOffset().step(), offsetType);
+            DaycountBasis daycount = DaycountBasis.fromCode(node.getDaycount());
+            Compounding compounding = Compounding.fromCode(node.getCompounding());
+            cni = new CurveNodeInput(node.getSymbol(), offset, node.getData().bid(),
+                    daycount, compounding);
+            cniList.add(cni);
+        }
+        return cniList;
     }
 }

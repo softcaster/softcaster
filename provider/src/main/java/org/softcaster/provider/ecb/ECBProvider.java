@@ -11,6 +11,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,10 +41,12 @@ public class ECBProvider extends AbstractProvider {
 
     private final String baseUrl = "https://www.ecb.europa.eu/";
     private final String ovnEstrUrl = baseUrl + "stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html";
+    private EcbYieldClient client = null;
 
     private static ECBProvider _instance = null;
 
     private ECBProvider() {
+        client = new EcbYieldClient();
     }
 
     public static ECBProvider getInstance() {
@@ -60,9 +64,9 @@ public class ECBProvider extends AbstractProvider {
             try {
                 String[] parsedResponse = response.split("<td><strong>")[1].split("<");
                 double value = Converter.toDouble(parsedResponse[0], false);
-                Node node = new Node("Ovn", 
-                        new Offset(1, OffsetType.DAYS), 
-                        new Data(value,value),"ACT_360", "SIMPLE");
+                Node node = new Node("Ovn",
+                        new Offset(1, OffsetType.DAYS),
+                        new Data(value, value), "ACT_360", "SIMPLE");
                 RateKey key = new RateKey("OVNESTR", RATES);
                 addRate(key, node);
             } catch (ParseException ex) {
@@ -114,11 +118,44 @@ public class ECBProvider extends AbstractProvider {
 
     @Override
     public List<Node> getYieldCurveNodes(String idCurve) {
-        return null;
+        String rawJson = client.fetchFullCurve();
+        EcbCurveParser parser = new EcbCurveParser();
+        Map<String, Double> data = parser.parseAndFilterCurve(rawJson);
+
+        RateKey key = new RateKey(idCurve, RATES);
+        data.forEach((String maturity, Double rate) -> {
+            Node node = getNode(maturity, rate);
+            addRate(key, node);
+        });
+
+        return getRates(key);
+    }
+
+    private Node getNode(String maturity, Double rate) {
+        try {
+            long step = Converter.toInt(maturity.split("-")[0]);
+            String type = maturity.split("-")[1].split(" ")[0];
+            OffsetType offsetType = OffsetType.NONE;
+            switch (type) {
+                case "year" ->
+                    offsetType = OffsetType.YEARS;
+                case "month" ->
+                    offsetType = OffsetType.MONTHS;
+                default -> {
+                }
+            }
+            Offset offset = new Offset(step, offsetType);
+            Data data = new Data(rate / 100., rate / 100.);
+            return new Node(maturity, offset, data, "ACT_365", "CONTINUOUS");
+        } catch (ParseException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            return null;
+        }
     }
 
     @Override
     public Node getMktQuote(String symbol, Market market) {
         return null;
     }
+
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.ecb.ECBProvider;
 import org.softcaster.provider.ecb.EcbCurveParser;
 import org.softcaster.provider.ecb.EcbYieldClient;
 import org.softcaster.provider.enums.Market;
@@ -83,17 +84,12 @@ public class InvestingComTest {
     }
 
     private static void testEcbClient() {
-        EcbYieldClient ecb = new EcbYieldClient();
-        String rawJson = ecb.fetchFullCurve();
-        EcbCurveParser parser = new EcbCurveParser();
-        Map<String, Double> curvaPulita = parser.parseAndFilterCurve(rawJson);
 
-        System.out.println("=== STRUTTURA PULITA DEI TASSI SPOT BCE ===");
-        curvaPulita.forEach((maturity, rate) -> {
-            String offset = maturity.split("-")[0];
-            String offsetType = maturity.split("-")[1].split(" ")[0];
-            System.out.println(offset + ":" + offsetType + ":" + rate);
-        });
+        ECBProvider provider = ECBProvider.getInstance();
+        List<Node> nodes = provider.getYieldCurveNodes("EcbYiedCurve");
+
+        for (Node node : nodes) {
+            System.out.println(node.getSymbol() + ":" + node.getData().bid());
+        }
     }
 }
-//https://www.borsainside.com/mercati/titoli-stato-italia/
