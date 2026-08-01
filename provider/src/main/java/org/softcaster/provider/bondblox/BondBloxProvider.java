@@ -13,8 +13,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.provider.bricks.AbstractProvider;

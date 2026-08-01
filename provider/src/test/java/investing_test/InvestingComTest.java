@@ -75,14 +75,15 @@ public class InvestingComTest {
         System.out.println("########## US Yield Curve ##########");
         testUsaYieldCurves();
          */
- /*
+ 
         CnbcProvider provider = CnbcProvider.getInstance();
         List<Node> nodes = provider.getYieldCurveNodes("USYIELD");
         for(Node node:nodes) {
             System.out.println(node.getSymbol() + " " + node.getData().bid());
         }
-         */
-        testCurrencyPairs();
+         
+        testEcbClient();
+        //testCurrencyPairs();
     }
 
     private static void testEodhdFxApiClient() {
