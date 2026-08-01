@@ -5,13 +5,13 @@
 package investing_test;
 
 import java.util.List;
-import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.cnbc.CnbcProvider;
 import org.softcaster.provider.ecb.ECBProvider;
-import org.softcaster.provider.ecb.EcbCurveParser;
-import org.softcaster.provider.ecb.EcbYieldClient;
 import org.softcaster.provider.enums.Market;
+import org.softcaster.provider.eodhd.EodhdFxApiClient;
+import org.softcaster.provider.frankfurter.FrankfurterProvider;
 import org.softcaster.provider.investing.InvestingComProvider;
 import org.softcaster.provider.twelvedata.TwelvedataProvider;
 
@@ -66,7 +66,8 @@ public class InvestingComTest {
         FileUtil.initializePython();
 
         //testCurrencyPairs();
-        testEcbClient();
+        //testEcbClient();
+        //testEodhdFxApiClient();
         //System.out.println("########## IT Yield Curve ##########");
         // testItaYieldCurves();
         /*
@@ -76,11 +77,20 @@ public class InvestingComTest {
          */
  /*
         CnbcProvider provider = CnbcProvider.getInstance();
-        List<Node> nodes = provider.getYieldCurveNodes("ITYIELD");
+        List<Node> nodes = provider.getYieldCurveNodes("USYIELD");
         for(Node node:nodes) {
             System.out.println(node.getSymbol() + " " + node.getData().bid());
         }
          */
+        testCurrencyPairs();
+    }
+
+    private static void testEodhdFxApiClient() {
+        EodhdFxApiClient client = new EodhdFxApiClient();
+        System.out.println(client.getRealTimeExchangeRate("EURUSD.FOREX"));
+
+        FrankfurterProvider provider = FrankfurterProvider.getInstance();
+        System.out.println(provider.getMktQuote("EURUSD", Market.CURRENCIES).getData().bid());
     }
 
     private static void testEcbClient() {

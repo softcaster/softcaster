@@ -53,55 +53,55 @@ class PyProviderHelper(IProviderHelper):
         nodes= list()
        
         offset = Offset(1,OffsetType.MONTHS);
-        node = Node("U.S. 1M",offset, None);
+        node = Node("US1M",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(2,OffsetType.MONTHS);
-        node = Node("U.S. 2M",offset, None);
+        node = Node("US2M",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(3,OffsetType.MONTHS);
-        node = Node("U.S. 3M",offset, None);
+        node = Node("US3M",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(4,OffsetType.MONTHS);
-        node = Node("U.S. 4M",offset, None);
+        node = Node("US4M",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(6,OffsetType.MONTHS);
-        node = Node("U.S. 6M",offset, None);
+        node = Node("US6M",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(1,OffsetType.YEARS);
-        node = Node("U.S. 1Y",offset, None);
+        node = Node("US1Y",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(2,OffsetType.YEARS);
-        node = Node("U.S. 2Y",offset, None);
+        node = Node("US2Y",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(3,OffsetType.YEARS);
-        node = Node("U.S. 3Y",offset, None);
+        node = Node("US3Y",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(5,OffsetType.YEARS);
-        node = Node("U.S. 5Y",offset, None);
+        node = Node("US5Y",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(7,OffsetType.YEARS);
-        node = Node("U.S. 7Y",offset, None);
+        node = Node("US7Y",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(10,OffsetType.YEARS);
-        node = Node("U.S. 10Y",offset, None);
+        node = Node("US10Y",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(20,OffsetType.YEARS);
-        node = Node("U.S. 20Y",offset, None);
+        node = Node("US20Y",offset, None, None, None);
         nodes.append(node);
 
         offset = Offset(30,OffsetType.YEARS);
-        node = Node("U.S. 30Y",offset, None);
+        node = Node("US30Y",offset, None, None, None);
         nodes.append(node);
 
         return nodes;

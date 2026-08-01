@@ -4,7 +4,6 @@
  */
 package org.softcaster.provider.cnbc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.ParseException;
@@ -95,7 +94,6 @@ public class CnbcProvider extends AbstractProvider {
         ProviderHelper helper = ProviderHelper.getInstance();
         if (helper != null) {
             try {
-                ObjectMapper om = new ObjectMapper();
                 List<Node> nodes = helper.getNodeList(idCurve);
                 int pos = 0;
                 double value = 0.;
