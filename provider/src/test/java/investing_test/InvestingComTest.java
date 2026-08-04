@@ -11,6 +11,7 @@ import org.softcaster.provider.cnbc.CnbcProvider;
 import org.softcaster.provider.ecb.ECBProvider;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.eodhd.EodhdFxApiClient;
+import org.softcaster.provider.eurex.EurexProvider;
 import org.softcaster.provider.frankfurter.FrankfurterProvider;
 import org.softcaster.provider.investing.InvestingComProvider;
 import org.softcaster.provider.twelvedata.TwelvedataProvider;
@@ -75,15 +76,16 @@ public class InvestingComTest {
         System.out.println("########## US Yield Curve ##########");
         testUsaYieldCurves();
          */
- 
+ /*
         CnbcProvider provider = CnbcProvider.getInstance();
         List<Node> nodes = provider.getYieldCurveNodes("USYIELD");
         for(Node node:nodes) {
             System.out.println(node.getSymbol() + " " + node.getData().bid());
         }
-         
-        testEcbClient();
+*/         
+        //testEcbClient();
         //testCurrencyPairs();
+        testEurexClient();
     }
 
     private static void testEodhdFxApiClient() {
@@ -101,6 +103,14 @@ public class InvestingComTest {
 
         for (Node node : nodes) {
             System.out.println(node.getSymbol() + ":" + node.getData().bid());
+        }
+    }
+
+    private static void testEurexClient() {
+        EurexProvider provider = EurexProvider.getInstance();
+        Node node = provider.getMktQuote("AAA", Market.FUTURES);
+        if(node != null) {
+            System.out.println(node.getData().bid());
         }
     }
 }
