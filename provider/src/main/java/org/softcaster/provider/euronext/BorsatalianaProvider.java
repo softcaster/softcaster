@@ -4,7 +4,6 @@
  */
 package org.softcaster.provider.euronext;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;

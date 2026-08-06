@@ -176,9 +176,12 @@ public class InvestingComTest {
         // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
         FileUtil.initializePython();
 
-        //testCurrencyPairs();
+        /*
+        System.out.println("########## TwelvedataProvider ##########");
+        testCurrencyPairs();
+        */
         //testEcbClient();
-        //testEodhdFxApiClient();
+        testEodhdFxApiClient();
         //System.out.println("########## IT Yield Curve ##########");
         // testItaYieldCurves();
         /*
@@ -196,8 +199,11 @@ public class InvestingComTest {
         //testEcbClient();
         //testCurrencyPairs();
         //testEurexClient();
-        //testYahooClient();
-        testBIProvider();
+        /*
+        System.out.println("########## YahooProvider ##########");
+        testYahooClient();
+        */
+        //testBIProvider();
     }
 
     private static void testEodhdFxApiClient() {
@@ -238,9 +244,9 @@ public class InvestingComTest {
         try {
             System.out.println(client.getRate("EURUSD"));
             System.out.println(client.getRate("EURCHF"));
-            System.out.println(client.getRate("EURGBP"));
-            System.out.println(client.getRate("EURAUD"));
+            System.out.println(client.getRate("EURJPY"));
             System.out.println(client.getRate("EURCAD"));
+            System.out.println(client.getRate("EURAUD"));
         } catch (JsonProcessingException ex) {
             Logger.getLogger(InvestingComTest.class.getName()).log(Level.SEVERE, null, ex);
         }
