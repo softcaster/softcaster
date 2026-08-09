@@ -20,7 +20,7 @@ public class CnbcApiClient {
 
     public CnbcApiClient() {
         this.restClient = RestClient.builder()
-                .baseUrl("https://quote.cnbc.com")
+                    .baseUrl("https://quote.cnbc.com")
                 .build();
     }
     public double getRate(String symbol) throws JsonProcessingException, ParseException {
@@ -33,7 +33,6 @@ public class CnbcApiClient {
         return Converter.toDouble(rateStr, false);
     }
 
-    //?providers=ECB
     public String fetchMarketData(String symbol) {
         return restClient.get()
                 .uri("quote-html-webservice/restQuote/symbolType/symbol?symbols="+symbol+"&output=json")

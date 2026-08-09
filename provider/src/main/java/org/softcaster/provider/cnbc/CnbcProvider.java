@@ -102,6 +102,7 @@ public class CnbcProvider extends AbstractProvider {
                 for (Node node : nodes) {
                     try {
                         value = client.getRate(node.getSymbol());
+                        //System.out.println(value);
                     } catch (ParseException ex) {
                         LoggerMgr.logError(ex.getLocalizedMessage());
                         value = 0.;

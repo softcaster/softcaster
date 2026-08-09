@@ -43,6 +43,10 @@ class PyProviderHelper(IProviderHelper):
         node = Node("IT20Y",offset, None, "ACT_365", "COMPOUNDED");
         nodes.append(node);
 
+        offset = Offset(30,OffsetType.YEARS);
+        node = Node("IT30Y",offset, None, "ACT_365", "COMPOUNDED");
+        nodes.append(node);
+
         return nodes;
 
     #
