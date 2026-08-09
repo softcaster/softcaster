@@ -8,6 +8,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.easy_pricer_eod.AppTreeItem;
+
 /**
  *
  * @author ep
@@ -25,8 +26,17 @@ public class TreeModel {
         services.add(new DefaultMutableTreeNode(new FndtNode<>("MtM Service", AppTreeItem.MTM_ENGINE)));
         services.add(new DefaultMutableTreeNode(new FndtNode<>("LifeCycle Scheduling", AppTreeItem.SCHEDULER)));
         services.add(new DefaultMutableTreeNode(new FndtNode<>("Accounting Processing", AppTreeItem.ACCT_ENGINE)));
-
         root.add(services);
+
+        DefaultMutableTreeNode batches = new DefaultMutableTreeNode("Batches");
+        // Foglie
+        batches.add(new DefaultMutableTreeNode(new FndtNode<>("End Of Day", AppTreeItem.BATCH_EOD)));
+        root.add(batches);
+        
+        DefaultMutableTreeNode config = new DefaultMutableTreeNode("Config");
+        // Foglie
+        config.add(new DefaultMutableTreeNode(new FndtNode<>("System Business Calendar", AppTreeItem.SBC)));
+        root.add(config);
 
         DefaultTreeModel model = new DefaultTreeModel(root);
         return model;

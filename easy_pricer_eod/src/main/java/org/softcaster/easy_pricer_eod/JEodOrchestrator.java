@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JEodOrchestrator extends javax.swing.JFrame {
 
-    public static final String TITLE = "E.O.D Orchestrator 1.0";
+    public static final String TITLE = "Orchestrator 1.0";
 
     private AppCard currentCard;
     private Map<AppCard, javax.swing.JPanel> cardMap = new HashMap<>();
