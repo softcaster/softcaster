@@ -52,7 +52,7 @@ public class BondScheduler implements IScheduler {
                     AccountingPhase.MEMO_POSTED);
             double operationalAmount = (detail.getBuyQty() - detail.getSellQty());
             double accrualAmount = (operationalAmount - memoAmount) * smd.getMultiplier();
-            // accrual in vase 100
+            // accrual in base 100
             double accrualsFrom = bondCalculator.getAccruals(smd, from);
             double accrualsTo = bondCalculator.getAccruals(smd, to);
             double accruals = (accrualsTo - accrualsFrom) * accrualAmount;
