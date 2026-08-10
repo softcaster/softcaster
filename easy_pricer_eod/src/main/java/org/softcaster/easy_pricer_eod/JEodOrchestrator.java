@@ -15,8 +15,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.commons.utils.LoggerMgr;
+import static org.softcaster.easy_pricer_eod.AppTreeItem.ACCT_ENGINE;
 import org.softcaster.easy_pricer_eod.ui.models.TreeModel;
 import org.softcaster.easy_pricer_eod.ui.views.AcctEnginePanel;
+import org.softcaster.easy_pricer_eod.ui.views.EodConfigPanel;
 import org.softcaster.easy_pricer_eod.ui.views.HomePanel;
 import org.softcaster.easy_pricer_eod.ui.views.LifeCycleEnginePanel;
 import org.softcaster.easy_pricer_eod.ui.views.MtmEnginePanel;
@@ -112,6 +114,10 @@ public class JEodOrchestrator extends javax.swing.JFrame {
                                 cl.show(mainPanel, AppCard.ACCT_ENGINE_CARD.name());
                                 currentCard = AppCard.ACCT_ENGINE_CARD;
                             }
+                            case SBC -> {
+                                cl.show(mainPanel, AppCard.SBC_CARD.name());
+                                currentCard = AppCard.SBC_CARD;
+                            }
                             default -> {
                                 cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
                                 currentCard = AppCard.DEFAULT_CARD;
@@ -157,6 +163,8 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         cardMap.put(AppCard.MTM_ENGINE_CARD, mtmPanel);
         JPanel acctPanel = new AcctEnginePanel(eodFacade);
         cardMap.put(AppCard.ACCT_ENGINE_CARD, acctPanel);
+        JPanel eodConfigPanel = new EodConfigPanel(eodFacade);
+        cardMap.put(AppCard.SBC_CARD, eodConfigPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
@@ -165,6 +173,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         mainPanel.add(lcPanel, AppCard.SCHEDULER_CARD.name());
         mainPanel.add(mtmPanel, AppCard.MTM_ENGINE_CARD.name());
         mainPanel.add(acctPanel, AppCard.ACCT_ENGINE_CARD.name());
+        mainPanel.add(eodConfigPanel, AppCard.SBC_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

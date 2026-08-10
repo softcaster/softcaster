@@ -94,4 +94,8 @@ public class Calendar implements Serializable {
         this.holidays = holidays;
     }
     
+    @Override
+    public String toString() {
+        return code;
+    }   
 }
