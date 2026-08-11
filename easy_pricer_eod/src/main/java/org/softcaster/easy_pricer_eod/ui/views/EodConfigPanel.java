@@ -4,10 +4,12 @@
  */
 package org.softcaster.easy_pricer_eod.ui.views;
 
+import java.time.LocalDate;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.ui.dialog.DialogHelper;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Calendar;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.SystemBusinessCalendar;
@@ -58,7 +60,7 @@ public class EodConfigPanel extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         txtLastOfficialDate = new javax.swing.JTextField();
         txtOfficialDate = new javax.swing.JTextField();
-        nextOfficialDate = new javax.swing.JTextField();
+        txtNextOfficialDate = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         txtStatus = new javax.swing.JTextField();
         buttonsPanel = new javax.swing.JPanel();
@@ -165,6 +167,11 @@ public class EodConfigPanel extends javax.swing.JPanel {
         fieldPanel.add(txtLastOfficialDate, gridBagConstraints);
 
         txtOfficialDate.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtOfficialDate.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtOfficialDateFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -174,10 +181,10 @@ public class EodConfigPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(txtOfficialDate, gridBagConstraints);
 
-        nextOfficialDate.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        nextOfficialDate.addFocusListener(new java.awt.event.FocusAdapter() {
+        txtNextOfficialDate.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtNextOfficialDate.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
-                nextOfficialDateFocusLost(evt);
+                txtNextOfficialDateFocusLost(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -187,7 +194,7 @@ public class EodConfigPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        fieldPanel.add(nextOfficialDate, gridBagConstraints);
+        fieldPanel.add(txtNextOfficialDate, gridBagConstraints);
 
         jLabel7.setText("Status");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -242,12 +249,51 @@ public class EodConfigPanel extends javax.swing.JPanel {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // TODO add your handling code here:
-        System.out.println("btnSaveActionPerformed");
+        try {
+            LocalDate officialDate = new Date(txtOfficialDate.getText()).sqlDate().toLocalDate();
+            LocalDate lastOfficialDate = new Date(txtLastOfficialDate.getText()).sqlDate().toLocalDate();
+            LocalDate nextOfficialDate = null;
+            if (!txtNextOfficialDate.getText().isBlank()) {
+                nextOfficialDate = new Date(txtNextOfficialDate.getText()).sqlDate().toLocalDate();
+            }
+            if (nextOfficialDate != null && (nextOfficialDate.isBefore(officialDate) || nextOfficialDate.isEqual(officialDate))) {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        "Next Official Date before or equal to Official Date.", // Messaggio
+                        "Validation Error", // Titolo
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            Currency currency = (Currency) cbCurrency.getSelectedItem();
+            Calendar calendar = (Calendar) cbCalendar.getSelectedItem();
+            if (nextOfficialDate != null) {
+                sbc.setStatus(SbcStatus.CLOSING);
+            }
+            sbc.setCurrency(currency);
+            sbc.setCalendar(calendar);
+            sbc.setOfficialDate(officialDate);
+            sbc.setLastOfficialDate(lastOfficialDate);
+            sbc.setNextBusinessDate(nextOfficialDate);
+            eodFacade.getSystemBusinessCalendarDAO().saveOrUpdate(sbc);
+            updateFields();
+        } catch (Exception ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Error saving data. See log for more details.", // Messaggio
+                    "Validation Error", // Titolo
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnSaveActionPerformed
 
-    private void nextOfficialDateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nextOfficialDateFocusLost
-        DialogHelper.textFieldDateFocusLost(nextOfficialDate);
-    }//GEN-LAST:event_nextOfficialDateFocusLost
+    private void txtNextOfficialDateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtNextOfficialDateFocusLost
+        DialogHelper.textFieldDateFocusLost(txtNextOfficialDate);
+    }//GEN-LAST:event_txtNextOfficialDateFocusLost
+
+    private void txtOfficialDateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtOfficialDateFocusLost
+        DialogHelper.textFieldDateFocusLost(txtOfficialDate);
+        txtLastOfficialDate.setText(txtOfficialDate.getText());
+    }//GEN-LAST:event_txtOfficialDateFocusLost
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -263,9 +309,9 @@ public class EodConfigPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JTextField nextOfficialDate;
     private javax.swing.JTextField txtDescription;
     private javax.swing.JTextField txtLastOfficialDate;
+    private javax.swing.JTextField txtNextOfficialDate;
     private javax.swing.JTextField txtOfficialDate;
     private javax.swing.JTextField txtStatus;
     // End of variables declaration//GEN-END:variables
@@ -304,22 +350,22 @@ public class EodConfigPanel extends javax.swing.JPanel {
         java.sql.Date sqlDate = java.sql.Date.valueOf(sbc.getLastOfficialDate());
         Date dt = new Date(sqlDate);
         txtLastOfficialDate.setText(dt.toString());
+        txtLastOfficialDate.setEnabled(false);
         sqlDate = java.sql.Date.valueOf(sbc.getOfficialDate());
         dt = new Date(sqlDate);
         txtOfficialDate.setText(dt.toString());
         if (sbc.getNextBusinessDate() != null) {
             sqlDate = java.sql.Date.valueOf(sbc.getNextBusinessDate());
             dt = new Date(sqlDate);
-            nextOfficialDate.setText(dt.toString());
+            txtNextOfficialDate.setText(dt.toString());
         }
         txtStatus.setText(sbc.getStatus().getDescription());
         if (sbc.getStatus() != SbcStatus.OPEN) {
             txtDescription.setEnabled(false);
             cbCurrency.setEnabled(false);
             cbCalendar.setEnabled(false);
-            txtLastOfficialDate.setEnabled(false);
             txtOfficialDate.setEnabled(false);
-            nextOfficialDate.setEnabled(false);
+            txtNextOfficialDate.setEnabled(false);
             btnSave.setEnabled(false);
         }
     }

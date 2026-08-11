@@ -10,6 +10,7 @@ import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.easy_pricer_eod.EODFacade;
 import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -142,19 +143,16 @@ public final class LifeCycleEnginePanel extends javax.swing.JPanel implements Se
             try {
                 // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
                 RestClient restClient = RestClient.create();
-
-                // 2. Ipotizziamo l'URL del microservizio REST (es. porta 8080)
-                // Puoi anche recuperare la porta dinamicamente da ParamsMgr se configurata lì
                 String baseUrl = "http://localhost:8084/api/v1/internal/system/suspend";
 
                 // 3. Esegui la chiamata POST sincrona
-                restClient.post()
+                ResponseEntity<String> response = restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)
                         .retrieve()
-                        .toBodilessEntity(); // Invia la richiesta e attende la risposta (200 OK)
+                        .toEntity(String.class);
 
-                appendMessage("Service suspended successfully via HTTP.");
+                appendMessage(response.getBody());
 
             } catch (Exception e) {
                 // Gestione dell'errore se il server è già spento o irraggiungibile
@@ -169,5 +167,32 @@ public final class LifeCycleEnginePanel extends javax.swing.JPanel implements Se
 
     @Override
     public void restoreService() {
+        appendMessage("Sending restoring request via HTTP to LifeCycle service...");
+
+        // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
+        new Thread(() -> {
+            try {
+                // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
+                RestClient restClient = RestClient.create();
+                String baseUrl = "http://localhost:8084/api/v1/internal/system/resume";
+
+                // 3. Esegui la chiamata POST sincrona
+                ResponseEntity<String> response = restClient.post()
+                        .uri(baseUrl)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .toEntity(String.class);
+
+                appendMessage(response.getBody());
+
+            } catch (Exception e) {
+                // Gestione dell'errore se il server è già spento o irraggiungibile
+                logError("HTTP suspension failed: " + e.getLocalizedMessage());
+
+                // Consiglio: se l'HTTP fallisce (es. server bloccato), proviamo comunque a killare il processo OS
+                appendMessage("Force closing OS process due to HTTP failure...");
+                eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
+            }
+        }).start();
     }
 }
