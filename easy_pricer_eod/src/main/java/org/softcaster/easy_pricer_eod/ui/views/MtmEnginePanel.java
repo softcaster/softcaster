@@ -135,11 +135,10 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
 
     @Override
     public void suspendService() {
-        appendMessage("Sending suspension request via HTTP to Mtm service...");
-
         // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
         new Thread(() -> {
             try {
+                appendMessage("Sending suspension request via HTTP to Mtm service...");
                 RestClient restClient = RestClient.create();
                 String baseUrl = "http://localhost:8083/api/v1/internal/system/suspend";
                 restClient.post()
@@ -163,5 +162,28 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
 
     @Override
     public void restoreService() {
+        // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
+        new Thread(() -> {
+            try {
+                appendMessage("Sending restore request via HTTP to Mtm service...");
+                RestClient restClient = RestClient.create();
+                String baseUrl = "http://localhost:8083/api/v1/internal/system/resume";
+                restClient.post()
+                        .uri(baseUrl)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .toBodilessEntity(); // Invia la richiesta e attende la risposta (200 OK)
+
+                appendMessage("Service suspended successfully via HTTP.");
+
+            } catch (Exception e) {
+                // Gestione dell'errore se il server è già spento o irraggiungibile
+                logError("HTTP suspension failed: " + e.getLocalizedMessage());
+
+                // Consiglio: se l'HTTP fallisce (es. server bloccato), proviamo comunque a killare il processo OS
+                appendMessage("Force closing OS process due to HTTP failure...");
+                eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
+            }
+        }).start();
     }
 }

@@ -12,6 +12,7 @@ import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.easy_pricer_eod.EODFacade;
 import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -67,6 +68,7 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
     @Override
     public void startService() {
         suspendAllServices();
+        doMtmBatch();
     }
 
     @Override
@@ -174,5 +176,48 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
         loadService("MSRV");
         loadService("ASRV");
         loadService("LSRV");
+    }
+
+    private RestServiceDescriptor getMtmServiceDescriptor() {
+        for (RestServiceDescriptor descriptor : serviceDescriptorList) {
+            if (descriptor.getServiceName().equals("MSRV")) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
+
+    private void doMtmBatch() {
+
+        RestServiceDescriptor descriptor = getMtmServiceDescriptor();
+        if (descriptor != null) {
+
+            // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
+            new Thread(() -> {
+                try {
+                    appendMessage("Sending Execute Job request via HTTP to " + descriptor.getServiceName() + " service...");
+                    ParamsMgr paramsMgr = ParamsMgr.getInstance();
+                    String port = paramsMgr.getParamValue(descriptor.getServiceName() + "_PORT");
+                    RestClient restClient = RestClient.create();
+                    String baseUrl = "http://localhost:" + port + "/api/v1/internal/system/execute";
+                    ResponseEntity<String> response = restClient.post()
+                            .uri(baseUrl)
+                            .accept(MediaType.APPLICATION_JSON)
+                            .retrieve()
+                            .toEntity(String.class);
+                    String message = "Mtm Job termitated successfully";
+                    if(!response.getBody().equals("OK"))
+                        message = "Mtm Job termitated with errors";
+                    appendMessage(message);
+
+                } catch (Exception e) {
+                    // Gestione dell'errore se il server è già spento o irraggiungibile
+                    logError("HTTP suspension failed: " + e.getLocalizedMessage());
+                    appendMessage(e.getLocalizedMessage());
+
+                }
+            }).start();
+
+        }
     }
 }

@@ -6,6 +6,7 @@ package org.softcaster.easy_pricer_mtm.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.softcaster.easy_pricer_mtm.jobs.MtMPollingJob;
 import org.softcaster.easy_pricer_mtm.services.EngineStateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,8 @@ public class InternalSystem {
 
     private static final Logger log = LoggerFactory.getLogger(InternalSystem.class);
 
+    @Autowired
+    private MtMPollingJob mtMPollingJob;
     @Autowired
     private EngineStateManager stateManager;
 
@@ -35,5 +38,18 @@ public class InternalSystem {
         stateManager.resume();
         log.info("Service resumed...");
         return new ResponseEntity<>("Service resumed", HttpStatus.OK);
+    }
+    
+    @PostMapping(value = "/internal/system/execute")
+    public ResponseEntity<String> executeJob() {
+        boolean result = mtMPollingJob.executeJob();
+        String response = "OK";
+        HttpStatus status = HttpStatus.OK;
+        if(!result) {
+            status = HttpStatus.NOT_FOUND;
+            response = "Mtm job failed!";
+        }
+            
+        return new ResponseEntity<>(response, status);
     }
 }

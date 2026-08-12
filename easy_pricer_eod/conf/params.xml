@@ -6,23 +6,23 @@
     </param>
     <param>
         <name>RSRV</name>
-        <value>E:\tools\projects\DEVELOP\softcaster\easy_pricer_srv\target\easy_pricer_srv-1.0.jar;dev</value>
+        <value>c:\tools\projects\DEVELOP\softcaster\easy_pricer_srv\target\easy_pricer_srv-1.0.jar;dev</value>
     </param>
     <param>
         <name>PSRV</name>
-        <value>E:\tools\projects\DEVELOP\softcaster\easy_pricer_proc\target\easy_pricer_proc-1.0.jar;dev</value>
+        <value>c:\tools\projects\DEVELOP\softcaster\easy_pricer_proc\target\easy_pricer_proc-1.0.jar;dev</value>
     </param>
     <param>
         <name>MSRV</name>
-        <value>E:\tools\projects\DEVELOP\softcaster\easy_pricer_mtm\target\easy_pricer_mtm-1.0.jar;dev</value>
+        <value>c:\tools\projects\DEVELOP\softcaster\easy_pricer_mtm\target\easy_pricer_mtm-1.0.jar;dev</value>
     </param>
     <param>
         <name>ASRV</name>
-        <value>E:\tools\projects\DEVELOP\softcaster\easy_pricer_acct\target\easy_pricer_acct-1.0.jar;dev</value>
+        <value>c:\tools\projects\DEVELOP\softcaster\easy_pricer_acct\target\easy_pricer_acct-1.0.jar;dev</value>
     </param>
     <param>
         <name>LSRV</name>
-        <value>E:\tools\projects\DEVELOP\softcaster\easy_pricer_lc\target\easy_pricer_lc-1.0.jar;dev</value>
+        <value>c:\tools\projects\DEVELOP\softcaster\easy_pricer_lc\target\easy_pricer_lc-1.0.jar;dev</value>
     </param>
     <param>
         <name>RSRV_PORT</name>

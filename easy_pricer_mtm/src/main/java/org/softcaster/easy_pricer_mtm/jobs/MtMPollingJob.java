@@ -98,7 +98,35 @@ public class MtMPollingJob implements IMtmDataHelper {
             for (PositionMasterData pmd : positions) {
                 fetchPositionDetails(pmd, context);
             }
-        }        
+        }
+    }
+
+    public boolean executeJob() {
+        ValuationContext context = new ValuationContext();
+
+        // Valutazione posizioni
+        fetchPosition(context);
+
+        // SALVATAGGIO FINALE DELLE VALUTAZIONI (Esterno al ciclo delle posizioni)
+        Collection<InstrumentValuation> valuationsToSave = context.getValuationCache().values();
+        if (!valuationsToSave.isEmpty()) {
+            for (InstrumentValuation valuation : valuationsToSave) {
+                try {
+                    // Sfruttare l'Upsert nativo (ON CONFLICT DO UPDATE) a fine ciclo è la scelta vincente 
+                    // in questo tipo di architetture asincrone.
+                    // azzera i problemi causati dai proxy di Hibernate nel multithreading, 
+                    // garantisce prestazioni elevate e mantiene il database perfettamente ordinato, 
+                    // con gli ID delle valutazioni saldamente ancorati a quelli delle anagrafiche
+                    instrumentValuationDAO.upsertValuation(valuation);
+                    return true;
+                } catch (Exception e) {
+                    log.error("### MTM error saving valuation instrument Id {}: {}",
+                            valuation.getMasterData().getIdMasterData(), e.getMessage());
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Scheduled(fixedDelay = 15000)
@@ -110,10 +138,10 @@ public class MtMPollingJob implements IMtmDataHelper {
         log.info("=== [MMS] MTM Service started ===");
         // Creazione del contesto unico per QUESTO ciclo di polling
         ValuationContext context = new ValuationContext();
-        
+
         // Valutazione posizioni
         fetchPosition(context);
-        
+
         // SALVATAGGIO FINALE DELLE VALUTAZIONI (Esterno al ciclo delle posizioni)
         Collection<InstrumentValuation> valuationsToSave = context.getValuationCache().values();
         if (!valuationsToSave.isEmpty()) {
@@ -124,14 +152,13 @@ public class MtMPollingJob implements IMtmDataHelper {
                     // azzera i problemi causati dai proxy di Hibernate nel multithreading, 
                     // garantisce prestazioni elevate e mantiene il database perfettamente ordinato, 
                     // con gli ID delle valutazioni saldamente ancorati a quelli delle anagrafiche
-                    instrumentValuationDAO.upsertValuation(valuation);             
-                } 
-                catch (Exception e) {
-                    log.error("### MTM error saving valuation instrument Id {}: {}", 
-                        valuation.getMasterData().getIdMasterData(), e.getMessage());
+                    instrumentValuationDAO.upsertValuation(valuation);
+                } catch (Exception e) {
+                    log.error("### MTM error saving valuation instrument Id {}: {}",
+                            valuation.getMasterData().getIdMasterData(), e.getMessage());
                 }
             }
-        }        
+        }
         log.info("=== [MMS] MTM Service terminated ===\n");
     }
 
