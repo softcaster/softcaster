@@ -16,8 +16,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.commons.utils.LoggerMgr;
 import static org.softcaster.easy_pricer_eod.AppTreeItem.ACCT_ENGINE;
+import static org.softcaster.easy_pricer_eod.AppTreeItem.SBC;
 import org.softcaster.easy_pricer_eod.ui.models.TreeModel;
+import org.softcaster.easy_pricer_eod.ui.renderers.EodTreeCellRenderer;
 import org.softcaster.easy_pricer_eod.ui.views.AcctEnginePanel;
+import org.softcaster.easy_pricer_eod.ui.views.EodBatchPanel;
 import org.softcaster.easy_pricer_eod.ui.views.EodConfigPanel;
 import org.softcaster.easy_pricer_eod.ui.views.HomePanel;
 import org.softcaster.easy_pricer_eod.ui.views.LifeCycleEnginePanel;
@@ -77,7 +80,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
             setLocationRelativeTo(null);
 
             navigator.setModel(TreeModel.buildTree());
-            //navigator.setCellRenderer(new MDSTreeCellRenderer());
+            navigator.setCellRenderer(new EodTreeCellRenderer());
             navigator.addTreeSelectionListener(e -> {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) navigator.getLastSelectedPathComponent();
 
@@ -117,6 +120,10 @@ public class JEodOrchestrator extends javax.swing.JFrame {
                             case SBC -> {
                                 cl.show(mainPanel, AppCard.SBC_CARD.name());
                                 currentCard = AppCard.SBC_CARD;
+                            }
+                            case BATCH_EOD -> {
+                                cl.show(mainPanel, AppCard.BATCH_EOD_CARD.name());
+                                currentCard = AppCard.BATCH_EOD_CARD;
                             }
                             default -> {
                                 cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
@@ -165,6 +172,8 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         cardMap.put(AppCard.ACCT_ENGINE_CARD, acctPanel);
         JPanel eodConfigPanel = new EodConfigPanel(eodFacade);
         cardMap.put(AppCard.SBC_CARD, eodConfigPanel);
+        JPanel eodBatchPanel = new EodBatchPanel(eodFacade);
+        cardMap.put(AppCard.BATCH_EOD_CARD, eodBatchPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
@@ -174,6 +183,7 @@ public class JEodOrchestrator extends javax.swing.JFrame {
         mainPanel.add(mtmPanel, AppCard.MTM_ENGINE_CARD.name());
         mainPanel.add(acctPanel, AppCard.ACCT_ENGINE_CARD.name());
         mainPanel.add(eodConfigPanel, AppCard.SBC_CARD.name());
+        mainPanel.add(eodBatchPanel, AppCard.BATCH_EOD_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

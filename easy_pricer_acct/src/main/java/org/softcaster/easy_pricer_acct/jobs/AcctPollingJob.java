@@ -193,7 +193,7 @@ public class AcctPollingJob {
     @Scheduled(fixedDelay = 15000)
     public void pollAccountinEvents() {
         if (engineStateManager.isSuspended()) {
-            log.info("=== [PSRV] Service is suspended ===\n");
+            log.info("=== [ASRV] Service is suspended ===\n");
             return;
         }
         pollPendingAccountingTradeEvents();

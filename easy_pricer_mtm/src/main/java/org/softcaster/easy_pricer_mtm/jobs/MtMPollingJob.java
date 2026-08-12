@@ -104,7 +104,7 @@ public class MtMPollingJob implements IMtmDataHelper {
     @Scheduled(fixedDelay = 15000)
     public void pollPositionDetails() {
         if (engineStateManager.isSuspended()) {
-            log.info("=== [MMS] MTM Service is suspended ===\n");
+            log.info("=== [MSRV] Service is suspended ===\n");
             return;
         }
         log.info("=== [MMS] MTM Service started ===");

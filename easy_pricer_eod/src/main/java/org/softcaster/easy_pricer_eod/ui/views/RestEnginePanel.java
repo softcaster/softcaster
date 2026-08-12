@@ -135,12 +135,12 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void suspendService() {
-        appendMessage("Sending suspension request via HTTP to Txn Rest service...");
-
         // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
         new Thread(() -> {
             try {
-                // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
+                appendMessage("Sending suspension request via HTTP to Txn Rest service...");
+                
+                // Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
                 RestClient restClient = RestClient.create();
 
                 // 2. Ipotizziamo l'URL del microservizio REST (es. porta 8080)
