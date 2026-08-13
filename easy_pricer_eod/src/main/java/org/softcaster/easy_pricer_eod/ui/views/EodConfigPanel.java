@@ -22,7 +22,7 @@ import org.softcaster.engine.enums.SbcStatus;
  */
 public class EodConfigPanel extends javax.swing.JPanel {
 
-    private EODFacade eodFacade;
+    private final EODFacade eodFacade;
     private SystemBusinessCalendar sbc;
 
     /**

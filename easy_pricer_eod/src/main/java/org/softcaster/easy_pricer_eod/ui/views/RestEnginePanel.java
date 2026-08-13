@@ -105,7 +105,7 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public String getServiceName() {
-        return "RSRV";
+        return "TSRV";
     }
 
     @Override
@@ -115,9 +115,9 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
     private void loadServiceDescriptor() {
         ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String[] params = paramsMgr.getParamValue("RSRV").split(";");
+        String[] params = paramsMgr.getParamValue("TSRV").split(";");
         descriptor = new RestServiceDescriptor();
-        descriptor.setServiceName("RSRV");
+        descriptor.setServiceName("TSRV");
         descriptor.setJarPath(params[0]);
         descriptor.setActiveProfile(params[1]);
         descriptor.setServiceInfo(this);

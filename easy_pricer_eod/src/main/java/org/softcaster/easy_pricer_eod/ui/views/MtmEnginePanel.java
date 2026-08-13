@@ -9,7 +9,9 @@ import javax.swing.border.EmptyBorder;
 import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.easy_pricer_eod.EODFacade;
 import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
+import org.softcaster.engine.enums.ServiceType;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -105,7 +107,7 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
 
     @Override
     public String getServiceName() {
-        return "MSRV";
+        return descriptor.getServiceName();
     }
 
     @Override
@@ -114,12 +116,7 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
     }
 
     private void loadServiceDescriptor() {
-        ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String[] params = paramsMgr.getParamValue("MSRV").split(";");
-        descriptor = new RestServiceDescriptor();
-        descriptor.setServiceName("MSRV");
-        descriptor.setJarPath(params[0]);
-        descriptor.setActiveProfile(params[1]);
+        descriptor = eodFacade.getMicroserviceDispatcher().getDescriptor(ServiceType.MSRV);
         descriptor.setServiceInfo(this);
     }
 
@@ -141,13 +138,13 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
                 appendMessage("Sending suspension request via HTTP to Mtm service...");
                 RestClient restClient = RestClient.create();
                 String baseUrl = "http://localhost:8083/api/v1/internal/system/suspend";
-                restClient.post()
+                ResponseEntity<String> response = restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)
                         .retrieve()
-                        .toBodilessEntity(); // Invia la richiesta e attende la risposta (200 OK)
+                        .toEntity(String.class);
 
-                appendMessage("Service suspended successfully via HTTP.");
+                appendMessage(response.getBody());
 
             } catch (Exception e) {
                 // Gestione dell'errore se il server è già spento o irraggiungibile
@@ -168,13 +165,13 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
                 appendMessage("Sending restore request via HTTP to Mtm service...");
                 RestClient restClient = RestClient.create();
                 String baseUrl = "http://localhost:8083/api/v1/internal/system/resume";
-                restClient.post()
+                ResponseEntity<String> response = restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)
                         .retrieve()
-                        .toBodilessEntity(); // Invia la richiesta e attende la risposta (200 OK)
+                        .toEntity(String.class);
 
-                appendMessage("Service suspended successfully via HTTP.");
+                appendMessage(response.getBody());
 
             } catch (Exception e) {
                 // Gestione dell'errore se il server è già spento o irraggiungibile

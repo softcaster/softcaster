@@ -11,6 +11,7 @@ import javax.swing.border.EmptyBorder;
 import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.easy_pricer_eod.EODFacade;
 import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
+import org.softcaster.engine.enums.ServiceType;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
@@ -38,7 +39,6 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
         messageList.setModel(listModel);
         messageList.setBorder(new EmptyBorder(10, 15, 10, 15));
         appendMessage("Eod Batch ready...");
-        loadDescriptors();
     }
 
     /**
@@ -67,6 +67,7 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
 
     @Override
     public void startService() {
+        loadDescriptors();
         suspendAllServices();
         doMtmBatch();
     }
@@ -159,23 +160,21 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
         }
     }
 
-    private void loadService(String serviceName) {
-        ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String[] params = paramsMgr.getParamValue(serviceName).split(";");
-        RestServiceDescriptor descriptor = new RestServiceDescriptor();
-        descriptor.setServiceName(serviceName);
-        descriptor.setJarPath(params[0]);
-        descriptor.setActiveProfile(params[1]);
-        descriptor.setServiceInfo(this);
-        serviceDescriptorList.add(descriptor);
+    private void loadService(ServiceType type) {
+        
+        RestServiceDescriptor descriptor = eodFacade.getMicroserviceDispatcher().getDescriptor(type);
+        if(descriptor != null) {
+            descriptor.setServiceInfo(this);
+            serviceDescriptorList.add(descriptor);
+        }
     }
 
     private void loadDescriptors() {
-        loadService("RSRV");
-        loadService("PSRV");
-        loadService("MSRV");
-        loadService("ASRV");
-        loadService("LSRV");
+        loadService(ServiceType.TSRV);
+        loadService(ServiceType.PSRV);
+        loadService(ServiceType.MSRV);
+        loadService(ServiceType.ASRV);
+        loadService(ServiceType.LSRV);
     }
 
     private RestServiceDescriptor getMtmServiceDescriptor() {
