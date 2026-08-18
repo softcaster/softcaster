@@ -4,18 +4,29 @@
  */
 package org.softcaster.easy_pricer_eod.services;
 
+import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import org.softcaster.commons.xml.ParamsMgr;
+import org.softcaster.core.data.Descriptors;
+import org.softcaster.core.data.DescriptorsDAO;
 import org.softcaster.engine.enums.ServiceType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MicroserviceDispatcher {
 
+    @Autowired
+    private DescriptorsDAO descriptorsDAO;
+
     private final ConcurrentHashMap<ServiceType, RestServiceDescriptor> descriptorsMap = new ConcurrentHashMap<>();
 
     public MicroserviceDispatcher() {
+    }
+
+    @PostConstruct
+    public void init() {
         loadDescriptors();
     }
 
@@ -27,23 +38,22 @@ public class MicroserviceDispatcher {
         }
     }
 
-    private void loadService(ServiceType type) {
-        ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String[] params = paramsMgr.getParamValue(type.getCode()).split(";");
-        RestServiceDescriptor descriptor = new RestServiceDescriptor();
-        descriptor.setServiceName(type.getCode());
-        descriptor.setJarPath(params[0]);
-        descriptor.setActiveProfile(params[1]);
-        descriptor.setServiceInfo(null);
-        descriptorsMap.put(type, descriptor);
+    private void loadService(Descriptors descriptor) {
+        RestServiceDescriptor restDescriptor = new RestServiceDescriptor();
+        restDescriptor.setServiceName(descriptor.getServiceType().getDescription());
+        restDescriptor.setJarPath(descriptor.getJarPath());
+        restDescriptor.setActiveProfile(descriptor.getActiveProfile());
+        restDescriptor.setServiceInfo(null);
+        restDescriptor.setPort(descriptor.getPort());
+        descriptorsMap.put(descriptor.getServiceType(), restDescriptor);
+
     }
 
     private void loadDescriptors() {
-        loadService(ServiceType.TSRV);
-        loadService(ServiceType.PSRV);
-        loadService(ServiceType.MSRV);
-        loadService(ServiceType.ASRV);
-        loadService(ServiceType.LSRV);
+        List<Descriptors> descriptors = descriptorsDAO.findAll();
+        for (Descriptors descriptor : descriptors) {
+            loadService(descriptor);
+        }
     }
 
     private RestServiceDescriptor clone(RestServiceDescriptor descriptor) {
@@ -54,6 +64,7 @@ public class MicroserviceDispatcher {
         }
         copy.setJarPath(descriptor.getJarPath());
         copy.setServiceName(descriptor.getServiceName());
+        copy.setPort(descriptor.getPort());
         copy.setServiceInfo(null);
         return copy;
     }

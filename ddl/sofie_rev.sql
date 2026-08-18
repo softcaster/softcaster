@@ -14,6 +14,7 @@ INSERT INTO journal_entry_status VALUES (3,'ERROR','Error');
 alter table journal_entries add column entry_status integer NOT NULL default 1;
 alter table journal_entries add CONSTRAINT fk_je_status FOREIGN KEY (entry_status) REFERENCES journal_entry_status (entry_status_id);
 alter table journal_entries drop column entry_date;
+alter table descriptors drop column service_name;
 
 INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
 VALUES

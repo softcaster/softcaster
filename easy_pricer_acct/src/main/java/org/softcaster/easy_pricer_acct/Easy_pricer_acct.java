@@ -35,7 +35,7 @@ public class Easy_pricer_acct {
 
         System.out.println("===========================================");
         System.out.println("   EASY PRICER ACCT STARTED SUCCESSFULLY   ");
-        System.out.println("   Endpoint: http://localhost:8082/api/v1  ");
+        System.out.println("   Endpoint: http://localhost:8083/api/v1  ");
         System.out.println("===========================================");
     }
 }

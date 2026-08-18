@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.border.EmptyBorder;
-import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.easy_pricer_eod.EODFacade;
 import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
 import org.softcaster.engine.enums.ServiceType;
@@ -38,6 +37,7 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
         this.eodFacade = eodFacade;
         messageList.setModel(listModel);
         messageList.setBorder(new EmptyBorder(10, 15, 10, 15));
+        loadDescriptors();
         appendMessage("Eod Batch ready...");
     }
 
@@ -67,7 +67,6 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
 
     @Override
     public void startService() {
-        loadDescriptors();
         suspendAllServices();
         doMtmBatch();
     }
@@ -131,10 +130,8 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
         new Thread(() -> {
             try {
                 appendMessage("Sending suspension request via HTTP to " + descriptor.getServiceName() + " service...");
-                ParamsMgr paramsMgr = ParamsMgr.getInstance();
-                String port = paramsMgr.getParamValue(descriptor.getServiceName() + "_PORT");
                 RestClient restClient = RestClient.create();
-                String baseUrl = "http://localhost:" + port + "/api/v1/internal/system/suspend";
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/suspend";
                 restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)
@@ -161,9 +158,9 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
     }
 
     private void loadService(ServiceType type) {
-        
+
         RestServiceDescriptor descriptor = eodFacade.getMicroserviceDispatcher().getDescriptor(type);
-        if(descriptor != null) {
+        if (descriptor != null) {
             descriptor.setServiceInfo(this);
             serviceDescriptorList.add(descriptor);
         }
@@ -195,18 +192,17 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
             new Thread(() -> {
                 try {
                     appendMessage("Sending Execute Job request via HTTP to " + descriptor.getServiceName() + " service...");
-                    ParamsMgr paramsMgr = ParamsMgr.getInstance();
-                    String port = paramsMgr.getParamValue(descriptor.getServiceName() + "_PORT");
                     RestClient restClient = RestClient.create();
-                    String baseUrl = "http://localhost:" + port + "/api/v1/internal/system/execute";
+                    String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/execute";
                     ResponseEntity<String> response = restClient.post()
                             .uri(baseUrl)
                             .accept(MediaType.APPLICATION_JSON)
                             .retrieve()
                             .toEntity(String.class);
                     String message = "Mtm Job termitated successfully";
-                    if(!response.getBody().equals("OK"))
+                    if (!response.getBody().equals("OK")) {
                         message = "Mtm Job termitated with errors";
+                    }
                     appendMessage(message);
 
                 } catch (Exception e) {

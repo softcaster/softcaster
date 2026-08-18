@@ -361,3 +361,24 @@ INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (4,'GOLD'
 INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (5,'SILVER','Silver');
 INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (6,'PLATINUM','Platinum');
 INSERT INTO commodity_type(commodity_type_id,code, description) VALUES (7,'PALLADIUM','Palladium');
+
+-- ----------------------------------------------------------------------------
+-- service_types
+-- ----------------------------------------------------------------------------
+INSERT INTO service_types(service_type_id,code, description) VALUES (1,'TSRV','Trade Capture Service');
+INSERT INTO service_types(service_type_id,code, description) VALUES (2,'PSRV','Trade Processing Service');
+INSERT INTO service_types(service_type_id,code, description) VALUES (3,'MSRV','Mtm Service');
+INSERT INTO service_types(service_type_id,code, description) VALUES (4,'ASRV','Accounting Service');
+INSERT INTO service_types(service_type_id,code, description) VALUES (5,'LSRV','Life Cycle Service');
+
+
+INSERT INTO descriptors(descriptor_id,service_type, jar_path, active_profile, port) 
+    VALUES (1,1,'c:\tools\projects\DEVELOP\softcaster\easy_pricer_srv\target\easy_pricer_srv-1.0.jar','dev','8080');
+INSERT INTO descriptors(descriptor_id,service_type, jar_path, active_profile, port) 
+    VALUES (2,2,'c:\tools\projects\DEVELOP\softcaster\easy_pricer_srv\target\easy_pricer_proc-1.0.jar','dev','8081');
+INSERT INTO descriptors(descriptor_id,service_type, jar_path, active_profile, port) 
+    VALUES (3,3,'c:\tools\projects\DEVELOP\softcaster\easy_pricer_srv\target\easy_pricer_mtm-1.0.jar','dev','8082');
+INSERT INTO descriptors(descriptor_id,service_type, jar_path, active_profile, port) 
+    VALUES (4,4,'c:\tools\projects\DEVELOP\softcaster\easy_pricer_srv\target\easy_pricer_acct-1.0.jar','dev','8083');
+INSERT INTO descriptors(descriptor_id,service_type, jar_path, active_profile, port) 
+    VALUES (5,5,'c:\tools\projects\DEVELOP\softcaster\easy_pricer_srv\target\easy_pricer_lc-1.0.jar','dev','8084');

@@ -6,7 +6,6 @@ package org.softcaster.easy_pricer_eod.ui.views;
 
 import javax.swing.DefaultListModel;
 import javax.swing.border.EmptyBorder;
-import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.easy_pricer_eod.EODFacade;
 import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
 import org.softcaster.engine.enums.ServiceType;
@@ -137,7 +136,7 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
             try {
                 appendMessage("Sending suspension request via HTTP to Mtm service...");
                 RestClient restClient = RestClient.create();
-                String baseUrl = "http://localhost:8083/api/v1/internal/system/suspend";
+                String baseUrl = "http://localhost:8082/api/v1/internal/system/suspend";
                 ResponseEntity<String> response = restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)
@@ -164,7 +163,7 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
             try {
                 appendMessage("Sending restore request via HTTP to Mtm service...");
                 RestClient restClient = RestClient.create();
-                String baseUrl = "http://localhost:8083/api/v1/internal/system/resume";
+                String baseUrl = "http://localhost:8082/api/v1/internal/system/resume";
                 ResponseEntity<String> response = restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)

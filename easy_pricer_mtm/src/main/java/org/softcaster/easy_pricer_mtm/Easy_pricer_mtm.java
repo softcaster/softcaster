@@ -35,7 +35,7 @@ public class Easy_pricer_mtm {
 
         System.out.println("===========================================");
         System.out.println("   EASY PRICER MTM STARTED SUCCESSFULLY   ");
-        System.out.println("   Endpoint: http://localhost:8083/api/v1  ");
+        System.out.println("   Endpoint: http://localhost:8082/api/v1  ");
         System.out.println("===========================================");
     }
 }

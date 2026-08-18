@@ -1200,5 +1200,31 @@ CREATE TABLE cmd_future_master_data (
     CONSTRAINT fk_commodity_type FOREIGN KEY (commodity_type) REFERENCES commodity_type (commodity_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     PRIMARY KEY (id_master_data)
 );
-
 ALTER TABLE cmd_future_master_data OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- service_types
+-- ----------------------------------------------------------------------------
+CREATE TABLE service_types (
+    service_type_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(255) NOT NULL,
+    PRIMARY KEY (service_type_id)
+);
+ALTER TABLE service_types OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- descriptors
+-- ----------------------------------------------------------------------------
+CREATE TABLE descriptors (
+    descriptor_id integer NOT NULL,
+    service_type integer NOT NULL,
+    jar_path varchar(255) NOT NULL,
+    active_profile varchar(25) NOT NULL,
+    port varchar(5) NOT NULL,
+    CONSTRAINT fk_service_types FOREIGN KEY (service_type) REFERENCES service_types (service_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    PRIMARY KEY (descriptor_id)
+);
+ALTER TABLE descriptors OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS descriptors_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE descriptors_s OWNER TO sofie;

@@ -11,6 +11,7 @@ import org.softcaster.easy_pricer_mtm.services.EngineStateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,5 +52,10 @@ public class InternalSystem {
         }
             
         return new ResponseEntity<>(response, status);
+    }
+    
+    @GetMapping(value = "/internal/system/alive")
+    public ResponseEntity<String> getOfficialDate() {
+        return new ResponseEntity<>("Mtm Service Alive", HttpStatus.OK);
     }
 }

@@ -14,6 +14,7 @@ public class RestServiceDescriptor implements MicroserviceDescriptor {
     private String serviceName = "";
     private String jarPath = "";
     private String activeProfile = "";
+    private String port = "";
     private List<String> additionalArgs = null;
     private ServiceInfo serviceInfo = null;
 
@@ -79,5 +80,19 @@ public class RestServiceDescriptor implements MicroserviceDescriptor {
      */
     public void setServiceInfo(ServiceInfo serviceInfo) {
         this.serviceInfo = serviceInfo;
+    }
+
+    /**
+     * @return the port
+     */
+    public String getPort() {
+        return port;
+    }
+
+    /**
+     * @param port the port to set
+     */
+    public void setPort(String port) {
+        this.port = port;
     }
 }
