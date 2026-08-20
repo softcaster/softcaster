@@ -10,5 +10,5 @@ package org.softcaster.easy_pricer_eod;
  */
 public enum AppTreeItem {
     DEFAULT, REST_ENGINE, TRADE_PROCESSOR, MTM_ENGINE, SCHEDULER, ACCT_ENGINE, BATCH_EOD,
-    SBC
+    SBC, SRV
 }

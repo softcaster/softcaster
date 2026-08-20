@@ -36,6 +36,7 @@ public class TreeModel {
         DefaultMutableTreeNode config = new DefaultMutableTreeNode("Config");
         // Foglie
         config.add(new DefaultMutableTreeNode(new FndtNode<>("System Business Calendar", AppTreeItem.SBC)));
+        config.add(new DefaultMutableTreeNode(new FndtNode<>("Micro Services", AppTreeItem.SRV)));
         root.add(config);
 
         DefaultTreeModel model = new DefaultTreeModel(root);

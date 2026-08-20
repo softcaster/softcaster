@@ -6,6 +6,7 @@ package org.softcaster.easy_pricer_eod;
 
 import org.softcaster.core.data.CalendarDAO;
 import org.softcaster.core.data.CurrencyDAO;
+import org.softcaster.core.data.DescriptorsDAO;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.easy_pricer_eod.services.MicroserviceDispatcher;
 import org.softcaster.easy_pricer_eod.services.MicroserviceLauncher;
@@ -26,6 +27,8 @@ public class EODFacade {
     private CalendarDAO calendarDAO;
     @Autowired
     private SystemBusinessCalendarDAO systemBusinessCalendarDAO;
+    @Autowired
+    private DescriptorsDAO descriptorsDAO;
     /**
      * @return the microserviceLauncher
      */
@@ -59,6 +62,13 @@ public class EODFacade {
      */
     public MicroserviceDispatcher getMicroserviceDispatcher() {
         return microserviceDispatcher;
+    }
+
+    /**
+     * @return the descriptorsDAO
+     */
+    public DescriptorsDAO getDescriptorsDAO() {
+        return descriptorsDAO;
     }
 
 }

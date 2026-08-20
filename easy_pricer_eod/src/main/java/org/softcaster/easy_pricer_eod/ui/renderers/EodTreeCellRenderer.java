@@ -40,7 +40,7 @@ public class EodTreeCellRenderer extends DefaultTreeCellRenderer {
                         setIcon(serviceIcon);
                     case BATCH_EOD ->
                         setIcon(batchIcon);
-                    case SBC ->
+                    case SBC, SRV ->
                         setIcon(configIcon);
                     default -> {
                         setIcon(getDefaultLeafIcon()); // Torna al "pallino" o icona di default

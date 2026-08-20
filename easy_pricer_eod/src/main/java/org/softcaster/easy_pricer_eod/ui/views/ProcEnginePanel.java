@@ -6,9 +6,9 @@ package org.softcaster.easy_pricer_eod.ui.views;
 
 import javax.swing.DefaultListModel;
 import javax.swing.border.EmptyBorder;
-import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.easy_pricer_eod.EODFacade;
 import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
+import org.softcaster.engine.enums.ServiceType;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
@@ -114,12 +114,7 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
     }
 
     private void loadServiceDescriptor() {
-        ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String[] params = paramsMgr.getParamValue("PSRV").split(";");
-        descriptor = new RestServiceDescriptor();
-        descriptor.setServiceName("PSRV");
-        descriptor.setJarPath(params[0]);
-        descriptor.setActiveProfile(params[0]);
+        descriptor = eodFacade.getMicroserviceDispatcher().getDescriptor(ServiceType.PSRV);
         descriptor.setServiceInfo(this);
     }
 

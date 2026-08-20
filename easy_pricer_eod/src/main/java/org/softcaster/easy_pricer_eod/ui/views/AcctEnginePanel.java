@@ -6,9 +6,9 @@ package org.softcaster.easy_pricer_eod.ui.views;
 
 import javax.swing.DefaultListModel;
 import javax.swing.border.EmptyBorder;
-import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.easy_pricer_eod.EODFacade;
 import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
+import org.softcaster.engine.enums.ServiceType;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
@@ -114,12 +114,7 @@ public final class AcctEnginePanel extends javax.swing.JPanel implements Service
     }
 
     private void loadServiceDescriptor() {
-        ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String[] params = paramsMgr.getParamValue("ASRV").split(";");
-        descriptor = new RestServiceDescriptor();
-        descriptor.setServiceName("ASRV");
-        descriptor.setJarPath(params[0]);
-        descriptor.setActiveProfile(params[1]);
+        descriptor = eodFacade.getMicroserviceDispatcher().getDescriptor(ServiceType.ASRV);
         descriptor.setServiceInfo(this);
     }
 

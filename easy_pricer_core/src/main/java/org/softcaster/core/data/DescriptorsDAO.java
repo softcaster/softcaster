@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("descriptorsDAO")
 public class DescriptorsDAO {
 
-    private DescriptorsRepository repository;
+    private final DescriptorsRepository repository;
 
     // Iniezione tramite costruttore (Best Practice per Spring)
     public DescriptorsDAO(DescriptorsRepository repository) {
