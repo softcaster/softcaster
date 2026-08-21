@@ -101,9 +101,17 @@ public class MtMPollingJob implements IMtmDataHelper {
         }
     }
 
+    private void refreshSpotPrice() {
+        marketDataService.loadSpotPrice();
+        mtmService.resetFlagCalculated();
+    }
+    
     public boolean executeJob() {
         ValuationContext context = new ValuationContext();
 
+        // Aggiornamento tassi/prezzi
+        refreshSpotPrice();
+        
         // Valutazione posizioni
         fetchPosition(context);
 
@@ -139,6 +147,9 @@ public class MtMPollingJob implements IMtmDataHelper {
         // Creazione del contesto unico per QUESTO ciclo di polling
         ValuationContext context = new ValuationContext();
 
+        // Aggiornamento tassi/prezzi
+        refreshSpotPrice();
+        
         // Valutazione posizioni
         fetchPosition(context);
 

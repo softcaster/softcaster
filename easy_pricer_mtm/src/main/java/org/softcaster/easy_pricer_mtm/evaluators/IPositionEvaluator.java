@@ -12,4 +12,8 @@ import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 public interface IPositionEvaluator {
 
     public void evaluate(PositionDetail position, MasterData masterData, IMtmDataHelper mtmHelper, ValuationContext context);
+
+    public boolean isCalculated();
+
+    public void setCalculated(boolean calculated);
 }

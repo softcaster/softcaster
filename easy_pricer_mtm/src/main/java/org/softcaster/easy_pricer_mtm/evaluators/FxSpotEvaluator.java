@@ -53,6 +53,7 @@ public class FxSpotEvaluator extends AbstractEvaluator implements IPositionEvalu
             valuation.setDuration(0.);
             valuation.setModDuration(0.);
             valuation.setAccruedInterest(0.);
+            setCalculated(true);
         }
         valuation.setValuationDate(valuationDate);
 

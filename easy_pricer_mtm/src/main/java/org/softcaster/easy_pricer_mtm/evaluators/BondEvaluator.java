@@ -77,20 +77,22 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
                     return currentValuation;
                 });
 
-                double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
+                if (!isCalculated()) {
+                    double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
 
-                XRBOutputData output = calculate(smd, mktPrice, mtmHelper.getOfficialDate());
-                if (output != null) {
-                    valuation.setMarketPrice(output.getMktPrice());
-                    valuation.setYtm(output.getYtm());
-                    valuation.setDuration(output.getDuration());
-                    valuation.setModDuration(output.getModifiedDuration());
-                    valuation.setAccruedInterest(output.getAccruedInterest());
-                    valuation.setTheoreticalPrice(output.getMktPrice());
-                    valuation.setValuationDate(output.getValuationDate());
-                    valuation.setDv01(output.getDv01());
+                    XRBOutputData output = calculate(smd, mktPrice, mtmHelper.getOfficialDate());
+                    if (output != null) {
+                        valuation.setMarketPrice(output.getMktPrice());
+                        valuation.setYtm(output.getYtm());
+                        valuation.setDuration(output.getDuration());
+                        valuation.setModDuration(output.getModifiedDuration());
+                        valuation.setAccruedInterest(output.getAccruedInterest());
+                        valuation.setTheoreticalPrice(output.getMktPrice());
+                        valuation.setValuationDate(output.getValuationDate());
+                        valuation.setDv01(output.getDv01());
+                    }
+                    setCalculated(true);
                 }
-
                 //double priceYieldUp = bondCalculator.repriceBondForYieldShift(smd, mtmHelper.getOfficialDate(), output.getYtm(), 1.);
 
                 // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso

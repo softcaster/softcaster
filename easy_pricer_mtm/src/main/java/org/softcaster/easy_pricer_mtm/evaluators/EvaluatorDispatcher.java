@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class EvaluatorDispatcher {
 
     private static final Logger log = LoggerFactory.getLogger(EvaluatorDispatcher.class);
-    
+
     // Spring riempie automaticamente questa mappa con tutti i Bean 
     // che implementano IPositionEvaluator, usando il nome nel @Component come chiave.
     @Autowired
@@ -29,5 +29,12 @@ public class EvaluatorDispatcher {
 
         return valuator;
     }
-    
+
+    public void resetFlagCalculated() {
+        for (IPositionEvaluator value : valuetorMap.values()) {
+            // Esegui un metodo dell'interfaccia/classe
+            value.setCalculated(false);
+        }
+    }
+
 }
