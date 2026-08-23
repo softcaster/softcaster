@@ -22,18 +22,18 @@ import org.softcaster.provider.exceptions.MarketDataProviderException;
  *
  * @author ep
  */
-public class BorsatalianaProvider extends AbstractProvider {
+public class BorsaItalianaProvider extends AbstractProvider {
 
-    private static BorsatalianaProvider _instance = null;
+    private static BorsaItalianaProvider _instance = null;
     private BorsaItalianaApiClient client = null;
 
-    private BorsatalianaProvider() {
+    private BorsaItalianaProvider() {
         client = new BorsaItalianaApiClient();
     }
 
-    public static BorsatalianaProvider getInstance() {
+    public static BorsaItalianaProvider getInstance() {
         if (_instance == null) {
-            _instance = new BorsatalianaProvider();
+            _instance = new BorsaItalianaProvider();
             _instance.setTimer();
         }
 

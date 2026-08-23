@@ -30,8 +30,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import org.softcaster.provider.euronext.BorsaItalianaApiClient;
-import org.softcaster.provider.euronext.BorsatalianaProvider;
+import org.softcaster.provider.euronext.BorsaItalianaProvider;
 
 class Root {
 
@@ -233,7 +232,7 @@ public class InvestingComTest {
     }
 
     private static void testBIProvider() {
-        BorsatalianaProvider provider = BorsatalianaProvider.getInstance();
+        BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
 
         System.out.println(provider.getMktQuote("IT0004545890", Market.BONDS).getData().bid());
         System.out.println(provider.getMktQuote("IT0025480929", Market.FUTURES).getData().bid());

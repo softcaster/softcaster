@@ -185,7 +185,7 @@ public class BondFutIQDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         detailPanel.add(jLabel5, gridBagConstraints);
 
-        cbProvider.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CmeGroupProvider", "EuroNextProvider", "BorsatalianaProvider" }));
+        cbProvider.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CmeGroupProvider", "EuroNextProvider", "BorsaItalianaProvider" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;

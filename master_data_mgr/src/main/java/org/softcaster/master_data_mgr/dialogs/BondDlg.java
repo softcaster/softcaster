@@ -15,8 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFormattedTextField;
 import javax.swing.JOptionPane;
+import javax.swing.JSpinner;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
@@ -105,6 +108,8 @@ public class BondDlg extends javax.swing.JDialog {
         txtFirstCpRate = new javax.swing.JTextField();
         jLabel21 = new javax.swing.JLabel();
         txtNominalValue = new javax.swing.JTextField();
+        jLabel22 = new javax.swing.JLabel();
+        spinnerBD = new javax.swing.JSpinner();
         additionalPanel = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
@@ -123,6 +128,8 @@ public class BondDlg extends javax.swing.JDialog {
         jLabel17 = new javax.swing.JLabel();
         cbToi = new javax.swing.JComboBox<>();
         cbAmortSched = new javax.swing.JComboBox<>();
+        jLabel23 = new javax.swing.JLabel();
+        accrDaycount = new javax.swing.JComboBox<>();
         codPanel = new javax.swing.JPanel();
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
@@ -393,6 +400,24 @@ public class BondDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(txtNominalValue, gridBagConstraints);
 
+        jLabel22.setText("Business Days");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(jLabel22, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(spinnerBD, gridBagConstraints);
+
         tabbedPane.addTab("Specification", fieldPanel);
 
         additionalPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
@@ -547,6 +572,24 @@ public class BondDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         additionalPanel.add(cbAmortSched, gridBagConstraints);
+
+        jLabel23.setText("Accrual Daycount");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(jLabel23, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(accrDaycount, gridBagConstraints);
 
         tabbedPane.addTab("Additional", additionalPanel);
 
@@ -822,10 +865,10 @@ public class BondDlg extends javax.swing.JDialog {
 
                 // 2. Salva l'entità SVUOTATA per far fare a Hibernate la cancellazione standard pulita dei vecchi id (es. 2051)
                 SecurityMasterData emptyMasterData = masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(bean.getSecurityMasterData());
-                
+
                 // 3. Ora che la sessione ha rimosso formalmente il vecchio ID, aggiungi i nuovi flussi all'entità pulita
                 emptyMasterData.getCashFlows().addAll(items);
-                
+
                 // 4. Salva definitivamente i nuovi flussi e aggiorna il bean
                 SecurityMasterData finalMasterData = masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(emptyMasterData);
                 bean = new SecurityBean(finalMasterData); // Sovrascrive il vecchio bean non sincronizzato
@@ -839,6 +882,7 @@ public class BondDlg extends javax.swing.JDialog {
     }//GEN-LAST:event_btnGenerateCFActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<DaycountBasis> accrDaycount;
     private javax.swing.JPanel additionalPanel;
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnGenerateCF;
@@ -873,6 +917,8 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -882,6 +928,7 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JScrollPane scrollPaneCF;
+    private javax.swing.JSpinner spinnerBD;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JTable tableCF;
     private javax.swing.JTextField txtCfiCode;
@@ -902,6 +949,7 @@ public class BondDlg extends javax.swing.JDialog {
     private void postInit() {
 
         setUpCombos();
+        setUpSpinner();
 
         if (bean != null) {
             isInsert = false;
@@ -921,12 +969,14 @@ public class BondDlg extends javax.swing.JDialog {
             cbIssuer.setSelectedItem(bean.getSecurityMasterData().getIssuer());
             cbCurrency.setSelectedItem(bean.getSecurityMasterData().getCurrency());
             cbDaycount.setSelectedItem(bean.getSecurityMasterData().getDaycount());
+            accrDaycount.setSelectedItem(bean.getSecurityMasterData().getAccrualDaycount());
             cbFrequency.setSelectedItem(bean.getSecurityMasterData().getFrequency());
             cbRollConv.setSelectedItem(bean.getSecurityMasterData().getRollConvention());
             cbForm.setSelectedItem(bean.getSecurityMasterData().getForm());
             cbToi.setSelectedItem(bean.getSecurityMasterData().getTypeOfInterest());
             cbAmortSched.setSelectedItem(bean.getSecurityMasterData().getAmortizationSchedule());
             txtNominalValue.setText(Converter.fromDouble(bean.getSecurityMasterData().getNominalValue()));
+            spinnerBD.setValue(bean.getSecurityMasterData().getBusinessDays());
         }
 
         // Aggiungo i campi alla lista di validazione
@@ -955,6 +1005,7 @@ public class BondDlg extends javax.swing.JDialog {
 
         setUpCurrencyCombo();
         setUpDaycountCombo();
+        setUpAccrualDaycountCombo();
         setUpIssuerCombo();
         setUpFormCombo();
         setUpFrequencyCombo();
@@ -1026,6 +1077,14 @@ public class BondDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<DaycountBasis> model = new DefaultComboBoxModel<>(daycounts.toArray(DaycountBasis[]::new));
         cbDaycount.setModel(model);
     }
+    
+    private void setUpAccrualDaycountCombo() {
+        List<DaycountBasis> daycounts = List.of(DaycountBasis.values());
+
+        // Crea il modello partendo dalla lista
+        DefaultComboBoxModel<DaycountBasis> model = new DefaultComboBoxModel<>(daycounts.toArray(DaycountBasis[]::new));
+        accrDaycount.setModel(model);
+    }
 
     // Check sulla validita dei campi, non devono essere blank
     private boolean validateFields() {
@@ -1074,7 +1133,7 @@ public class BondDlg extends javax.swing.JDialog {
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             smd.setCurrency(currency);
             smd.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
-            smd.setAccrualDaycount(DaycountBasis.ACT_365);
+            smd.setAccrualDaycount((DaycountBasis) accrDaycount.getSelectedItem());
             smd.setAccrualScheduleType(AccrualScheduleType.NONE);
             smd.setAmortizationSchedule((AmortizationSchedule) cbAmortSched.getSelectedItem());
             smd.setForm((Form) cbForm.getSelectedItem());
@@ -1089,6 +1148,7 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setFisn(txtFisn.getText());
             smd.setLei(txtLei.getText());
             smd.setMultiplier(0.01);
+            smd.setBusinessDays((Integer) spinnerBD.getValue());
             masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(smd);
 
             return true;
@@ -1101,7 +1161,7 @@ public class BondDlg extends javax.swing.JDialog {
     private void fillDefaultFields() {
         // Aggiungo campi standard
         bean.getSecurityMasterData().setAssetClass(masterDataFacade.findAssetClass("XRB"));
-        bean.getSecurityMasterData().setBusinessDays(2);
+        bean.getSecurityMasterData().setBusinessDays((Integer) spinnerBD.getValue());
         if (txtCfiCode.getText().isBlank()) {
             bean.getSecurityMasterData().setCfiCode("");
         }
@@ -1172,4 +1232,12 @@ public class BondDlg extends javax.swing.JDialog {
 
     }
 
+    private void setUpSpinner() {
+        // Parametri del modello: valore iniziale (2), minimo (1), massimo (3), step (1)
+        SpinnerNumberModel model = new SpinnerNumberModel(2, 1, 3, 1);
+        spinnerBD.setModel(model);
+        // Per bloccare l'editing da tastiera e costringere l'uso delle frecce (opzionale):
+        JFormattedTextField txt = ((JSpinner.DefaultEditor) spinnerBD.getEditor()).getTextField();
+        txt.setEditable(false);
+    }
 }

@@ -48,7 +48,10 @@ public class BorsaItalianaApiClient {
 
             ObjectMapper om = new ObjectMapper();
             Root root = om.readValue(response.body(), Root.class);
-            double quote = root.intradayPoint.get(root.intradayPoint.size()-1).endPx;
+            double quote = 0.;
+            if (root.intradayPoint != null) {
+                quote = root.intradayPoint.get(root.intradayPoint.size() - 1).endPx;
+            }
             return quote;
 
         } catch (IOException | InterruptedException e) {
@@ -59,11 +62,17 @@ public class BorsaItalianaApiClient {
 
     private String getEndpointUrl(String symbol, Market market) {
         String endpointUrl = "";
+
         switch (market) {
-            case BONDS ->
-                endpointUrl = String.format(endpointTemplate, symbol, "XMIL");
-            case FUTURES ->
-                endpointUrl = String.format(endpointTemplate, symbol, "DMIL");
+            case BONDS -> {
+                String code = "XMIL";
+                String state = symbol.substring(0, 2);
+                if (state.equals("US")) {
+                    code = "ETLX";
+                }
+                endpointUrl = String.format(endpointTemplate, symbol, code);
+            }
+            case FUTURES -> endpointUrl = String.format(endpointTemplate, symbol, "DMIL");
             default -> {
             }
         }
