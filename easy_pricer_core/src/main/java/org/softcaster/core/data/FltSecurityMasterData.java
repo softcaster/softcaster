@@ -1,10 +1,13 @@
 package org.softcaster.core.data;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.CouponProjectionMethodConverter;
+import org.softcaster.engine.enums.CouponProjectionMethod;
 
 @Entity
 @Table(name = "flt_security_master_data")
@@ -19,8 +22,9 @@ public class FltSecurityMasterData extends SecurityMasterData {
     @Column(name = "index")
     private String index;
 
+    @Convert(converter = CouponProjectionMethodConverter.class)
     @Column(name = "coupon_pm")
-    private Integer couponPm;
+    private CouponProjectionMethod couponPm;
 
     public Double getSpread() {
         return spread;
@@ -38,12 +42,17 @@ public class FltSecurityMasterData extends SecurityMasterData {
         this.index = index;
     }
 
-    public Integer getCouponPm() {
+    /**
+     * @return the couponPm
+     */
+    public CouponProjectionMethod getCouponPm() {
         return couponPm;
     }
 
-    public void setCouponPm(Integer couponPm) {
+    /**
+     * @param couponPm the couponPm to set
+     */
+    public void setCouponPm(CouponProjectionMethod couponPm) {
         this.couponPm = couponPm;
     }
-
 }
