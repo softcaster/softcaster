@@ -15,6 +15,9 @@ alter table journal_entries add column entry_status integer NOT NULL default 1;
 alter table journal_entries add CONSTRAINT fk_je_status FOREIGN KEY (entry_status) REFERENCES journal_entry_status (entry_status_id);
 alter table journal_entries drop column entry_date;
 alter table descriptors drop column service_name;
+alter table cash_flow_item drop column known;
+alter table cash_flow_item add column  cash_flow_status integer NOT NULL DEFAULT 2;
+alter table cash_flow_item add CONSTRAINT cash_flow_status FOREIGN KEY (cash_flow_status) REFERENCES cash_flow_status (cash_flow_status_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 
 INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
 VALUES

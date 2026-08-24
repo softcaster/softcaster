@@ -8,9 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.engine.enums.Compounding;
-import org.softcaster.engine.enums.DaycountBasis;
-import org.softcaster.engine.enums.Frequency;
 
 /**
  *
@@ -28,7 +27,8 @@ public class Utils {
                     item.getEnddate().toLocalDate(),
                     item.getAmount(),
                     item.getInterest(),
-                    0.
+                    0.,
+                    CashFlowStatus.RECORDED
             );
             flows.add(flow);
         }

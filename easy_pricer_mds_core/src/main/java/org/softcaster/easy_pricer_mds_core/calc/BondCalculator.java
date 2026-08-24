@@ -17,8 +17,8 @@ import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.engine.enums.Compounding;
-import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,7 +46,8 @@ public class BondCalculator {
                     item.getEnddate().toLocalDate(),
                     item.getAmount(),
                     item.getInterest(),
-                    0.
+                    0.,
+                    CashFlowStatus.RECORDED
             );
             flows.add(flow);
         }

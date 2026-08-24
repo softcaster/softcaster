@@ -5,6 +5,7 @@
 package org.softcaster.engine.cashflow;
 
 import java.time.LocalDate;
+import org.softcaster.engine.enums.CashFlowStatus;
 
 public record CashFlow(
         LocalDate accrualStart, // Inizio maturazione
@@ -12,8 +13,8 @@ public record CashFlow(
         LocalDate paymentDate, // Data effettiva di incasso
         double principal,
         double interest,
-        double outstandingBalance
-        ) {
+        double outstandingBalance,
+        CashFlowStatus cashFlowStatus) {
 
     public double getTotalAmount() {
         return principal + interest;

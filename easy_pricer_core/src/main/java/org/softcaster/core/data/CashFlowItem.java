@@ -2,6 +2,7 @@ package org.softcaster.core.data;
 
 import java.io.Serializable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,6 +11,8 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.CashFlowStatusConverter;
+import org.softcaster.engine.enums.CashFlowStatus;
 
 @Entity
 @Table(name = "cash_flow_item")
@@ -39,6 +42,10 @@ public class CashFlowItem implements Serializable {
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "amount")
     private Double amount;
+
+    @Convert(converter = CashFlowStatusConverter.class)
+    @Column(name = "cash_flow_status")
+    private CashFlowStatus cashFlowStatus;
 
     public Integer getIdCashFlowItem() {
         return idCashFlowItem;
@@ -109,6 +116,20 @@ public class CashFlowItem implements Serializable {
      */
     public void setMasterData(Integer masterData) {
         this.masterData = masterData;
+    }
+
+    /**
+     * @return the cashFlowStatus
+     */
+    public CashFlowStatus getCashFlowStatus() {
+        return cashFlowStatus;
+    }
+
+    /**
+     * @param cashFlowStatus the cashFlowStatus to set
+     */
+    public void setCashFlowStatus(CashFlowStatus cashFlowStatus) {
+        this.cashFlowStatus = cashFlowStatus;
     }
 
 }

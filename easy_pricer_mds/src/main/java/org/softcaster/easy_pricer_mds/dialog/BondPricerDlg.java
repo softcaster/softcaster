@@ -19,6 +19,7 @@ import org.softcaster.easy_pricer_mds.bean.BondBean;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.utils.DateParser;
 
@@ -395,7 +396,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
             for (CashFlowItem item : smd.getCashFlows()) {
                 flow = new org.softcaster.engine.cashflow.CashFlow(
                         item.getStartDate().toLocalDate(),item.getEnddate().toLocalDate(),item.getEnddate().toLocalDate(),
-                item.getAmount(),item.getInterest(),item.getAmount());
+                item.getAmount(),item.getInterest(),item.getAmount(),CashFlowStatus.RECORDED);
                 flows.add(flow);
             }
             // LocalDate implementa Comparable, l’ordinamento sara' cronologico crescente

@@ -382,3 +382,10 @@ INSERT INTO descriptors(descriptor_id,service_type, jar_path, active_profile, po
     VALUES (4,4,'c:\tools\projects\DEVELOP\softcaster\easy_pricer_srv\target\easy_pricer_acct-1.0.jar','dev','8083');
 INSERT INTO descriptors(descriptor_id,service_type, jar_path, active_profile, port) 
     VALUES (5,5,'c:\tools\projects\DEVELOP\softcaster\easy_pricer_srv\target\easy_pricer_lc-1.0.jar','dev','8084');
+
+INSERT INTO cash_flow_status(cash_flow_status_id,code, description) VALUES (1,'ESTIMATED','Estimated');
+INSERT INTO cash_flow_status(cash_flow_status_id,code, description) VALUES (2,'RECORDED','Recorded');
+INSERT INTO cash_flow_status(cash_flow_status_id,code, description) VALUES (3,'PAID','Paid');
+
+INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (1,'LAST_COUPON','Last Coupon');
+INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (2,'FORWARD_CURVE','Forward Curve');

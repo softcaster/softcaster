@@ -478,10 +478,21 @@ CREATE TABLE security_master_data (
     CONSTRAINT fk_issuer FOREIGN KEY (issuer) REFERENCES issuer (id_issuer) ON DELETE NO ACTION ON UPDATE NO ACTION,
     PRIMARY KEY (id_master_data)
 );
-
 CREATE UNIQUE INDEX idx_security_master_data_isin ON security_master_data (isin);
-
 ALTER TABLE security_master_data OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- security_master_data - anagrafica titoli di stato floating
+-- ----------------------------------------------------------------------------
+CREATE TABLE flt_security_master_data (
+    id_master_data integer NOT NULL,
+    spread numeric(23, 10) NOT NULL,
+    index varchar(25) NOT NULL DEFAULT '---',
+    coupon_pm integer NOT NULL,
+    CONSTRAINT fk_coupon_pm FOREIGN KEY (coupon_pm) REFERENCES coupon_pm (coupon_pm_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    PRIMARY KEY (id_master_data)
+);
+ALTER TABLE flt_security_master_data OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- forex_master_data - anagrafica forex
@@ -502,6 +513,26 @@ CREATE UNIQUE INDEX idx_forex_bcy_ccy ON forex_master_data (bcy, ccy);
 ALTER TABLE forex_master_data OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
+-- cash_flow_status
+-- ----------------------------------------------------------------------------
+CREATE TABLE cash_flow_status (
+    cash_flow_status_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(50) NOT NULL,
+    PRIMARY KEY (cash_flow_status_id)
+);
+
+-- ----------------------------------------------------------------------------
+-- coupon_pm - Coupon Projection Method
+-- ----------------------------------------------------------------------------
+CREATE TABLE coupon_pm (
+    coupon_pm_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(50) NOT NULL,
+    PRIMARY KEY (coupon_pm_id)
+);
+
+-- ----------------------------------------------------------------------------
 -- cash_flow_item
 -- ----------------------------------------------------------------------------
 CREATE TABLE cash_flow_item (
@@ -512,8 +543,10 @@ CREATE TABLE cash_flow_item (
     interest numeric(15, 5) NOT NULL,
     amount numeric(15, 5) NOT NULL,
     known smallint NOT NULL DEFAULT 1, -- cedola fissata
+    cash_flow_status integer NOT NULL DEFAULT 2, -- cedola fissata
     PRIMARY KEY (id_cash_flow_item),
     CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT cash_flow_status FOREIGN KEY (cash_flow_status) REFERENCES cash_flow_status (cash_flow_status_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 CREATE UNIQUE INDEX idx_md_ed ON cash_flow_item (master_data, end_date);

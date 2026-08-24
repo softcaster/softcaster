@@ -6,6 +6,7 @@ package org.softcaster.engine.cashflow;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.engine.enums.DaycountBasis;
 
 public class BulletAmortizationStrategy implements AmortizationStrategy {
@@ -36,8 +37,8 @@ public class BulletAmortizationStrategy implements AmortizationStrategy {
                     period.paymentDate(),
                     principal,
                     interest,
-                    outstandingBalance
-                    
+                    outstandingBalance,
+                    CashFlowStatus.RECORDED
             ));
         }
         return flows;

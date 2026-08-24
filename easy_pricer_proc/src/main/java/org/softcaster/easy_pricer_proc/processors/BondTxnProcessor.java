@@ -19,6 +19,7 @@ import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.TxnComponentType;
 import static org.softcaster.engine.enums.TxnSide.BUY;
@@ -127,7 +128,8 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
                         item.getEnddate().toLocalDate(),
                         item.getAmount(),
                         item.getInterest(),
-                        0.
+                        0.,
+                        CashFlowStatus.RECORDED
                 );
                 flows.add(flow);
             }

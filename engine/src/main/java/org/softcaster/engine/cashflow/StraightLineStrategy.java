@@ -6,6 +6,7 @@ package org.softcaster.engine.cashflow;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.engine.enums.DaycountBasis;
 
 public class StraightLineStrategy implements AmortizationStrategy {
@@ -28,7 +29,8 @@ public class StraightLineStrategy implements AmortizationStrategy {
                     period.paymentDate(),
                     principalPerPeriod,
                     interest,
-                    Math.max(0, remainingBalance)
+                    Math.max(0, remainingBalance),
+                    CashFlowStatus.RECORDED
             ));
         }
         return flows;
