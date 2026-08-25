@@ -110,24 +110,26 @@ public final class MathUtil {
         return rootNewton(function, guess, DEFAULT_H, DEFAULT_MAX_ITERATES, compounding);
     }
 
-    public static double toContinuousRate(Compounding compounding, double rate, double t) {
-        if (t <= 0) {
+    public static double toContinuousRate(Compounding compounding, double rate, double tNodo, double t365) {
+        if (t365 <= 0) {
             return rate;
         }
 
         return switch (compounding) {
             case CONTINUOUS ->
                 rate;
+            // La tua formula esatta: i = ln(1 + r * tNodo) / t365
             case SIMPLE ->
-                Math.log(1.0 + rate * t) / t;
+                Math.log(1.0 + rate * tNodo) / t365;
+            // Per il composto: (1 + r)^tNodo = e^(i * t365) -> i = (tNodo * ln(1 + r)) / t365
             case COMPOUNDED ->
-                Math.log(1.0 + rate);
+                (tNodo * Math.log(1.0 + rate)) / t365;
             case SIMPLE_THEN_COMPOUNDED ->
-                (t <= 1)
-                ? Math.log(1.0 + rate * t) / t : Math.log(1.0 + rate);
+                (tNodo <= 1)
+                ? Math.log(1.0 + rate * tNodo) / t365 : (tNodo * Math.log(1.0 + rate)) / t365;
         };
     }
-    
+
     public static double getDiscountFactor(Compounding compounding, double rate, double t) {
 
         double discountFactor = 0;
