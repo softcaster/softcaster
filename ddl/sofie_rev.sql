@@ -235,3 +235,6 @@ delete from accounting_event_accruals where event_id=7;
 delete from journal_entry_lines where journal_entry=(select journal_entry_id from journal_entries where accounting_event = 7);
 delete from journal_entries where accounting_event = 7;
 delete from accounting_events where event_id=7;
+
+INSERT INTO ref_rate_index(id_ref_rate_index_id,code, description, currency, daycount) 
+    VALUES (nextval('ref_rate_index_s'),'EURIBOR_6M','Euribor 6M', 1, 2);

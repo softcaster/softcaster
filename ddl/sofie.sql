@@ -8,9 +8,7 @@ CREATE TABLE daycount (
     description varchar(25) NOT NULL,
     PRIMARY KEY (id_daycount)
 );
-
 CREATE UNIQUE INDEX idx_daycount_code ON daycount (code);
-
 ALTER TABLE daycount OWNER TO sofie;
 
 -- Creo sequenza
@@ -521,6 +519,8 @@ CREATE TABLE cash_flow_status (
     description varchar(50) NOT NULL,
     PRIMARY KEY (cash_flow_status_id)
 );
+ALTER TABLE cash_flow_status OWNER TO sofie;
+CREATE UNIQUE INDEX cash_flow_status_code ON cash_flow_status (code);
 
 -- ----------------------------------------------------------------------------
 -- coupon_pm - Coupon Projection Method
@@ -531,6 +531,8 @@ CREATE TABLE coupon_pm (
     description varchar(50) NOT NULL,
     PRIMARY KEY (coupon_pm_id)
 );
+ALTER TABLE coupon_pm OWNER TO sofie;
+CREATE UNIQUE INDEX coupon_pm_code ON coupon_pm (code);
 
 -- ----------------------------------------------------------------------------
 -- cash_flow_item
@@ -542,7 +544,6 @@ CREATE TABLE cash_flow_item (
     end_date date NOT NULL,
     interest numeric(15, 5) NOT NULL,
     amount numeric(15, 5) NOT NULL,
-    known smallint NOT NULL DEFAULT 1, -- cedola fissata
     cash_flow_status integer NOT NULL DEFAULT 2, -- cedola fissata
     PRIMARY KEY (id_cash_flow_item),
     CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -1268,13 +1269,14 @@ ALTER SEQUENCE descriptors_s OWNER TO sofie;
 CREATE TABLE ref_rate_index (
     ref_rate_index_id integer NOT NULL,
     code varchar(25) NOT NULL,
-    description(50) NOT NULL,
+    description varchar(50) NOT NULL,
     currency integer NOT NULL,
     daycount integer NOT NULL,
     CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_daycount FOREIGN KEY (daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    PRIMARY KEY (descriptor_id)
+    PRIMARY KEY (ref_rate_index_id)
 );
 ALTER TABLE ref_rate_index OWNER TO sofie;
+CREATE UNIQUE INDEX rri_code ON ref_rate_index (code);
 CREATE SEQUENCE IF NOT EXISTS ref_rate_index_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE ref_rate_index_s OWNER TO sofie;
