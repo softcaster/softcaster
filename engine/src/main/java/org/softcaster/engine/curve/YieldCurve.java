@@ -47,6 +47,27 @@ public class YieldCurve {
 
     private void buildCurve(List<CurveNodeInput> rawNodes) {
         for (CurveNodeInput node : rawNodes) {
+            LocalDate maturityDate = parseTenorOffset(this.valuationDate, node.tenorOffset());
+            int days = (int) java.time.temporal.ChronoUnit.DAYS.between(this.valuationDate, maturityDate);
+
+            double t = (double) days / node.daycount().getTime();
+
+            // 1. Convertiamo il tasso nominale (Simple/Compound) in Continuo Equivalente
+            double continuousRate = MathUtil.toContinuousRate(node.compounding(), node.rate(), t);
+
+            // 2. Calcoliamo il DF usando la formula Continua: e^(-r * t)
+            double df = Math.exp(-continuousRate * t);
+
+            // Creiamo il nodo definitivo (puoi aggiungere un campo o sovrascrivere rate se preferisci, 
+            // ma per consistenza teniamo il DF aggiornato)
+            CurveNodeInput finalizedNode = node.withDiscountFactor(df);
+            this.discountFactors.put(days, finalizedNode);
+        }
+    }
+
+    /*
+    private void buildCurve(List<CurveNodeInput> rawNodes) {
+        for (CurveNodeInput node : rawNodes) {
             // 1. Calcola la data effettiva del nodo interpretando la stringa di offset (es. "1 MONTH")
             LocalDate maturityDate = parseTenorOffset(this.valuationDate, node.tenorOffset());
 
@@ -54,14 +75,14 @@ public class YieldCurve {
             int days = (int) java.time.temporal.ChronoUnit.DAYS.between(this.valuationDate, maturityDate);
 
             // 3. Converte il tasso nel rispettivo Discount Factor in base al suo regime
-            double t = days / node.daycount().getTime();
+            double t = (double) days / node.daycount().getTime();
             double df = MathUtil.getDiscountFactor(node.compounding(), node.rate(), t);
 
             CurveNodeInput finalizedNode = node.withDiscountFactor(df);
             this.discountFactors.put(days, finalizedNode);
         }
     }
-
+     */
     /**
      * Aggiorna i fattori di sconto della curva sostituendo i vecchi valori con
      * i nuovi input ricevuti dal provider.
@@ -110,6 +131,7 @@ public class YieldCurve {
      * @param targetDays
      * @return
      */
+    /*
     public double getDiscountFactor(int targetDays) {
         if (discountFactors.containsKey(targetDays)) {
             return discountFactors.get(targetDays).discountFactor();
@@ -126,14 +148,71 @@ public class YieldCurve {
         }
 
         int t0 = low.getKey();
-        double df0 = low.getValue().discountFactor();
         int t1 = high.getKey();
-        double df1 = high.getValue().discountFactor();
 
+        CurveNodeInput node0 = low.getValue();
+        CurveNodeInput node1 = high.getValue();
+
+        // 2. Calcola le frazioni d'anno (t) coerentemente con l'engine usando il rispettivo Daycount
+        double yearFraction0 = (double) t0 / node0.daycount().getTime();
+        double yearFraction1 = (double) t1 / node1.daycount().getTime();
+
+        // Per il punto target usiamo il daycount del nodo successivo (convenzione standard di mercato)
+        double targetYearFraction = (double) targetDays / node1.daycount().getTime();
+
+        // 3. Trasforma i DF in tassi continui equivalenti: r = -ln(DF) / t
+        double r0 = (yearFraction0 > 0) ? -Math.log(node0.discountFactor()) / yearFraction0 : 0.0;
+        double r1 = -Math.log(node1.discountFactor()) / yearFraction1;
+
+        // 4. Interpolazione lineare sui tassi continui
         double weight = (double) (targetDays - t0) / (double) (t1 - t0);
-        double logDf = Math.log(df0) + (Math.log(df1) - Math.log(df0)) * weight;
+        double interpolatedContinuousRate = r0 + (r1 - r0) * weight;
 
-        return Math.exp(logDf);
+        // 5. Riconverte il tasso continuo interpolato nel Discount Factor finale
+        return Math.exp(-interpolatedContinuousRate * targetYearFraction);
+
+    }
+     */
+    public double getDiscountFactor(int targetDays) {
+        if (targetDays <= 0) {
+            return 1.0;
+        }
+
+        if (discountFactors.containsKey(targetDays)) {
+            return discountFactors.get(targetDays).discountFactor();
+        }
+
+        Map.Entry<Integer, CurveNodeInput> low = discountFactors.floorEntry(targetDays);
+        Map.Entry<Integer, CurveNodeInput> high = discountFactors.ceilingEntry(targetDays);
+
+        if (low == null) {
+            return high.getValue().discountFactor();
+        }
+        if (high == null) {
+            return low.getValue().discountFactor();
+        }
+
+        int t0 = low.getKey();
+        int t1 = high.getKey();
+
+        CurveNodeInput node0 = low.getValue();
+        CurveNodeInput node1 = high.getValue();
+
+        // Scegliamo la base del nodo "high" per rendere la frazione d'anno omogenea nel segmento
+        double basis = node1.daycount().getTime();
+        double yearFraction0 = (double) t0 / basis;
+        double yearFraction1 = (double) t1 / basis;
+        double targetYearFraction = (double) targetDays / basis;
+
+        // Ricalcoliamo i tassi continui esatti su questa base omogenea
+        double r0 = (yearFraction0 > 0) ? -Math.log(node0.discountFactor()) / yearFraction0 : 0.0;
+        double r1 = -Math.log(node1.discountFactor()) / yearFraction1;
+
+        // Interpolazione lineare classica (la retta ora è perfettamente piatta)
+        double weight = (double) (targetDays - t0) / (double) (t1 - t0);
+        double interpolatedContinuousRate = r0 + (r1 - r0) * weight;
+
+        return Math.exp(-interpolatedContinuousRate * targetYearFraction);
     }
 
     // Getters di servizio

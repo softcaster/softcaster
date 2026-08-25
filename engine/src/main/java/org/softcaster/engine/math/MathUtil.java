@@ -18,7 +18,7 @@ public final class MathUtil {
     public static final double DEFAULT_H = 0.000001;
     public static final int DEFAULT_MAX_ITERATES = 10000;
     public static final double EPSILON = 1e-11;
-    
+
     public static interface Function1 {
 
         double f(double x);
@@ -110,6 +110,24 @@ public final class MathUtil {
         return rootNewton(function, guess, DEFAULT_H, DEFAULT_MAX_ITERATES, compounding);
     }
 
+    public static double toContinuousRate(Compounding compounding, double rate, double t) {
+        if (t <= 0) {
+            return rate;
+        }
+
+        return switch (compounding) {
+            case CONTINUOUS ->
+                rate;
+            case SIMPLE ->
+                Math.log(1.0 + rate * t) / t;
+            case COMPOUNDED ->
+                Math.log(1.0 + rate);
+            case SIMPLE_THEN_COMPOUNDED ->
+                (t <= 1)
+                ? Math.log(1.0 + rate * t) / t : Math.log(1.0 + rate);
+        };
+    }
+    
     public static double getDiscountFactor(Compounding compounding, double rate, double t) {
 
         double discountFactor = 0;
@@ -138,5 +156,5 @@ public final class MathUtil {
 
     public static boolean isZero(double x) {
         return Math.abs(x) < EPSILON;
-    }    
+    }
 }
