@@ -15,6 +15,7 @@ import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.CashFlowStatus;
@@ -34,7 +35,7 @@ public class BondCalculator {
     @Autowired
     private SecurityMasterDataDAO smdDAO;
     @Autowired
-    @Qualifier("bondPricer") // Indica a Spring esattamente QUALE bean usare
+    @Qualifier("bondPricer") 
     private BondPricer bondPricer;
 
     private List<CashFlow> getCashFlow(List<CashFlowItem> cfList) {
@@ -106,6 +107,7 @@ public class BondCalculator {
         accruals = bondPricer.calculateAccruedInterest(flows, accrualDate, securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
         return accruals;
     }
+    
     public double repriceBondForYieldShift(SecurityMasterData securityMasterData, LocalDate officialDate, double ytm, double basisPoints) {
 
         double yieldShift = basisPoints / 100.;
@@ -116,6 +118,17 @@ public class BondCalculator {
 
         double newPrice = bondPricer.calculatePrice(getCashFlow(securityMasterData.getCashFlows()), ytm, valuationDate,
                 securityMasterData.getAccrualDaycount(), Compounding.COMPOUNDED, securityMasterData.getFrequency());
+
+        return newPrice;
+    }
+
+    public double calculatePrice(SecurityMasterData securityMasterData, LocalDate officialDate, YieldCurve yieldCurve) {
+
+        Calendar calendar = new Calendar(securityMasterData.getCurrency());
+        LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, securityMasterData.getBusinessDays());
+
+        double newPrice = bondPricer.calculatePrice(getCashFlow(securityMasterData.getCashFlows()), yieldCurve, valuationDate,
+                securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
 
         return newPrice;
     }

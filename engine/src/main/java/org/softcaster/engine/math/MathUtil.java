@@ -118,10 +118,8 @@ public final class MathUtil {
         return switch (compounding) {
             case CONTINUOUS ->
                 rate;
-            // La tua formula esatta: i = ln(1 + r * tNodo) / t365
             case SIMPLE ->
                 Math.log(1.0 + rate * tNodo) / t365;
-            // Per il composto: (1 + r)^tNodo = e^(i * t365) -> i = (tNodo * ln(1 + r)) / t365
             case COMPOUNDED ->
                 (tNodo * Math.log(1.0 + rate)) / t365;
             case SIMPLE_THEN_COMPOUNDED ->

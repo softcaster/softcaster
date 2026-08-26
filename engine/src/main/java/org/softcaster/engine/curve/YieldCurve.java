@@ -59,7 +59,7 @@ public class YieldCurve {
             // 3. Conversione esatta usando entrambe le frazioni d'anno
             double continuousRate = MathUtil.toContinuousRate(node.compounding(), node.rate(), tNodo, t365);
 
-            // 4. Il DF calcolato in continua su base 365 coinciderà al centesimo con il DF nativo
+            // 4. DF calcolato in continua su base 365
             double df = Math.exp(-continuousRate * t365);
 
             // Memorizziamo il nodo aggiornato nella mappa concorrente
@@ -68,25 +68,6 @@ public class YieldCurve {
         }
     }
 
-
-    /*
-    private void buildCurve(List<CurveNodeInput> rawNodes) {
-        for (CurveNodeInput node : rawNodes) {
-            // 1. Calcola la data effettiva del nodo interpretando la stringa di offset (es. "1 MONTH")
-            LocalDate maturityDate = parseTenorOffset(this.valuationDate, node.tenorOffset());
-
-            // 2. Calcola i giorni effettivi assoluti (ACT) rispetto alla data di valutazione
-            int days = (int) java.time.temporal.ChronoUnit.DAYS.between(this.valuationDate, maturityDate);
-
-            // 3. Converte il tasso nel rispettivo Discount Factor in base al suo regime
-            double t = (double) days / node.daycount().getTime();
-            double df = MathUtil.getDiscountFactor(node.compounding(), node.rate(), t);
-
-            CurveNodeInput finalizedNode = node.withDiscountFactor(df);
-            this.discountFactors.put(days, finalizedNode);
-        }
-    }
-     */
     /**
      * Aggiorna i fattori di sconto della curva sostituendo i vecchi valori con
      * i nuovi input ricevuti dal provider.
@@ -135,48 +116,6 @@ public class YieldCurve {
      * @param targetDays
      * @return
      */
-    /*
-    public double getDiscountFactor(int targetDays) {
-        if (discountFactors.containsKey(targetDays)) {
-            return discountFactors.get(targetDays).discountFactor();
-        }
-
-        Map.Entry<Integer, CurveNodeInput> low = discountFactors.floorEntry(targetDays);
-        Map.Entry<Integer, CurveNodeInput> high = discountFactors.ceilingEntry(targetDays);
-
-        if (low == null) {
-            return high.getValue().discountFactor();
-        }
-        if (high == null) {
-            return low.getValue().discountFactor();
-        }
-
-        int t0 = low.getKey();
-        int t1 = high.getKey();
-
-        CurveNodeInput node0 = low.getValue();
-        CurveNodeInput node1 = high.getValue();
-
-        // 2. Calcola le frazioni d'anno (t) coerentemente con l'engine usando il rispettivo Daycount
-        double yearFraction0 = (double) t0 / node0.daycount().getTime();
-        double yearFraction1 = (double) t1 / node1.daycount().getTime();
-
-        // Per il punto target usiamo il daycount del nodo successivo (convenzione standard di mercato)
-        double targetYearFraction = (double) targetDays / node1.daycount().getTime();
-
-        // 3. Trasforma i DF in tassi continui equivalenti: r = -ln(DF) / t
-        double r0 = (yearFraction0 > 0) ? -Math.log(node0.discountFactor()) / yearFraction0 : 0.0;
-        double r1 = -Math.log(node1.discountFactor()) / yearFraction1;
-
-        // 4. Interpolazione lineare sui tassi continui
-        double weight = (double) (targetDays - t0) / (double) (t1 - t0);
-        double interpolatedContinuousRate = r0 + (r1 - r0) * weight;
-
-        // 5. Riconverte il tasso continuo interpolato nel Discount Factor finale
-        return Math.exp(-interpolatedContinuousRate * targetYearFraction);
-
-    }
-     */
     public double getDiscountFactor(int targetDays) {
         // 1. Corrispondenza esatta sul nodo
         if (discountFactors.containsKey(targetDays)) {
@@ -201,11 +140,15 @@ public class YieldCurve {
         double df0 = low.getValue().discountFactor();
         double df1 = high.getValue().discountFactor();
 
-        // 4. La tua interpolazione log-lineare originale sui DF
+        // 4. Interpolazione log-lineare originale sui DF
         double weight = (double) (targetDays - t0) / (double) (t1 - t0);
+        /*
         double logDf = Math.log(df0) + (Math.log(df1) - Math.log(df0)) * weight;
-
         return Math.exp(logDf);
+        */
+        // Equivalente applicando l'esponenziale ad entrambi i lati
+        double df = df0 * Math.pow((df1/df0),weight);
+        return df;
     }
 
     // Getters di servizio

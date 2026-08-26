@@ -11,11 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
+import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.curve.CurveNodeInput;
@@ -54,7 +57,13 @@ public class TestMarketDataService {
     private MarketDataService marketDataService;
 
     @Autowired
+    private BondCalculator bondCalculator;
+    
+    @Autowired
     YieldCurveDAO yieldCurveDAO;
+    
+    @Autowired
+    private SecurityMasterDataDAO smdDAO;
 
     private void testYieldCurve() {
 
@@ -98,6 +107,18 @@ public class TestMarketDataService {
         }
     }
 
+    private void testBondPricer() {
+        SecurityMasterData smd = smdDAO.findByIsin("IT0005240350");
+        if (smd != null) {
+            marketDataService.loadCurveCurveRates("ECBYC");
+            org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("ECBYC");
+            if(yieldCurve != null) {
+                double price = bondCalculator.calculatePrice(smd, marketDataService.getOfficialDate(), yieldCurve);
+                System.out.println(price);
+            }
+        }
+    }
+
     public static void main(String[] args) {
         FileUtil.initializeLogger();
         // FileUtil.initializePython();
@@ -114,7 +135,8 @@ public class TestMarketDataService {
         //testRunner.testDbAccess();
         //testRunner.testYieldCurve();
         //testRunner.testDiscountFactor();
-        testRunner.testEcbYieldCurve();
+        // testRunner.testEcbYieldCurve();
+        testRunner.testBondPricer();
     }
 
     // Ricava i DF per una serie di date passate in input (ipotetiche scadenze

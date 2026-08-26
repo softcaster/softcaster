@@ -7,6 +7,7 @@ package org.softcaster.engine.analytics;
 import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.Compounding;
@@ -80,6 +81,23 @@ public class BondPricer extends AbstractFixedIncomePricer {
         for (CashFlow cf : futureFlows) {
             double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
             dirtyPrice += cf.getTotalAmount() * MathUtil.getDiscountFactor(compounding, ytm, t);
+        }
+
+        return dirtyPrice - accrued;
+    }
+
+    public double calculatePrice(List<CashFlow> flows, YieldCurve yieldCurve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
+        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
+        double dirtyPrice = 0;
+
+        // Filtriamo solo i flussi futuri per l'attualizzazione
+        List<CashFlow> futureFlows = flows.stream()
+                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
+                .toList();
+
+        for (CashFlow cf : futureFlows) {
+            double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
+            dirtyPrice += cf.getTotalAmount() * yieldCurve.getDiscountFactor(cf.accrualEnd());
         }
 
         return dirtyPrice - accrued;
