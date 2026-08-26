@@ -110,8 +110,8 @@ public class TestMarketDataService {
     private void testBondPricer() {
         SecurityMasterData smd = smdDAO.findByIsin("IT0005240350");
         if (smd != null) {
-            marketDataService.loadCurveCurveRates("ECBYC");
-            org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("ECBYC");
+            marketDataService.loadCurveCurveRates("ITYIELD");
+            org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("ITYIELD");
             if(yieldCurve != null) {
                 double price = bondCalculator.calculatePrice(smd, marketDataService.getOfficialDate(), yieldCurve);
                 System.out.println(price);

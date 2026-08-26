@@ -339,6 +339,12 @@ INSERT INTO yield_curve (id_yield_curve, code, description, currency, calendar, 
     (SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),
     (SELECT id_compounding FROM compounding WHERE code='CONTINUOUS' LIMIT 1),
     '');
+INSERT INTO yield_curve (id_yield_curve, code, description, currency, calendar, compounding, provider) VALUES
+(nextval('yield_curve_s'), 'ITAYIELD', 'IT Yields', 
+    (SELECT id_currency FROM currency WHERE iso_code='EUR' LIMIT 1),
+    (SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),
+    (SELECT id_compounding FROM compounding WHERE code='COMPOUNDED' LIMIT 1),
+    'CsvProvider');
 
 -- ----------------------------------------------------------------------------
 -- system_business_calendar
