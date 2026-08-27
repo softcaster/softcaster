@@ -6,6 +6,8 @@ package org.softcaster.engine.analytics;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.softcaster.commons.utils.FileUtil;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.XRBInputData;
@@ -15,10 +17,6 @@ import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.math.MathUtil;
 
-/**
- *
- * @author
- */
 public class BondPricer extends AbstractFixedIncomePricer {
 
     /**
@@ -96,8 +94,17 @@ public class BondPricer extends AbstractFixedIncomePricer {
                 .toList();
 
         for (CashFlow cf : futureFlows) {
-            double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
-            dirtyPrice += cf.getTotalAmount() * yieldCurve.getDiscountFactor(cf.accrualEnd());
+            double discountFactor = yieldCurve.getDiscountFactor(cf.accrualEnd());
+            double amount = cf.getTotalAmount();
+            double pv = amount * discountFactor;
+            
+            if (FileUtil.dumpDebugInfo()) {
+                String message = "Accrual End: " + cf.accrualEnd() + "\tDF: " + discountFactor + "\tAmount:" + amount + "\tPresent Value:" + pv;
+                System.out.println(message);
+                LoggerMgr.logInfo(message);
+            }
+
+            dirtyPrice += pv;
         }
 
         return dirtyPrice - accrued;

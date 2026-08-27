@@ -179,5 +179,37 @@ public class FileUtil {
         PythonInterpreter.initialize(System.getProperties(), props, new String[]{""});
 
     }
+  
+    public static boolean dumpDebugInfo() {
+        
+        boolean debugInfo = false;
+        
+        ParamsMgr paramsMgr = ParamsMgr.getInstance();
+        if (paramsMgr != null) {
+            // Legge parametro log debug info
+            String info = paramsMgr.getParamValue("DEBUG_INFO");
+            if(info != null && !info.isBlank()) {
+            if(info.equalsIgnoreCase("TRUE"))
+                debugInfo = true;
+            }
+        }
+        
+        return debugInfo;
+    }
     
-}
+    public static boolean enablePythonDebug() {
+        
+        boolean pythonDebug = false;
+        
+        ParamsMgr paramsMgr = ParamsMgr.getInstance();
+        if (paramsMgr != null) {
+            // Legge parametro log debug info
+            String info = paramsMgr.getParamValue("PY_DEBUG");
+            if(info != null && !info.isBlank()) {
+            if(info.equalsIgnoreCase("TRUE"))
+                pythonDebug = true;
+            }
+        }
+        
+        return pythonDebug;
+    }}

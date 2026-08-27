@@ -108,13 +108,15 @@ public class TestMarketDataService {
     }
 
     private void testBondPricer() {
-        SecurityMasterData smd = smdDAO.findByIsin("IT0005240350");
+        SecurityMasterData smd = smdDAO.findByIsin("IT0004532559");
         if (smd != null) {
-            marketDataService.loadCurveCurveRates("ITYIELD");
-            org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("ITYIELD");
+            // FMIRS ITAYIELD TERMESTR
+            marketDataService.loadCurveCurveRates("ECBYC");
+            org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("ECBYC");
             if(yieldCurve != null) {
                 double price = bondCalculator.calculatePrice(smd, marketDataService.getOfficialDate(), yieldCurve);
                 System.out.println(price);
+                System.out.println(marketDataService.getSpotPrice("IT0004532559", RequestType.ASK));
             }
         }
     }

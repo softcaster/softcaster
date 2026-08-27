@@ -9,14 +9,21 @@ import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.List;
 import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
+import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.provider.bricks.AbstractProvider;
+import org.softcaster.provider.bricks.Data;
 import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.bricks.Offset;
 import org.softcaster.provider.bricks.ProviderInfo;
+import org.softcaster.provider.bricks.RateKey;
 import org.softcaster.provider.enums.Market;
+import static org.softcaster.provider.enums.Market.RATES;
+import org.softcaster.provider.enums.OffsetType;
 
 /**
  *
@@ -25,7 +32,6 @@ import org.softcaster.provider.enums.Market;
 public class CsvProvider extends AbstractProvider {
 
     private static CsvProvider _instance = null;
-    private String csvFileName = "";
     public static final String IMPORT_PATH = System.getProperty("user.dir") + "/csv/";
 
     private CsvProvider() {
@@ -54,23 +60,13 @@ public class CsvProvider extends AbstractProvider {
     }
 
     @Override
-    public void connect(ProviderInfo info, Market market) throws MalformedURLException, IOException {
-        if (info.getExtraParameters().get(0) != null && !info.getExtraParameters().get(0).isBlank()) {
-            csvFileName = info.getExtraParameters().get(0);
-        } else {
-            csvFileName = "";
-        }
-
-    }
-
-    @Override
     public List<Node> getYieldCurveNodes(String idCurve) {
 
-        List<Node> nodes = null;
-        if (idCurve != null && !idCurve.isBlank() && !csvFileName.isBlank()) {
+        RateKey key = new RateKey(idCurve, RATES);
+        if (idCurve != null && !idCurve.isBlank()) {
 
             CsvImport csvImport = new CsvImport();
-            Path path = Paths.get(IMPORT_PATH + csvFileName);
+            Path path = Paths.get(IMPORT_PATH + idCurve + ".csv");
 
             ImportConfig config = new ImportConfig();
             config.setSeparator(';');
@@ -81,21 +77,94 @@ public class CsvProvider extends AbstractProvider {
             try {
                 csvImport.startImport(config);
                 List<String[]> rows = csvImport.getBuffer();
-                int total = rows.size();
                 int current = 0;
                 for (String[] s : rows) {
-                    if (s[0].isEmpty()) {
-                        System.out.println("Error: " + s[0].trim());
-                        continue;
+                    if (current == 0) {
+                        current++;
+                    } else {
+                        parseRow(s, key);
+                        current++;
                     }
-                    String alfa3Code = s[4].trim();
                 }
 
             } catch (Exception ex) {
                 String error = "Error during import: " + ex.getLocalizedMessage();
                 LoggerMgr.logError(error);
-             }
+            }
         }
-        return nodes;
+        return getRates(key);
+    }
+
+    private void parseRow(String[] s, RateKey key) {
+        Node node = getNode(s);
+        addRate(key, node);
+    }
+
+    private Node getNode(String[] s) {
+        try {
+            Offset offset = new Offset(Converter.toInt(s[2]), getOffsetType(Converter.toInt(s[1])));
+            Data data = new Data(Converter.toDouble(s[3], false) / 100., Converter.toDouble(s[4], false) / 100.);
+            String ric = s[0];
+            return new Node(ric, offset, data, getDaycount(Converter.toInt(s[6])), getCompounding(Converter.toInt(s[5])));
+        } catch (ParseException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    String getDaycount(Integer daycount) {
+        String value = "";
+        switch (daycount) {
+            case 1 ->
+                value = "NASD_30_360";
+            case 2 ->
+                value = "ACT_360";
+            case 3 ->
+                value = "ACT_365";
+            case 4 ->
+                value = "ACT_ACT_ISDA";
+            case 5 ->
+                value = "ACT_ACT_ICMA";
+            case 6 ->
+                value = "EUR_30_360";
+            default -> {
+            }
+        }
+
+        return value;
+    }
+
+    String getCompounding(Integer compounding) {
+        String value = "";
+        switch (compounding) {
+            case 1 ->
+                value = "SIMPLE";
+            case 2 ->
+                value = "COMPOUNDED";
+            case 3 ->
+                value = "SIMPLE_THEN_COMPOUNDED";
+            case 4 ->
+                value = "CONTINUOUS";
+            default -> {
+            }
+        }
+
+        return value;
+    }
+
+    private OffsetType getOffsetType(Integer type) {
+        OffsetType offsetType = OffsetType.NONE;
+
+        switch (type) {
+            case 1 ->
+                offsetType = OffsetType.DAYS;
+            case 2 ->
+                offsetType = OffsetType.MONTHS;
+            case 3 ->
+                offsetType = OffsetType.YEARS;
+            default -> {
+            }
+        }
+        return offsetType;
     }
 }

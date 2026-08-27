@@ -4,4 +4,8 @@
         <name>PY_DEBUG</name>
         <value>false</value>
     </param>
+    <param>
+        <name>DEBUG_INFO</name>
+        <value>false</value>
+    </param>
 </params>

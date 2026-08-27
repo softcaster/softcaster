@@ -22,15 +22,10 @@ public class CsvProviderTest {
     }
 
     private static void testCsvProvider() {
-        try {
-            CsvProvider provider = CsvProvider.getInstance();
-            ProviderInfo info = new ProviderInfo();
-            info.getExtraParameters().add("ityc.csv");
-            provider.connect(info, Market.RATES);
-             List<Node> nodes = provider.getYieldCurveNodes("ITAYIELD");
-        } catch (IOException ex) {
-            System.getLogger(CsvProviderTest.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        CsvProvider provider = CsvProvider.getInstance();
+        List<Node> nodes = provider.getYieldCurveNodes("ITAYIELD");
+        for (Node node : nodes) {
+            System.out.println(node.getSymbol() + "\t" + node.getData().bid());
         }
     }
-
 }
