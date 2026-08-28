@@ -12,6 +12,7 @@ export const XNoteView = lazy(() => import('../components/views/XNoteView'));
 export const BondPView = lazy(() => import('../components/views/BondPView'));
 export const BondFutureView = lazy(() => import('../components/views/BondFutureView'));
 export const BondFuturePView = lazy(() => import('../components/views/BondFuturePView.tsx'));
+export const FxFuturePView = lazy(() => import('../components/views/FxFuturePView.tsx'));
 export const PositionProspectView = lazy(() => import('../components/views/PositionProspectView'));
 export const AccountingProspectView = lazy(() => import('../components/views/AccountingProspectView'));
 
@@ -74,6 +75,23 @@ export const navigationNodes: TreeNode[] = [
           { key: 'bond-p-key', label: 'X Bonds', /*icon: 'pi pi-fw pi-building',*/ data: '/bond-p' },
           { key: 'xnote-p-key', label: 'X Rate notes', /*icon: 'pi pi-fw pi-building',*/ data: '/xnote' },
           { key: 'bondfuture-p-key', label: 'Bond Futures', /*icon: 'pi pi-fw pi-building',*/ data: '/bondfuture-p' }
+        ]
+      },
+      {
+        key: 'forex-std-p',
+        label: 'Forex',
+        //icon: 'pi pi-fw pi-briefcase',
+        children: [
+          {
+            key: 'forex-key-p',
+            label: 'Fx Swap',
+            data: '/forex-p' // link
+          },
+          {
+            key: 'fxfuture-key-p',
+            label: 'FX Futures',
+            data: '/fxfuture-p' // link
+          },
         ]
       }
     ]

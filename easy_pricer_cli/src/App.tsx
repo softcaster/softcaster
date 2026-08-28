@@ -10,7 +10,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import {
   navigationNodes, ForexView, FxFutureView, CmdFutureView, HomeView, PlaceholderView,
   BondView, XNoteView, BondPView, BondFutureView, BondFuturePView, PositionProspectView,
-  AccountingProspectView
+  AccountingProspectView,FxFuturePView
 } from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
@@ -197,10 +197,12 @@ const MainLayout = () => {
               <Route path="/bondfuture-p" element={<BondFuturePView />} />
               <Route path="/position" element={<PositionProspectView />} />
               <Route path="/accounting" element={<AccountingProspectView />} />
+              <Route path="/fxfuture-p" element={<FxFuturePView />} />
 
               {/* Tutte le altre sezioni caricano il placeholder */}
               <Route path="/user" element={<PlaceholderView />} />
               <Route path="/log" element={<PlaceholderView />} />
+              <Route path="/forex-p" element={<PlaceholderView />} />
 
               {/* Pagina generica per URL inesistenti */}
               <Route path="*" element={<div>404 - Not Found</div>} />

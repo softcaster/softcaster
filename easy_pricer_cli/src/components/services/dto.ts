@@ -15,7 +15,9 @@ export interface BondPricingRequest extends PricingRequest {
 
 export interface ForwardPricingRequest extends PricingRequest {
     domesticRate: number;
+    domesticRCurve: string;
     foreignRate: number;
+    foreignRCurve: string;
     maturityDate: Date;
 }
 
@@ -51,7 +53,9 @@ export const DEFAULT_FWD_PRICING_REQUEST: ForwardPricingRequest = {
     referencePrice: 100.00,
     referenceDate: new Date(),
     domesticRate: 0.01,
+    domesticRCurve: '',
     foreignRate: 0.01,
+    foreignRCurve: '',
     maturityDate: new Date()
 };
 
@@ -78,6 +82,10 @@ export const calculateBondPricing = async (request: BondPricingRequest): Promise
 
 export const calculateFwdBondPricing = async (request: ForwardPricingRequest): Promise<ForwardPricingResponse> => {
     const response = await axios.post(`${BASE_URL}/pricing/future`, request);
+    return response.data;
+};
+export const calculateFwdFxPricing = async (request: ForwardPricingRequest): Promise<ForwardPricingResponse> => {
+    const response = await axios.post(`${BASE_URL}/pricing/fx-future`, request);
     return response.data;
 };
 

@@ -13,6 +13,8 @@ import java.time.LocalDate;
 public class ForwardPricingRequest extends PricingRequest {
     
     public double domesticRate = 0.;
+    public String domesticRCurve = "";
     public double foreignRate = 0.;
+    public String foreignRCurve = "";
     public LocalDate maturityDate;
 }

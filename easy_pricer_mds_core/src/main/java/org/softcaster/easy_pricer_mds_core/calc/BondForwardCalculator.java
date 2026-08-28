@@ -6,6 +6,7 @@ package org.softcaster.easy_pricer_mds_core.calc;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.core.data.BondFutureMasterData;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.DeliverableBonds;
@@ -168,13 +169,13 @@ public class BondForwardCalculator {
                     // 3. Annualizzazione corretta dividendo per la frazione d'anno ACT/360
                     irr = (totalReturn - 1.0) / moneyMarketTenor;
 
-                    // Stampa i risultati corretti ed eliminando le distorsioni
-                    /*
-                    System.out.println("ISIN: " + deliverable.getIsin()
-                            + " Clean Price: " + cleanSpotPrice
-                            + " -> Net Basis: " + netBasis
-                            + " | IRR Normalizzato: " + String.format("%.4f", irr * 100) + "%");
-                    */
+                    if (FileUtil.dumpDebugInfo()) {
+                        // Stampa i risultati corretti eliminando le distorsioni
+                        System.out.println("ISIN: " + deliverable.getIsin()
+                                + " Clean Price: " + cleanSpotPrice
+                                + " -> Net Basis: " + netBasis
+                                + " | IRR Normalizzato: " + String.format("%.4f", irr * 100) + "%");
+                    }
                 }
 
                 if (isFirst) {
@@ -283,11 +284,13 @@ public class BondForwardCalculator {
                     // 3. Annualizzazione corretta dividendo per la frazione d'anno ACT/360
                     irr = (totalReturn - 1.0) / moneyMarketTenor;
 
-                    // Stampa i risultati corretti ed eliminando le distorsioni
-                    System.out.println("ISIN: " + deliverable.getIsin()
-                            + " Clean Price: " + cleanSpotPrice
-                            + " -> Net Basis: " + netBasis
-                            + " | IRR Normalizzato: " + String.format("%.4f", irr * 100) + "%");
+                    if (FileUtil.dumpDebugInfo()) {
+                        // Stampa i risultati corretti eliminando le distorsioni
+                        System.out.println("ISIN: " + deliverable.getIsin()
+                                + " Clean Price: " + cleanSpotPrice
+                                + " -> Net Basis: " + netBasis
+                                + " | IRR Normalizzato: " + String.format("%.4f", irr * 100) + "%");
+                    }
                 }
 
                 if (isFirst) {
