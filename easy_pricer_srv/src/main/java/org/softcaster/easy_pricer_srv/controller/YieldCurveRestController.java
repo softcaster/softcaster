@@ -3,6 +3,7 @@ package org.softcaster.easy_pricer_srv.controller;
 import java.util.List;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.dto.YieldCurveDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,18 @@ public class YieldCurveRestController {
     @Autowired
     private YieldCurveDAO dao;
 
-    @GetMapping("/yield_curve/r0")
+    @GetMapping("/yield_curve/r01")
     public ResponseEntity findAll() {
         List<YieldCurve> listaYieldCurve = dao.findAll();
+        if (listaYieldCurve == null) {
+            return new ResponseEntity(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity(listaYieldCurve, HttpStatus.OK);
+    }
+
+    @GetMapping("/yield_curve/r02")
+    public ResponseEntity findAllDto() {
+        List<YieldCurveDto> listaYieldCurve = dao.findAllDto();
         if (listaYieldCurve == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }

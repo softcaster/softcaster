@@ -1,22 +1,27 @@
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
-import { InstrumentField } from './FormFields.tsx';
+import { InstrumentField, YCurveField } from './FormFields.tsx';
 import { useState } from 'react';
-import type { ForwardPricingRequest, ForwardPricingResponse } from '../services/dto.ts';
+
+import type { ForwardPricingRequest, ForwardPricingResponse,YieldCurveDto } from '../services/dto.ts';
 import type {
     MasterData
 } from '../data/schema.ts';
 
 interface FxFuturePricingFormProps {
     masterDataList: MasterData[];
+    ycurves: YieldCurveDto[];
     data: ForwardPricingRequest;
     results: ForwardPricingResponse;
     onChange: (data: ForwardPricingRequest) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop
-export const FxFuturePForm = ({ masterDataList, data, results, onChange }: FxFuturePricingFormProps) => {
+export const FxFuturePForm = ({ masterDataList, ycurves, data, results, onChange }: FxFuturePricingFormProps) => {
+
+    console.log(masterDataList);
+    console.log(ycurves);
 
     // Funzione helper per aggiornare Isin e Issue description
     const updateIsin = (field: string, value: any) => {
@@ -30,6 +35,7 @@ export const FxFuturePForm = ({ masterDataList, data, results, onChange }: FxFut
         onChange({ ...data, [field]: value });
     };
     const [masterData, setMasterData] = useState<MasterData>();
+    const currentYcurve =  null;
 
     return (
         <div className="surface-ground p-3 border-bottom-1 surface-border">
@@ -88,6 +94,18 @@ export const FxFuturePForm = ({ masterDataList, data, results, onChange }: FxFut
                         disabled
                         className="w-full" />
                 </div>
+                <YCurveField
+                    label={'Domestic Yield Curve'}
+                    value={currentYcurve} // <-- Passa l'oggetto Counterparty intero
+                    options={ycurves}
+                    onChange={(selectedYcurve: any) => {
+                        onChange({
+                            ...data,
+                            domesticRCurve: selectedYcurve ? selectedYcurve.code : null,
+                        });
+                    }}
+                />
+
             </div>
         </div >
     );

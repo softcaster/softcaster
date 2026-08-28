@@ -163,6 +163,18 @@ export const createDefaultTxnDto = (): FinancialTxnDto => ({
     txnAcctPhase: 1
 });
 
+export interface YieldCurveDto {
+    yieldCurveId: number;
+    code: string;
+    description: string;
+}
+
+export const DEFAULT_YCURVE_DTO: YieldCurveDto = {
+    yieldCurveId: 0,
+    code: '',
+    description: ''
+}
+
 export interface ProspectFilter {
     positionId: number | null;
     counterpartyId: number | null;

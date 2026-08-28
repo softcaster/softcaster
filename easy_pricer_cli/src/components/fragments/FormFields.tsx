@@ -82,6 +82,48 @@ export const PositionField = ({ value, options, onChange }: PositionFieldProps) 
     </div>
 );
 
+// Frammento per Positions (identico per tutti)
+interface YCurveFieldProps {
+    label: string;
+    value: any;
+    options: any[];
+    onChange: (val: any) => void; 
+}
+
+export const YCurveField = ({ label, value, options, onChange }: YCurveFieldProps) => (
+    <div className="col-12 md:col-3">
+        <label className="text-sm font-bold block mb-2 text-600">Yield Curve</label>
+        <Dropdown
+            value={value}
+            options={options}
+            dataKey="idPosition"
+            optionLabel="code"
+            onChange={(e) => onChange(e.value)}
+            placeholder={`Select ${label}`}
+            filter
+            className="w-full"
+
+            // 1. Cosa mostrare quando la combo è chiusa (elemento selezionato)
+            valueTemplate={(option, props) => {
+                if (option) {
+                    return <span>{option.code}</span>;
+                }
+                return <span>{props.placeholder}</span>;
+            }}
+
+            // 2. Cosa mostrare nelle righe della lista quando è aperta
+            itemTemplate={(option) => {
+                return (
+                    <div className="flex flex-column">
+                        <span className="font-bold">{option.code}</span>
+                        <small className="text-500">{option.description}</small>
+                    </div>
+                );
+            }}
+        />
+    </div>
+);
+
 interface InstrumentFieldProps {
     label: string;
     value: any;

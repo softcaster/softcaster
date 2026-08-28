@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useActions } from '../../context/ActionContext';
-import type { PricingRequest } from '../services/dto'; // Importa la tua interfaccia base
+import type { PricingRequest,YieldCurveDto } from '../services/dto'; // Importa la tua interfaccia base
 
 export function useGenericPricingView<TMaster, TRequest extends PricingRequest, TResponse>(
     fetchMasterData: () => Promise<TMaster[]>,
+    fetchYieldCurveDto: () => Promise<YieldCurveDto[]>,
     calculatePricing: (req: TRequest) => Promise<TResponse>,
     defaultRequest: TRequest,
     defaultResponse: TResponse
 ) {
     const [masterDataList, setMasterDataList] = useState<TMaster[]>([]);
+    const [yieldCurveList, setYieldCurveList] = useState<YieldCurveDto[]>([]);
     const [request, setRequest] = useState<TRequest>(defaultRequest);
     const [results, setResults] = useState<TResponse>(defaultResponse);
     const { setAction, showToast } = useActions();
@@ -43,8 +45,13 @@ export function useGenericPricingView<TMaster, TRequest extends PricingRequest, 
 
     const loadAll = async () => {
         try {
-            const mats = await fetchMasterData();
+            const [mats, ycurves] = await Promise.all([
+                fetchMasterData(),
+                fetchYieldCurveDto()
+            ]);
+
             setMasterDataList(mats);
+            setYieldCurveList(ycurves);
         } catch (err) { 
             console.error(err); 
         }
@@ -55,6 +62,6 @@ export function useGenericPricingView<TMaster, TRequest extends PricingRequest, 
     }, [fetchMasterData]);
 
     return {
-        masterDataList, request, setRequest, results
+        masterDataList, request, setRequest, results, yieldCurveList
     };
 }

@@ -85,7 +85,7 @@ export function useFinancialView<TMaster>(
                 fetchCounterparty(),
                 findAllByAssetClass(assetClass)
             ]);
-            console.log("Anagrafiche caricate nell'hook:", mats.length);
+            //console.log("Anagrafiche caricate nell'hook:", mats.length);
             setMasterDataList(mats);
             setPositionList(pos);
             setCounterpartyList(cp);

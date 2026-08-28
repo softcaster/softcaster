@@ -1,9 +1,10 @@
 import React from 'react';
 import { useGenericPricingView } from '../hooks/useGenericPricingView';
-import type { PricingRequest, PricingResponse } from '../services/dto';
+import type { PricingRequest, PricingResponse,YieldCurveDto } from '../services/dto';
 
 interface GenericPricingViewProps2<TMaster extends { code: string }, TRequest, TResponse> {
     fetchMasterData: () => Promise<TMaster[]>;
+    fetchYieldCurveDto: () => Promise<YieldCurveDto[]>;
     calculatePricing: (req: TRequest) => Promise<TResponse>;
     defaultRequest: TRequest;
     defaultResponse: TResponse;
@@ -17,6 +18,7 @@ export function GenericPricingView2<
     TResponse extends PricingResponse
 >({
     fetchMasterData,
+    fetchYieldCurveDto,
     calculatePricing,
     defaultRequest,
     defaultResponse,
@@ -25,9 +27,10 @@ export function GenericPricingView2<
 }: GenericPricingViewProps2<TMaster, TRequest, TResponse>) {
 
     const {
-        masterDataList, request, results, setRequest
+        masterDataList, request, setRequest, results, yieldCurveList
     } = useGenericPricingView<TMaster, TRequest, TResponse>(
         fetchMasterData,
+        fetchYieldCurveDto,
         calculatePricing,
         defaultRequest,
         defaultResponse
@@ -35,12 +38,15 @@ export function GenericPricingView2<
 
     // Funziona perfettamente perché sia TMaster ha .code sia request ha .isin
     const selectedRecord = masterDataList.find(m => m.code === request.isin);
-
+    
+    console.log(yieldCurveList);
+    
     return (
         <div className="flex flex-column h-full bg-white overflow-auto">
             <div className="p-3 border-bottom-1 surface-border">
                 <FormComponent
                     masterDataList={masterDataList}
+                    yieldCurveList={yieldCurveList}
                     data={request}
                     results={results}
                     onChange={setRequest}

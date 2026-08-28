@@ -7,7 +7,7 @@ import type {
     PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem, CmdFutureMasterData
 } from '../data/schema'
 import type {
-    FinancialTxnDto, PositionProspectDto, AccountDetailsBalanceDto
+    FinancialTxnDto, PositionProspectDto, AccountDetailsBalanceDto,YieldCurveDto
 } from '../services/dto';
 
 import type {
@@ -1401,6 +1401,15 @@ export const logicalDeleteFinancialTxn = async (id: number): Promise<FinancialTx
     } catch (error) {
         console.error('Failed to delete financial_txn:', error);
         return null;
+    }
+};
+
+export const fetchYieldCurveDto = async (): Promise<YieldCurveDto[]> => {
+    try {
+        return await apiRequest<YieldCurveDto[]>('/yield_curve/r02', 'GET');
+    } catch (error) {
+        console.error('Failed to fetch yield_curve:', error);
+        return [];
     }
 };
 
