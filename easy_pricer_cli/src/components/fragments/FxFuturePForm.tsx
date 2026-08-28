@@ -11,17 +11,17 @@ import type {
 
 interface FxFuturePricingFormProps {
     masterDataList: MasterData[];
-    ycurves: YieldCurveDto[];
+    yieldCurveList: YieldCurveDto[];
     data: ForwardPricingRequest;
     results: ForwardPricingResponse;
     onChange: (data: ForwardPricingRequest) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop
-export const FxFuturePForm = ({ masterDataList, ycurves, data, results, onChange }: FxFuturePricingFormProps) => {
+export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, onChange }: FxFuturePricingFormProps) => {
 
     console.log(masterDataList);
-    console.log(ycurves);
+    console.log(yieldCurveList);
 
     // Funzione helper per aggiornare Isin e Issue description
     const updateIsin = (field: string, value: any) => {
@@ -97,7 +97,7 @@ export const FxFuturePForm = ({ masterDataList, ycurves, data, results, onChange
                 <YCurveField
                     label={'Domestic Yield Curve'}
                     value={currentYcurve} // <-- Passa l'oggetto Counterparty intero
-                    options={ycurves}
+                    options={yieldCurveList}
                     onChange={(selectedYcurve: any) => {
                         onChange({
                             ...data,
