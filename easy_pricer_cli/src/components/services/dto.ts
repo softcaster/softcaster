@@ -50,7 +50,7 @@ export const DEFAULT_BOND_PRICING_REQUEST: BondPricingRequest = {
 
 export const DEFAULT_FWD_PRICING_REQUEST: ForwardPricingRequest = {
     isin: '',
-    referencePrice: 100.00,
+    referencePrice: 1.00,
     referenceDate: new Date(),
     domesticRate: 0.01,
     domesticRCurve: '',

@@ -4,7 +4,7 @@ import { Calendar } from 'primereact/calendar';
 import { InstrumentField, YCurveField } from './FormFields.tsx';
 import { useState } from 'react';
 
-import type { ForwardPricingRequest, ForwardPricingResponse,YieldCurveDto } from '../services/dto.ts';
+import type { ForwardPricingRequest, ForwardPricingResponse, YieldCurveDto } from '../services/dto.ts';
 import type {
     MasterData
 } from '../data/schema.ts';
@@ -20,12 +20,8 @@ interface FxFuturePricingFormProps {
 //Il modulo riceve l'oggetto trade come prop
 export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, onChange }: FxFuturePricingFormProps) => {
 
-    console.log(masterDataList);
-    console.log(yieldCurveList);
-
     // Funzione helper per aggiornare Isin e Issue description
-    const updateIsin = (field: string, value: any) => {
-        console.log(field + " " + value.code);
+    const updateIsin = (value: any) => {
         setMasterData(value);
         onChange({ ...data, ['isin']: value.code });
     };
@@ -35,7 +31,6 @@ export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, o
         onChange({ ...data, [field]: value });
     };
     const [masterData, setMasterData] = useState<MasterData>();
-    const currentYcurve =  null;
 
     return (
         <div className="surface-ground p-3 border-bottom-1 surface-border">
@@ -46,7 +41,7 @@ export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, o
                     label="Fx Future Contract"
                     value={masterData}
                     options={masterDataList}
-                    onChange={(val) => updateIsin('masterData', val)}
+                    onChange={(val) => updateIsin(val)}
                 />
 
                 <div className="col-12 md:col-6">
@@ -60,7 +55,7 @@ export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, o
                 </div>
 
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">Reference price date</label>
+                    <label className="block mb-2 font-bold text-sm">Reference Date</label>
                     <Calendar
                         value={data.referenceDate}
                         onChange={(e) => updateRequest('referenceDate', e.value as Date)}
@@ -68,7 +63,7 @@ export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, o
                 </div>
 
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">Reference price</label>
+                    <label className="block mb-2 font-bold text-sm">Spot Price</label>
                     <InputNumber
                         value={data.referencePrice}
                         onValueChange={(e) => updateRequest('referencePrice', e.value)}
@@ -76,6 +71,23 @@ export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, o
                         inputStyle={{ textAlign: 'right' }}
                         className="w-full" />
                 </div>
+
+                <YCurveField
+                    label={'Domestic Yield Curve'}
+                    // Trova l'oggetto completo nella lista che corrisponde alla stringa salvata in data.domesticRCurve
+                    value={yieldCurveList.find(c => c.code === data.domesticRCurve) || null}
+                    options={yieldCurveList}
+                    onChange={(val) => updateRequest('domesticRCurve', val.code)}
+                />
+
+                <YCurveField
+                    label={'Foreign Yield Curve'}
+                    // Trova l'oggetto completo nella lista che corrisponde alla stringa salvata in data.domesticRCurve
+                    value={yieldCurveList.find(c => c.code === data.foreignRCurve) || null}
+                    options={yieldCurveList}
+                    onChange={(val) => updateRequest('foreignRCurve', val.code)}
+                />
+
                 <div className="col-12 md:col-3">
                     <label className="block mb-2 font-bold text-sm">Theoretical Price</label>
                     <InputNumber
@@ -87,25 +99,15 @@ export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, o
                         className="w-full" />
                 </div>
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">CTD</label>
-                    <InputText
-                        value={results.ctd}
+                    <label className="block mb-2 font-bold text-sm">Basis</label>
+                    <InputNumber
+                        value={results.theoreticalPrice}
                         readOnly
                         disabled
+                        mode="decimal" minFractionDigits={5} placeholder="0.00000"
+                        inputStyle={{ textAlign: 'right' }}
                         className="w-full" />
                 </div>
-                <YCurveField
-                    label={'Domestic Yield Curve'}
-                    value={currentYcurve} // <-- Passa l'oggetto Counterparty intero
-                    options={yieldCurveList}
-                    onChange={(selectedYcurve: any) => {
-                        onChange({
-                            ...data,
-                            domesticRCurve: selectedYcurve ? selectedYcurve.code : null,
-                        });
-                    }}
-                />
-
             </div>
         </div >
     );

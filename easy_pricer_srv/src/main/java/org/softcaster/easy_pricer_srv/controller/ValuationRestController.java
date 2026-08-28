@@ -61,5 +61,15 @@ public class ValuationRestController {
         } else {
             return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
         }
+    }    
+    
+    @PostMapping(value = "/pricing/fx-future" , produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<ForwardPricingResponse> calculateFwdFxPricing(@RequestBody ForwardPricingRequest request) {
+       
+        ForwardPricingResponse response = new ForwardPricingResponse();
+        response.theoreticalPrice = request.referencePrice;
+        return new ResponseEntity(response, HttpStatus.OK);
+    
     }
 }

@@ -92,11 +92,11 @@ interface YCurveFieldProps {
 
 export const YCurveField = ({ label, value, options, onChange }: YCurveFieldProps) => (
     <div className="col-12 md:col-3">
-        <label className="text-sm font-bold block mb-2 text-600">Yield Curve</label>
+        <label className="text-sm font-bold block mb-2 text-600">{label}</label>
         <Dropdown
             value={value}
             options={options}
-            dataKey="idPosition"
+            dataKey="code"
             optionLabel="code"
             onChange={(e) => onChange(e.value)}
             placeholder={`Select ${label}`}

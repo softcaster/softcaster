@@ -19,8 +19,7 @@ interface BondFuturePricingFormProps {
 export const BondFuturePForm = ({ masterDataList, data, results, onChange }: BondFuturePricingFormProps) => {
 
     // Funzione helper per aggiornare Isin e Issue description
-    const updateIsin = (field: string, value: any) => {
-        console.log(field + " " + value.code);
+    const updateIsin = (value: any) => {
         setMasterData(value);
         onChange({ ...data, ['isin']: value.code });
     };
@@ -40,7 +39,7 @@ export const BondFuturePForm = ({ masterDataList, data, results, onChange }: Bon
                     label="Bond Future Contract"
                     value={masterData}
                     options={masterDataList}
-                    onChange={(val) => updateIsin('masterData', val)}
+                    onChange={(val) => updateIsin(val)}
                 />
 
                 <div className="col-12 md:col-6">
