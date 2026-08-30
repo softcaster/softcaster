@@ -63,6 +63,7 @@ CREATE SEQUENCE gl_accounts_s
 ALTER SEQUENCE gl_accounts_s
     OWNER TO sofie;
 
+
 -- ----------------------------------------------------------------------------
 -- accounting_event_types
 -- ----------------------------------------------------------------------------
@@ -216,6 +217,26 @@ CREATE SEQUENCE journal_entries_s
     INCREMENT BY 1;
 
 ALTER SEQUENCE journal_entries_s
+    OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- gl_account_slots
+-- ----------------------------------------------------------------------------
+CREATE TABLE gl_account_slots (
+    account_slot_id integer NOT NULL,
+    account integer NOT NULL,
+    currency integer NULL,
+    PRIMARY KEY (account_slot_id),
+    CONSTRAINT fk_account FOREIGN KEY (account) REFERENCES gl_accounts (account_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+ALTER TABLE gl_account_slots OWNER TO sofie;
+
+CREATE SEQUENCE gl_account_slots_s
+    START WITH 1
+    INCREMENT BY 1;
+
+ALTER SEQUENCE gl_account_slots_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------

@@ -26,10 +26,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
-/**
- *
- * @author softc
- */
 public class MarketDataService {
 
     @Autowired

@@ -14,10 +14,6 @@ import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.math.MathUtil;
 
-/**
- *
- * @author ep
- */
 public class BondForwardPricer {
 
     public XRBForwardOutputData calculateForwardPrice(XRBForwardInputData input) {

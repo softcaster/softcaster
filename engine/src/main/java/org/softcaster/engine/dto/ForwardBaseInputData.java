@@ -19,6 +19,7 @@ public class ForwardBaseInputData extends MarketInputData {
     // 1) in generale tasso free-risk
     // 2) In caso di fx, rappresenta il tasso free-risk della ccy
     private double domesticRate = 0; 
+    private double domesticDF = 0; 
     private YieldCurve domesticRateCurve; 
 
     // 1) Nel Forex domesticRate è il tasso della ccy e
@@ -27,8 +28,10 @@ public class ForwardBaseInputData extends MarketInputData {
     // e il tasso dell USD (ccy) il domestic rate
     // 2) Nel caso di equity e' il dividend yield
     private double foreignRate;  
+    private double foreignDF;  
     private YieldCurve foreignRateCurve; 
     
+    private boolean useRates =  true;
     private LocalDate maturityDate;
 
     /**
@@ -113,5 +116,47 @@ public class ForwardBaseInputData extends MarketInputData {
      */
     public void setUnderlyingReferencePrice(double underlyingReferencePrice) {
         this.underlyingReferencePrice = underlyingReferencePrice;
+    }
+
+    /**
+     * @return the domesticDF
+     */
+    public double getDomesticDF() {
+        return domesticDF;
+    }
+
+    /**
+     * @param domesticDF the domesticDF to set
+     */
+    public void setDomesticDF(double domesticDF) {
+        this.domesticDF = domesticDF;
+    }
+
+    /**
+     * @return the foreignDF
+     */
+    public double getForeignDF() {
+        return foreignDF;
+    }
+
+    /**
+     * @param foreignDF the foreignDF to set
+     */
+    public void setForeignDF(double foreignDF) {
+        this.foreignDF = foreignDF;
+    }
+
+    /**
+     * @return the useRates
+     */
+    public boolean isUseRates() {
+        return useRates;
+    }
+
+    /**
+     * @param useRates the useRates to set
+     */
+    public void setUseRates(boolean useRates) {
+        this.useRates = useRates;
     }
 }
