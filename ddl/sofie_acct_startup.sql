@@ -54,23 +54,37 @@ INSERT INTO journal_entry_status VALUES (3,'ERROR','Error');
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR
     VALUES(nextval('account_mapping_s'),'CURRENCY_POSITION',1,79);
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
-    VALUES(nextval('account_mapping_s'),'CURRENCY_POSITION',2,80);
+    VALUES(nextval('account_mapping_s'),'CURRENCY_POSITION',2,79);
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- CHF 
-    VALUES(nextval('account_mapping_s'),'CURRENCY_POSITION',4,81);
+    VALUES(nextval('account_mapping_s'),'CURRENCY_POSITION',4,79);
 -- 130050 Fx Spot Asset
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR
     VALUES(nextval('account_mapping_s'),'FX_SPOT_ASSET',1,37);
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
-    VALUES(nextval('account_mapping_s'),'FX_SPOT_ASSET',2,87);
+    VALUES(nextval('account_mapping_s'),'FX_SPOT_ASSET',2,37);
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- CHF 
-    VALUES(nextval('account_mapping_s'),'FX_SPOT_ASSET',4,88);
+    VALUES(nextval('account_mapping_s'),'FX_SPOT_ASSET',4,37);
 -- 240090 Currency Position Control
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR
     VALUES(nextval('account_mapping_s'),'POSITION_CONTROL',1,51);
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
-    VALUES(nextval('account_mapping_s'),'POSITION_CONTROL',2,82);
+    VALUES(nextval('account_mapping_s'),'POSITION_CONTROL',2,51);
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- CHF 
-    VALUES(nextval('account_mapping_s'),'POSITION_CONTROL',4,83);
+    VALUES(nextval('account_mapping_s'),'POSITION_CONTROL',4,51);
+-- 600050 Financial Commitments - Fx-Spot
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'FXSPOT_COMMITMENT', 1, 99); -- EUR 
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'FXSPOT_COMMITMENT', 2, 99); -- USD
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'FXSPOT_COMMITMENT', 4, 99); -- CHF
+-- 600090 Off-Balance Sheet Clearing Account
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'OBS_CLEARING', 1, 91); -- EUR 
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'OBS_CLEARING', 2, 91); -- USD
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'OBS_CLEARING', 4, 91); -- CHF
 
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
     VALUES(nextval('account_mapping_s'),'BOND_ASSET',1,33); -- 130010 Debt Securities - Sovereign Bonds (EUR)

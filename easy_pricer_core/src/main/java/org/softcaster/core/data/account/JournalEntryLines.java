@@ -29,6 +29,9 @@ public class JournalEntryLines implements Serializable {
     @Column(name = "line_no")
     private Integer lineNo;
 
+    @Column(name = "currency")
+    private Integer currency;
+    
     @Column(name = "account_slot")
     private Integer accountSlot;
 
@@ -66,6 +69,7 @@ public class JournalEntryLines implements Serializable {
     public void setLineNo(Integer lineNo) {
         this.lineNo = lineNo;
     }
+
     public Double getDebitAmount() {
         return debitAmount;
     }
@@ -109,4 +113,31 @@ public class JournalEntryLines implements Serializable {
         return getClass().hashCode();
     }
 
+    /**
+     * @return the accountSlot
+     */
+    public Integer getAccountSlot() {
+        return accountSlot;
+    }
+
+    /**
+     * @param accountSlot the accountSlot to set
+     */
+    public void setAccountSlot(Integer accountSlot) {
+        this.accountSlot = accountSlot;
+    }
+
+    /**
+     * @return the currency
+     */
+    public Integer getCurrency() {
+        return currency;
+    }
+
+    /**
+     * @param currency the currency to set
+     */
+    public void setCurrency(Integer currency) {
+        this.currency = currency;
+    }
 }

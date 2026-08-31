@@ -4,7 +4,6 @@
  */
 package mds.core.test;
 
-import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Currency;
@@ -12,15 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
-import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
-import org.softcaster.core.data.account.GlAccount;
-import org.softcaster.core.data.account.GlAccountDAO;
-import org.softcaster.core.data.account.GlAccountSlots;
-import org.softcaster.core.data.account.GlAccountSlotsDAO;
 import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;

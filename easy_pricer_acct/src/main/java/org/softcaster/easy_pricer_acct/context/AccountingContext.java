@@ -12,6 +12,7 @@ import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventAccruals;
 import org.softcaster.core.data.account.GlAccountDAO;
+import org.softcaster.core.data.account.GlAccountSlots;
 import org.softcaster.core.data.account.JournalEntryLines;
 import org.softcaster.core.data.account.JournalEntryLinesDAO;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
@@ -19,10 +20,6 @@ import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.NormalBalance;
 import org.softcaster.engine.enums.TxnComponentType;
 
-/**
- *
- * @author ep
- */
 public class AccountingContext {
 
     private final FinancialTxn txn;
@@ -132,11 +129,14 @@ public class AccountingContext {
             // Invertiamo il segno dell'importo (Storno in Nero / Negativo)
             double negativeAmount = originalAmount * (-1.0);
 
-            // Inseriamo la linea di storno nel DSL contabile corrente
+            // Inseriamo la linea di storno nel DSL contabile corrente.
+            // Passiamo l'ID dello slot convertito in stringa con un prefisso speciale "SLOT:" 
+            // per istruire il metodo addJournalEntrie a non fare il lookup del mapping.
+            String slotKey = "SLOT:" + oldLine.getAccountSlot();
             if (sameBalance == NormalBalance.DEBIT) {
-                this.journal.debit(getAccountCode(oldLine.getGlAccount()), negativeAmount, oldLine.getCurrency());
+                this.journal.debit(slotKey, negativeAmount, oldLine.getCurrency());
             } else {
-                this.journal.credit(getAccountCode(oldLine.getGlAccount()), negativeAmount, oldLine.getCurrency());
+                this.journal.credit(slotKey, negativeAmount, oldLine.getCurrency());
             }
         }
     }

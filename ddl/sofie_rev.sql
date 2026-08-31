@@ -251,11 +251,10 @@ alter table account_mapping add column account_slot INTEGER NOT NULL;
 alter table account_mapping add CONSTRAINT fk_am_slot FOREIGN KEY (account_slot) REFERENCES gl_account_slots(account_slot_id);
 alter table account_mapping add CONSTRAINT uk_account_mapping UNIQUE (mapping_key, account_slot);
 
-alter table journal_entry_lines drop CONSTRAINT fk_jel_account;
-alter table journal_entry_lines drop CONSTRAINT fk_jel_currency;
-alter table journal_entry_lines drop column gl_account;
-alter table journal_entry_lines drop column currency;
+alter table journal_entry_lines add column currency INTEGER NOT NULL;
+alter table journal_entry_lines add  CONSTRAINT fk_jel_currency FOREIGN KEY (currency) REFERENCES currency(id_currency);
 alter table journal_entry_lines add column account_slot INTEGER NOT NULL;
 alter table journal_entry_lines add CONSTRAINT fk_jel_slot  FOREIGN KEY (account_slot) REFERENCES gl_account_slots(account_slot_id);
+
 
 ALTER SEQUENCE account_mapping_s RESTART WITH 1;

@@ -278,11 +278,13 @@ CREATE TABLE journal_entry_lines (
     journal_entry integer NOT NULL,
     line_no integer NOT NULL,
     account_slot integer NOT NULL,
+    currency INTEGER NOT NULL,
     debit_amount numeric(20, 8),
     credit_amount numeric(20, 8),
     description varchar(250),
     PRIMARY KEY (journal_entry_line_id),
     CONSTRAINT fk_jel_entry FOREIGN KEY (journal_entry) REFERENCES journal_entries (journal_entry_id),
+    CONSTRAINT fk_jel_currency FOREIGN KEY (currency) REFERENCES currency(id_currency),
     CONSTRAINT fk_jel_slot  FOREIGN KEY (account_slot) REFERENCES gl_account_slots(account_slot_id)
 );
 

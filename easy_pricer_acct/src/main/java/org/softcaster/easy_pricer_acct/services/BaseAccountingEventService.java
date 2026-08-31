@@ -25,6 +25,8 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.core.data.account.GlAccount;
 import org.softcaster.core.data.account.GlAccountDAO;
+import org.softcaster.core.data.account.GlAccountSlots;
+import org.softcaster.core.data.account.GlAccountSlotsDAO;
 import org.softcaster.core.data.account.JournalEntries;
 import org.softcaster.core.data.account.JournalEntriesDAO;
 import org.softcaster.core.data.account.JournalEntryLines;
@@ -70,6 +72,9 @@ public abstract class BaseAccountingEventService {
 
     @Autowired
     protected AccountingEventStatusService eventStatusService;
+
+    @Autowired
+    private GlAccountSlotsDAO glAccountSlotsDAO;
 
     @PostConstruct
     public void init() {
@@ -159,14 +164,30 @@ public abstract class BaseAccountingEventService {
     private JournalEntryLines getJournalEntryLines(JournalLine line) {
         JournalEntryLines jel = new JournalEntryLines();
         jel = new JournalEntryLines();
-        jel.setCurrency(line.currency());
         jel.setDebitAmount(0.);
         jel.setCreditAmount(0.);
-        GlAccount glAccount = glAccountDAO.findByCode(line.account());
-        if (glAccount == null) {
-            throw new AccountingException(" Invalid account!");
+
+        Integer finalAccountSlotId;
+        String accountKey = line.account();
+        // Controllo se è una linea di storno
+        if (accountKey != null && accountKey.startsWith("SLOT:")) {
+            finalAccountSlotId = Integer.valueOf(accountKey.substring(5));
+        } else {
+            // Gestione standard
+            GlAccount glAccount = glAccountDAO.findByCode(line.account());
+            if (glAccount == null) {
+                throw new AccountingException(" Invalid account!");
+            }
+            // Conto e divisa determinano la slot da utilizzare
+            GlAccountSlots glAccountSlots = glAccountSlotsDAO.findByAccountAndCurrency(glAccount.getAccountId(), line.currency());
+            if (glAccountSlots == null) {
+                throw new AccountingException(" Invalid slot!");
+            }
+            finalAccountSlotId = glAccountSlots.getAccountSlotId();
         }
-        jel.setGlAccount(glAccount.getAccountId());
+        // Conto e divisa determinano la slot da utilizzare
+        jel.setAccountSlot(finalAccountSlotId);
+        jel.setCurrency(line.currency());
         switch (line.balance()) {
             case DEBIT ->
                 jel.setDebitAmount(line.amount());
