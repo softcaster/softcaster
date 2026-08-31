@@ -31,14 +31,15 @@ CREATE TABLE normal_balances (
 
 ALTER TABLE normal_balances OWNER TO sofie;
 
+-- ----------------------------------------------------------------------------
 -- Tabella Anagrafica Chart Of Accounts
+-- ----------------------------------------------------------------------------
 CREATE TABLE gl_accounts (
     account_id integer NOT NULL,
     parent integer NULL,
     code varchar(50) NOT NULL UNIQUE,
     description varchar(150) NOT NULL DEFAULT '',
     is_postable boolean NOT NULL DEFAULT FALSE,
-    currency integer NULL,
     statement_type integer NOT NULL,
     nature integer NOT NULL,
     balance integer NOT NULL,
@@ -48,8 +49,7 @@ CREATE TABLE gl_accounts (
     CONSTRAINT fk_parent FOREIGN KEY (parent) REFERENCES gl_accounts (account_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_statement_type FOREIGN KEY (statement_type) REFERENCES financial_statement_types (statement_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_nature FOREIGN KEY (nature) REFERENCES account_natures (nature_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_balance FOREIGN KEY (balance) REFERENCES normal_balances (balance_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_balance FOREIGN KEY (balance) REFERENCES normal_balances (balance_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 CREATE UNIQUE INDEX idx_account_code ON gl_accounts (code);
@@ -63,6 +63,57 @@ CREATE SEQUENCE gl_accounts_s
 ALTER SEQUENCE gl_accounts_s
     OWNER TO sofie;
 
+-- ----------------------------------------------------------------------------
+-- gl_account_slots
+-- ----------------------------------------------------------------------------
+CREATE TABLE gl_account_slots (
+    account_slot_id INTEGER NOT NULL,
+    account INTEGER NOT NULL,
+    currency INTEGER NOT NULL,
+    
+    PRIMARY KEY (account_slot_id),
+    CONSTRAINT uk_account_currency UNIQUE (account, currency),
+    CONSTRAINT fk_slot_account FOREIGN KEY (account) REFERENCES gl_accounts(account_id),
+    CONSTRAINT fk_slot_currency FOREIGN KEY (currency) REFERENCES currency(id_currency)
+);
+ALTER TABLE gl_account_slots OWNER TO sofie;
+
+CREATE SEQUENCE gl_account_slots_s
+    START WITH 1
+    INCREMENT BY 1;
+
+ALTER SEQUENCE gl_account_slots_s
+    OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- account_mapping mappatura per il resover utilizzato dagli script groovy
+-- ----------------------------------------------------------------------------
+CREATE TABLE account_mapping (
+    account_mapping_id INTEGER NOT NULL,
+    mapping_key VARCHAR(50) NOT NULL,
+    currency INTEGER NOT NULL,
+    gl_account INTEGER NOT NULL,
+
+    PRIMARY KEY (account_mapping_id),
+
+    CONSTRAINT uk_account_mapping
+        UNIQUE (mapping_key, currency),
+
+    CONSTRAINT fk_am_currency
+        FOREIGN KEY (currency)
+        REFERENCES currency(id_currency),
+    CONSTRAINT fk_am_account
+        FOREIGN KEY (gl_account)
+        REFERENCES gl_accounts(account_id)
+);
+ALTER TABLE account_mapping
+    OWNER TO sofie;
+
+CREATE SEQUENCE account_mapping_s
+    START WITH 1
+    INCREMENT BY 1;
+ALTER SEQUENCE account_mapping_s
+    OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- accounting_event_types
@@ -166,18 +217,6 @@ CREATE TABLE accounting_event_accruals (
 ALTER TABLE accounting_event_accruals OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- journal_entry_types
--- ----------------------------------------------------------------------------
-CREATE TABLE journal_entry_types (
-    entry_type_id integer NOT NULL,
-    code varchar(30) NOT NULL,
-    description varchar(100),
-    PRIMARY KEY (entry_type_id)
-);
-
-ALTER TABLE journal_entry_types OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
 -- journal_entry_status
 -- ----------------------------------------------------------------------------
 CREATE TABLE journal_entry_status (
@@ -188,6 +227,18 @@ CREATE TABLE journal_entry_status (
 );
 
 ALTER TABLE journal_entry_status OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- journal_entry_types
+-- ----------------------------------------------------------------------------
+CREATE TABLE journal_entry_types (
+    entry_type_id integer NOT NULL,
+    code varchar(30) NOT NULL,
+    description varchar(100),
+    PRIMARY KEY (entry_type_id)
+);
+
+ALTER TABLE journal_entry_types OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- journal_entries
@@ -220,41 +271,19 @@ ALTER SEQUENCE journal_entries_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- gl_account_slots
--- ----------------------------------------------------------------------------
-CREATE TABLE gl_account_slots (
-    account_slot_id integer NOT NULL,
-    account integer NOT NULL,
-    currency integer NULL,
-    PRIMARY KEY (account_slot_id),
-    CONSTRAINT fk_account FOREIGN KEY (account) REFERENCES gl_accounts (account_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
-);
-ALTER TABLE gl_account_slots OWNER TO sofie;
-
-CREATE SEQUENCE gl_account_slots_s
-    START WITH 1
-    INCREMENT BY 1;
-
-ALTER SEQUENCE gl_account_slots_s
-    OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
 -- journal_entry_lines
 -- ----------------------------------------------------------------------------
 CREATE TABLE journal_entry_lines (
     journal_entry_line_id integer NOT NULL,
     journal_entry integer NOT NULL,
     line_no integer NOT NULL,
-    gl_account integer NOT NULL,
+    account_slot integer NOT NULL,
     debit_amount numeric(20, 8),
     credit_amount numeric(20, 8),
-    currency integer NOT NULL,
     description varchar(250),
     PRIMARY KEY (journal_entry_line_id),
     CONSTRAINT fk_jel_entry FOREIGN KEY (journal_entry) REFERENCES journal_entries (journal_entry_id),
-    CONSTRAINT fk_jel_account FOREIGN KEY (gl_account) REFERENCES gl_accounts (account_id),
-    CONSTRAINT fk_jel_currency FOREIGN KEY (currency) REFERENCES currency (id_currency)
+    CONSTRAINT fk_jel_slot  FOREIGN KEY (account_slot) REFERENCES gl_account_slots(account_slot_id)
 );
 
 ALTER TABLE journal_entry_lines OWNER TO sofie;
@@ -264,37 +293,6 @@ CREATE SEQUENCE journal_entry_lines_s
     INCREMENT BY 1;
 
 ALTER SEQUENCE journal_entry_lines_s
-    OWNER TO sofie;
-
-
--- ----------------------------------------------------------------------------
--- account_mapping mappatura per il resover utilizzato dagli script groovy
--- ----------------------------------------------------------------------------
-CREATE TABLE account_mapping (
-    account_mapping_id INTEGER NOT NULL,
-    mapping_key VARCHAR(50) NOT NULL,
-    currency INTEGER NOT NULL,
-    gl_account INTEGER NOT NULL,
-
-    PRIMARY KEY (account_mapping_id),
-
-    CONSTRAINT uk_account_mapping
-        UNIQUE (mapping_key, currency),
-
-    CONSTRAINT fk_am_currency
-        FOREIGN KEY (currency)
-        REFERENCES currency(id_currency),
-    CONSTRAINT fk_am_account
-        FOREIGN KEY (gl_account)
-        REFERENCES gl_accounts(account_id)
-);
-ALTER TABLE account_mapping
-    OWNER TO sofie;
-
-CREATE SEQUENCE account_mapping_s
-    START WITH 1
-    INCREMENT BY 1;
-ALTER SEQUENCE account_mapping_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------

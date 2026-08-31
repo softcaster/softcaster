@@ -238,3 +238,24 @@ delete from accounting_events where event_id=7;
 
 INSERT INTO ref_rate_index(id_ref_rate_index_id,code, description, currency, daycount) 
     VALUES (nextval('ref_rate_index_s'),'EURIBOR_6M','Euribor 6M', 1, 2);
+
+-- Revisione conti e mappatura
+alter table gl_accounts drop CONSTRAINT fk_currency ;
+alter table gl_accounts drop column currency;
+
+alter table account_mapping drop CONSTRAINT fk_am_account;
+alter table account_mapping drop CONSTRAINT uk_account_mapping;
+alter table account_mapping drop column gl_account;
+
+alter table account_mapping add column account_slot INTEGER NOT NULL;
+alter table account_mapping add CONSTRAINT fk_am_slot FOREIGN KEY (account_slot) REFERENCES gl_account_slots(account_slot_id);
+alter table account_mapping add CONSTRAINT uk_account_mapping UNIQUE (mapping_key, account_slot);
+
+alter table journal_entry_lines drop CONSTRAINT fk_jel_account;
+alter table journal_entry_lines drop CONSTRAINT fk_jel_currency;
+alter table journal_entry_lines drop column gl_account;
+alter table journal_entry_lines drop column currency;
+alter table journal_entry_lines add column account_slot INTEGER NOT NULL;
+alter table journal_entry_lines add CONSTRAINT fk_jel_slot  FOREIGN KEY (account_slot) REFERENCES gl_account_slots(account_slot_id);
+
+ALTER SEQUENCE account_mapping_s RESTART WITH 1;

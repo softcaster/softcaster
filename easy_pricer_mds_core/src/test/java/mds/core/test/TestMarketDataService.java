@@ -4,6 +4,7 @@
  */
 package mds.core.test;
 
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Currency;
@@ -11,10 +12,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
+import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.account.GlAccount;
+import org.softcaster.core.data.account.GlAccountDAO;
+import org.softcaster.core.data.account.GlAccountSlots;
+import org.softcaster.core.data.account.GlAccountSlotsDAO;
 import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
@@ -58,10 +64,10 @@ public class TestMarketDataService {
 
     @Autowired
     private BondCalculator bondCalculator;
-    
+
     @Autowired
     YieldCurveDAO yieldCurveDAO;
-    
+
     @Autowired
     private SecurityMasterDataDAO smdDAO;
 
@@ -113,7 +119,7 @@ public class TestMarketDataService {
             // FMIRS ITAYIELD TERMESTR
             marketDataService.loadCurveCurveRates("ECBYC");
             org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("ECBYC");
-            if(yieldCurve != null) {
+            if (yieldCurve != null) {
                 double price = bondCalculator.calculatePrice(smd, marketDataService.getOfficialDate(), yieldCurve);
                 System.out.println(price);
                 System.out.println(marketDataService.getSpotPrice("IT0004532559", RequestType.ASK));

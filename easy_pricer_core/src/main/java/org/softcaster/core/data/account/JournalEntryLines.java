@@ -29,11 +29,8 @@ public class JournalEntryLines implements Serializable {
     @Column(name = "line_no")
     private Integer lineNo;
 
-    @Column(name = "gl_account")
-    private Integer glAccount;
-
-    @Column(name = "currency")
-    private Integer currency;
+    @Column(name = "account_slot")
+    private Integer accountSlot;
 
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "debit_amount")
@@ -69,15 +66,6 @@ public class JournalEntryLines implements Serializable {
     public void setLineNo(Integer lineNo) {
         this.lineNo = lineNo;
     }
-
-    public Integer getGlAccount() {
-        return glAccount;
-    }
-
-    public void setGlAccount(Integer glAccount) {
-        this.glAccount = glAccount;
-    }
-
     public Double getDebitAmount() {
         return debitAmount;
     }
@@ -92,14 +80,6 @@ public class JournalEntryLines implements Serializable {
 
     public void setCreditAmount(Double creditAmount) {
         this.creditAmount = creditAmount;
-    }
-
-    public Integer getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(Integer currency) {
-        this.currency = currency;
     }
 
     public String getDescription() {
@@ -128,4 +108,5 @@ public class JournalEntryLines implements Serializable {
     public int hashCode() {
         return getClass().hashCode();
     }
+
 }
