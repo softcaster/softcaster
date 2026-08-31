@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.account.AccountMapping;
 import org.softcaster.core.data.account.AccountMappingDAO;
+import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +24,10 @@ public class AccountResolverService {
     @Autowired
     private AccountMappingDAO accountMappingDAO;
 
-    // Cache thread-safe in memoria
-    private final Map<String, Integer> cache = new ConcurrentHashMap<>();
+    // La cache thread-safe in memoria
+    // Chiave: "MAPPINGKEY_CURRENCYID" (es. "FX_SPOT_CONTRACT_2"), Valore: Codice Conto (es. "130055")
+    private final Map<String, String> cache = new ConcurrentHashMap<>();
 
-    /**
-     * Carica tutti i record dal database nella cache all'avvio
-     * dell'applicazione.
-     */
     @PostConstruct
     public void initCache() {
         refreshCache();
@@ -40,27 +38,52 @@ public class AccountResolverService {
      * tramite un endpoint REST se l'utente modifica la tabella.
      */
     public synchronized void refreshCache() {
-        log.info("=== [MMS] Account Mapping (Slots) cache loading in progress... ===");
+        log.info("=== [AccountResolverService] Account Mapping cache loading in progress... ===");
         try {
             // Carichiamo tutti i record pre-associati in un'unica query ad alte prestazioni
             List<AccountMapping> allMappings = accountMappingDAO.findAllWithAssociations();
 
+            // Puliamo la vecchia cache in modo atomico
             cache.clear();
 
             for (AccountMapping mapping : allMappings) {
-                if (mapping.getGlAccountSlot() != null) {
-                    // Chiave geometrica della cache: "BOND_ASSET_2" o "CURRENCY_POSITION_1"
-                    String key = mapping.getMappingKey().trim().toUpperCase() + "_" + mapping.getGlAccountSlot().getCurrency();
+                if (mapping.getCurrency() != null && mapping.getGlAccount() != null) {
+                    // Costruiamo la chiave unica
+                    String key = buildCacheKey(mapping.getMappingKey(), mapping.getCurrency().getIdCurrency());
+                    // Otteniamo il codice del conto tramite l'anagrafica del GlAccount
+                    String accountCode = mapping.getGlAccount().getCode();
 
-                    // VALORE: Salviamo direttamente l'ID dello slot fisico (account_slot_id)
-                    Integer slotId = mapping.getGlAccountSlot().getAccountSlotId();
-
-                    cache.put(key, slotId);
+                    cache.put(key, accountCode);
                 }
             }
-            log.info("=== [MMS] Slots Cache successfully loaded. Inserted records: {} ===", cache.size());
+            log.info("=== [AccountResolverService] Cache successfully loaded. Inserted records: {} ===", cache.size());
         } catch (Exception e) {
             log.error("CRITICAL: Failed to load account slot mapping cache!", e);
         }
+    }
+
+    /**
+     * Metodo velocissimo invocato dallo script Groovy. Cerca SOLO in memoria.
+     *
+     * @param mappingKey
+     * @param currencyId
+     * @return
+     */
+    public String resolve(String mappingKey, int currencyId) {
+        String key = buildCacheKey(mappingKey, currencyId);
+        String accountCode = cache.get(key);
+
+        if (accountCode == null) {
+            String errorMsg = String.format("### ACCOUNTING ERROR: No General Ledger Account mapped for rule '%s' and currency ID '%d' in memory cache!",
+                    mappingKey, currencyId);
+            log.error(errorMsg);
+            throw new AccountingException(errorMsg);
+        }
+
+        return accountCode;
+    }
+
+    private String buildCacheKey(String mappingKey, int currencyId) {
+        return mappingKey.trim().toUpperCase() + "_" + currencyId;
     }
 }

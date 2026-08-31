@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import org.softcaster.core.data.Currency;
 
 @Entity
 @Table(name = "account_mapping")
@@ -27,9 +28,13 @@ public class AccountMapping implements Serializable {
     @Column(name = "mapping_key")
     private String mappingKey;
 
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "currency", nullable = false)
+    private Currency currency;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_slot", nullable = false)
-    private GlAccountSlots glAccountSlot;
+    @JoinColumn(name = "gl_account", nullable = false)
+    private GlAccount glAccount;
 
     public Integer getAccountMappingId() {
         return accountMappingId;
@@ -67,17 +72,31 @@ public class AccountMapping implements Serializable {
     }
 
     /**
-     * @return the glAccountSlot
+     * @return the currency
      */
-    public GlAccountSlots getGlAccountSlot() {
-        return glAccountSlot;
+    public Currency getCurrency() {
+        return currency;
     }
 
     /**
-     * @param glAccountSlot the glAccountSlot to set
+     * @param currency the currency to set
      */
-    public void setGlAccountSlot(GlAccountSlots glAccountSlot) {
-        this.glAccountSlot = glAccountSlot;
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+    }
+
+    /**
+     * @return the glAccount
+     */
+    public GlAccount getGlAccount() {
+        return glAccount;
+    }
+
+    /**
+     * @param glAccount the glAccount to set
+     */
+    public void setGlAccount(GlAccount glAccount) {
+        this.glAccount = glAccount;
     }
 
 }
