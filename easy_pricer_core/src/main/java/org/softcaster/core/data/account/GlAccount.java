@@ -1,5 +1,6 @@
 package org.softcaster.core.data.account;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -18,6 +19,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.converters.AccountNatureConverter;
 import org.softcaster.core.data.converters.FinancialStatementTypeConverter;
@@ -57,11 +60,7 @@ public class GlAccount implements Serializable {
     @Column(name = "is_postable")
     private boolean postable;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "currency", nullable = true)
-    private Currency currency;
-
-    @Convert(converter = FinancialStatementTypeConverter.class)
+   @Convert(converter = FinancialStatementTypeConverter.class)
     @Column(name = "statement_type")
     private FinancialStatementType statementType;
 
@@ -78,6 +77,11 @@ public class GlAccount implements Serializable {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JoinColumn(name = "account", nullable = false) // FK in child table GlAccountSlots
+    private List<GlAccountSlots> slots = new ArrayList<>();    
 
     public Integer getAccountId() {
         return accountId;
@@ -109,14 +113,6 @@ public class GlAccount implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Currency getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(Currency currency) {
-        this.currency = currency;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
@@ -236,5 +232,19 @@ public class GlAccount implements Serializable {
             children.add(child);
             child.setParent(this);
         }
+    }
+
+    /**
+     * @return the slots
+     */
+    public List<GlAccountSlots> getSlots() {
+        return slots;
+    }
+
+    /**
+     * @param slots the slots to set
+     */
+    public void setSlots(List<GlAccountSlots> slots) {
+        this.slots = slots;
     }
 }
