@@ -3,6 +3,7 @@ package org.softcaster.easy_pricer_srv.controller;
 import java.util.List;
 import org.softcaster.core.data.Counterparty;
 import org.softcaster.core.data.CounterpartyDAO;
+import org.softcaster.core.dto.CounterpartyDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,15 @@ public class CounterpartyRestController {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity(listaCounterparty, HttpStatus.OK);
+    }
+
+    @GetMapping("/counterparty/r11")
+    public ResponseEntity<List<CounterpartyDto>> findAllDto() {
+        List<CounterpartyDto> dtoList =  dao.findAllDto();
+        if (dtoList == null || dtoList.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dtoList);
     }
 
     @GetMapping("/counterparty/r02/{id}")

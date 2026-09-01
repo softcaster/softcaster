@@ -3,6 +3,7 @@ package org.softcaster.easy_pricer_srv.controller;
 import java.util.List;
 import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.core.data.PositionMasterDataDAO;
+import org.softcaster.core.dto.PositionMasterDataDto;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,15 @@ public class PositionMasterDataRestController {
         return new ResponseEntity(listaPositionMasterData, HttpStatus.OK);
     }
 
+    @GetMapping("/position_master_data/r11")
+    public ResponseEntity<List<PositionMasterDataDto>> findAllDto() {
+        List<PositionMasterDataDto> dtoList = dao.findAllDto();
+        if (dtoList == null || dtoList.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dtoList);
+    }
+
     @GetMapping("/position_master_data/r02/{id}")
     public ResponseEntity<PositionMasterData> findByIdPosition(@PathVariable("id") Integer idPosition) {
         PositionMasterData positionMasterData = dao.findByIdPosition(idPosition);
@@ -46,12 +56,12 @@ public class PositionMasterDataRestController {
         }
         return new ResponseEntity(positionMasterData, HttpStatus.OK);
     }
-    
+
     // save/update record
     @PostMapping(value = "/position_master_data")
     public ResponseEntity<PositionMasterData> saveOrUpdate(@RequestBody PositionMasterData positionMasterData) {
         try {
-            if (positionMasterData.getIdPosition()== 0) {
+            if (positionMasterData.getIdPosition() == 0) {
                 positionMasterData.setIdPosition(null);
             }
 
@@ -61,7 +71,7 @@ public class PositionMasterDataRestController {
             return new ResponseEntity(CommonData.getJsonError(e.getLocalizedMessage()), HttpStatus.NOT_ACCEPTABLE);
         }
     }
-    
+
     // delete record
     @DeleteMapping("/position_master_data/d01/{id}")
     public ResponseEntity<PositionMasterData> delete(@PathVariable("id") Integer idPosition) {
