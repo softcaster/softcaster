@@ -9,7 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import org.softcaster.core.data.converters.DaycountConverter;
@@ -48,13 +48,16 @@ public class Currency implements Serializable {
     @Column(name = "business_days")
     private Integer businessDays;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar", nullable = true)
     private Calendar calendar;
 
     @Convert(converter = DaycountConverter.class)
     @Column(name = "daycount")
     private DaycountBasis daycount;
+
+    @Column(name = "decimal_places")
+    private Short decimalPlaces;
 
     public Integer getIdCurrency() {
         return idCurrency;
@@ -174,6 +177,20 @@ public class Currency implements Serializable {
      */
     public void setDaycount(DaycountBasis daycount) {
         this.daycount = daycount;
+    }
+
+    /**
+     * @return the decimalPlaces
+     */
+    public Short getDecimalPlaces() {
+        return decimalPlaces;
+    }
+
+    /**
+     * @param decimalPlaces the decimalPlaces to set
+     */
+    public void setDecimalPlaces(Short decimalPlaces) {
+        this.decimalPlaces = decimalPlaces;
     }
 
 }

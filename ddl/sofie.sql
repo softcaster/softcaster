@@ -228,6 +228,7 @@ CREATE TABLE currency (
     daycount integer NOT NULL,
     iso_code varchar(3) NOT NULL,
     currency_numeric_code smallint NOT NULL,
+    decimal_places smallint NOT NULL DEFAULT 2,
     description varchar(50) NOT NULL
     -- the smallest possible denomination of the given currency
 ,

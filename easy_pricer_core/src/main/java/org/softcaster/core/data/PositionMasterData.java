@@ -10,8 +10,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.Fetch;
@@ -29,11 +29,11 @@ public class PositionMasterData implements Serializable {
     @Column(name = "id_position", columnDefinition = "INTEGER")
     private Integer idPosition;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "currency", nullable = true)
     private Currency currency;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "portfolio", nullable = true)
     private PortfolioMasterData portfolio;
 
@@ -43,11 +43,11 @@ public class PositionMasterData implements Serializable {
     @Column(name = "description")
     private String description;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "position_md") // FK in child table position_detail
-    private List<PositionDetail> details = new ArrayList<>();  
-    
+    private List<PositionDetail> details = new ArrayList<>();
+
     public Integer getIdPosition() {
         return idPosition;
     }
@@ -116,7 +116,7 @@ public class PositionMasterData implements Serializable {
     public void setDetails(List<PositionDetail> details) {
         this.details = details;
     }
-    
+
     @Override
     public String toString() {
         return code;

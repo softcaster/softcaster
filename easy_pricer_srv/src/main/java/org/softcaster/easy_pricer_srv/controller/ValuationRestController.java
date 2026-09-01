@@ -46,20 +46,8 @@ public class ValuationRestController {
     @Autowired
     private FxFutureMasterDataDAO fxFutureMasterDataDAO;
     @Autowired
-    private YieldCurveDAO yieldCurveDAO;
-    @Autowired
     @Qualifier("marketDataService")
     private MarketDataService marketDataService;
-
-    @PostConstruct
-    public void init() {
-        // Prezzi/Cambi caricati da FinancialTxnService
-        // Qui carico solamente le curves
-        List<org.softcaster.core.data.YieldCurve> curves =  yieldCurveDAO.findAll();
-        for(org.softcaster.core.data.YieldCurve yieldCurve: curves) {
-            marketDataService.loadCurveCurveRates(yieldCurve.getCode());
-        }       
-    }
 
     @PostMapping(value = "/pricing/bond", produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("unchecked")

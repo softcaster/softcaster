@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -58,11 +59,11 @@ public class MasterData implements Serializable {
     @OneToOne(mappedBy = "masterData", fetch = FetchType.LAZY, orphanRemoval = true)
     private InstrumentValuation instrumentValuation;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "currency", nullable = true)
     private Currency currency;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "asset_class", nullable = true)
     private AssetClass assetClass;
 

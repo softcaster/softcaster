@@ -26,7 +26,7 @@ public class InstrumentQuote implements Serializable {
     @Column(name = "id_instrument_quote", columnDefinition = "INTEGER")
     private Integer idInstrumentQuote;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "master_data", nullable = true)
     private MasterData masterData;
 

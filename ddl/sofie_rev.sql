@@ -258,3 +258,6 @@ alter table journal_entry_lines add CONSTRAINT fk_jel_slot  FOREIGN KEY (account
 
 
 ALTER SEQUENCE account_mapping_s RESTART WITH 1;
+
+alter table currencies add column decimal_places smallint NOT NULL DEFAULT 2;
+
