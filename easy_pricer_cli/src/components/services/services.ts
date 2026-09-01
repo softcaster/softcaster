@@ -7,7 +7,7 @@ import type {
     PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem, CmdFutureMasterData
 } from '../data/schema'
 import type {
-    FinancialTxnDto, PositionProspectDto, AccountDetailsBalanceDto,YieldCurveDto
+    FinancialTxnDto, PositionProspectDto, AccountDetailsBalanceDto, YieldCurveDto, GenericMasterDataDto
 } from '../services/dto';
 
 import type {
@@ -1564,5 +1564,34 @@ export async function downloadPositionProspectPdf(filter: any): Promise<Blob> {
     }
 }
 
+export const fetchPositionsDto = async (): Promise<GenericMasterDataDto[]> => {
+    try {
+        return await apiRequest<GenericMasterDataDto[]>('/position_master_data/r11', 'GET');
+    } catch (error) {
+        console.error('Failed to fetch positions:', error);
+        return [];
+    }
+};
 
+export const fetchCounterpartiesDto = async (): Promise<GenericMasterDataDto[]> => {
+    try {
+        return await apiRequest<GenericMasterDataDto[]>('/counterparty/r11', 'GET');
+    } catch (error) {
+        console.error('Failed to fetch counterparties:', error);
+        return [];
+    }
+};
+
+export const fetchMasterDataDto = async (assetClass: string): Promise<GenericMasterDataDto[]> => {
+    try {
+        return await apiRequest<GenericMasterDataDto[]>('/master_data/r01/' + assetClass, 'GET');
+    } catch (error) {
+        console.error('Failed to fetch master data:', error);
+        return [];
+    }
+};
+
+export const fetchForexMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {
+    return fetchMasterDataDto('FSP');
+};
 

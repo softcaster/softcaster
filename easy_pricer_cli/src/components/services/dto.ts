@@ -203,4 +203,17 @@ export interface AccountDetailsBalanceDto {
     totalCredit: number;
 }
 
+export interface GenericMasterDataDto {
+    genericMasterDataId: number;
+    code: string;
+    description: string;
+    classIdentity: string;
+}
+
+export const DEFAULT_GMD_DTO: GenericMasterDataDto = {
+    genericMasterDataId: 0,
+    code: '',
+    description: '',
+    classIdentity: ''
+}
 
