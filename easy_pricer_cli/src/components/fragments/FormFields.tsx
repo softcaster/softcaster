@@ -15,7 +15,7 @@ export const CounterpartyField = ({ value, options, onChange }: CounterpartyFiel
         <Dropdown
             value={value}
             options={options}
-            dataKey="idCounterparty"
+            dataKey="genericMasterDataId"
             optionLabel="description"
             onChange={(e) => onChange(e.value)}
             placeholder="Select Counterparty"
@@ -54,7 +54,7 @@ export const PositionField = ({ value, options, onChange }: PositionFieldProps) 
         <Dropdown
             value={value}
             options={options}
-            dataKey="idPosition"
+            dataKey="genericMasterDataId"
             optionLabel="code"
             onChange={(e) => onChange(e.value)}
             placeholder="Select Position"
@@ -139,7 +139,7 @@ export const InstrumentField = ({ label, value, options, onChange
         <Dropdown
             value={value}
             options={options}
-            dataKey="idMasterData"
+            dataKey="genericMasterDataId"
             optionLabel="code"
             onChange={(e) => onChange(e.value)}
             placeholder={`Select ${label}`}

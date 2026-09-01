@@ -19,9 +19,9 @@ export const BondFutureForm = ({ data, masterDataList, positions, counterparties
     if (!data) return null;
 
     // 1. ADATTATORI IN LETTURA: Trovano l'oggetto intero nelle liste usando gli ID del DTO
-    const currentInstrument = masterDataList.find(m => m.idMasterData === data.masterDataId) || null;
-    const currentCounterparty = counterparties.find(c => c.idCounterparty === data.counterpartyId) || null;
-    const currentPosition = positions.find(p => p.idPosition === data.positionMdId) || null;
+    const currentInstrument = masterDataList.find(m => m.genericMasterDataId === data.masterDataId) || null;
+    const currentCounterparty = counterparties.find(c => c.genericMasterDataId === data.counterpartyId) || null;
+    const currentPosition = positions.find(p => p.genericMasterDataId === data.positionMdId) || null;
 
     return (
         <div className="surface-ground p-3 border-bottom-1 surface-border">
@@ -36,7 +36,7 @@ export const BondFutureForm = ({ data, masterDataList, positions, counterparties
                         // Sincronizza l'ID e i campi descrittivi ibridi nel DTO
                         onChange({
                             ...data,
-                            masterDataId: selectedInstrument ? selectedInstrument.idMasterData : null,
+                            masterDataId: selectedInstrument ? selectedInstrument.genericMasterDataId : null,
                             masterDataCode: selectedInstrument ? selectedInstrument.code : null,
                             masterDataDesc: selectedInstrument ? selectedInstrument.description : null
                         });
@@ -58,7 +58,7 @@ export const BondFutureForm = ({ data, masterDataList, positions, counterparties
                     onChange={(selectedCounterparty: any) => {
                         onChange({
                             ...data,
-                            counterpartyId: selectedCounterparty ? selectedCounterparty.idCounterparty : null,
+                            counterpartyId: selectedCounterparty ? selectedCounterparty.genericMasterDataId : null,
                             counterpartyCode: selectedCounterparty ? selectedCounterparty.code : null,
                             counterpartyDesc: selectedCounterparty ? selectedCounterparty.description : null
                         });
@@ -71,7 +71,7 @@ export const BondFutureForm = ({ data, masterDataList, positions, counterparties
                     onChange={(selectedPosition: any) => {
                         onChange({
                             ...data,
-                            positionMdId: selectedPosition ? selectedPosition.idPosition : null,
+                            positionMdId: selectedPosition ? selectedPosition.genericMasterDataId : null,
                             positionMdCode: selectedPosition ? selectedPosition.code : null
                         });
                     }}

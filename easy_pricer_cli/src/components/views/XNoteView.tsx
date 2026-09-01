@@ -1,13 +1,13 @@
-import { GenericAssetView } from './GenericAssetView';
+import { GenericAssetViewDto } from './GenericAssetViewDto';
 import { BondForm } from '../fragments/BondForm';
 import { GenericTxnTable } from '../fragments/GenericTxnTable';
-import { findAllSmdByAssetClassXRN } from '../services/services';
+import { fetchXRNMasterDataDto } from '../services/services';
 import { DEFAULT_TXN_DTO } from '../services/dto';
 
 const XNoteView = () => (
-    <GenericAssetView
+    <GenericAssetViewDto
         assetClass="XRN"
-        fetchMasterData={findAllSmdByAssetClassXRN}
+        fetchMasterData={fetchXRNMasterDataDto}
         defaultTxn={DEFAULT_TXN_DTO}
         FormComponent={BondForm}
         TableComponent={GenericTxnTable}

@@ -1595,3 +1595,19 @@ export const fetchForexMasterDataDto = async (): Promise<GenericMasterDataDto[]>
     return fetchMasterDataDto('FSP');
 };
 
+export const fetchFxFutureMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {
+    return fetchMasterDataDto('FFU');
+};
+
+export const fetchBondMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {
+    return fetchMasterDataDto('XRB');
+};
+
+export const fetchXRNMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {
+    return fetchMasterDataDto('XRN');
+};
+
+export const fetchBondFutureMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {
+    return fetchMasterDataDto('BFU');
+};
+

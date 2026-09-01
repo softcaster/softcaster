@@ -1,13 +1,13 @@
-import { GenericAssetView } from './GenericAssetView';
+import { GenericAssetViewDto } from './GenericAssetViewDto';
 import { FxFutureForm } from '../fragments/FxFutureForm';
 import { GenericTxnTable } from '../fragments/GenericTxnTable';
-import { fetchFxFutureMasterData } from '../services/services';
+import { fetchFxFutureMasterDataDto } from '../services/services';
 import { DEFAULT_TXN_DTO } from '../services/dto';
 
 const FxFutureView = () => (
-    <GenericAssetView
+    <GenericAssetViewDto
         assetClass="FFU"
-        fetchMasterData={fetchFxFutureMasterData}
+        fetchMasterData={fetchFxFutureMasterDataDto}
         defaultTxn={DEFAULT_TXN_DTO}
         FormComponent={FxFutureForm}
         TableComponent={GenericTxnTable}

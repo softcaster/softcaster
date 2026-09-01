@@ -1,14 +1,14 @@
 // src/components/ForexView.tsx
-import { GenericAssetView } from './GenericAssetView';
+import { GenericAssetViewDto } from './GenericAssetViewDto';
 import { ForexForm } from '../fragments/ForexForm';
 import { GenericTxnTable } from '../fragments/GenericTxnTable';
-import { fetchForexMasterData } from '../services/services';
+import { fetchForexMasterDataDto } from '../services/services';
 import { DEFAULT_TXN_DTO } from '../services/dto';
 
 const ForexView = () => (
-    <GenericAssetView
+    <GenericAssetViewDto
         assetClass="FSP"
-        fetchMasterData={fetchForexMasterData}
+        fetchMasterData={fetchForexMasterDataDto}
         defaultTxn={DEFAULT_TXN_DTO}
         FormComponent={ForexForm}
         TableComponent={GenericTxnTable}
