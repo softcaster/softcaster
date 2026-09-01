@@ -1,8 +1,10 @@
 package org.softcaster.core.data;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.softcaster.core.dto.MasterDataDto;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,5 +68,27 @@ public class MasterDataDAO {
     public List<MasterData> findByCriteria(String code, Date maturityLessEq, Date maturityGreatEq) {
         Specification<MasterData> spec = MasterDataSpecifications.withFilters(code, maturityLessEq, maturityGreatEq);
         return repository.findAll(spec);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MasterData> findAllByAssetClass(String code) {
+        return repository.findAllByAssetClass(code);
+    }
+
+    public List<MasterDataDto> findAllDtoByAssetClass(String code) {
+        List<MasterData> mdList = findAllByAssetClass(code);
+        List<MasterDataDto> mdDtoList = null;
+        if (mdList != null && !mdList.isEmpty()) {
+            mdDtoList = new ArrayList<>();
+            MasterDataDto dto;
+            for(MasterData md: mdList) {
+                dto = new MasterDataDto();
+                dto.setGenericMasterDataId(md.getIdMasterData());
+                dto.setCode(md.getCode());
+                dto.setDescription(md.getDescription());
+                mdDtoList.add(dto);
+            }
+        }
+        return mdDtoList;
     }
 }

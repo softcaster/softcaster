@@ -34,4 +34,6 @@ public interface MasterDataRepository extends JpaRepository<MasterData, Integer>
 
     public List<MasterData> findAll(Specification<MasterData> spec);
 
+    @Query("SELECT md FROM MasterData md WHERE md.assetClass.code = :code ORDER BY md.maturityDate ASC")
+    public List<MasterData> findAllByAssetClass(String code);
 }
