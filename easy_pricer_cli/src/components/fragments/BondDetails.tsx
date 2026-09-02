@@ -1,6 +1,9 @@
 import { Card } from 'primereact/card';
+import type {
+    SecurityMasterDataDto
+} from '../services/dto';
 
-export const BondDetails = ({ data }: { data: any }) => {
+export const BondDetails = ({ data }: { data: SecurityMasterDataDto }) => {
     if (!data) return null; // Non mostra nulla se non è selezionato un bond
 
     // Funzione helper per le righe di dati (stile etichetta : valore)
@@ -17,7 +20,7 @@ export const BondDetails = ({ data }: { data: any }) => {
             <div className="col-12 md:col-4">
                 <Card title="GENERAL INFORMATION" className="h-full border-top-3 border-blue-500 shadow-2">
                     <InfoRow label="Type" value="Bonds" />
-                    <InfoRow label="Sub type" value={data.assetClass.code} />
+                    <InfoRow label="Sub type" value={data.assetClass} />
                     <InfoRow label="ISIN Code" value={data.code} />
                     <InfoRow label="Issue description" value={data.description} />
                 </Card>
@@ -26,9 +29,9 @@ export const BondDetails = ({ data }: { data: any }) => {
             {/* 2. ISSUER INFORMATION */}
             <div className="col-12 md:col-4">
                 <Card title="ISSUER INFORMATION" className="h-full border-top-3 border-orange-500 shadow-2">
-                    <InfoRow label="Issuer name" value={data.issuer.shortIssuerName} />
-                    <InfoRow label="Issuer Type" value={data.issuer.longIssuerName} />
-                    <InfoRow label="Issuer country" value={data.issuer.country.alfa3Code} />
+                    <InfoRow label="Issuer name" value={data.shortIssuerName} />
+                    <InfoRow label="Issuer Type" value={data.longIssuerName} />
+                    <InfoRow label="Issuer country" value={data.country} />
                 </Card>
             </div>
 
@@ -45,7 +48,7 @@ export const BondDetails = ({ data }: { data: any }) => {
             <div className="col-12 md:col-4">
                 <Card title="COUPON" className="h-full border-top-3 border-blue-500 shadow-2">
                     <InfoRow label="Rate %" value={data.interestRate} />
-                    <InfoRow label="Frequency" value={data.frequency.code} />
+                    <InfoRow label="Frequency" value={data.frequency} />
                     <InfoRow label="First coupon date" value={data.firstCouponPaymentDate} />
                     <InfoRow label="First coupon" value={data.firstCouponRate} />
                 </Card>

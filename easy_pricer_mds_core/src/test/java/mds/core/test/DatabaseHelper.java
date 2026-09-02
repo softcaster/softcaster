@@ -3,10 +3,12 @@ package mds.core.test;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import org.softcaster.core.data.CurrencyDAO;
+import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.account.GlAccount;
 import org.softcaster.core.data.account.GlAccountDAO;
 import org.softcaster.core.data.account.GlAccountSlots;
 import org.softcaster.core.data.account.GlAccountSlotsDAO;
+import org.softcaster.core.dto.SecurityMasterDataDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -36,6 +38,8 @@ public class DatabaseHelper implements CommandLineRunner {
     private GlAccountDAO glAccountDAO;
     @Autowired
     private GlAccountSlotsDAO glAccountSlotsDAO;
+    @Autowired
+    private SecurityMasterDataDAO securityMasterDataDAO;
 
     private void updateGlAccountSlot(GlAccount account, List<org.softcaster.core.data.Currency> currencies) {
         if (!account.isPostable()) {
@@ -54,15 +58,16 @@ public class DatabaseHelper implements CommandLineRunner {
         }
         glAccountDAO.saveOrUpdate(account);
     }
-    
+
     public static void main(String[] args) {
         // Avvia l'applicazione tramite Spring Boot (NON fare "new DatabaseHelper()")
         SpringApplication.run(DatabaseHelper.class, args);
     }
-    
+
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+
         // Seleziono le divise presenti nel database
         List<org.softcaster.core.data.Currency> currencies = currencyDAO.findAll();
         // Seleziono i conti presenti su database
@@ -71,6 +76,7 @@ public class DatabaseHelper implements CommandLineRunner {
         for (GlAccount account : accounts) {
             updateGlAccountSlot(account, currencies);
         }
+
     }
 
 }

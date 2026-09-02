@@ -3,6 +3,7 @@ package org.softcaster.easy_pricer_srv.controller;
 import java.util.List;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
+import org.softcaster.core.dto.SecurityMasterDataDto;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -31,6 +32,15 @@ public class SecurityMasterDataRestController {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity(listaSecurityMasterData, HttpStatus.OK);
+    }
+
+    @GetMapping("/security_master_data/r11")
+    public ResponseEntity<List<SecurityMasterDataDto>> findAllDto() {
+        List<SecurityMasterDataDto> dtoList = dao.findAllDto();
+        if (dtoList == null || dtoList.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dtoList);
     }
 
     @GetMapping("/security_master_data/r02/{id}")
@@ -77,7 +87,7 @@ public class SecurityMasterDataRestController {
         }
         return new ResponseEntity(listaSecurityMasterData, HttpStatus.OK);
     }
-    
+
     // save/update record
     @PostMapping(value = "/security_master_data")
     public ResponseEntity saveOrUpdate(@RequestBody SecurityMasterData securityMasterData) {

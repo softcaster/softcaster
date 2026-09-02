@@ -210,10 +210,24 @@ export interface GenericMasterDataDto {
     classIdentity: string;
 }
 
-export const DEFAULT_GMD_DTO: GenericMasterDataDto = {
-    genericMasterDataId: 0,
-    code: '',
-    description: '',
-    classIdentity: ''
+export interface MasterDataDto extends GenericMasterDataDto {
+
+    assetClass: string;
+    currency: string;
+    issuePrice: number;
+    redempionPrice: number;
+    interestRate: number;
+    issueDate: Date;
+    maturityDate: Date;
+}
+
+export interface SecurityMasterDataDto extends MasterDataDto {
+
+    shortIssuerName: string;
+    longIssuerName: string;
+    frequency: string;
+    country: string;
+    firstCouponPaymentDate: Date;
+    firstCouponRate: number;
 }
 

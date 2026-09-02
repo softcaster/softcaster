@@ -7,7 +7,8 @@ import type {
     PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem, CmdFutureMasterData
 } from '../data/schema'
 import type {
-    FinancialTxnDto, PositionProspectDto, AccountDetailsBalanceDto, YieldCurveDto, GenericMasterDataDto
+    FinancialTxnDto, PositionProspectDto, AccountDetailsBalanceDto, YieldCurveDto, GenericMasterDataDto,
+    SecurityMasterDataDto
 } from '../services/dto';
 
 import type {
@@ -1601,6 +1602,14 @@ export const fetchFxFutureMasterDataDto = async (): Promise<GenericMasterDataDto
 
 export const fetchXRBMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {
     return fetchMasterDataDto('XRB');
+};
+export const fetchXRBMasterDataDto2 = async (): Promise<SecurityMasterDataDto[]> => {
+    try {
+        return await apiRequest<SecurityMasterDataDto[]>('/security_master_data/r11', 'GET');
+    } catch (error) {
+        console.error('Failed to fetch master data:', error);
+        return [];
+    }
 };
 
 export const fetchXRNMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {

@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.converters.AccountNatureConverter;
 import org.softcaster.core.data.converters.FinancialStatementTypeConverter;
 import org.softcaster.core.data.converters.NormalBalanceConverter;

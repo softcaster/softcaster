@@ -2,11 +2,11 @@
 import { GenericPricingView } from './GenericPricingView';
 import { BondPForm } from '../fragments/BondPForm';
 import { BondDetails } from '../fragments/BondDetails';
-import { fetchXRBMasterDataDto } from '../services/services';
+import { fetchXRBMasterDataDto2 } from '../services/services';
 
 const BondPView = () => (
     <GenericPricingView
-        fetchMasterData={fetchXRBMasterDataDto}
+        fetchMasterData={fetchXRBMasterDataDto2}
         FormComponent={BondPForm}
         FormDetail={BondDetails}
     />
