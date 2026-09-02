@@ -4,13 +4,11 @@ import { Calendar } from 'primereact/calendar';
 import { InstrumentField, YCurveField } from './FormFields.tsx';
 import { useState } from 'react';
 
-import type { ForwardPricingRequest, ForwardPricingResponse, YieldCurveDto } from '../services/dto.ts';
-import type {
-    MasterData
-} from '../data/schema.ts';
+import type { ForwardPricingRequest, ForwardPricingResponse, YieldCurveDto, GenericMasterDataDto } from '../services/dto.ts';
+ '../data/schema.ts';
 
 interface FxFuturePricingFormProps {
-    masterDataList: MasterData[];
+    masterDataList: GenericMasterDataDto[];
     yieldCurveList: YieldCurveDto[];
     data: ForwardPricingRequest;
     results: ForwardPricingResponse;
@@ -30,7 +28,7 @@ export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, o
     const updateRequest = (field: string, value: any) => {
         onChange({ ...data, [field]: value });
     };
-    const [masterData, setMasterData] = useState<MasterData>();
+    const [masterData, setMasterData] = useState<GenericMasterDataDto>();
 
     return (
         <div className="surface-ground p-3 border-bottom-1 surface-border">

@@ -17,7 +17,9 @@ export const BondFutureDetails = ({ data }: { data: any }) => {
             <div className="col-12 md:col-4">
                 <Card title="GENERAL INFORMATION" className="h-full border-top-3 border-blue-500 shadow-2">
                     <InfoRow label="Type" value="Bond Futures" />
+                    {/*
                     <InfoRow label="Sub type" value={data.assetClass.code} />
+                    */}
                     <InfoRow label="ISIN Code" value={data.code} />
                     <InfoRow label="Issue description" value={data.description} />
                 </Card>

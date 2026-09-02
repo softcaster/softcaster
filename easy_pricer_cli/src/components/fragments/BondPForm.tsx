@@ -3,13 +3,10 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { InstrumentField } from './FormFields';
 import { useState } from 'react';
-import type { BondPricingRequest, BondPricingResponse } from '../services/dto.ts';
-import type {
-    MasterData
-} from '../data/schema';
+import type { BondPricingRequest, BondPricingResponse,GenericMasterDataDto} from '../services/dto.ts';
 
 interface BondPricingFormProps {
-    masterDataList: MasterData[];
+    masterDataList: GenericMasterDataDto[];
     data: BondPricingRequest;
     results: BondPricingResponse;
     onChange: (data: BondPricingRequest) => void;
@@ -29,7 +26,7 @@ export const BondPForm = ({ masterDataList , data, results, onChange }: BondPric
     const updateRequest = (field: string, value: any) => {
         onChange({ ...data, [field]: value });
     };
-    const [masterData, setMasterData] = useState<MasterData>();
+    const [masterData, setMasterData] = useState<GenericMasterDataDto>();
 
     return (
         <div className="surface-ground p-3 border-bottom-1 surface-border">
