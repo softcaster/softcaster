@@ -32,7 +32,7 @@ public class BondFutureMasterData extends FutureMasterData {
     @Column(name = "initial_margin")
     private Double initialMargin;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "master_data", nullable = false) // FK in child table deliverable_bonds
     private List<DeliverableBonds> deliverables = new ArrayList<>();

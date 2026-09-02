@@ -132,7 +132,7 @@ public class AccountingContext {
             // Inseriamo la linea di storno nel DSL contabile corrente.
             // Passiamo l'ID dello slot convertito in stringa con un prefisso speciale "SLOT:" 
             // per istruire il metodo addJournalEntrie a non fare il lookup del mapping.
-            String slotKey = "SLOT:" + oldLine.getAccountSlot();
+            String slotKey = "SLOT:" + oldLine.getAccountSlot() + "@" + oldLine.getDescription();
             if (sameBalance == NormalBalance.DEBIT) {
                 this.journal.debit(slotKey, negativeAmount, oldLine.getCurrency());
             } else {

@@ -48,7 +48,7 @@ public class SecurityMasterData extends MasterData {
     @Column(name = "first_coupon_payment_date")
     private java.sql.Date firstCouponPaymentDate;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "master_data", nullable = false) // FK in child table cash_flow_item
     private List<CashFlowItem> cashFlows = new ArrayList<>();    

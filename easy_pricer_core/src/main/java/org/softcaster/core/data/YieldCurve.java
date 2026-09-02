@@ -44,7 +44,7 @@ public class YieldCurve implements Serializable {
     @JoinColumn(name = "calendar", nullable = true)
     private Calendar calendar;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "yield_curve", nullable = false) // FK in child table yield_curve_item
     private List<YieldCurveItem> items = new ArrayList<>();

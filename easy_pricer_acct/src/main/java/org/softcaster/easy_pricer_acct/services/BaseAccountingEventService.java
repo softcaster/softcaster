@@ -168,16 +168,19 @@ public abstract class BaseAccountingEventService {
         jel.setCreditAmount(0.);
 
         Integer finalAccountSlotId;
+        String glAccountDescription = "";
         String accountKey = line.account();
         // Controllo se è una linea di storno
         if (accountKey != null && accountKey.startsWith("SLOT:")) {
             finalAccountSlotId = Integer.valueOf(accountKey.substring(5));
+            glAccountDescription = finalAccountSlotId.toString();
         } else {
             // Gestione standard
             GlAccount glAccount = glAccountDAO.findByCode(line.account());
             if (glAccount == null) {
                 throw new AccountingException(" Invalid account!");
             }
+            glAccountDescription = glAccount.getCode();
             // Conto e divisa determinano la slot da utilizzare
             GlAccountSlots glAccountSlots = glAccountSlotsDAO.findByAccountAndCurrency(glAccount.getAccountId(), line.currency());
             if (glAccountSlots == null) {
@@ -188,6 +191,7 @@ public abstract class BaseAccountingEventService {
         // Conto e divisa determinano la slot da utilizzare
         jel.setAccountSlot(finalAccountSlotId);
         jel.setCurrency(line.currency());
+        jel.setDescription(glAccountDescription);
         switch (line.balance()) {
             case DEBIT ->
                 jel.setDebitAmount(line.amount());
