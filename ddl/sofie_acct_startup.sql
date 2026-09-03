@@ -86,16 +86,18 @@ INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_accoun
 INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
     VALUES(nextval('account_mapping_s'), 'OBS_CLEARING', 4, 91); -- CHF
 
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
-    VALUES(nextval('account_mapping_s'),'BOND_ASSET',1,33); -- 130010 Debt Securities - Sovereign Bonds (EUR)
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
-    VALUES(nextval('account_mapping_s'),'ACCRUED_INTEREST',1,41); -- 190010 Accrued Interest Receivable (EUR)
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
-    VALUES(nextval('account_mapping_s'),'SETTLEMENT_LIAB',1,50); -- 240050 Due to Brokers / Settlement Liabilities (EUR)
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
-    VALUES(nextval('account_mapping_s'),'INTEREST_INCOME',1,60); -- 420020 Interest Income - EUR (Coupons)
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
-    VALUES(nextval('account_mapping_s'),'CASH_ACCOUNT',1,24); -- 100010 Cash and Cash Equivalents - Base Currency (EUR)
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'BOND_ASSET',1,33); -- 130010 Debt Securities - Sovereign Bonds 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'ACCRUED_INTEREST',1,41); -- 190010 Accrued Interest Receivable 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'SETTLEMENT_LIAB',1,50); -- 240050 Due to Brokers / Settlement Liabilities 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'INTEREST_INCOME',1,60); -- 420020 Interest Income
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'CASH_ACCOUNT',1,24); -- 100010 Cash and Cash Equivalents
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
+    VALUES(nextval('account_mapping_s'), 'BOND_COMMITMENT', 1, 89);
 
 INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
     VALUES(nextval('account_mapping_s'),'INITIAL_MARGIN',2,30); -- 120055 Initial Margin Deposit - USD

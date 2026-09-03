@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useActions } from '../../context/ActionContext';
-import type { PositionMasterData, Counterparty, AssetClass } from '../data/schema';
 import type {
-    ProspectFilter
+    ProspectFilter,GenericMasterDataDto
 } from '../services/dto';
 import { downloadPositionProspectPdf } from '../services/services';
 
 export function useProspectView(fetchProspectData: (filter: ProspectFilter) => Promise<any[]>) {
-    const [positionList, setPositionList] = useState<PositionMasterData[]>([]);
-    const [counterpartyList, setCounterpartyList] = useState<Counterparty[]>([]);
-    const [assetClassList, setAssetClassList] = useState<AssetClass[]>([]);
+    const [positionList, setPositionList] = useState<GenericMasterDataDto[]>([]);
+    const [counterpartyList, setCounterpartyList] = useState<GenericMasterDataDto[]>([]);
+    const [assetClassList, setAssetClassList] = useState<GenericMasterDataDto[]>([]);
     const [prospectData, setProspectData] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -27,14 +26,14 @@ export function useProspectView(fetchProspectData: (filter: ProspectFilter) => P
 
     const loadAnagrafiche = async () => {
         try {
-            const { fetchPositionMasterData, fetchCounterparty, fetchAssetClass } = await import('../services/services');
+            const { fetchPositionsDto, fetchCounterpartiesDto, fetchAssetClassDto } = await import('../services/services');
 
             // Blindiamo il Promise.all inserendo un fallback per ciascuna chiamata.
             // Se il server è spento, restituiscono un array vuoto [] anziché far saltare l'intero hook.
             const [pos, cp, ac] = await Promise.all([
-                fetchPositionMasterData().catch(() => []),
-                fetchCounterparty().catch(() => []),
-                fetchAssetClass().catch(() => [])
+                fetchPositionsDto().catch(() => []),
+                fetchCounterpartiesDto().catch(() => []),
+                fetchAssetClassDto().catch(() => [])
             ]);
 
             setPositionList(pos || []);

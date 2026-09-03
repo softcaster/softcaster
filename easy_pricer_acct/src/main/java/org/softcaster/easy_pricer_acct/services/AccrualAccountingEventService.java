@@ -61,7 +61,7 @@ public class AccrualAccountingEventService extends BaseAccountingEventService {
                 }
                 // Inizializzazione del DSL contabile e del contesto
                 JournalDsl dsl = new JournalDsl();
-                AccountingContext ctx = new AccountingContext(null, dsl, masterData.getCurrency().getIdCurrency(), eventAccrual);
+                AccountingContext ctx = new AccountingContext(null, dsl, masterData.getCurrency().getIdCurrency(), 1, eventAccrual);
 
                 // Predisposizione dei Bindings condivisibili dagli script
                 Bindings bindings = new SimpleBindings();

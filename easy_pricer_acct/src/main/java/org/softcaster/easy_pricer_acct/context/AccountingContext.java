@@ -11,8 +11,6 @@ import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventAccruals;
-import org.softcaster.core.data.account.GlAccountDAO;
-import org.softcaster.core.data.account.GlAccountSlots;
 import org.softcaster.core.data.account.JournalEntryLines;
 import org.softcaster.core.data.account.JournalEntryLinesDAO;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
@@ -26,12 +24,14 @@ public class AccountingContext {
     private final JournalDsl journal;
     private final AccountingEvent event;
     private AccountingPhase accountingPhase;
-    private Integer currency;
+    private final Integer masterDatacurrency;
+    private final Integer accountingCurrency;
 
-    public AccountingContext(FinancialTxn txn, JournalDsl journal, Integer currency, AccountingEvent event) {
+    public AccountingContext(FinancialTxn txn, JournalDsl journal, Integer masterDatacurrency, Integer accountingCurrency, AccountingEvent event) {
         this.txn = txn;
         this.journal = journal;
-        this.currency = currency;
+        this.masterDatacurrency = masterDatacurrency;
+        this.accountingCurrency = accountingCurrency;
         this.event = event;
         this.accountingPhase = AccountingPhase.NONE;
     }
@@ -100,11 +100,6 @@ public class AccountingContext {
                 .orElse(0.0);
     }
 
-    String getAccountCode(Integer id) {
-        GlAccountDAO glAccountDAO = ApplicationContextHolder.getBean(GlAccountDAO.class);
-        return glAccountDAO.findByAccountId(id).getCode();
-    }
-
     /**
      * Recupera le vecchie linee dal database tramite il DAO/Repository e genera
      * lo storno ad importo invertito nel DSL.
@@ -158,14 +153,36 @@ public class AccountingContext {
     /**
      * @return the currency
      */
-    public Integer getCurrency() {
-        return currency;
+    public Integer getMasterDataCurrency() {
+        return masterDatacurrency;
     }
 
     /**
-     * @param currency the currency to set
+     * @return the systemCurrency
      */
-    public void setCurrency(Integer currency) {
-        this.currency = currency;
+    public Integer getAccountingCurrency() {
+        return accountingCurrency;
+    }
+
+    public double getMultiplier() {
+        if(txn != null)
+            return txn.getMasterData().getMultiplier();
+        else
+            return 1.;
+    }
+    
+    // TO_DO
+    public int getCurrencyScale(boolean isAccounting) {
+        return 2;
+    }
+    
+    // TO_DO
+    public double getFxRate() {
+        return 1.;
+    }
+    
+    // TO_DO
+    public double getOutstandingNominal() {
+        return 1.;
     }
 }

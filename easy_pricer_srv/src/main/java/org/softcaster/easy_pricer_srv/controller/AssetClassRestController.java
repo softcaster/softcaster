@@ -3,6 +3,7 @@ package org.softcaster.easy_pricer_srv.controller;
 import java.util.List;
 import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
+import org.softcaster.core.dto.AssetClassDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,15 @@ public class AssetClassRestController {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity(listaAssetClass, HttpStatus.OK);
+    }
+
+    @GetMapping("/asset_class/r11")
+    public ResponseEntity<List<AssetClassDto>> findAllDto() {
+        List<AssetClassDto> dtoList =  dao.findAllDto();
+        if (dtoList == null || dtoList.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dtoList);
     }
 
     @GetMapping("/asset_class/r02/{id}")

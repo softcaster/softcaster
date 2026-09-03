@@ -21,7 +21,8 @@ public interface JournalEntriesRepository extends JpaRepository<JournalEntries, 
     FROM journal_entries je
     JOIN accounting_events ae ON je.accounting_event = ae.event_id
     JOIN journal_entry_lines jel ON jel.journal_entry = je.journal_entry_id
-    JOIN gl_accounts ga ON jel.gl_account = ga.account_id
+    JOIN gl_account_slots gas ON jel.account_slot = gas.account_slot_id
+    JOIN gl_accounts ga ON gas.account = ga.account_id
     WHERE ae.position_detail IN :positionDetails
     GROUP BY ae.position_detail, ga.account_id, ga.code, ga.description
     ORDER BY ga.code

@@ -167,49 +167,61 @@ public abstract class BaseAccountingEventService {
         jel.setDebitAmount(0.);
         jel.setCreditAmount(0.);
 
-        Integer finalAccountSlotId;
+        Integer finalAccountSlotId = 0;
         String glAccountDescription = "";
         String accountKey = line.account();
         // Controllo se è una linea di storno
         if (accountKey != null && accountKey.startsWith("SLOT:")) {
-            finalAccountSlotId = Integer.valueOf(accountKey.substring(5));
-            glAccountDescription = finalAccountSlotId.toString();
-        } else {
+            String tokens[] = accountKey.split("SLOT:");
+            if (tokens != null) {
+                String parts[] = tokens[1].split("@");
+                if (parts != null) {
+                    finalAccountSlotId = Integer.valueOf(parts[0]);
+                    glAccountDescription = parts[1];
+                }
+            }
+        }
+    
+        else {
             // Gestione standard
             GlAccount glAccount = glAccountDAO.findByCode(line.account());
-            if (glAccount == null) {
-                throw new AccountingException(" Invalid account!");
-            }
-            glAccountDescription = glAccount.getCode();
-            // Conto e divisa determinano la slot da utilizzare
-            GlAccountSlots glAccountSlots = glAccountSlotsDAO.findByAccountAndCurrency(glAccount.getAccountId(), line.currency());
-            if (glAccountSlots == null) {
-                throw new AccountingException(" Invalid slot!");
-            }
-            finalAccountSlotId = glAccountSlots.getAccountSlotId();
+        if (glAccount == null) {
+            throw new AccountingException(" Invalid account!");
         }
+        glAccountDescription = glAccount.getCode();
         // Conto e divisa determinano la slot da utilizzare
-        jel.setAccountSlot(finalAccountSlotId);
-        jel.setCurrency(line.currency());
-        jel.setDescription(glAccountDescription);
-        switch (line.balance()) {
-            case DEBIT ->
-                jel.setDebitAmount(line.amount());
-            case CREDIT ->
-                jel.setCreditAmount(line.amount());
-            default ->
-                throw new AccountingException(" Invalid balance!");
+        GlAccountSlots glAccountSlots = glAccountSlotsDAO.findByAccountAndCurrency(glAccount.getAccountId(), line.currency());
+        if (glAccountSlots == null) {
+            throw new AccountingException(" Invalid slot!");
         }
+        finalAccountSlotId = glAccountSlots.getAccountSlotId();
+    }
+    // Conto e divisa determinano la slot da utilizzare
 
-        return jel;
+    jel.setAccountSlot (finalAccountSlotId);
+
+    jel.setCurrency (line.currency
+
+    ());
+    jel.setDescription (glAccountDescription);
+    switch (line.balance()) {
+        case DEBIT ->
+            jel.setDebitAmount(line.amount());
+        case CREDIT ->
+            jel.setCreditAmount(line.amount());
+        default ->
+            throw new AccountingException(" Invalid balance!");
     }
 
-    /**
-     * Controlla che ogni valuta coinvolta nel DSL sia perfettamente quadrata a
-     * zero. Se una valuta è sbilanciata, lancia una AccountingException
-     * bloccando il flusso.
-     */
-    private void checkCurrencyBalancing(List<JournalLine> lines) {
+    return jel ;
+}
+
+/**
+ * Controlla che ogni valuta coinvolta nel DSL sia perfettamente quadrata a
+ * zero. Se una valuta è sbilanciata, lancia una AccountingException bloccando
+ * il flusso.
+ */
+private void checkCurrencyBalancing(List<JournalLine> lines) {
         Map<Integer, Double> balanceMap = new HashMap<>();
 
         for (JournalLine line : lines) {

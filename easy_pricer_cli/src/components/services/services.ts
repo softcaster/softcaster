@@ -1583,6 +1583,15 @@ export const fetchCounterpartiesDto = async (): Promise<GenericMasterDataDto[]> 
     }
 };
 
+export const fetchAssetClassDto = async (): Promise<GenericMasterDataDto[]> => {
+    try {
+        return await apiRequest<GenericMasterDataDto[]>('/asset_class/r11', 'GET');
+    } catch (error) {
+        console.error('Failed to fetch counterparties:', error);
+        return [];
+    }
+};
+
 export const fetchMasterDataDto = async (assetClass: string): Promise<GenericMasterDataDto[]> => {
     try {
         return await apiRequest<GenericMasterDataDto[]>('/master_data/r01/' + assetClass, 'GET');
