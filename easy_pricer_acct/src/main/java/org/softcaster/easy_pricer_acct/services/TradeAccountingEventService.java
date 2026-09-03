@@ -54,7 +54,8 @@ public class TradeAccountingEventService extends BaseAccountingEventService {
 
             // Inizializzazione del DSL contabile e del contesto
             JournalDsl dsl = new JournalDsl();
-            AccountingContext ctx = new AccountingContext(txn, dsl, txn.getMasterData().getCurrency().getIdCurrency(), 1, event);
+            AccountingContext ctx = new AccountingContext(txn, dsl, txn.getMasterData().getMasterDataCcy().getIdCurrency(),
+                    txn.getMasterData().getSettlementCcy().getIdCurrency(), event);
 
             // Predisposizione dei Bindings condivisibili dagli script
             Bindings bindings = new SimpleBindings();

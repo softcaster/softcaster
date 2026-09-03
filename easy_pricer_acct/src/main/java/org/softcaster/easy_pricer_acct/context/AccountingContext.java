@@ -25,13 +25,13 @@ public class AccountingContext {
     private final AccountingEvent event;
     private AccountingPhase accountingPhase;
     private final Integer masterDatacurrency;
-    private final Integer accountingCurrency;
+    private final Integer settlementCurrency;
 
-    public AccountingContext(FinancialTxn txn, JournalDsl journal, Integer masterDatacurrency, Integer accountingCurrency, AccountingEvent event) {
+    public AccountingContext(FinancialTxn txn, JournalDsl journal, Integer masterDatacurrency, Integer settlementCurrency, AccountingEvent event) {
         this.txn = txn;
         this.journal = journal;
         this.masterDatacurrency = masterDatacurrency;
-        this.accountingCurrency = accountingCurrency;
+        this.settlementCurrency = settlementCurrency;
         this.event = event;
         this.accountingPhase = AccountingPhase.NONE;
     }
@@ -160,8 +160,8 @@ public class AccountingContext {
     /**
      * @return the systemCurrency
      */
-    public Integer getAccountingCurrency() {
-        return accountingCurrency;
+    public Integer getSettlementCurrency() {
+        return settlementCurrency;
     }
 
     public double getMultiplier() {

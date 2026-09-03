@@ -101,4 +101,14 @@ public class ForexMasterData extends MasterData {
 
         return currencies;
     }
+    
+        @Override
+        public Currency getSettlementCcy() {
+            return ccy;
+        }
+
+        @Override
+        public Currency getMasterDataCcy() {
+            return bcy;
+        }
 }

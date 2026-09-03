@@ -2,124 +2,332 @@ import org.softcaster.engine.enums.TxnSide
 import org.softcaster.engine.enums.EventType
 import org.softcaster.engine.enums.AccountingPhase
 
-def txn = ctx.txn
+
+def txn   = ctx.txn
 def event = ctx.event
 
-int tradeCcy = txn.masterData.currency?.idCurrency 
-int eurCcy   = 1 // ID fisso dell'Euro
 
-// =========================================================================
-// STRATEGIA 1: FUTURE IN EURO (es. Contratti Eurex o Euro-denominati)
-// =========================================================================
-if (tradeCcy == eurCcy) {
-    String accInitMargin  = accountResolver.resolve("INITIAL_MARGIN", eurCcy)
-    String accVarMargin   = accountResolver.resolve("VARIATION_MARGIN", eurCcy)
-    String accFutLoss     = accountResolver.resolve("FUT_REALIZED_LOSS", eurCcy)
-    String accFutGain     = accountResolver.resolve("FUT_REALIZED_GAIN", eurCcy)
-    String accSettlement  = accountResolver.resolve("SETTLEMENT_LIAB", eurCcy)
+// ============================================================================
+// FUTURE ACCOUNTING
+//
+// Il Future viene contabilizzato esclusivamente nella propria
+// settlement currency.
+//
+// Esempio CME EUR/USD:
+//
+//     underlying currency = EUR
+//     settlement currency = USD
+//
+// Tutta la contabilità del Future è quindi in USD.
+//
+// La conversione nella System Currency è demandata al
+// Risk Engine Forex, che genera una successiva operazione FX.
+// ============================================================================
 
-    switch(event.eventType) {
-    case EventType.TRADE_EXECUTED:
-        // L'apertura del Future non carica il nozionale a bilancio, ma versa il deposito cauzionale
-        double marginAmt = ctx.getFutureInitialMargin()
-        if (marginAmt > 0) {
-            ctx.journal.debit(accInitMargin, marginAmt, eurCcy)
-            ctx.journal.credit(accSettlement, marginAmt, eurCcy)
-        }
-        // Future ha 0 business days, va subito a bilancio
-        ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED        
-        break
 
-    case EventType.MTM:
-        // Il Mark-to-Market quotidiano del CME/Eurex si liquida CASH (Variation Margin) -> P&L Realizzato
-        double dailyPnl = ctx.getRealizedPnl() 
-        if (dailyPnl < 0) {
-            ctx.journal.debit(accFutLoss, Math.abs(dailyPnl), eurCcy)
-            ctx.journal.credit(accVarMargin, Math.abs(dailyPnl), eurCcy)
-        } else if (dailyPnl > 0) {
-            ctx.journal.debit(accVarMargin, dailyPnl, eurCcy)
-            ctx.journal.credit(accFutGain, dailyPnl, eurCcy)
-        }
-        break
+int settlementCcy =
+ctx.getSettlementCurrency()
 
-    case EventType.SETTLEMENT:
-        ctx.accountingPhase = txn.txnAcctPhase
-        break
 
-    case EventType.TRADE_AMENDED:
-    case EventType.TRADE_CANCELED:
-    case EventType.ROLLOVER:
-        ctx.accountingPhase = txn.txnAcctPhase
-        ctx.reverseJournal()
-        break
-    }
-    return // Fine esecuzione per contratti in Euro
-}
+// ============================================================================
+// ACCOUNT RESOLUTION
+// ============================================================================
+//
+// Tutti gli account del Future sono risolti nella settlement currency.
+//
+// Nessun riferimento alla System Currency.
+// Nessun riferimento a EUR.
+// ============================================================================
 
-// =========================================================================
-// STRATEGIA 2: FUTURE IN VALUTA ESTERA (CME - USD, CHF, CAD, GBP, ecc.)
-// =========================================================================
-String accInitMargin   = accountResolver.resolve("INITIAL_MARGIN", tradeCcy)
-String accVarMargin    = accountResolver.resolve("VARIATION_MARGIN", tradeCcy)
-String accFutLoss      = accountResolver.resolve("FUT_REALIZED_LOSS", eurCcy) // Ricavo/Costo sempre in EUR a CE
-String accFutGain      = accountResolver.resolve("FUT_REALIZED_GAIN", eurCcy) // Ricavo/Costo sempre in EUR a CE
-String accSettlement   = accountResolver.resolve("SETTLEMENT_LIAB", eurCcy)
-String accPosCcy       = accountResolver.resolve("CURRENCY_POSITION", tradeCcy) 
-String accCtrlEUR      = accountResolver.resolve("POSITION_CONTROL", eurCcy)    
 
-switch(event.eventType) {
+String accInitialMargin =
+accountResolver.resolve(
+                "INITIAL_MARGIN",
+    settlementCcy)
+
+
+String accVariationMargin =
+accountResolver.resolve(
+                "VARIATION_MARGIN",
+    settlementCcy)
+
+
+String accFutureRealizedLoss =
+accountResolver.resolve(
+                "FUT_REALIZED_LOSS",
+    settlementCcy)
+
+
+String accFutureRealizedGain =
+accountResolver.resolve(
+                "FUT_REALIZED_GAIN",
+    settlementCcy)
+
+
+String accSettlementLiability =
+accountResolver.resolve(
+                "SETTLEMENT_LIAB",
+    settlementCcy)
+
+
+// ============================================================================
+// EVENT PROCESSING
+// ============================================================================
+
+switch (event.eventType) {
+
+
+    // ========================================================================
+    // TRADE EXECUTED
+    // ========================================================================
 
 case EventType.TRADE_EXECUTED:
-    double marginCcy = ctx.getFutureInitialMargin()
-    double rate = (txn.fxRate != null && txn.fxRate > 0) ? txn.fxRate : 1.0
-    double marginEUR = marginCcy / rate
 
-    if (marginCcy > 0) {
-        // Spostamento della garanzia nel blocco in valuta del contratto
-        ctx.journal.debit(accInitMargin, marginCcy, tradeCcy)
-        ctx.journal.credit(accPosCcy, marginCcy, tradeCcy)
-            
-        // Regolamento finanziario del margine convertito in Euro
-        ctx.journal.debit(accCtrlEUR, marginEUR, eurCcy)
-        ctx.journal.credit(accSettlement, marginEUR, eurCcy)
+    /*
+     * L'apertura del Future non contabilizza il nozionale.
+     *
+     * Viene contabilizzato solamente l'Initial Margin.
+     *
+     *
+     *     DR INITIAL_MARGIN
+     *     CR SETTLEMENT_LIABILITY
+     *
+     *
+     * Tutto nella settlement currency del Future.
+     */
+
+
+    BigDecimal initialMargin =
+    ctx.getFutureInitialMargin()
+
+
+    if (initialMargin != null &&
+        initialMargin.compareTo(BigDecimal.ZERO) > 0) {
+
+        ctx.journal.debit(
+            accInitialMargin,
+            initialMargin,
+            settlementCcy)
+
+        ctx.journal.credit(
+            accSettlementLiability,
+            initialMargin,
+            settlementCcy)
     }
-    // Future ha 0 business days, va subito a bilancio
-    ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED        
+
+
+    /*
+     * Il Future è cash-settled / marginato e non ha
+     * un normale settlement T+N come un bond o uno spot FX.
+     *
+     * L'Initial Margin è quindi contabilizzato
+     * direttamente.
+     */
+
+    ctx.accountingPhase =
+    AccountingPhase.OFFICIAL_POSTED
+
     break
+
+
+    // ========================================================================
+    // MTM
+    // ========================================================================
 
 case EventType.MTM:
-    // Liquidazione quotidiana del Variation Margin in valuta, specchiata sul CE in Euro
-    double dailyPnlCcy = ctx.getRealizedPnl() 
-    double rate = (txn.fxRate != null && txn.fxRate > 0) ? txn.fxRate : 1.0
-    double dailyPnlEUR = Math.abs(dailyPnlCcy) / rate
 
-    if (dailyPnlCcy < 0) {
-        // Perdita della giornata: esce liquidità dal conto dei margini di variazione
-        ctx.journal.debit(accFutLoss, dailyPnlEUR, eurCcy)
-        ctx.journal.credit(accCtrlEUR, dailyPnlEUR, eurCcy)
-            
-        ctx.journal.debit(accPosCcy, Math.abs(dailyPnlCcy), tradeCcy)
-        ctx.journal.credit(accVarMargin, Math.abs(dailyPnlCcy), tradeCcy)
-    } 
-    else if (dailyPnlCcy > 0) {
-        // Profitto della giornata: entra liquidità sul conto dei margini di variazione
-        ctx.journal.debit(accVarMargin, dailyPnlCcy, tradeCcy)
-        ctx.journal.credit(accPosCcy, dailyPnlCcy, tradeCcy)
-            
-        ctx.journal.debit(accCtrlEUR, dailyPnlEUR, eurCcy)
-        ctx.journal.credit(accFutGain, dailyPnlEUR, eurCcy)
+    /*
+     * Il Daily Mark-to-Market del Future viene regolato
+     * tramite Variation Margin.
+     *
+     * Il P&L è quindi REALIZED.
+     *
+     * IMPORTANTE:
+     *
+     * ctx.getRealizedPnl() deve restituire il P&L
+     * nella settlement currency del Future.
+     *
+     * Esempio:
+     *
+     *     CME EUR/USD
+     *     Daily P&L = +1,250 USD
+     *
+     * La contabilità rimane completamente in USD.
+     */
+
+
+    BigDecimal dailyPnl =
+    ctx.getRealizedPnl()
+
+
+    if (dailyPnl == null) {
+        dailyPnl = BigDecimal.ZERO
     }
+
+
+    // --------------------------------------------------------------------
+    // LOSS
+    // --------------------------------------------------------------------
+
+    if (dailyPnl.compareTo(BigDecimal.ZERO) < 0) {
+
+        BigDecimal loss =
+        dailyPnl.abs()
+
+
+        /*
+         * Perdita giornaliera:
+         *
+         *     DR FUT_REALIZED_LOSS
+         *     CR VARIATION_MARGIN
+         */
+
+        ctx.journal.debit(
+            accFutureRealizedLoss,
+            loss,
+            settlementCcy)
+
+        ctx.journal.credit(
+            accVariationMargin,
+            loss,
+            settlementCcy)
+    }
+
+
+    // --------------------------------------------------------------------
+    // GAIN
+    // --------------------------------------------------------------------
+
+    else if (dailyPnl.compareTo(BigDecimal.ZERO) > 0) {
+
+        /*
+         * Profitto giornaliero:
+         *
+         *     DR VARIATION_MARGIN
+         *     CR FUT_REALIZED_GAIN
+         */
+
+        ctx.journal.debit(
+            accVariationMargin,
+            dailyPnl,
+            settlementCcy)
+
+        ctx.journal.credit(
+            accFutureRealizedGain,
+            dailyPnl,
+            settlementCcy)
+    }
+
     break
+
+
+    // ========================================================================
+    // SETTLEMENT
+    // ========================================================================
 
 case EventType.SETTLEMENT:
-    ctx.accountingPhase = txn.txnAcctPhase
+
+    /*
+     * ATTENZIONE:
+     *
+     * Questo evento NON deve essere utilizzato per rilasciare
+     * l'Initial Margin se il tuo scheduler lo genera
+     * immediatamente dopo il trade.
+     *
+     * Per un Future l'Initial Margin rimane vincolato per
+     * tutta la vita della posizione.
+     *
+     * Se SETTLEMENT nel tuo lifecycle rappresenta invece
+     * la CHIUSURA DEFINITIVA del Future, allora può essere
+     * utilizzato per liberare l'Initial Margin.
+     *
+     * In quel caso:
+     *
+     *     DR SETTLEMENT_LIABILITY
+     *     CR INITIAL_MARGIN
+     */
+
+
+    if (ctx.isFinalSettlement()) {
+
+        BigDecimal initialMargin =
+        ctx.getFutureInitialMargin()
+
+
+        if (initialMargin != null &&
+            initialMargin.compareTo(BigDecimal.ZERO) > 0) {
+
+            ctx.journal.debit(
+                accSettlementLiability,
+                initialMargin,
+                settlementCcy)
+
+            ctx.journal.credit(
+                accInitialMargin,
+                initialMargin,
+                settlementCcy)
+        }
+    }
+
+
+    ctx.accountingPhase =
+    txn.txnAcctPhase
+
     break
 
+
+    // ========================================================================
+    // TRADE AMENDED
+    // ========================================================================
+
 case EventType.TRADE_AMENDED:
-case EventType.TRADE_CANCELED:
-case EventType.ROLLOVER:
-    // Gestione nativa dello storno in nero a importo negativo accentrata nel Context Java
+
+    /*
+     * Lo storno è centralizzato nel Context.
+     */
+
     ctx.reverseJournal()
-    ctx.accountingPhase = txn.txnAcctPhase
+
+    ctx.accountingPhase =
+    txn.txnAcctPhase
+
+    break
+
+
+    // ========================================================================
+    // TRADE CANCELED
+    // ========================================================================
+
+case EventType.TRADE_CANCELED:
+
+    ctx.reverseJournal()
+
+    ctx.accountingPhase =
+    txn.txnAcctPhase
+
+    break
+
+
+    // ========================================================================
+    // ROLLOVER
+    // ========================================================================
+
+case EventType.ROLLOVER:
+
+    /*
+     * Il rollover chiude il vecchio Future.
+     *
+     * L'eventuale P&L della posizione viene già realizzato
+     * tramite la marginatura.
+     *
+     * Lo storno della parte contabile del vecchio contratto
+     * viene gestito dal Context.
+     */
+
+    ctx.reverseJournal()
+
+    ctx.accountingPhase =
+    txn.txnAcctPhase
+
     break
 }

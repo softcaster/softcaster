@@ -402,4 +402,12 @@ public class MasterData implements Serializable {
 
         return currencies;
     }
+
+    public Currency getSettlementCcy() {
+        return currency;
+    }
+    
+    public Currency getMasterDataCcy() {
+        return currency;
+    }
 }
