@@ -32,8 +32,7 @@ public class YieldCurveBean implements IFndtModel {
             case 2 ->
                 yieldCurve.getCurrency().getIsoCode();
             case 3 ->
-                //yieldCurve.getCalendar().getCode();
-                "";
+                yieldCurve.getCalendar().getCode();
             case 4 ->
                 yieldCurve.getProvider();
             default ->

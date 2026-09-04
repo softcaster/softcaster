@@ -103,14 +103,13 @@ public class YieldCurvePanel extends FndtAbstactPanel {
     protected void refreshModel(FndtTableModel model) {
         yieldCurveBeanList.clear();
         YieldCurveDAO dao = mDSFacade.getYieldCurveDAO();
-        List<YieldCurve> curves = dao.findAll();
+        List<String> curves = dao.findNames();
         MarketDataService mds = mDSFacade.getMarketDataService();
         YieldCurveBean bean = null;
-        for (YieldCurve yc : curves) {
-            bean = new YieldCurveBean(yc);
+        for (String code : curves) {
+            bean = new YieldCurveBean(dao.findByCode(code));
+            mds.loadCurveCurveRates(code);
             yieldCurveBeanList.add(bean);
-            // TO_DO
-            //mds.loadCurveCurveRates(yc.getCode());
         }
 
         model.setData(yieldCurveBeanList);
