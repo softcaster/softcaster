@@ -211,9 +211,7 @@ case EventType.TRADE_AMENDED:
 
     ctx.reverseJournal()
 
-    ctx.accountingPhase =
-    txn.txnAcctPhase
-
+    ctx.accountingPhase = txn.txnAcctPhase
     break
 
 
@@ -225,8 +223,7 @@ case EventType.TRADE_CANCELED:
 
     ctx.reverseJournal()
 
-    ctx.accountingPhase =
-    txn.txnAcctPhase
+    ctx.accountingPhase = txn.txnAcctPhase
 
     break
 
@@ -249,8 +246,6 @@ case EventType.ROLLOVER:
 
     ctx.reverseJournal()
 
-    ctx.accountingPhase =
-    txn.txnAcctPhase
-
+    ctx.accountingPhase = txn.txnAcctPhase
     break
 }
