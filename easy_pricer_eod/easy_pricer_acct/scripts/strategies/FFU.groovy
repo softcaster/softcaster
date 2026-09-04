@@ -25,8 +25,7 @@ def event = ctx.event
 // ============================================================================
 
 
-int settlementCcy =
-ctx.getSettlementCurrency()
+int settlementCcy = ctx.settlementCurrency
 
 
 // ============================================================================
@@ -40,43 +39,16 @@ ctx.getSettlementCurrency()
 // ============================================================================
 
 
-String accInitialMargin =
-accountResolver.resolve(
-                "INITIAL_MARGIN",
-    settlementCcy)
-
-
-String accVariationMargin =
-accountResolver.resolve(
-                "VARIATION_MARGIN",
-    settlementCcy)
-
-
-String accFutureRealizedLoss =
-accountResolver.resolve(
-                "FUT_REALIZED_LOSS",
-    settlementCcy)
-
-
-String accFutureRealizedGain =
-accountResolver.resolve(
-                "FUT_REALIZED_GAIN",
-    settlementCcy)
-
-
-String accSettlementLiability =
-accountResolver.resolve(
-                "SETTLEMENT_LIAB",
-    settlementCcy)
-
+String accInitialMargin = accountResolver.resolve("INITIAL_MARGIN", settlementCcy)
+String accVariationMargin = accountResolver.resolve("VARIATION_MARGIN", settlementCcy)
+String accFutureRealizedLoss = accountResolver.resolve("FUT_REALIZED_LOSS",settlementCcy)
+String accFutureRealizedGain = accountResolver.resolve("FUT_REALIZED_GAIN", settlementCcy)
+String accSettlementLiability =accountResolver.resolve("SETTLEMENT_LIAB", settlementCcy)
 
 // ============================================================================
 // EVENT PROCESSING
 // ============================================================================
-
 switch (event.eventType) {
-
-
     // ========================================================================
     // TRADE EXECUTED
     // ========================================================================
@@ -97,9 +69,7 @@ case EventType.TRADE_EXECUTED:
      */
 
 
-    BigDecimal initialMargin =
-    ctx.getFutureInitialMargin()
-
+    BigDecimal initialMargin = ctx.getFutureInitialMargin()
 
     if (initialMargin != null &&
         initialMargin.compareTo(BigDecimal.ZERO) > 0) {
@@ -124,8 +94,7 @@ case EventType.TRADE_EXECUTED:
      * direttamente.
      */
 
-    ctx.accountingPhase =
-    AccountingPhase.OFFICIAL_POSTED
+    ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
 
     break
 
@@ -156,9 +125,7 @@ case EventType.MTM:
      */
 
 
-    BigDecimal dailyPnl =
-    ctx.getRealizedPnl()
-
+    BigDecimal dailyPnl = ctx.getRealizedPnl()
 
     if (dailyPnl == null) {
         dailyPnl = BigDecimal.ZERO
@@ -226,53 +193,9 @@ case EventType.MTM:
     // ========================================================================
 
 case EventType.SETTLEMENT:
-
     /*
-     * ATTENZIONE:
-     *
-     * Questo evento NON deve essere utilizzato per rilasciare
-     * l'Initial Margin se il tuo scheduler lo genera
-     * immediatamente dopo il trade.
-     *
-     * Per un Future l'Initial Margin rimane vincolato per
-     * tutta la vita della posizione.
-     *
-     * Se SETTLEMENT nel tuo lifecycle rappresenta invece
-     * la CHIUSURA DEFINITIVA del Future, allora può essere
-     * utilizzato per liberare l'Initial Margin.
-     *
-     * In quel caso:
-     *
-     *     DR SETTLEMENT_LIABILITY
-     *     CR INITIAL_MARGIN
-     */
-
-
-    if (ctx.isFinalSettlement()) {
-
-        BigDecimal initialMargin =
-        ctx.getFutureInitialMargin()
-
-
-        if (initialMargin != null &&
-            initialMargin.compareTo(BigDecimal.ZERO) > 0) {
-
-            ctx.journal.debit(
-                accSettlementLiability,
-                initialMargin,
-                settlementCcy)
-
-            ctx.journal.credit(
-                accInitialMargin,
-                initialMargin,
-                settlementCcy)
-        }
-    }
-
-
-    ctx.accountingPhase =
-    txn.txnAcctPhase
-
+    Nessun evento di settlement per i Futures
+    */
     break
 
 

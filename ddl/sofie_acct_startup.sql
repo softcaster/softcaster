@@ -99,19 +99,6 @@ INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
 INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
     VALUES(nextval('account_mapping_s'), 'BOND_COMMITMENT', 1, 89);
 
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
-    VALUES(nextval('account_mapping_s'),'INITIAL_MARGIN',2,30); -- 120055 Initial Margin Deposit - USD
-INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
-    VALUES(nextval('account_mapping_s'), 'INITIAL_MARGIN', 1, 29); -- 120050 Initial Margin Deposit - EUR
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
-    VALUES(nextval('account_mapping_s'),'VARIATION_MARGIN',2,32); -- 120065 Variation Margin Account - USD
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
-    VALUES(nextval('account_mapping_s'),'VARIATION_MARGIN',1,31); -- 120060 Variation Margin Account - EUR
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- USD 
-    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_LOSS',1,19); -- 500010 Realized Loss on Financial Derivatives - EUR
-INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account) -- EUR 
-    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_GAIN ',1,16); -- 400010 Realized Gain on Financial Derivatives - EUR
-
 -- =========================================================================
 -- 1. BOND_COMMITMENT_BUY (Impegni di acquisto titoli - es. 600010)
 -- =========================================================================
@@ -122,3 +109,31 @@ INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_accoun
 INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
     VALUES(nextval('account_mapping_s'), 'FXSPOT_COMMITMENT', 4, 101); -- CHF (es. 600042)
 
+-- 120050 Initial Margin Deposit
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'INITIAL_MARGIN',1,29);
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'INITIAL_MARGIN',2,29);
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'INITIAL_MARGIN',4,29);
+-- 120060 Variation Margin Account
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'VARIATION_MARGIN',1,31); 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'VARIATION_MARGIN',2,31); 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'VARIATION_MARGIN',4,31); 
+-- 500010 Realized Loss on Financial Derivatives
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_LOSS',1,63); 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_LOSS',2,63); 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_LOSS',4,63); 
+-- 400010 Realized Gain on Financial Derivatives
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_GAIN',1,55); 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_GAIN',2,55); 
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'FUT_REALIZED_GAIN',4,55); 

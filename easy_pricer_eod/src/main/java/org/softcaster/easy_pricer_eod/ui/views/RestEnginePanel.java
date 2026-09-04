@@ -89,13 +89,13 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void startService() {
-        appendMessage("Starting Txn Rest service");
+        appendMessage("Starting Trade Capture service");
         eodFacade.getMicroserviceLauncher().startService(descriptor);
     }
 
     @Override
     public void stopService() {
-        appendMessage("Closing Txn Rest service");
+        appendMessage("Closing Trade Capture service");
         eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
     }
 
@@ -133,7 +133,7 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
         // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
         new Thread(() -> {
             try {
-                appendMessage("Sending suspension request via HTTP to Txn Rest service...");
+                appendMessage("Sending suspension request via HTTP to Trade Capture service...");
                 
                 // Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
                 RestClient restClient = RestClient.create();

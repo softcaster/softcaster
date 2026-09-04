@@ -99,11 +99,11 @@ public class FxFutureMasterData extends FutureMasterData {
     
     @Override
     public Currency getSettlementCcy() {
-        return underlying.getBcy();
+        return getCurrency();
     }
     
     @Override
     public Currency getMasterDataCcy() {
-        return getCurrency();
+        return underlying.getBcy();
     }
 }

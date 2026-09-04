@@ -1,31 +1,11 @@
-import java.math.BigDecimal
-import java.math.MathContext
-import java.math.RoundingMode
 import org.softcaster.engine.enums.TxnSide
 import org.softcaster.engine.enums.EventType
 import org.softcaster.engine.enums.AccountingPhase
-
-
-// ============================================================================
-// XRB - Bond Accounting Script
-//
-// Currency model:
-//
-//     instrumentCcy = currency of the bond
-//     accountingCcy = portfolio / accounting currency
-//
-// Examples:
-//
-//     USD bond / CHF accounting currency
-//     EUR bond / CHF accounting currency
-//     CHF bond / CHF accounting currency
-//
-// The script contains NO hardcoded EUR logic.
-// ============================================================================
-
+import java.math.MathContext
+import java.math.RoundingMode
 
 // ============================================================================
-// 1. MATH / PRECISION
+// 1. UTILITIES
 // ============================================================================
 
 MathContext MC =
@@ -58,96 +38,41 @@ def money = { BigDecimal value, int scale ->
 
 
 // ============================================================================
-// 2. CURRENCIES
+// 2. CURRENCY
+// ============================================================================
+//
+// Il bond viene contabilizzato esclusivamente nella propria valuta.
+//
+// Esempi:
+//
+//     BTP      -> EUR
+//     US T-Bond -> USD
+//     Gilt     -> GBP
+//     Swiss Bond -> CHF
+//
+// La System Currency NON entra nello script.
+//
+// La conversione verso la System Currency è responsabilità
+// del Risk Engine Forex.
 // ============================================================================
 
-/*
- * Currency of the bond.
- *
- * Example:
- *
- *     USD bond -> USD
- *     EUR bond -> EUR
- */
-int instrumentCcy = ctx.masterDataCurrency
+int settlementCcy =
+        ctx.settlementCurrency
 
 
-/*
- * Currency in which the portfolio/accounting books are maintained.
- *
- * Example:
- *
- *     USD bond + CHF accounting -> CHF
- */
-int accountingCcy =
-        ctx.getAccountingCurrency()
-
-
-boolean sameCurrency =
-        instrumentCcy == accountingCcy
-
-
-// ============================================================================
-// 3. FX RATE
-// ============================================================================
-
-/*
- * FX rate used to translate instrument currency into
- * accounting currency.
- *
- * The exact quotation convention MUST be the one defined
- * by the FX service.
- *
- * Conceptually:
- *
- *     amountAccounting =
- *          amountInstrument / fxRate
- *
- * if fxRate represents:
- *
- *     1 accounting currency = X instrument currency
- *
- * If your FX convention is the opposite, the conversion
- * must obviously be inverted.
- */
-
-BigDecimal fxRate =
-        bd(ctx.getFxRate())
-
-
-if (!sameCurrency) {
-
-    if (fxRate.compareTo(BigDecimal.ZERO) == 0) {
-
-        throw new IllegalStateException(
-                "FX rate missing or zero for XRB transaction: "
-                + instrumentCcy
-                + " -> "
-                + accountingCcy)
-    }
-}
-
-
-// ============================================================================
-// 4. CURRENCY SCALE
-// ============================================================================
-
-int instrumentScale =
+int currencyScale =
         ctx.getCurrencyScale(false)
 
-int accountingScale =
-        ctx.getCurrencyScale(true)
-
 
 // ============================================================================
-// 5. TRANSACTION DATA
+// 3. TRANSACTION DATA
 // ============================================================================
 
 BigDecimal quantity =
-        bd(ctx.txn.quantity)
+        bd(ctx.txn?.quantity)
 
 BigDecimal price =
-        bd(ctx.txn.price)
+        bd(ctx.txn?.price)
 
 BigDecimal multiplier =
         bd(ctx.multiplier)
@@ -162,7 +87,7 @@ if (multiplier.compareTo(BigDecimal.ZERO) == 0) {
 
 
 TxnSide side =
-        ctx.txn.txnSide
+        ctx.txn?.txnSide ?: TxnSide.BUY
 
 
 boolean isBuy =
@@ -173,228 +98,103 @@ boolean isSell =
 
 
 // ============================================================================
-// 6. ACCOUNT RESOLUTION
+// 4. ACCOUNTS
 // ============================================================================
 //
-// All accounts are resolved using:
-//
-//     semantic mapping key + currency
-//
-// No GL number is hardcoded in the script.
+// Tutti gli account sono risolti nella valuta del bond.
 // ============================================================================
 
-
-/*
- * Position in the bond.
- *
- * Currency = instrument currency.
- */
 String accBondAsset =
         accountResolver.resolve(
                 "BOND_ASSET",
-                instrumentCcy)
+                settlementCcy)
 
 
-/*
- * Accrued interest.
- *
- * Currency = instrument currency.
- */
 String accAccruedInterest =
         accountResolver.resolve(
                 "ACCRUED_INTEREST",
-                instrumentCcy)
+                settlementCcy)
 
 
-/*
- * Interest income.
- *
- * Currency = instrument currency.
- */
 String accInterestIncome =
         accountResolver.resolve(
                 "INTEREST_INCOME",
-                instrumentCcy)
+                settlementCcy)
 
 
-/*
- * Position control in instrument currency.
- */
-String accPositionControlInstrument =
+String accPositionControl =
         accountResolver.resolve(
                 "POSITION_CONTROL",
-                instrumentCcy)
+                settlementCcy)
 
 
-/*
- * Position control in accounting currency.
- *
- * Only needed when instrument currency != accounting currency.
- */
-String accPositionControlAccounting =
-        accountResolver.resolve(
-                "POSITION_CONTROL",
-                accountingCcy)
-
-
-/*
- * Actual cash account.
- *
- * Cash is maintained in accounting currency in this model.
- */
-String accCashAccounting =
+String accCash =
         accountResolver.resolve(
                 "CASH_ACCOUNT",
-                accountingCcy)
+                settlementCcy)
 
 
 // ============================================================================
-// 7. MEMO ACCOUNTS
+// 5. MEMO ACCOUNTS
 // ============================================================================
 
-String accCommitmentInstrument =
+String accCommitment =
         accountResolver.resolve(
                 "BOND_COMMITMENT",
-                instrumentCcy)
+                settlementCcy)
 
 
-String accObsClearingInstrument =
+String accObsClearing =
         accountResolver.resolve(
                 "OBS_CLEARING",
-                instrumentCcy)
-
-
-String accCommitmentAccounting =
-        accountResolver.resolve(
-                "BOND_COMMITMENT",
-                accountingCcy)
-
-
-String accObsClearingAccounting =
-        accountResolver.resolve(
-                "OBS_CLEARING",
-                accountingCcy)
+                settlementCcy)
 
 
 // ============================================================================
-// 8. TRADE AMOUNTS
+// 6. TRADE AMOUNTS
+// ============================================================================
+//
+// Clean value:
+//
+//     quantity × price × multiplier
+//
+// Nessun rounding intermedio.
 // ============================================================================
 
-/*
- * Clean bond value:
- *
- *     quantity × price × multiplier
- *
- * No rounding here.
- */
 BigDecimal cleanAmount =
         quantity
                 .multiply(price, MC)
                 .multiply(multiplier, MC)
 
 
-/*
- * Total settlement amount in instrument currency:
- *
- *     clean price value
- *     +
- *     accrued interest
- */
-BigDecimal totalInstrument =
-        cleanAmount
-                .add(accruedInterest, MC)
+BigDecimal totalAmount =
+        cleanAmount.add(
+                accruedInterest,
+                MC)
 
 
-// ============================================================================
-// 9. TRANSLATION TO ACCOUNTING CURRENCY
-// ============================================================================
+// Rounding esclusivamente sul risultato monetario finale.
 
-BigDecimal cleanAmountAccounting
-BigDecimal accruedAccounting
-BigDecimal totalAccounting
-
-
-if (sameCurrency) {
-
-    cleanAmountAccounting =
-            cleanAmount
-
-    accruedAccounting =
-            accruedInterest
-
-    totalAccounting =
-            totalInstrument
-
-} else {
-
-    /*
-     * IMPORTANT:
-     *
-     * Do NOT round the FX rate.
-     *
-     * Convert first using high precision,
-     * then round the resulting monetary amount.
-     */
-
-    cleanAmountAccounting =
-            cleanAmount.divide(
-                    fxRate,
-                    MC)
-
-    accruedAccounting =
-            accruedInterest.divide(
-                    fxRate,
-                    MC)
-
-    totalAccounting =
-            totalInstrument.divide(
-                    fxRate,
-                    MC)
-}
-
-
-// ============================================================================
-// 10. FINAL MONETARY AMOUNTS
-// ============================================================================
-
-BigDecimal cleanInstrumentMoney =
+BigDecimal cleanMoney =
         money(
                 cleanAmount,
-                instrumentScale)
+                currencyScale)
 
 
-BigDecimal accruedInstrumentMoney =
+BigDecimal accruedMoney =
         money(
                 accruedInterest,
-                instrumentScale)
+                currencyScale)
 
 
-BigDecimal totalInstrumentMoney =
+BigDecimal totalMoney =
         money(
-                totalInstrument,
-                instrumentScale)
-
-
-BigDecimal cleanAccountingMoney =
-        money(
-                cleanAmountAccounting,
-                accountingScale)
-
-
-BigDecimal accruedAccountingMoney =
-        money(
-                accruedAccounting,
-                accountingScale)
-
-
-BigDecimal totalAccountingMoney =
-        money(
-                totalAccounting,
-                accountingScale)
+                totalAmount,
+                currencyScale)
 
 
 // ============================================================================
-// 11. ACCOUNTING EVENTS
+// 7. ACCOUNTING EVENTS
 // ============================================================================
 
 switch (ctx.event.eventType) {
@@ -407,97 +207,44 @@ switch (ctx.event.eventType) {
     case EventType.TRADE_EXECUTED:
 
         /*
-         * The trade is booked off-balance.
+         * Il trade del bond viene registrato off-balance.
          *
-         * The memorandum structure is maintained in both
-         * instrument currency and accounting currency when
-         * the currencies are different.
+         * BUY:
          *
+         *     DR BOND_COMMITMENT
+         *     CR OBS_CLEARING
          *
-         * BUY - instrument currency
+         * SELL:
          *
-         *     DR  COMMITMENT
-         *     CR  OBS CLEARING
+         *     DR OBS_CLEARING
+         *     CR BOND_COMMITMENT
          *
-         *
-         * BUY - accounting currency
-         *
-         *     DR  OBS CLEARING
-         *     CR  COMMITMENT
-         *
-         *
-         * SELL reverses the two legs.
+         * Tutto nella valuta del bond.
          */
-
 
         if (isBuy) {
 
-            // ---------------------------------------------------------------
-            // Instrument currency
-            // ---------------------------------------------------------------
-
             ctx.journal.debit(
-                    accCommitmentInstrument,
-                    totalInstrumentMoney,
-                    instrumentCcy)
+                    accCommitment,
+                    totalMoney,
+                    settlementCcy)
 
             ctx.journal.credit(
-                    accObsClearingInstrument,
-                    totalInstrumentMoney,
-                    instrumentCcy)
+                    accObsClearing,
+                    totalMoney,
+                    settlementCcy)
 
-
-            // ---------------------------------------------------------------
-            // Accounting currency
-            // ---------------------------------------------------------------
-
-            if (!sameCurrency) {
-
-                ctx.journal.debit(
-                        accObsClearingAccounting,
-                        totalAccountingMoney,
-                        accountingCcy)
-
-                ctx.journal.credit(
-                        accCommitmentAccounting,
-                        totalAccountingMoney,
-                        accountingCcy)
-            }
-
-
-        } else {
-
-            // ---------------------------------------------------------------
-            // SELL - instrument currency
-            // ---------------------------------------------------------------
+        } else if (isSell) {
 
             ctx.journal.debit(
-                    accObsClearingInstrument,
-                    totalInstrumentMoney,
-                    instrumentCcy)
+                    accObsClearing,
+                    totalMoney,
+                    settlementCcy)
 
             ctx.journal.credit(
-                    accCommitmentInstrument,
-                    totalInstrumentMoney,
-                    instrumentCcy)
-
-
-            // ---------------------------------------------------------------
-            // SELL - accounting currency
-            // ---------------------------------------------------------------
-
-            if (!sameCurrency) {
-
-                ctx.journal.debit(
-                        accCommitmentAccounting,
-                        totalAccountingMoney,
-                        accountingCcy)
-
-                ctx.journal.credit(
-                        accObsClearingAccounting,
-                        totalAccountingMoney,
-                        accountingCcy)
-            }
+                    accCommitment,
+                    totalMoney,
+                    settlementCcy)
         }
 
         break
@@ -510,117 +257,111 @@ switch (ctx.event.eventType) {
     case EventType.SETTLEMENT:
 
         /*
-         * First remove the memorandum accounting generated
-         * by TRADE_EXECUTED.
+         * Prima eliminiamo il memorandum accounting
+         * generato da TRADE_EXECUTED.
          */
+
         ctx.reverseJournal()
 
 
         if (isBuy) {
 
-            // ----------------------------------------------------------------
-            // 1. Put the bond on the balance sheet
-            //
-            //    DR BOND_ASSET
-            //    DR ACCRUED_INTEREST
-            //    CR POSITION_CONTROL
-            //
-            //    All in instrument currency.
-            // ----------------------------------------------------------------
+            /*
+             * 1. Acquisizione del bond
+             *
+             *     DR BOND_ASSET
+             *     DR ACCRUED_INTEREST
+             *     CR POSITION_CONTROL
+             */
 
             ctx.journal.debit(
                     accBondAsset,
-                    cleanInstrumentMoney,
-                    instrumentCcy)
+                    cleanMoney,
+                    settlementCcy)
 
 
-            if (accruedInstrumentMoney.compareTo(
+            if (accruedMoney.compareTo(
                     BigDecimal.ZERO) != 0) {
 
                 ctx.journal.debit(
                         accAccruedInterest,
-                        accruedInstrumentMoney,
-                        instrumentCcy)
+                        accruedMoney,
+                        settlementCcy)
             }
 
 
             ctx.journal.credit(
-                    accPositionControlInstrument,
-                    totalInstrumentMoney,
-                    instrumentCcy)
+                    accPositionControl,
+                    totalMoney,
+                    settlementCcy)
 
 
-            // ----------------------------------------------------------------
-            // 2. Settlement against actual cash
-            // ----------------------------------------------------------------
-            //
-            // If the instrument currency is already the accounting
-            // currency, this is simply:
-            //
-            //     DR POSITION_CONTROL
-            //     CR CASH
-            //
-            //
-            // Otherwise:
-            //
-            //     DR POSITION_CONTROL accounting currency
-            //     CR CASH accounting currency
-            // ----------------------------------------------------------------
+            /*
+             * 2. Regolamento cash
+             *
+             *     DR POSITION_CONTROL
+             *     CR CASH
+             */
 
             ctx.journal.debit(
-                    accPositionControlAccounting,
-                    totalAccountingMoney,
-                    accountingCcy)
+                    accPositionControl,
+                    totalMoney,
+                    settlementCcy)
 
             ctx.journal.credit(
-                    accCashAccounting,
-                    totalAccountingMoney,
-                    accountingCcy)
+                    accCash,
+                    totalMoney,
+                    settlementCcy)
 
 
-        } else {
+        } else if (isSell) {
 
-            // ----------------------------------------------------------------
-            // SELL
-            //
-            // Remove the bond from the position.
-            // ----------------------------------------------------------------
+            /*
+             * 1. Eliminazione del bond dalla posizione
+             *
+             *     DR POSITION_CONTROL
+             *     CR BOND_ASSET
+             *     CR ACCRUED_INTEREST
+             */
 
             ctx.journal.debit(
-                    accPositionControlInstrument,
-                    totalInstrumentMoney,
-                    instrumentCcy)
+                    accPositionControl,
+                    totalMoney,
+                    settlementCcy)
 
 
             ctx.journal.credit(
                     accBondAsset,
-                    cleanInstrumentMoney,
-                    instrumentCcy)
+                    cleanMoney,
+                    settlementCcy)
 
 
-            if (accruedInstrumentMoney.compareTo(
+            if (accruedMoney.compareTo(
                     BigDecimal.ZERO) != 0) {
 
                 ctx.journal.credit(
                         accAccruedInterest,
-                        accruedInstrumentMoney,
-                        instrumentCcy)
+                        accruedMoney,
+                        settlementCcy)
             }
 
 
-            // ----------------------------------------------------------------
-            // Cash received
-            // ----------------------------------------------------------------
+            /*
+             * 2. Incasso cash
+             *
+             *     DR CASH
+             *     CR POSITION_CONTROL
+             */
 
             ctx.journal.debit(
-                    accCashAccounting,
-                    totalAccountingMoney,
-                    accountingCcy)
+                    accCash,
+                    totalMoney,
+                    settlementCcy)
 
             ctx.journal.credit(
-                    accPositionControlAccounting,
-                    totalAccountingMoney,
-                    accountingCcy)
+                    accPositionControl,
+                    totalMoney,
+                    settlementCcy)
         }
 
         break
@@ -633,9 +374,7 @@ switch (ctx.event.eventType) {
     case EventType.ACCRUAL:
 
         /*
-         * Accrual is generated by the lifecycle engine.
-         *
-         * The economic amount is in instrument currency.
+         * L'accrual è interamente nella valuta del bond.
          *
          *     DR ACCRUED_INTEREST
          *     CR INTEREST_INCOME
@@ -648,7 +387,7 @@ switch (ctx.event.eventType) {
         accrualAmount =
                 money(
                         accrualAmount,
-                        instrumentScale)
+                        currencyScale)
 
 
         if (accrualAmount.compareTo(
@@ -657,12 +396,12 @@ switch (ctx.event.eventType) {
             ctx.journal.debit(
                     accAccruedInterest,
                     accrualAmount,
-                    instrumentCcy)
+                    settlementCcy)
 
             ctx.journal.credit(
                     accInterestIncome,
                     accrualAmount,
-                    instrumentCcy)
+                    settlementCcy)
         }
 
         break
@@ -675,14 +414,15 @@ switch (ctx.event.eventType) {
     case EventType.COUPON:
 
         /*
-         * Coupon cash flow is expressed in instrument currency.
+         * Coupon cash flow nella valuta del bond.
          *
          *     DR CASH
          *     CR ACCRUED_INTEREST
          *
-         * The cash account itself is in accounting currency,
-         * therefore a currency conversion is required when
-         * instrumentCcy != accountingCcy.
+         * Nessuna conversione nella System Currency.
+         *
+         * Il Risk Engine Forex genererà successivamente
+         * l'operazione FX necessaria.
          */
 
         BigDecimal couponAmount =
@@ -692,77 +432,21 @@ switch (ctx.event.eventType) {
         couponAmount =
                 money(
                         couponAmount,
-                        instrumentScale)
+                        currencyScale)
 
 
         if (couponAmount.compareTo(
                 BigDecimal.ZERO) != 0) {
 
+            ctx.journal.debit(
+                    accCash,
+                    couponAmount,
+                    settlementCcy)
 
-            // ---------------------------------------------------------------
-            // Same currency
-            // ---------------------------------------------------------------
-
-            if (sameCurrency) {
-
-                ctx.journal.debit(
-                        accCashAccounting,
-                        couponAmount,
-                        accountingCcy)
-
-                ctx.journal.credit(
-                        accAccruedInterest,
-                        couponAmount,
-                        instrumentCcy)
-
-
-            } else {
-
-                // -----------------------------------------------------------
-                // Foreign currency coupon
-                // -----------------------------------------------------------
-
-                BigDecimal couponAccounting =
-                        couponAmount.divide(
-                                fxRate,
-                                MC)
-
-
-                couponAccounting =
-                        money(
-                                couponAccounting,
-                                accountingScale)
-
-
-                /*
-                 * Remove accrued interest in instrument currency.
-                 */
-
-                ctx.journal.debit(
-                        accPositionControlInstrument,
-                        couponAmount,
-                        instrumentCcy)
-
-                ctx.journal.credit(
-                        accAccruedInterest,
-                        couponAmount,
-                        instrumentCcy)
-
-
-                /*
-                 * Accounting currency cash movement.
-                 */
-
-                ctx.journal.debit(
-                        accCashAccounting,
-                        couponAccounting,
-                        accountingCcy)
-
-                ctx.journal.credit(
-                        accPositionControlAccounting,
-                        couponAccounting,
-                        accountingCcy)
-            }
+            ctx.journal.credit(
+                    accAccruedInterest,
+                    couponAmount,
+                    settlementCcy)
         }
 
         break
@@ -775,10 +459,10 @@ switch (ctx.event.eventType) {
     case EventType.MATURITY:
 
         /*
-         * At maturity we must NOT use txn.quantity.
+         * Non utilizziamo txn.quantity.
          *
-         * The lifecycle engine must provide the nominal that is
-         * actually outstanding at maturity.
+         * Il lifecycle engine deve fornire il nominale
+         * effettivamente outstanding alla maturity.
          */
 
         BigDecimal outstandingNominal =
@@ -787,90 +471,32 @@ switch (ctx.event.eventType) {
 
         BigDecimal maturityAmount =
                 outstandingNominal
-                        .multiply(
-                                multiplier,
-                                MC)
+                        .multiply(multiplier, MC)
 
 
         maturityAmount =
                 money(
                         maturityAmount,
-                        instrumentScale)
+                        currencyScale)
 
 
         if (maturityAmount.compareTo(
                 BigDecimal.ZERO) != 0) {
 
+            /*
+             *     DR CASH
+             *     CR BOND_ASSET
+             */
 
-            // ---------------------------------------------------------------
-            // Same currency
-            // ---------------------------------------------------------------
+            ctx.journal.debit(
+                    accCash,
+                    maturityAmount,
+                    settlementCcy)
 
-            if (sameCurrency) {
-
-                /*
-                 * DR CASH
-                 * CR BOND_ASSET
-                 */
-
-                ctx.journal.debit(
-                        accCashAccounting,
-                        maturityAmount,
-                        accountingCcy)
-
-                ctx.journal.credit(
-                        accBondAsset,
-                        maturityAmount,
-                        instrumentCcy)
-
-
-            } else {
-
-                // -----------------------------------------------------------
-                // Foreign currency maturity
-                // -----------------------------------------------------------
-
-                BigDecimal maturityAccounting =
-                        maturityAmount.divide(
-                                fxRate,
-                                MC)
-
-
-                maturityAccounting =
-                        money(
-                                maturityAccounting,
-                                accountingScale)
-
-
-                /*
-                 * Remove the bond in instrument currency.
-                 */
-
-                ctx.journal.debit(
-                        accPositionControlInstrument,
-                        maturityAmount,
-                        instrumentCcy)
-
-                ctx.journal.credit(
-                        accBondAsset,
-                        maturityAmount,
-                        instrumentCcy)
-
-
-                /*
-                 * Receive cash in accounting currency.
-                 */
-
-                ctx.journal.debit(
-                        accCashAccounting,
-                        maturityAccounting,
-                        accountingCcy)
-
-                ctx.journal.credit(
-                        accPositionControlAccounting,
-                        maturityAccounting,
-                        accountingCcy)
-            }
+            ctx.journal.credit(
+                    accBondAsset,
+                    maturityAmount,
+                    settlementCcy)
         }
 
         break
@@ -882,11 +508,6 @@ switch (ctx.event.eventType) {
 
     case EventType.TRADE_AMENDED:
 
-        /*
-         * Reverse the accounting generated by the previous
-         * version of the trade.
-         */
-
         ctx.reverseJournal()
 
         break
@@ -897,10 +518,6 @@ switch (ctx.event.eventType) {
     // ========================================================================
 
     case EventType.TRADE_CANCELED:
-
-        /*
-         * Reverse the accounting generated by the trade.
-         */
 
         ctx.reverseJournal()
 
@@ -915,5 +532,5 @@ switch (ctx.event.eventType) {
 
         throw new IllegalArgumentException(
                 "Unsupported XRB accounting event: "
-                + ctx.accountingEvent.eventType)
+                + ctx.event.eventType)
 }

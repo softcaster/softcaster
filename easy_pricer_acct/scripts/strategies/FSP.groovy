@@ -5,11 +5,11 @@ import org.softcaster.engine.enums.AccountingPhase
 def txn = ctx.txn
 def event = ctx.event
 
-int baseCcy  = txn.masterData.bcy?.idCurrency
-int quoteCcy = txn.masterData.ccy?.idCurrency
+int baseCcy  = ctx.masterDataCurrency
+int quoteCcy = ctx.settlementCurrency
 
-double baseAmount  = txn.quantity
-double quoteAmount = txn.quantity * txn.price
+double baseAmount  = txn? txn.quantity : 0
+double quoteAmount = txn? txn.quantity * txn.price : 0
 
 // RISOLUZIONE CONTI IN TESTATA
 // Conti Memorandum (Serie 600000 - Conto unico universale per divisa)

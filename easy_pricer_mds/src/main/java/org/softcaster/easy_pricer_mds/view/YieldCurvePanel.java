@@ -109,7 +109,8 @@ public class YieldCurvePanel extends FndtAbstactPanel {
         for (YieldCurve yc : curves) {
             bean = new YieldCurveBean(yc);
             yieldCurveBeanList.add(bean);
-            mds.loadCurveCurveRates(yc.getCode());
+            // TO_DO
+            //mds.loadCurveCurveRates(yc.getCode());
         }
 
         model.setData(yieldCurveBeanList);

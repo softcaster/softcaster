@@ -10,7 +10,13 @@ public interface InstrumentQuoteRepository extends JpaRepository<InstrumentQuote
 
     public InstrumentQuote findByIdInstrumentQuote(Integer idInstrumentQuote);
 
-    @Query("SELECT i FROM InstrumentQuote i WHERE i.masterData.assetClass.code = :assetClass")
+    //@Query("SELECT i FROM InstrumentQuote i WHERE i.masterData.assetClass.code = :assetClass")
+    @Query("""
+        select iq from InstrumentQuote iq 
+        join fetch iq.masterData md 
+        join fetch iq.masterData.currency 
+        where md.assetClass.code = :assetClass 
+    """)
     public List<InstrumentQuote> findByAssetClass(@Param("assetClass") String assetClass);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
