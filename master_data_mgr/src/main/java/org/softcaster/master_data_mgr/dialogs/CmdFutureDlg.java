@@ -15,7 +15,7 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.CmdFutureMasterData;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.FxFutureMasterData;
-import org.softcaster.core.data.SettlementType;
+import org.softcaster.engine.enums.SettlementType;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.CommodityType;
@@ -637,10 +637,10 @@ public class CmdFutureDlg extends javax.swing.JDialog {
     }
 
     private void setUpSettlementCombo() {
-        List<SettlementType> settlements = masterDataFacade.getSettlementTypeDAO().findAll();
+        List<SettlementType> types = List.of(SettlementType.values());
 
         // 2. Crea il modello partendo dalla lista
-        DefaultComboBoxModel<SettlementType> model = new DefaultComboBoxModel<>(settlements.toArray(SettlementType[]::new));
+        DefaultComboBoxModel<SettlementType> model = new DefaultComboBoxModel<>(types.toArray(SettlementType[]::new));
         cbSettlementType.setModel(model);
     }
 

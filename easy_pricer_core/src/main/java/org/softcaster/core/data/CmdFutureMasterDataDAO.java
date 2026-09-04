@@ -1,6 +1,7 @@
 package org.softcaster.core.data;
 
 import java.util.List;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CmdFutureMasterDataDAO {
 
     private final CmdFutureMasterDataRepository repository;
+    private final Sort sortByIsin = Sort.by(Sort.Direction.ASC, "isin");
 
     public CmdFutureMasterDataDAO(CmdFutureMasterDataRepository repository) {
         this.repository = repository;
@@ -15,7 +17,7 @@ public class CmdFutureMasterDataDAO {
 
     @Transactional(readOnly = true)
     public List<CmdFutureMasterData> findAll() {
-        return repository.findAll();
+        return repository.findAll(sortByIsin);
     }
 
     @Transactional(readOnly = true)

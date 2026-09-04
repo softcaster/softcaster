@@ -15,7 +15,7 @@ public interface CounterpartyRepository extends JpaRepository<Counterparty, Inte
     // nativo di JOIN del database e restituendo tutto istantaneamente. Molto più efficiente
     // che usare EAGER (n+1 query). Prima select di tutte le controparti, poi per ogni controparte
     // select dei roles. 
-    @Query("SELECT DISTINCT c FROM Counterparty c LEFT JOIN FETCH c.roles")
+    @Query("SELECT DISTINCT c FROM Counterparty c LEFT JOIN FETCH c.roles LEFT JOIN FETCH c.country")
     public List<Counterparty> findAllWithRoles(Sort sort);
 
     public Counterparty findByCode(String code);

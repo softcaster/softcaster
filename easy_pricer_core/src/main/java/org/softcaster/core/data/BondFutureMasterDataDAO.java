@@ -1,4 +1,4 @@
-package org.softcaster.core.data;
+    package org.softcaster.core.data;
 
 import java.util.List;
 import jakarta.annotation.Resource;

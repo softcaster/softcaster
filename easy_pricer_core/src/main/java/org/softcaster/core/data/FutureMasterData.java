@@ -1,11 +1,10 @@
 package org.softcaster.core.data;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.softcaster.core.data.converters.SettlementTypeConverter;
 
 @Entity
 @Table(name = "future_master_data")
@@ -19,9 +18,9 @@ public class FutureMasterData extends MasterData {
     @Column(name = "exchange_contract_code")
     private String exchangeContractCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "settlement_type", nullable = true)
-    private SettlementType settlementType;
+    @Convert(converter = SettlementTypeConverter.class)
+    @Column(name = "settlement_type")
+    private org.softcaster.engine.enums.SettlementType settlementType;
 
     @Column(name = "last_trading_date")
     private java.sql.Date lastTradingDate;
@@ -32,20 +31,6 @@ public class FutureMasterData extends MasterData {
 
     public void setIsin(String isin) {
         this.isin = isin;
-    }
-
-    /**
-     * @return the settlementType
-     */
-    public SettlementType getSettlementType() {
-        return settlementType;
-    }
-
-    /**
-     * @param settlementType the settlementType to set
-     */
-    public void setSettlementType(SettlementType settlementType) {
-        this.settlementType = settlementType;
     }
 
     /**
@@ -74,5 +59,19 @@ public class FutureMasterData extends MasterData {
      */
     public void setLastTradingDate(java.sql.Date lastTradingDate) {
         this.lastTradingDate = lastTradingDate;
+    }
+
+    /**
+     * @return the settlementType
+     */
+    public org.softcaster.engine.enums.SettlementType getSettlementType() {
+        return settlementType;
+    }
+
+    /**
+     * @param settlementType the settlementType to set
+     */
+    public void setSettlementType(org.softcaster.engine.enums.SettlementType settlementType) {
+        this.settlementType = settlementType;
     }
 }

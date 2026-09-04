@@ -15,13 +15,13 @@ import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.MmFutureMasterData;
-import org.softcaster.core.data.SettlementType;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Form;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.enums.RollConvention;
+import org.softcaster.engine.enums.SettlementType;
 import org.softcaster.engine.enums.TypeOfInterest;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.MmFutBean;
@@ -629,12 +629,12 @@ public class MmFutureDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<DaycountBasis> model = new DefaultComboBoxModel<>(daycounts.toArray(DaycountBasis[]::new));
         cbDaycount.setModel(model);
     }
-
+    
     private void setUpSettlementCombo() {
-        List<SettlementType> settlements = masterDataFacade.getSettlementTypeDAO().findAll();
+        List<org.softcaster.engine.enums.SettlementType> types = List.of(org.softcaster.engine.enums.SettlementType.values());
 
         // 2. Crea il modello partendo dalla lista
-        DefaultComboBoxModel<SettlementType> model = new DefaultComboBoxModel<>(settlements.toArray(SettlementType[]::new));
+        DefaultComboBoxModel<org.softcaster.engine.enums.SettlementType> model = new DefaultComboBoxModel<>(types.toArray(org.softcaster.engine.enums.SettlementType[]::new));
         cbSettlementType.setModel(model);
     }
 
