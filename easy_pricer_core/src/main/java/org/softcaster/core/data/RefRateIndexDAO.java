@@ -1,6 +1,7 @@
 package org.softcaster.core.data;
 
 import java.util.List;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RefRateIndexDAO {
 
     private RefRateIndexRepository repository;
+    private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
     public RefRateIndexDAO(RefRateIndexRepository repository) {
         this.repository = repository;
@@ -28,7 +30,14 @@ public class RefRateIndexDAO {
         repository.delete(refRateIndex);
     }
 
+    @Transactional(readOnly = true)
     public List<RefRateIndex> findAll() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return repository.findAll(sortByCode);
     }
+
+    @Transactional(readOnly = true)
+    public List<String> findNames() {
+        return repository.findNames();
+    }
+
 }

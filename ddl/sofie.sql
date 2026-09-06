@@ -481,14 +481,105 @@ CREATE UNIQUE INDEX idx_security_master_data_isin ON security_master_data (isin)
 ALTER TABLE security_master_data OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- security_master_data - anagrafica titoli di stato floating
+-- tenor - anagrafica tenor
+-- ----------------------------------------------------------------------------
+CREATE TABLE tenor (
+    tenor_id    INTEGER NOT NULL,
+    code        VARCHAR(20) NOT NULL,
+    description VARCHAR(50) NOT NULL,
+
+    CONSTRAINT pk_tenor PRIMARY KEY (tenor_id),
+    CONSTRAINT uk_tenor_code UNIQUE (code)
+);
+ALTER TABLE tenor OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- ref_rate_index - anagrafica indici
+-- ----------------------------------------------------------------------------
+CREATE TABLE ref_rate_index (
+    ref_rate_index_id INTEGER NOT NULL,
+    code              VARCHAR(25) NOT NULL,
+    description       VARCHAR(100) NOT NULL,
+    currency          INTEGER NOT NULL,
+    daycount          INTEGER NOT NULL,
+    tenor             INTEGER NOT NULL,
+
+    CONSTRAINT pk_ref_rate_index
+        PRIMARY KEY (ref_rate_index_id),
+
+    CONSTRAINT uk_ref_rate_index_code
+        UNIQUE (code),
+
+    CONSTRAINT fk_ref_rate_index_currency
+        FOREIGN KEY (currency)
+        REFERENCES currency (id_currency),
+
+    CONSTRAINT fk_ref_rate_index_daycount
+        FOREIGN KEY (daycount)
+        REFERENCES daycount (id_daycount),
+
+    CONSTRAINT fk_ref_rate_index_tenor
+        FOREIGN KEY (tenor)
+        REFERENCES tenor (tenor_id),
+    
+    CONSTRAINT uk_ref_rate_index_code_tenor
+        UNIQUE (code, tenor)
+);
+ALTER TABLE ref_rate_index OWNER TO sofie;
+-- Creo sequenza
+CREATE SEQUENCE ref_rate_index_s
+    START WITH 1
+    INCREMENT BY 1;
+ALTER SEQUENCE ref_rate_index_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- ref_rate_fixing - valori corrispondenti all'indici
+-- ----------------------------------------------------------------------------
+CREATE TABLE ref_rate_fixing (
+    ref_rate_fixing_id INTEGER NOT NULL,
+    ref_rate_index     INTEGER NOT NULL,
+    fixing_date        DATE NOT NULL,
+    rate               NUMERIC(18,10) NOT NULL,
+
+    CONSTRAINT pk_ref_rate_fixing
+        PRIMARY KEY (ref_rate_fixing_id),
+
+    CONSTRAINT fk_ref_rate_fixing_index
+        FOREIGN KEY (ref_rate_index)
+        REFERENCES ref_rate_index (ref_rate_index_id),
+
+    CONSTRAINT uk_ref_rate_fixing
+        UNIQUE (ref_rate_index, fixing_date)
+);
+ALTER TABLE ref_rate_fixing OWNER TO sofie;
+-- Creo sequenza
+CREATE SEQUENCE ref_rate_fixing_s
+    START WITH 1
+    INCREMENT BY 1;
+ALTER SEQUENCE ref_rate_fixing_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- coupon_pm - Coupon Projection Method
+-- ----------------------------------------------------------------------------
+CREATE TABLE coupon_pm (
+    coupon_pm_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(50) NOT NULL,
+    PRIMARY KEY (coupon_pm_id)
+);
+ALTER TABLE coupon_pm OWNER TO sofie;
+CREATE UNIQUE INDEX coupon_pm_code ON coupon_pm (code);
+
+-- ----------------------------------------------------------------------------
+-- flt_security_master_data - anagrafica titoli di stato floating
 -- ----------------------------------------------------------------------------
 CREATE TABLE flt_security_master_data (
     id_master_data integer NOT NULL,
     spread numeric(23, 10) NOT NULL,
-    index varchar(25) NOT NULL DEFAULT '---',
+    ref_rate_index INTEGER,
     coupon_pm integer NOT NULL,
     CONSTRAINT fk_coupon_pm FOREIGN KEY (coupon_pm) REFERENCES coupon_pm (coupon_pm_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_ref_rate_index FOREIGN KEY (ref_rate_index) REFERENCES ref_rate_index (ref_rate_index_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     PRIMARY KEY (id_master_data)
 );
 ALTER TABLE flt_security_master_data OWNER TO sofie;
@@ -522,18 +613,6 @@ CREATE TABLE cash_flow_status (
 );
 ALTER TABLE cash_flow_status OWNER TO sofie;
 CREATE UNIQUE INDEX cash_flow_status_code ON cash_flow_status (code);
-
--- ----------------------------------------------------------------------------
--- coupon_pm - Coupon Projection Method
--- ----------------------------------------------------------------------------
-CREATE TABLE coupon_pm (
-    coupon_pm_id integer NOT NULL,
-    code varchar(25) NOT NULL,
-    description varchar(50) NOT NULL,
-    PRIMARY KEY (coupon_pm_id)
-);
-ALTER TABLE coupon_pm OWNER TO sofie;
-CREATE UNIQUE INDEX coupon_pm_code ON coupon_pm (code);
 
 -- ----------------------------------------------------------------------------
 -- cash_flow_item
@@ -1263,21 +1342,3 @@ CREATE TABLE descriptors (
 ALTER TABLE descriptors OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS descriptors_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE descriptors_s OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
--- ref_rate_index - ReferenceRateIndex
--- ----------------------------------------------------------------------------
-CREATE TABLE ref_rate_index (
-    ref_rate_index_id integer NOT NULL,
-    code varchar(25) NOT NULL,
-    description varchar(50) NOT NULL,
-    currency integer NOT NULL,
-    daycount integer NOT NULL,
-    CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_daycount FOREIGN KEY (daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    PRIMARY KEY (ref_rate_index_id)
-);
-ALTER TABLE ref_rate_index OWNER TO sofie;
-CREATE UNIQUE INDEX rri_code ON ref_rate_index (code);
-CREATE SEQUENCE IF NOT EXISTS ref_rate_index_s START WITH 1 INCREMENT BY 1;
-ALTER SEQUENCE ref_rate_index_s OWNER TO sofie;

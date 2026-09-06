@@ -395,3 +395,13 @@ INSERT INTO cash_flow_status(cash_flow_status_id,code, description) VALUES (3,'P
 
 INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (1,'LAST_COUPON','Last Coupon');
 INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (2,'FORWARD_CURVE','Forward Curve');
+
+INSERT INTO tenor (tenor_id, code, description) VALUES
+(1, 'ON',  'Overnight'),
+(2, 'TN',  'Tomorrow/Next'),
+(3, '1W',  '1 Week'),
+(4, '1M',  '1 Month'),
+(5, '3M',  '3 Months'),
+(6, '6M',  '6 Months'),
+(7, '9M',  '9 Months'),
+(8, '12M', '12 Months');

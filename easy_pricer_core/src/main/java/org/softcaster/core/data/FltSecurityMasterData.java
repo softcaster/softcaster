@@ -3,6 +3,9 @@ package org.softcaster.core.data;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -19,8 +22,9 @@ public class FltSecurityMasterData extends SecurityMasterData {
     @Column(name = "spread")
     private Double spread;
 
-    @Column(name = "index")
-    private String index;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ref_rate_index", nullable = true)
+    private RefRateIndex refRateIndex;
 
     @Convert(converter = CouponProjectionMethodConverter.class)
     @Column(name = "coupon_pm")
@@ -32,14 +36,6 @@ public class FltSecurityMasterData extends SecurityMasterData {
 
     public void setSpread(Double spread) {
         this.spread = spread;
-    }
-
-    public String getIndex() {
-        return index;
-    }
-
-    public void setIndex(String index) {
-        this.index = index;
     }
 
     /**
@@ -54,5 +50,19 @@ public class FltSecurityMasterData extends SecurityMasterData {
      */
     public void setCouponPm(CouponProjectionMethod couponPm) {
         this.couponPm = couponPm;
+    }
+
+    /**
+     * @return the refRateIndex
+     */
+    public RefRateIndex getRefRateIndex() {
+        return refRateIndex;
+    }
+
+    /**
+     * @param refRateIndex the refRateIndex to set
+     */
+    public void setRefRateIndex(RefRateIndex refRateIndex) {
+        this.refRateIndex = refRateIndex;
     }
 }

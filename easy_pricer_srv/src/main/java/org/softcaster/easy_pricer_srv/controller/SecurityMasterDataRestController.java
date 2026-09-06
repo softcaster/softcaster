@@ -22,9 +22,6 @@ public class SecurityMasterDataRestController {
     @Autowired
     private SecurityMasterDataDAO dao;
 
-    @Autowired
-    private ApplicationContext appContext;
-
     @GetMapping("/security_master_data/r01")
     public ResponseEntity findAll() {
         List<SecurityMasterData> listaSecurityMasterData = dao.findAll();
