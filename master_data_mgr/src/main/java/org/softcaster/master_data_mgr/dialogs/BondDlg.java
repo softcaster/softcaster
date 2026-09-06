@@ -130,6 +130,7 @@ public class BondDlg extends javax.swing.JDialog {
         cbAmortSched = new javax.swing.JComboBox<>();
         jLabel23 = new javax.swing.JLabel();
         accrDaycount = new javax.swing.JComboBox<>();
+        idxPanel = new javax.swing.JPanel();
         codPanel = new javax.swing.JPanel();
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
@@ -592,6 +593,7 @@ public class BondDlg extends javax.swing.JDialog {
         additionalPanel.add(accrDaycount, gridBagConstraints);
 
         tabbedPane.addTab("Additional", additionalPanel);
+        tabbedPane.addTab("Index", idxPanel);
 
         codPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
         codPanel.setLayout(new java.awt.GridBagLayout());
@@ -903,6 +905,7 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
     private javax.swing.Box.Filler filler4;
+    private javax.swing.JPanel idxPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -996,6 +999,9 @@ public class BondDlg extends javax.swing.JDialog {
                     btnGenerateCF.setVisible(true);
                 } else {
                     btnGenerateCF.setVisible(false);
+                }
+                if(title1.equalsIgnoreCase("Index")) {
+                    idxPanel.setVisible(false);
                 }
             }
         });
