@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.FltSecurityMasterData;
 import org.softcaster.core.data.RefRateIndex;
 import org.softcaster.engine.enums.CouponProjectionMethod;
@@ -56,11 +57,16 @@ public class FltBondDlg extends BondDlg {
         cbProjectiooMethod.setModel(model);
     }
 
+    @Override
+    protected AssetClass getAssetClass() {
+        return masterDataFacade.findAssetClass("FRB");
+    }
+
     private FltSecurityBean getFltSecurityBean() {
         if (isInsert) {
-            FltSecurityBean fltSecurityBean = new FltSecurityBean(new FltSecurityMasterData());
+            bean = new FltSecurityBean(new FltSecurityMasterData());
             fillDefaultFields();
-            return fltSecurityBean;
+            return (FltSecurityBean) bean;
         } else {
             if (bean instanceof FltSecurityBean fltSecurityBean) {
                 if (!fillSecurityMasterData(fltSecurityBean.getSecurityMasterData())) {
@@ -76,7 +82,7 @@ public class FltBondDlg extends BondDlg {
     protected boolean saveBean() {
 
         try {
- 
+
             FltSecurityMasterData smd = getFltSecurityBean().getSecurityMasterData();
             if (!fillSecurityMasterData(smd)) {
                 return false;
@@ -86,7 +92,7 @@ public class FltBondDlg extends BondDlg {
             smd.setRefRateIndex(index);
             smd.setSpread(Converter.toDouble(txtSpread.getText(), false));
             smd.setCouponPm((CouponProjectionMethod) cbProjectiooMethod.getSelectedItem());
-            
+
             masterDataFacade.getFltSecurityMasterDataDAO().saveOrUpdate(smd);
             return true;
         } catch (Exception ex) {

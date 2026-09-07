@@ -26,6 +26,7 @@ import javax.swing.event.ChangeEvent;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.Issuer;
@@ -270,7 +271,7 @@ public class BondDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(txtCoupon, gridBagConstraints);
 
-        jLabel5.setText("Coupon");
+        jLabel5.setText("Coupon(%)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -362,7 +363,7 @@ public class BondDlg extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         fieldPanel.add(filler1, gridBagConstraints);
 
-        jLabel13.setText("First Cp. Rate");
+        jLabel13.setText("First Cp. Rate(%)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -618,7 +619,7 @@ public class BondDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         idxPanel.add(jLabel24, gridBagConstraints);
 
-        jLabel25.setText("Spread");
+        jLabel25.setText("Spread(%)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -1273,9 +1274,13 @@ public class BondDlg extends javax.swing.JDialog {
         }
     }
 
+    protected AssetClass getAssetClass() {
+        return masterDataFacade.findAssetClass("XRB");
+    }
+    
     protected void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getSecurityMasterData().setAssetClass(masterDataFacade.findAssetClass("XRB"));
+        bean.getSecurityMasterData().setAssetClass(getAssetClass());
         bean.getSecurityMasterData().setBusinessDays((Integer) spinnerBD.getValue());
         if (txtCfiCode.getText().isBlank()) {
             bean.getSecurityMasterData().setCfiCode("");

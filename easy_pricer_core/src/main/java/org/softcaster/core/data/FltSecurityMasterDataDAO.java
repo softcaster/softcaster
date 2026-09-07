@@ -1,6 +1,7 @@
 package org.softcaster.core.data;
 
 import java.util.List;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class FltSecurityMasterDataDAO {
 
     private final FltSecurityMasterDataRepository repository;
+    private final Sort sortByMaturity = Sort.by(Sort.Direction.ASC, "maturityDate");
 
     // Iniezione tramite costruttore (Best Practice per Spring)
     public FltSecurityMasterDataDAO(FltSecurityMasterDataRepository repository) {
@@ -16,7 +18,7 @@ public class FltSecurityMasterDataDAO {
 
     @Transactional(readOnly = true)
     public List<FltSecurityMasterData> findAll() {
-        return repository.findAll();
+        return repository.findAll(sortByMaturity);
     }
 
     @Transactional(readOnly = true)

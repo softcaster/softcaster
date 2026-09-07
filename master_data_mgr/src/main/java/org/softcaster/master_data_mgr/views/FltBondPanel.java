@@ -7,12 +7,15 @@ package org.softcaster.master_data_mgr.views;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.FltSecurityMasterData;
-import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.dialogs.FltBondDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.FltSecurityBean;
+import org.softcaster.master_data_mgr.models.beans.SecurityBean;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
 
 /**
@@ -126,10 +129,52 @@ public class FltBondPanel extends AbstactMDPanel {
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
+        int rowIndex = bondTable.getSelectedRow();
+        if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = bondTable.convertRowIndexToModel(rowIndex);
+            MasterDataTableModel<FltSecurityBean> model = (MasterDataTableModel<FltSecurityBean>) bondTable.getModel();
+            FltSecurityBean bean = model.getElementAt(modelRow);
+            java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+            java.awt.Frame parentFrame = null;
+
+            if (parentWindow instanceof java.awt.Frame frame) {
+                parentFrame = frame;
+            }
+
+            FltBondDlg dialog = new FltBondDlg(parentFrame, true, bean, masterDataFacade);
+            dialog.setSize(600, 400);
+            // Centra la dialog rispetto al pannello
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+            // Post chiusura dialog
+            refreshModel(model);
+        }
     }
 
     @Override
     protected void acDelActionPerformed(ActionEvent evt) {
+        int rowIndex = bondTable.getSelectedRow();
+        if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = bondTable.convertRowIndexToModel(rowIndex);
+            MasterDataTableModel<FltSecurityBean> model = (MasterDataTableModel<FltSecurityBean>) bondTable.getModel();
+            SecurityBean bean = model.getElementAt(modelRow);
+            if (JOptionPane.showConfirmDialog(this,
+                    "Are you sure to delete item? " + bean.getValueAt(0), JMasterDataMgr.TITLE,
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                try {
+                    masterDataFacade.getFltSecurityMasterDataDAO().delete(((FltSecurityBean)bean).getSecurityMasterData());
+                    refreshModel(model);
+                } catch (Exception ex) {
+                    LoggerMgr.logError(ex.getLocalizedMessage());
+                }
+            }
+            // Post chiusura dialog
+            refreshModel(model);
+        }
     }
 
     @Override
