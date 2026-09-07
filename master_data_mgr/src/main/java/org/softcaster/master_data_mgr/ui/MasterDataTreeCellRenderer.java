@@ -36,7 +36,7 @@ public class MasterDataTreeCellRenderer extends DefaultTreeCellRenderer {
         if (leaf && userObject instanceof MasterDataNode data) {
             // Logica per cambiare l'icona in base al tipo
             switch (data.getType()) {
-                case BOND, EQUITY ->
+                case BOND, FLT_BOND, EQUITY ->
                     setIcon(securityIcon);
                 case CURRENCY, CURR_PAIR ->
                     setIcon(forexIcon);

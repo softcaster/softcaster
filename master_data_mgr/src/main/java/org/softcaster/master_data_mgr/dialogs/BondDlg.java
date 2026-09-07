@@ -13,6 +13,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFormattedTextField;
@@ -27,6 +29,7 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.Issuer;
+import org.softcaster.core.data.RefRateIndex;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
 import org.softcaster.engine.cashflow.BulletAmortizationStrategy;
@@ -34,6 +37,7 @@ import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
+import org.softcaster.engine.enums.CouponProjectionMethod;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Form;
 import org.softcaster.engine.enums.Frequency;
@@ -53,10 +57,10 @@ import org.softcaster.master_data_mgr.ui.ZebraTable;
  */
 public class BondDlg extends javax.swing.JDialog {
 
-    private SecurityBean bean = null;
-    private MasterDataFacade masterDataFacade = null;
-    private List<javax.swing.JTextField> fieldsToValidate;
-    private boolean isInsert = true;
+    protected SecurityBean bean = null;
+    protected MasterDataFacade masterDataFacade = null;
+    protected List<javax.swing.JTextField> fieldsToValidate;
+    protected boolean isInsert = true;
 
     /**
      * Creates new form BondFutureDlg
@@ -131,6 +135,13 @@ public class BondDlg extends javax.swing.JDialog {
         jLabel23 = new javax.swing.JLabel();
         accrDaycount = new javax.swing.JComboBox<>();
         idxPanel = new javax.swing.JPanel();
+        jLabel24 = new javax.swing.JLabel();
+        jLabel25 = new javax.swing.JLabel();
+        jLabel26 = new javax.swing.JLabel();
+        cfRefIndex = new javax.swing.JComboBox<>();
+        txtSpread = new javax.swing.JTextField();
+        cbProjectiooMethod = new javax.swing.JComboBox<>();
+        filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         codPanel = new javax.swing.JPanel();
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
@@ -593,6 +604,78 @@ public class BondDlg extends javax.swing.JDialog {
         additionalPanel.add(accrDaycount, gridBagConstraints);
 
         tabbedPane.addTab("Additional", additionalPanel);
+
+        idxPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
+        idxPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel24.setText("Ref.Rate Index");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(jLabel24, gridBagConstraints);
+
+        jLabel25.setText("Spread");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(jLabel25, gridBagConstraints);
+
+        jLabel26.setText("Projection Method");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(jLabel26, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(cfRefIndex, gridBagConstraints);
+
+        txtSpread.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtSpread.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtSpreadFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(txtSpread, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(cbProjectiooMethod, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        idxPanel.add(filler5, gridBagConstraints);
+
         tabbedPane.addTab("Index", idxPanel);
 
         codPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
@@ -883,6 +966,10 @@ public class BondDlg extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_btnGenerateCFActionPerformed
 
+    private void txtSpreadFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtSpreadFocusLost
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSpreadFocusLost
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<DaycountBasis> accrDaycount;
     private javax.swing.JPanel additionalPanel;
@@ -897,14 +984,17 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JComboBox<Form> cbForm;
     private javax.swing.JComboBox<Frequency> cbFrequency;
     private javax.swing.JComboBox<Issuer> cbIssuer;
+    protected javax.swing.JComboBox<CouponProjectionMethod> cbProjectiooMethod;
     private javax.swing.JComboBox<RollConvention> cbRollConv;
     private javax.swing.JComboBox<TypeOfInterest> cbToi;
+    protected javax.swing.JComboBox<RefRateIndex> cfRefIndex;
     private javax.swing.JPanel codPanel;
     private javax.swing.JPanel fieldPanel;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
     private javax.swing.Box.Filler filler4;
+    private javax.swing.Box.Filler filler5;
     private javax.swing.JPanel idxPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -922,6 +1012,9 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -947,9 +1040,10 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JTextField txtLei;
     private javax.swing.JTextField txtNominalValue;
     private javax.swing.JTextField txtRedempionPrice;
+    protected javax.swing.JTextField txtSpread;
     // End of variables declaration//GEN-END:variables
 
-    private void postInit() {
+    protected void postInit() {
 
         setUpCombos();
         setUpSpinner();
@@ -1000,11 +1094,14 @@ public class BondDlg extends javax.swing.JDialog {
                 } else {
                     btnGenerateCF.setVisible(false);
                 }
-                if(title1.equalsIgnoreCase("Index")) {
-                    idxPanel.setVisible(false);
-                }
             }
         });
+        removeTabIndex();
+    }
+
+    protected void removeTabIndex() {
+        // Rimuovo il tab Index
+        tabbedPane.remove(idxPanel);
     }
 
     private void setUpCombos() {
@@ -1083,7 +1180,7 @@ public class BondDlg extends javax.swing.JDialog {
         DefaultComboBoxModel<DaycountBasis> model = new DefaultComboBoxModel<>(daycounts.toArray(DaycountBasis[]::new));
         cbDaycount.setModel(model);
     }
-    
+
     private void setUpAccrualDaycountCombo() {
         List<DaycountBasis> daycounts = List.of(DaycountBasis.values());
 
@@ -1119,15 +1216,8 @@ public class BondDlg extends javax.swing.JDialog {
         return !firstCpMaturity.isGreaterThan(expiryDate);
     }
 
-    private boolean saveBean() {
-
+    protected boolean fillSecurityMasterData(SecurityMasterData smd) {
         try {
-            if (isInsert) {
-                bean = new SecurityBean(new SecurityMasterData());
-                fillDefaultFields();
-            }
-            SecurityMasterData smd = bean.getSecurityMasterData();
-
             smd.setIsin(txtIsin.getText());
             smd.setCode(txtIsin.getText());
             smd.setDescription(txtDescription.getText());
@@ -1155,8 +1245,27 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setLei(txtLei.getText());
             smd.setMultiplier(0.01);
             smd.setBusinessDays((Integer) spinnerBD.getValue());
-            masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(smd);
+            return true;
+        } catch (ParseException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            return false;
+        }
 
+    }
+
+    protected boolean saveBean() {
+
+        try {
+            if (isInsert) {
+                bean = new SecurityBean(new SecurityMasterData());
+                fillDefaultFields();
+            }
+            
+            SecurityMasterData smd = bean.getSecurityMasterData();
+            if(!fillSecurityMasterData(smd))
+                return false;
+            
+            masterDataFacade.getSecurityMasterDataDAO().saveOrUpdate(smd);
             return true;
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
@@ -1164,7 +1273,7 @@ public class BondDlg extends javax.swing.JDialog {
         }
     }
 
-    private void fillDefaultFields() {
+    protected void fillDefaultFields() {
         // Aggiungo campi standard
         bean.getSecurityMasterData().setAssetClass(masterDataFacade.findAssetClass("XRB"));
         bean.getSecurityMasterData().setBusinessDays((Integer) spinnerBD.getValue());

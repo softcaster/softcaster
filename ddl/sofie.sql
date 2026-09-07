@@ -507,9 +507,6 @@ CREATE TABLE ref_rate_index (
     CONSTRAINT pk_ref_rate_index
         PRIMARY KEY (ref_rate_index_id),
 
-    CONSTRAINT uk_ref_rate_index_code
-        UNIQUE (code),
-
     CONSTRAINT fk_ref_rate_index_currency
         FOREIGN KEY (currency)
         REFERENCES currency (id_currency),

@@ -1,6 +1,8 @@
 package org.softcaster.core.data;
 
 import java.util.List;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +24,8 @@ public interface SecurityMasterDataRepository extends JpaRepository<SecurityMast
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM CashFlowItem c WHERE c.masterData = :idMasterData")
     void deleteCashFlowsByMasterDataId(@Param("idMasterData") Integer idMasterData);
+
+    @EntityGraph(attributePaths = {"issuer", "currency", "cashFlows"})
+    @Override
+    public List<SecurityMasterData> findAll(Sort sort);
 }

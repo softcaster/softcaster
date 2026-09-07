@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.utils.LoggerMgr;
+import static org.softcaster.master_data_mgr.AppTreeItem.BOND;
 import static org.softcaster.master_data_mgr.AppTreeItem.BOND_FUTURE;
 import static org.softcaster.master_data_mgr.AppTreeItem.FX_FUTURE;
 import static org.softcaster.master_data_mgr.AppTreeItem.MM_FUTURE;
@@ -28,6 +29,7 @@ import org.softcaster.master_data_mgr.views.BondPanel;
 import org.softcaster.master_data_mgr.views.CmdFuturePanel;
 import org.softcaster.master_data_mgr.views.CounterpartyPanel;
 import org.softcaster.master_data_mgr.views.CurrPairPanel;
+import org.softcaster.master_data_mgr.views.FltBondPanel;
 import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.FxFuturePanel;
 import org.softcaster.master_data_mgr.views.HomePanel;
@@ -103,6 +105,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case BOND -> {
                             cl.show(mainPanel, AppCard.BOND_CARD.name());
                             currentCard = AppCard.BOND_CARD;
+                        }
+                        case FLT_BOND -> {
+                            cl.show(mainPanel, AppCard.FLT_BOND_CARD.name());
+                            currentCard = AppCard.FLT_BOND_CARD;
                         }
                         case CURRENCY -> {
                             cl.show(mainPanel, AppCard.CURRENCY_CARD.name());
@@ -379,6 +385,8 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         // 1. Istanzia i pannelli
         JPanel bondPanel = new BondPanel(masterDataFacade);
         cardMap.put(AppCard.BOND_CARD, bondPanel);
+        JPanel fltBondPanel = new FltBondPanel(masterDataFacade);
+        cardMap.put(AppCard.FLT_BOND_CARD, fltBondPanel);
 
         JPanel fxPanel = new ForexPanel(masterDataFacade.getCurrencyDAO());
         cardMap.put(AppCard.CURRENCY_CARD, fxPanel);
@@ -416,6 +424,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT.name());
         mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
+        mainPanel.add(fltBondPanel, AppCard.FLT_BOND_CARD.name());
         mainPanel.add(fxPanel, AppCard.CURRENCY_CARD.name());
         mainPanel.add(currPairPanel, AppCard.CURR_PAIR_CARD.name());
         mainPanel.add(futBondPanel, AppCard.BOND_FUTURE_CARD.name());

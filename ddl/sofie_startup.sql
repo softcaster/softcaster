@@ -405,3 +405,9 @@ INSERT INTO tenor (tenor_id, code, description) VALUES
 (6, '6M',  '6 Months'),
 (7, '9M',  '9 Months'),
 (8, '12M', '12 Months');
+
+INSERT INTO ref_rate_index (ref_rate_index_id, code, description, currency, daycount, tenor) 
+    VALUES(nextval('ref_rate_index_s'),'EURIBOR','Euribor 6M',
+    (SELECT id_currency FROM currency WHERE iso_code='EUR' LIMIT 1),
+    (SELECT id_daycount FROM daycount WHERE code='ACT_360' LIMIT 1),
+    (SELECT tenor_id FROM tenor WHERE code='6M' LIMIT 1));

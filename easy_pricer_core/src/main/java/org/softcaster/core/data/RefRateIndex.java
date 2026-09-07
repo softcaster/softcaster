@@ -156,4 +156,9 @@ public class RefRateIndex implements Serializable {
     public void setFixings(List<RefRateFixing> fixings) {
         this.fixings = fixings;
     }
+
+    @Override
+    public String toString() {
+        return code;
+    }
 }

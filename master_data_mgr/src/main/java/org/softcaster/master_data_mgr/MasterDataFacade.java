@@ -12,6 +12,7 @@ import org.softcaster.core.data.CmdFutureMasterDataDAO;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
+import org.softcaster.core.data.FltSecurityMasterDataDAO;
 import org.softcaster.core.data.ForexMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.IssuerDAO;
@@ -19,6 +20,7 @@ import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.MmFutureMasterDataDAO;
 import org.softcaster.core.data.PortfolioMasterDataDAO;
 import org.softcaster.core.data.PositionMasterDataDAO;
+import org.softcaster.core.data.RefRateIndexDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SettlementTypeDAO;
 import org.softcaster.core.data.YieldCurveDAO;
@@ -46,6 +48,8 @@ public class MasterDataFacade {
     private MasterDataDAO masterDataDAO;
     @Autowired
     private SecurityMasterDataDAO securityMasterDataDAO;
+    @Autowired
+    private FltSecurityMasterDataDAO fltSecurityMasterDataDAO;
     @Autowired
     private BondFutureMasterDataDAO bondFutureMasterDataDAO;
     @Autowired
@@ -80,7 +84,9 @@ public class MasterDataFacade {
     private BrokerInstrumentRulesDAO brokerInstrumentRulesDAO;
     @Autowired
     private GlAccountDAO glAccountDAO;
-
+    @Autowired
+    private RefRateIndexDAO refRateIndexDAO;
+    
     @Autowired
     @Qualifier("backwardScheduleGenerator")
     private BackwardScheduleGenerator backwardScheduleGenerator;
@@ -220,5 +226,19 @@ public class MasterDataFacade {
      */
     public void setMasterDataDAO(MasterDataDAO masterDataDAO) {
         this.masterDataDAO = masterDataDAO;
+    }
+
+    /**
+     * @return the fltSecurityMasterDataDAO
+     */
+    public FltSecurityMasterDataDAO getFltSecurityMasterDataDAO() {
+        return fltSecurityMasterDataDAO;
+    }
+
+    /**
+     * @return the refRateIndexDAO
+     */
+    public RefRateIndexDAO getRefRateIndexDAO() {
+        return refRateIndexDAO;
     }
 }

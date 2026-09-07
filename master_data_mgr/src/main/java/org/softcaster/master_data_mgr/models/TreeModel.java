@@ -22,6 +22,7 @@ public class TreeModel {
         DefaultMutableTreeNode securities = new DefaultMutableTreeNode("Securities");
         // Foglie
         securities.add(new DefaultMutableTreeNode(new MasterDataNode("Bonds", AppTreeItem.BOND)));
+        securities.add(new DefaultMutableTreeNode(new MasterDataNode("Floating Bonds", AppTreeItem.FLT_BOND)));
         securities.add(new DefaultMutableTreeNode(new MasterDataNode("Equities", AppTreeItem.EQUITY)));
         instruments.add(securities);
 
