@@ -76,11 +76,7 @@ public class FltBondDlg extends BondDlg {
     protected boolean saveBean() {
 
         try {
-            if (isInsert) {
-                bean = new FltSecurityBean(new FltSecurityMasterData());
-                fillDefaultFields();
-            }
-
+ 
             FltSecurityMasterData smd = getFltSecurityBean().getSecurityMasterData();
             if (!fillSecurityMasterData(smd)) {
                 return false;
