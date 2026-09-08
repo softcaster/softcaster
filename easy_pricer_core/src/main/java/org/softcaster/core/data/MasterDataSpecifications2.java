@@ -9,23 +9,43 @@ import java.sql.Date;
 
 public class MasterDataSpecifications2 {
 
-    public static Specification<MasterData2> withFilters(String code, Date maturityLessEq, Date maturityGreatEq) {
+    public static <E extends MasterData2> Specification<E> withFilters(
+            String code,
+            Date maturityLessEq,
+            Date maturityGreatEq) {
+
         return (root, query, cb) -> {
+
             var predicate = cb.conjunction();
 
-            // 1) Code contains stringa
             if (code != null && !code.isBlank()) {
-                predicate = cb.and(predicate, cb.like(cb.lower(root.get("code")), "%" + code.toLowerCase() + "%"));
+                predicate = cb.and(
+                    predicate,
+                    cb.like(
+                        cb.lower(root.get("code")),
+                        "%" + code.toLowerCase() + "%"
+                    )
+                );
             }
 
-            // 2) Maturity less or equal data
             if (maturityLessEq != null) {
-                predicate = cb.and(predicate, cb.lessThanOrEqualTo(root.get("maturityDate"), maturityLessEq));
+                predicate = cb.and(
+                    predicate,
+                    cb.lessThanOrEqualTo(
+                        root.get("maturityDate"),
+                        maturityLessEq
+                    )
+                );
             }
 
-            // 3) Maturity great or equal data
             if (maturityGreatEq != null) {
-                predicate = cb.and(predicate, cb.greaterThanOrEqualTo(root.get("maturityDate"), maturityGreatEq));
+                predicate = cb.and(
+                    predicate,
+                    cb.greaterThanOrEqualTo(
+                        root.get("maturityDate"),
+                        maturityGreatEq
+                    )
+                );
             }
 
             return predicate;

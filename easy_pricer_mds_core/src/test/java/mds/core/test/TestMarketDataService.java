@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.core.data.SecurityMasterData2;
 import org.softcaster.core.data.SecurityMasterDataDAO;
+import org.softcaster.core.data.SecurityMasterDataDAO2;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
@@ -67,6 +69,18 @@ public class TestMarketDataService {
     @Autowired
     private SecurityMasterDataDAO smdDAO;
 
+    @Autowired
+    private SecurityMasterDataDAO2 smdDAO2;
+
+    private void testMasterData2() {
+        SecurityMasterData2 md
+                = smdDAO2.findByIdMasterData(67);
+
+        if (md != null) {
+            System.out.println(md.getIsin());
+        }
+    }
+
     private void testYieldCurve() {
 
         marketDataService.loadCurveCurveRates("TERMSOFR");
@@ -110,17 +124,17 @@ public class TestMarketDataService {
     }
 
     private void testFltBondPricer() {
-            BondPricingRequest request = new BondPricingRequest();
-            request.isin = "IT0005491250";
-            LocalDate referenceDate = org.softcaster.engine.utils.DateParser.parse("07/09/2026");
-            request.referenceDate = java.sql.Date.valueOf(referenceDate);
-            request.referencePrice = 101.65;
-            request.fullCalc = false;
-            request.yieldCurve = "";
-            
-            BondPricingResponse response = bondCalculator.bondValuation(request);
-            System.out.println(response.accruedInterest);
-            System.out.println(response.yieldToMaturity);
+        BondPricingRequest request = new BondPricingRequest();
+        request.isin = "IT0005491250";
+        LocalDate referenceDate = org.softcaster.engine.utils.DateParser.parse("07/09/2026");
+        request.referenceDate = java.sql.Date.valueOf(referenceDate);
+        request.referencePrice = 101.65;
+        request.fullCalc = false;
+        request.yieldCurve = "";
+
+        BondPricingResponse response = bondCalculator.bondValuation(request);
+        System.out.println(response.accruedInterest);
+        System.out.println(response.yieldToMaturity);
     }
 
     private void testBondPricer() {
@@ -155,7 +169,8 @@ public class TestMarketDataService {
         //testRunner.testDiscountFactor();
         // testRunner.testEcbYieldCurve();
         // testRunner.testBondPricer();
-        testRunner.testFltBondPricer();
+        //testRunner.testFltBondPricer();
+        testRunner.testMasterData2();
     }
 
     // Ricava i DF per una serie di date passate in input (ipotetiche scadenze

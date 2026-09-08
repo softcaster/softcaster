@@ -1,7 +1,5 @@
 package org.softcaster.core.data;
 
-import jakarta.persistence.CascadeType;
-import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,11 +8,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.sql.Types;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
@@ -27,7 +22,6 @@ import org.hibernate.annotations.JdbcTypeCode;
             @NamedAttributeNode("assetClass"),
             @NamedAttributeNode("instrumentValuation"),
             @NamedAttributeNode("issuer"),
-            @NamedAttributeNode("cashFlows")
         }
 )
 @NamedEntityGraph(
@@ -44,11 +38,6 @@ public class SecurityMasterData2 extends MasterData2 {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issuer", nullable = true)
     private Issuer issuer;
-
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Fetch(value = FetchMode.SUBSELECT)
-    @JoinColumn(name = "master_data", nullable = false) // FK in child table cash_flow_item
-    private List<CashFlowItem> cashFlows = new ArrayList<>();
 
     @Column(name = "isin")
     private String isin;
@@ -129,20 +118,7 @@ public class SecurityMasterData2 extends MasterData2 {
         this.firstCouponPaymentDate = firstCouponPaymentDate;
     }
 
-    /**
-     * @return the cashFlows
-     */
-    public List<CashFlowItem> getCashFlows() {
-        return cashFlows;
-    }
-
-    /**
-     * @param cashFlows the cashFlows to set
-     */
-    public void setCashFlows(List<CashFlowItem> cashFlows) {
-        this.cashFlows = cashFlows;
-    }
-
+ 
     /**
      * @return the issuer
      */
