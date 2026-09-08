@@ -4,16 +4,16 @@
  */
 package org.softcaster.core.data;
 
+import java.sql.Date;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.softcaster.core.dto.MasterDataDto;
 
-public abstract class AbstractMasterDataDAO<E extends MasterData, R extends BaseMasterDataRepository<E>> {
+public abstract class AbstractMasterDataDAO<E extends MasterData2, R extends BaseMasterDataRepository<E>> {
 
     protected final R repository;
 
@@ -65,7 +65,7 @@ public abstract class AbstractMasterDataDAO<E extends MasterData, R extends Base
     @Transactional(readOnly = true)
     public List<E> findByCriteria(String code, Date maturityLessEq, Date maturityGreatEq) {
         // Nota: Assicurati che MasterDataSpecifications restituisca una Specification<E> compatibile
-        Specification<E> spec = (Specification<E>) MasterDataSpecifications.withFilters(code, maturityLessEq, maturityGreatEq);
+        Specification<E> spec = (Specification<E>) MasterDataSpecifications2.withFilters(code, maturityLessEq, maturityGreatEq);
         return repository.findAll(spec);
     }
 

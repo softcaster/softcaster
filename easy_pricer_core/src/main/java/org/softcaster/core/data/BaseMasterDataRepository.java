@@ -9,17 +9,25 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
 import java.util.Optional;
 import java.util.List;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Query;
 
-@NoRepositoryBean // Dice a Spring di non istanziare questo repository direttamente
-public interface BaseMasterDataRepository<T extends MasterData> extends JpaRepository<T, Integer>, JpaSpecificationExecutor<T> {
+@NoRepositoryBean // Dice a Spring di non istanziare questo bean
+public interface BaseMasterDataRepository<T extends MasterData2> extends JpaRepository<T, Integer>, JpaSpecificationExecutor<T> {
 
+    // 1. Caricamento Standard (Lazy): Restituisce l'entità pulita
     T findByIdMasterData(Integer idMasterData);
 
     T findByCode(String code);
 
-    Optional<T> findByIdWithInstrumentValuation(Integer id);
+    // 2. Caricamento Completo (Eager con EntityGraph): Restituisce l'Optional con il Join Fetch
+    @EntityGraph(value = "MasterData.fullGraph")
+    Optional<T> findByIdWithInstrumentValuation(Integer idMasterData);
 
+    @EntityGraph(value = "MasterData.fullGraph")
     Optional<T> findByCodeWithInstrumentValuation(String code);
 
+    // 3. Altri metodi comuni
+    @Query("SELECT md FROM MasterData2 md WHERE md.assetClass.code = :code ORDER BY md.maturityDate ASC")
     List<T> findAllByAssetClass(String code);
 }
