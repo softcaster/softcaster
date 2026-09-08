@@ -9,7 +9,9 @@ public interface FltSecurityMasterDataRepository extends JpaRepository<FltSecuri
 
     public FltSecurityMasterData findByIdMasterData(Integer idMasterData);
 
-    @EntityGraph(attributePaths = {"issuer", "currency", "cashFlows"})
+    public FltSecurityMasterData findByIsin(String isin);
+    
+    @EntityGraph(attributePaths = {"issuer", "currency", "refRateIndex", "cashFlows"})
     @Override
     public List<FltSecurityMasterData> findAll(Sort sort);
 }

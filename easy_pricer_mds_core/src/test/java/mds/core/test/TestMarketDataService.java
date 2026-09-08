@@ -20,6 +20,8 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
+import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
@@ -107,6 +109,20 @@ public class TestMarketDataService {
         }
     }
 
+    private void testFltBondPricer() {
+            BondPricingRequest request = new BondPricingRequest();
+            request.isin = "IT0005491250";
+            LocalDate referenceDate = org.softcaster.engine.utils.DateParser.parse("07/09/2026");
+            request.referenceDate = java.sql.Date.valueOf(referenceDate);
+            request.referencePrice = 101.65;
+            request.fullCalc = false;
+            request.yieldCurve = "";
+            
+            BondPricingResponse response = bondCalculator.bondValuation(request);
+            System.out.println(response.accruedInterest);
+            System.out.println(response.yieldToMaturity);
+    }
+
     private void testBondPricer() {
         SecurityMasterData smd = smdDAO.findByIsin("IT0004532559");
         if (smd != null) {
@@ -138,7 +154,8 @@ public class TestMarketDataService {
         //testRunner.testYieldCurve();
         //testRunner.testDiscountFactor();
         // testRunner.testEcbYieldCurve();
-        testRunner.testBondPricer();
+        // testRunner.testBondPricer();
+        testRunner.testFltBondPricer();
     }
 
     // Ricava i DF per una serie di date passate in input (ipotetiche scadenze

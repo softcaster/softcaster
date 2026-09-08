@@ -10,7 +10,9 @@ import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.softcaster.core.data.converters.CouponProjectionMethodConverter;
+import org.softcaster.core.data.converters.FixingDayTypeConverter;
 import org.softcaster.engine.enums.CouponProjectionMethod;
+import org.softcaster.engine.enums.FixingDayType;
 
 @Entity
 @Table(name = "flt_security_master_data")
@@ -30,6 +32,13 @@ public class FltSecurityMasterData extends SecurityMasterData {
     @Column(name = "coupon_pm")
     private CouponProjectionMethod couponPm;
 
+    @Column(name = "fixing_days_before")
+    private Integer fixingDaysBefore;
+    
+    @Convert(converter = FixingDayTypeConverter.class)
+    @Column(name = "fixing_day_type")
+    private FixingDayType fixingDayType;
+    
     public Double getSpread() {
         return spread;
     }
@@ -64,5 +73,33 @@ public class FltSecurityMasterData extends SecurityMasterData {
      */
     public void setRefRateIndex(RefRateIndex refRateIndex) {
         this.refRateIndex = refRateIndex;
+    }
+
+    /**
+     * @return the fixingDaysBefore
+     */
+    public Integer getFixingDaysBefore() {
+        return fixingDaysBefore;
+    }
+
+    /**
+     * @param fixingDaysBefore the fixingDaysBefore to set
+     */
+    public void setFixingDaysBefore(Integer fixingDaysBefore) {
+        this.fixingDaysBefore = fixingDaysBefore;
+    }
+
+    /**
+     * @return the fixingDayType
+     */
+    public FixingDayType getFixingDayType() {
+        return fixingDayType;
+    }
+
+    /**
+     * @param fixingDayType the fixingDayType to set
+     */
+    public void setFixingDayType(FixingDayType fixingDayType) {
+        this.fixingDayType = fixingDayType;
     }
 }

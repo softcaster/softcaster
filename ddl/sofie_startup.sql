@@ -411,3 +411,9 @@ INSERT INTO ref_rate_index (ref_rate_index_id, code, description, currency, dayc
     (SELECT id_currency FROM currency WHERE iso_code='EUR' LIMIT 1),
     (SELECT id_daycount FROM daycount WHERE code='ACT_360' LIMIT 1),
     (SELECT tenor_id FROM tenor WHERE code='6M' LIMIT 1));
+
+INSERT INTO fixing_day_type(fixing_day_type_id,code, description) VALUES (1,'CALENDAR_DAYS','Calendar Days');
+INSERT INTO fixing_day_type(fixing_day_type_id,code, description) VALUES (2,'BUSINESS_DAYS','Business Days');
+
+alter table flt_security_master_data add column fixing_days_before INTEGER NOT NULL DEFAULT 2;
+alter table flt_security_master_data add column fixing_day_type INTEGER NOT NULL DEFAULT 2;

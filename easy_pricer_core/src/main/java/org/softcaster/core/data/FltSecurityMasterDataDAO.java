@@ -26,6 +26,11 @@ public class FltSecurityMasterDataDAO {
         return repository.findByIdMasterData(idMasterData);
     }
 
+    @Transactional(readOnly = true)
+    public FltSecurityMasterData findByIsin(String isin) {
+        return repository.findByIsin(isin);
+    }
+
     @Transactional
     public FltSecurityMasterData saveOrUpdate(FltSecurityMasterData fltSecurityMasterData) {
         return repository.save(fltSecurityMasterData);

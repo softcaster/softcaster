@@ -23,6 +23,7 @@ import org.softcaster.core.data.PositionMasterDataDAO;
 import org.softcaster.core.data.RefRateIndexDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SettlementTypeDAO;
+import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.core.data.account.GlAccountDAO;
 import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
@@ -37,13 +38,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class MasterDataFacade {
 
-    /**
-     * @return the cmdFutureMasterDataDAO
-     */
-    public CmdFutureMasterDataDAO getCmdFutureMasterDataDAO() {
-        return cmdFutureMasterDataDAO;
-    }
-
+    @Autowired
+    private SystemBusinessCalendarDAO systemBusinessCalendarDAO;
     @Autowired
     private MasterDataDAO masterDataDAO;
     @Autowired
@@ -240,5 +236,20 @@ public class MasterDataFacade {
      */
     public RefRateIndexDAO getRefRateIndexDAO() {
         return refRateIndexDAO;
+
     }
+    /**
+     * @return the cmdFutureMasterDataDAO
+     */
+    public CmdFutureMasterDataDAO getCmdFutureMasterDataDAO() {
+        return cmdFutureMasterDataDAO;
+    }
+
+    /**
+     * @return the systemBusinessCalendarDAO
+     */
+    public SystemBusinessCalendarDAO getSystemBusinessCalendarDAO() {
+        return systemBusinessCalendarDAO;
+    }
+
 }

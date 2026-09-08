@@ -4,14 +4,19 @@
  */
 package org.softcaster.master_data_mgr.dialogs;
 
+import java.time.LocalDate;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.AssetClass;
+import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.FltSecurityMasterData;
 import org.softcaster.core.data.RefRateIndex;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.engine.enums.CouponProjectionMethod;
+import org.softcaster.engine.enums.FixingDayType;
+import org.softcaster.engine.enums.TypeOfInterest;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.FltSecurityBean;
 
@@ -20,6 +25,9 @@ import org.softcaster.master_data_mgr.models.beans.FltSecurityBean;
  * @author ep
  */
 public class FltBondDlg extends BondDlg {
+
+    private LocalDate systemDate = null;
+    private FltSecurityBean fltSecurityBean = null;
 
     public FltBondDlg(java.awt.Frame parent, boolean modal, FltSecurityBean bean, MasterDataFacade masterDataFacade) {
         super(parent, modal, bean, masterDataFacade);
@@ -30,6 +38,19 @@ public class FltBondDlg extends BondDlg {
     protected void postInit() {
         super.postInit();
         setUpFltCombos();
+        if (bean != null) {
+            if (bean instanceof FltSecurityBean fltBean) {
+                fltSecurityBean = fltBean;
+                cfRefIndex.setSelectedItem(fltSecurityBean.getSecurityMasterData().getRefRateIndex());
+                txtSpread.setText(Converter.fromDouble(fltSecurityBean.getSecurityMasterData().getSpread()));
+                cbProjectiooMethod.setSelectedItem(fltSecurityBean.getSecurityMasterData().getCouponPm());
+                cfFixingDayType.setSelectedItem(fltSecurityBean.getSecurityMasterData().getFixingDayType());
+                spinnerDaysB.setValue(fltSecurityBean.getSecurityMasterData().getFixingDaysBefore());
+            }
+        }
+        cbToi.setSelectedItem(TypeOfInterest.FLOATING);
+        cbToi.setEnabled(false);
+        systemDate = masterDataFacade.getSystemBusinessCalendarDAO().findBySbcId(1).getOfficialDate();
     }
 
     @Override
@@ -39,6 +60,7 @@ public class FltBondDlg extends BondDlg {
     private void setUpFltCombos() {
         setUpIndexCombo();
         setUpProjectionCombo();
+        setUpFixingDayTypeCombo();
     }
 
     private void setUpIndexCombo() {
@@ -57,6 +79,14 @@ public class FltBondDlg extends BondDlg {
         cbProjectiooMethod.setModel(model);
     }
 
+    private void setUpFixingDayTypeCombo() {
+        List<FixingDayType> projectionMethods = List.of(FixingDayType.values());
+
+        // Crea il modello partendo dalla lista
+        DefaultComboBoxModel<FixingDayType> model = new DefaultComboBoxModel<>(projectionMethods.toArray(FixingDayType[]::new));
+        cfFixingDayType.setModel(model);
+    }
+
     @Override
     protected AssetClass getAssetClass() {
         return masterDataFacade.findAssetClass("FRB");
@@ -64,18 +94,21 @@ public class FltBondDlg extends BondDlg {
 
     private FltSecurityBean getFltSecurityBean() {
         if (isInsert) {
-            bean = new FltSecurityBean(new FltSecurityMasterData());
+            fltSecurityBean = new FltSecurityBean(new FltSecurityMasterData());
             fillDefaultFields();
-            return (FltSecurityBean) bean;
+            return fltSecurityBean;
         } else {
-            if (bean instanceof FltSecurityBean fltSecurityBean) {
-                if (!fillSecurityMasterData(fltSecurityBean.getSecurityMasterData())) {
-                    return null;
-                }
-                return fltSecurityBean;
-            }
+            return fltSecurityBean;
         }
-        return null;
+    }
+
+    @Override
+    protected CashFlowStatus getCashFlowStatus(CashFlowItem item) {
+        if (systemDate.isBefore(item.getStartDate().toLocalDate())) {
+            return CashFlowStatus.ESTIMATED;
+        } else {
+            return CashFlowStatus.RECORDED;
+        }
     }
 
     @Override

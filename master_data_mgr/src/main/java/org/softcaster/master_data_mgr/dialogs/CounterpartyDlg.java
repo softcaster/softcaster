@@ -364,9 +364,7 @@ public class CounterpartyDlg extends javax.swing.JDialog {
 
         fieldsToValidate = Arrays.asList(txtCode, txtDescription);
         initTable();
-        
-        GlAccount account = masterDataFacade.getGlAccountDAO().findByAccountId(30);
-        System.out.println(account.getCode());
+    
     }
 
     private void setUpCountryCombo() {

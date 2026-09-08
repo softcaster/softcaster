@@ -12,6 +12,7 @@ public interface SecurityMasterDataRepository extends JpaRepository<SecurityMast
 
     public SecurityMasterData findByIdMasterData(Integer idMasterData);
 
+    @EntityGraph(attributePaths = {"issuer", "currency", "cashFlows"})
     public SecurityMasterData findByIsin(String isin);
 
     public List<SecurityMasterData> findByCurrencyIsoCode(String currencyCode);

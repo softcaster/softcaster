@@ -38,8 +38,10 @@ import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.engine.enums.CouponProjectionMethod;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.FixingDayType;
 import org.softcaster.engine.enums.Form;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.enums.RollConvention;
@@ -143,6 +145,10 @@ public class BondDlg extends javax.swing.JDialog {
         txtSpread = new javax.swing.JTextField();
         cbProjectiooMethod = new javax.swing.JComboBox<>();
         filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        jLabel27 = new javax.swing.JLabel();
+        cfFixingDayType = new javax.swing.JComboBox<>();
+        jLabel28 = new javax.swing.JLabel();
+        spinnerDaysB = new javax.swing.JSpinner();
         codPanel = new javax.swing.JPanel();
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
@@ -671,11 +677,47 @@ public class BondDlg extends javax.swing.JDialog {
         idxPanel.add(cbProjectiooMethod, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         idxPanel.add(filler5, gridBagConstraints);
+
+        jLabel27.setText("Fixing Day Type");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(jLabel27, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(cfFixingDayType, gridBagConstraints);
+
+        jLabel28.setText("Days Before");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(jLabel28, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        idxPanel.add(spinnerDaysB, gridBagConstraints);
 
         tabbedPane.addTab("Index", idxPanel);
 
@@ -895,6 +937,10 @@ public class BondDlg extends javax.swing.JDialog {
         MDDialogHelper.textFieldDoubleFocusLost(txtNominalValue);
     }//GEN-LAST:event_txtNominalValueFocusLost
 
+    protected CashFlowStatus getCashFlowStatus(CashFlowItem item) {
+        return CashFlowStatus.RECORDED;
+    }
+    
     private void btnGenerateCFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateCFActionPerformed
 
         boolean proceed = false;
@@ -941,6 +987,7 @@ public class BondDlg extends javax.swing.JDialog {
                     item.setEndDate(java.sql.Date.valueOf(flow.accrualEnd()));
                     item.setInterest(flow.interest());
                     item.setAmount(flow.principal());
+                    item.setCashFlowStatus(getCashFlowStatus(item));
                     items.add(item);
                 }
 
@@ -987,7 +1034,8 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JComboBox<Issuer> cbIssuer;
     protected javax.swing.JComboBox<CouponProjectionMethod> cbProjectiooMethod;
     private javax.swing.JComboBox<RollConvention> cbRollConv;
-    private javax.swing.JComboBox<TypeOfInterest> cbToi;
+    protected javax.swing.JComboBox<TypeOfInterest> cbToi;
+    protected javax.swing.JComboBox<FixingDayType> cfFixingDayType;
     protected javax.swing.JComboBox<RefRateIndex> cfRefIndex;
     private javax.swing.JPanel codPanel;
     private javax.swing.JPanel fieldPanel;
@@ -1016,6 +1064,8 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1026,6 +1076,7 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JPanel mainPanel;
     private javax.swing.JScrollPane scrollPaneCF;
     private javax.swing.JSpinner spinnerBD;
+    protected javax.swing.JSpinner spinnerDaysB;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JTable tableCF;
     private javax.swing.JTextField txtCfiCode;
@@ -1097,6 +1148,10 @@ public class BondDlg extends javax.swing.JDialog {
                 }
             }
         });
+
+        cbToi.setSelectedItem(TypeOfInterest.FIXED);
+        cbToi.setEnabled(false);
+
         removeTabIndex();
     }
 
