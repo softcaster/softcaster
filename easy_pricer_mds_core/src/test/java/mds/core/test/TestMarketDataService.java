@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.softcaster.commons.utils.FileUtil;
+import org.softcaster.core.data.FltSecurityMasterData2;
+import org.softcaster.core.data.FltSecurityMasterDataDAO2;
 import org.softcaster.core.data.ForexMasterData2;
 import org.softcaster.core.data.ForexMasterDataDAO2;
 import org.softcaster.core.data.FxFutureMasterData2;
@@ -73,13 +75,16 @@ public class TestMarketDataService {
 
     @Autowired
     private SecurityMasterDataDAO smdDAO;
-
+/*
     @Autowired
     private SecurityMasterDataDAO2 smdDAO2;
     @Autowired
     private ForexMasterDataDAO2 fxDAO2;
     @Autowired
     private FxFutureMasterDataDAO2 fxFutDAO2;
+*/
+    @Autowired
+    private FltSecurityMasterDataDAO2 fltSecurityMasterDataDAO2;
 
     private void testMasterData2() {
         /*
@@ -98,10 +103,15 @@ public class TestMarketDataService {
         
         ForexMasterData2 pair = fxDAO2.findByCode("EURUSD");
         System.out.println(pair.getDescription());
-*/
+
         List<FxFutureMasterData2> futures = fxFutDAO2.findAll();
         for (FxFutureMasterData2 fut : futures) {
             System.out.println(fut.getDescription());
+        }
+*/
+        FltSecurityMasterData2 item = fltSecurityMasterDataDAO2.findByIdWithRefRateIndex(74).orElse(null);
+        if(item != null) {
+            System.out.println(item.getRefRateIndex().getCode() + " - " + item.getRefRateIndex().getDescription());
         }
         
     }

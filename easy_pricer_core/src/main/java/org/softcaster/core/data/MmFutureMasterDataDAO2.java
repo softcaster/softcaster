@@ -6,17 +6,17 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public class FxFutureMasterDataDAO2 extends AbstractMasterDataDAO<FxFutureMasterData2, FxFutureMasterDataRepository2> {
+public class MmFutureMasterDataDAO2  extends AbstractMasterDataDAO<MmFutureMasterData2, MmFutureMasterDataRepository2> {
 
     private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
-    public FxFutureMasterDataDAO2(FxFutureMasterDataRepository2 repository) {
+    public MmFutureMasterDataDAO2(MmFutureMasterDataRepository2 repository) {
         super(repository);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<FxFutureMasterData2> findAll() {
+    public List<MmFutureMasterData2> findAll() {
         return repository.findAll(sortByCode);
     }
 }

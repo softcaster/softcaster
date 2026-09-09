@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -16,24 +17,25 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Table(name = "security_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 
-@NamedEntityGraph(
-        name = "SecurityMasterData.fullGraph",
-        attributeNodes = {
-            @NamedAttributeNode("currency"),
-            @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
-            @NamedAttributeNode("issuer"),
-        }
-)
-@NamedEntityGraph(
-        name = "SecurityMasterData.referenceGraph",
-        attributeNodes = {
-            @NamedAttributeNode("currency"),
-            @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
-            @NamedAttributeNode("issuer")
-        }
-)
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+            name = "SecurityMasterData.fullGraph",
+            attributeNodes = {
+                @NamedAttributeNode("currency"),
+                @NamedAttributeNode("assetClass"),
+                @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("issuer"),}
+    ),
+    @NamedEntityGraph(
+            name = "SecurityMasterData.referenceGraph",
+            attributeNodes = {
+                @NamedAttributeNode("currency"),
+                @NamedAttributeNode("assetClass"),
+                @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("issuer")
+            }
+    )
+})
 public class SecurityMasterData2 extends MasterData2 {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -119,7 +121,6 @@ public class SecurityMasterData2 extends MasterData2 {
         this.firstCouponPaymentDate = firstCouponPaymentDate;
     }
 
- 
     /**
      * @return the issuer
      */
