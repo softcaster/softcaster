@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -42,21 +43,24 @@ import org.softcaster.engine.enums.TypeOfInterest;
 @Inheritance(
         strategy = InheritanceType.JOINED
 )
-// --- DEFINIZIONE DEL GRAFO ---
-@NamedEntityGraph(
-        name = "MasterData.fullGraph",
-        attributeNodes = {
-            @NamedAttributeNode("instrumentValuation"),
-            @NamedAttributeNode("currency"),
-            @NamedAttributeNode("assetClass")
-        }
-)
-@NamedEntityGraph(
-        name = "MasterData.valuationGraph",
-        attributeNodes = {
-            @NamedAttributeNode("instrumentValuation")
-        }
-)
+
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+            name = "MasterData.fullGraph",
+            attributeNodes = {
+                @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("currency"),
+                @NamedAttributeNode("assetClass")
+            }
+    ),
+
+    @NamedEntityGraph(
+            name = "MasterData.valuationGraph",
+            attributeNodes = {
+                @NamedAttributeNode("instrumentValuation")
+            }
+    )
+})  
 public class MasterData2 implements Serializable {
 
     @Id

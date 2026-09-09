@@ -15,6 +15,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Entity
 @Table(name = "security_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
+
 @NamedEntityGraph(
         name = "SecurityMasterData.fullGraph",
         attributeNodes = {

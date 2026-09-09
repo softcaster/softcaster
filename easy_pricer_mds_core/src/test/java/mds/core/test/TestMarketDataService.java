@@ -10,7 +10,12 @@ import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.softcaster.commons.utils.FileUtil;
+import org.softcaster.core.data.ForexMasterData2;
+import org.softcaster.core.data.ForexMasterDataDAO2;
+import org.softcaster.core.data.FxFutureMasterData2;
+import org.softcaster.core.data.FxFutureMasterDataDAO2;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterData2;
 import org.softcaster.core.data.SecurityMasterDataDAO;
@@ -71,14 +76,34 @@ public class TestMarketDataService {
 
     @Autowired
     private SecurityMasterDataDAO2 smdDAO2;
+    @Autowired
+    private ForexMasterDataDAO2 fxDAO2;
+    @Autowired
+    private FxFutureMasterDataDAO2 fxFutDAO2;
 
     private void testMasterData2() {
+        /*
         SecurityMasterData2 md
-                = smdDAO2.findByIdMasterData(67);
+                = smdDAO2.findByIdWithInstrumentValuation(58)
+                        .orElse(null);
 
         if (md != null) {
-            System.out.println(md.getIsin());
+            System.out.println(md.getCurrency().getIsoCode());
         }
+         
+        List<ForexMasterData2> pairs = fxDAO2.findAll();
+        for (ForexMasterData2 pair : pairs) {
+            System.out.println(pair.getBcy().getIsoCode() + pair.getCcy().getIsoCode());
+        }
+        
+        ForexMasterData2 pair = fxDAO2.findByCode("EURUSD");
+        System.out.println(pair.getDescription());
+*/
+        List<FxFutureMasterData2> futures = fxFutDAO2.findAll();
+        for (FxFutureMasterData2 fut : futures) {
+            System.out.println(fut.getDescription());
+        }
+        
     }
 
     private void testYieldCurve() {

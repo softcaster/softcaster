@@ -11,23 +11,43 @@ import java.util.Optional;
 import java.util.List;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-@NoRepositoryBean // Dice a Spring di non istanziare questo bean
-public interface BaseMasterDataRepository<T extends MasterData2> extends JpaRepository<T, Integer>, JpaSpecificationExecutor<T> {
+@NoRepositoryBean
+public interface BaseMasterDataRepository<E extends MasterData2>
+        extends JpaRepository<E, Integer>,
+        JpaSpecificationExecutor<E> {
 
-    // 1. Caricamento Standard (Lazy): Restituisce l'entità pulita
-    T findByIdMasterData(Integer idMasterData);
+    E findByIdMasterData(Integer idMasterData);
 
-    T findByCode(String code);
+    E findByCode(String code);
 
-    // 2. Caricamento Completo (Eager con EntityGraph): Restituisce l'Optional con il Join Fetch
-    @EntityGraph(value = "MasterData.fullGraph")
-    Optional<T> findByIdWithInstrumentValuation(Integer idMasterData);
+    @Query("""
+        SELECT md
+        FROM MasterData2 md
+        WHERE md.idMasterData = :id
+        """)
+    @EntityGraph("MasterData.fullGraph")
+    Optional<E> findByIdWithInstrumentValuation(
+            @Param("id") Integer id);
 
-    @EntityGraph(value = "MasterData.fullGraph")
-    Optional<T> findByCodeWithInstrumentValuation(String code);
+    @Query("""
+        SELECT md
+        FROM MasterData2 md
+        WHERE md.code = :code
+        """)
+    @EntityGraph("MasterData.fullGraph")
+    Optional<E> findByCodeWithInstrumentValuation(
+            @Param("code") String code);
 
-    // 3. Altri metodi comuni
-    @Query("SELECT md FROM MasterData2 md WHERE md.assetClass.code = :code ORDER BY md.maturityDate ASC")
-    List<T> findAllByAssetClass(String code);
+    @Query("""
+        SELECT md
+        FROM MasterData2 md
+        WHERE md.assetClass.code = :code
+        ORDER BY md.maturityDate ASC
+        """)
+    List<E> findAllByAssetClass(
+            @Param("code") String code);
+
+    List<E> findByDescriptionContaining(String description);
 }
