@@ -24,4 +24,11 @@ public interface SecurityMasterDataRepository extends BaseMasterDataRepository<S
     @EntityGraph("MasterData.fullGraph")
     public Optional<List<SecurityMasterData>> findByCurrency(@Param("code") String currencyCode);
     
+    @Query("""
+        SELECT smd
+        FROM SecurityMasterData smd
+        WHERE smd.idMasterData = :id
+        """)
+    @EntityGraph("SecurityMasterData.withCashFlow")
+    public Optional<SecurityMasterData> findByIdWithCashFlow(@Param("id") Integer id);
 }

@@ -40,7 +40,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
      * @param bean
      * @param mDSFacade
      */
-    public BondPricerDlg(java.awt.Frame parent, boolean modal, BondBean bean,MDSFacade mDSFacade) {
+    public BondPricerDlg(java.awt.Frame parent, boolean modal, BondBean bean, MDSFacade mDSFacade) {
         super(parent, modal);
         this.bean = bean;
         this.mDSFacade = mDSFacade;
@@ -326,23 +326,26 @@ public class BondPricerDlg extends javax.swing.JDialog {
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
         double refPrice = 0.;
         try {
-            refPrice = Converter.toDouble(txtRefPrice.getText(), false);
-            LocalDate refDate = DateParser.parse(txtRefDate.getText());
-            XRBInputData input = new XRBInputData();
-            input.setReferencePrice(refPrice);
-            input.setValuationDate(refDate);
-            input.setFrequency(bean.getInstrumentQuote().getMasterData().getFrequency());
-            input.setCompounding(Compounding.COMPOUNDED);
-            //input.setDaycount(getDaycount(bean.getInstrumentQuote().getMasterData().getDaycount()));
-            // Daycount di attualizzazione
-            input.setDaycount(org.softcaster.engine.enums.DaycountBasis.ACT_365);
-            input.setFlows(cashFlow(bean.getInstrumentQuote().getMasterData()));
-            
-            BondPricer bondPricer = mDSFacade.getBondPricer();
-            XRBOutputData output = bondPricer.calculate(input);
-            txtAccrued.setText(Converter.fromDouble(output.getAccruedInterest()));
-            txtYield.setText(Converter.fromDouble(output.getYtm()));
-            txtModDuration.setText(Converter.fromDouble(output.getModifiedDuration()));
+            SecurityMasterData smd = mDSFacade.getSecurityMasterDataDAO().
+                    findByIdWithCashFlow(bean.getInstrumentQuote().getMasterData().getIdMasterData()).orElse(null);
+            if (smd != null) {
+                refPrice = Converter.toDouble(txtRefPrice.getText(), false);
+                LocalDate refDate = DateParser.parse(txtRefDate.getText());
+                XRBInputData input = new XRBInputData();
+                input.setReferencePrice(refPrice);
+                input.setValuationDate(refDate);
+                input.setFrequency(smd.getFrequency());
+                input.setCompounding(Compounding.COMPOUNDED);
+                // Daycount di attualizzazione
+                input.setDaycount(smd.getAccrualDaycount());
+                input.setFlows(cashFlow(smd));
+
+                BondPricer bondPricer = mDSFacade.getBondPricer();
+                XRBOutputData output = bondPricer.calculate(input);
+                txtAccrued.setText(Converter.fromDouble(output.getAccruedInterest()));
+                txtYield.setText(Converter.fromDouble(output.getYtm()));
+                txtModDuration.setText(Converter.fromDouble(output.getModifiedDuration()));
+            }
         } catch (ParseException ex) {
             System.getLogger(BondPricerDlg.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
@@ -395,8 +398,8 @@ public class BondPricerDlg extends javax.swing.JDialog {
             org.softcaster.engine.cashflow.CashFlow flow = null;
             for (CashFlowItem item : smd.getCashFlows()) {
                 flow = new org.softcaster.engine.cashflow.CashFlow(
-                        item.getStartDate().toLocalDate(),item.getEnddate().toLocalDate(),item.getEnddate().toLocalDate(),
-                item.getAmount(),item.getInterest(),item.getAmount(),CashFlowStatus.RECORDED);
+                        item.getStartDate().toLocalDate(), item.getEnddate().toLocalDate(), item.getEnddate().toLocalDate(),
+                        item.getAmount(), item.getInterest(), item.getAmount(), CashFlowStatus.RECORDED);
                 flows.add(flow);
             }
             // LocalDate implementa Comparable, l’ordinamento sara' cronologico crescente

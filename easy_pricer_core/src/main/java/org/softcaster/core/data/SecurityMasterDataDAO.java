@@ -56,4 +56,10 @@ public class SecurityMasterDataDAO extends AbstractMasterDataDAO<SecurityMasterD
     public Optional<List<SecurityMasterData>> findByCurrency(String currencyCode) {
         return repository.findByCurrency(currencyCode);
     }
+
+    @Transactional(readOnly = true)
+    public Optional<SecurityMasterData> findByIdWithCashFlow(Integer id) {
+        return repository.findByIdWithCashFlow(id);
+    }
+    
 }
