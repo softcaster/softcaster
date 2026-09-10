@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.sql.Types;
@@ -34,7 +35,19 @@ import org.hibernate.annotations.JdbcTypeCode;
     @NamedEntityGraph(
             name = "SecurityMasterData.withCashFlow",
             attributeNodes = {
-                @NamedAttributeNode("cashFlows")
+                @NamedAttributeNode("cashFlows"),
+                @NamedAttributeNode(
+                        value = "currency",
+                        subgraph = "currencyGraph"
+                )
+            },
+            subgraphs = {
+                @NamedSubgraph(
+                        name = "currencyGraph",
+                        attributeNodes = {
+                            @NamedAttributeNode("calendar")
+                        }
+                )
             }
     )
 })
@@ -47,8 +60,8 @@ public class SecurityMasterData extends MasterData {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "master_data", nullable = false) // FK in child table cash_flow_item
-    private List<CashFlowItem> cashFlows = new ArrayList<>();  
-    
+    private List<CashFlowItem> cashFlows = new ArrayList<>();
+
     @Column(name = "isin")
     private String isin;
 

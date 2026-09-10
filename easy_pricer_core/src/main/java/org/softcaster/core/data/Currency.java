@@ -30,6 +30,10 @@ public class Currency implements Serializable {
     @Column(name = "iso_code")
     private String isoCode;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "calendar", nullable = false)
+    private Calendar calendar;
+    
     @Column(name = "currency_numeric_code")
     private Short currencyNumericCode;
 
@@ -47,10 +51,6 @@ public class Currency implements Serializable {
 
     @Column(name = "business_days")
     private Integer businessDays;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "calendar", nullable = true)
-    private Calendar calendar;
 
     @Convert(converter = DaycountConverter.class)
     @Column(name = "daycount")

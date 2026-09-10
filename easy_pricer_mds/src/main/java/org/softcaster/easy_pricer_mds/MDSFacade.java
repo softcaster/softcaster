@@ -22,6 +22,7 @@ import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SettlementTypeDAO;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.engine.analytics.BondPricer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -83,6 +84,10 @@ public class MDSFacade {
     @Autowired
     @Qualifier("marketDataService") 
     private MarketDataService marketDataService;
+
+    @Autowired
+    @Qualifier("bondCalculator")
+    private BondCalculator bondCalculator;
     
     /**
      * @return the securityMasterDataDAO
@@ -204,5 +209,12 @@ public class MDSFacade {
      */
     public MarketDataService getMarketDataService() {
         return marketDataService;
+    }
+
+    /**
+     * @return the bondCalculator
+     */
+    public BondCalculator getBondCalculator() {
+        return bondCalculator;
     }
 }

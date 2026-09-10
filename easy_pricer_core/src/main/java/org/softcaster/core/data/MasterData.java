@@ -24,6 +24,7 @@ import java.util.List;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.softcaster.core.data.converters.AccrualScheduleTypeConverter;
 import org.softcaster.core.data.converters.AmortizationScheduleConverter;
+import org.softcaster.core.data.converters.CompoundingConverter;
 import org.softcaster.core.data.converters.DaycountConverter;
 import org.softcaster.core.data.converters.FormConverter;
 import org.softcaster.core.data.converters.FrequencyConverter;
@@ -31,6 +32,7 @@ import org.softcaster.core.data.converters.RollConventionConverter;
 import org.softcaster.core.data.converters.TypeOfInterestConverter;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
+import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Form;
 import org.softcaster.engine.enums.Frequency;
@@ -119,6 +121,10 @@ public class MasterData implements Serializable {
     @Convert(converter = AccrualScheduleTypeConverter.class)
     @Column(name = "accrual_schedule_type")
     private AccrualScheduleType accrualScheduleType;
+    
+    @Convert(converter = CompoundingConverter.class)
+    @Column(name = "compounding")
+    private Compounding compounding;
 
     @Column(name = "issue_date")
     private java.sql.Date issueDate;
@@ -430,5 +436,19 @@ public class MasterData implements Serializable {
 
     public Currency getMasterDataCcy() {
         return currency;
+    }
+
+    /**
+     * @return the compounding
+     */
+    public Compounding getCompounding() {
+        return compounding;
+    }
+
+    /**
+     * @param compounding the compounding to set
+     */
+    public void setCompounding(Compounding compounding) {
+        this.compounding = compounding;
     }
 }

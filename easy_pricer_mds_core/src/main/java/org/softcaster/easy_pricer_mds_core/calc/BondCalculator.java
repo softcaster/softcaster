@@ -19,8 +19,6 @@ import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.CashFlowStatus;
-import org.softcaster.engine.enums.Compounding;
-import org.softcaster.engine.enums.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -72,16 +70,16 @@ public class BondCalculator {
     public BondPricingResponse bondValuation(BondPricingRequest request) {
         BondPricingResponse response = null;
         if (smdDAO != null) {
-            SecurityMasterData securityMasterData = smdDAO.findByIsin(request.isin).orElse(null);
+            SecurityMasterData securityMasterData = smdDAO.findByCodeWithCashFlowAndHolidays(request.isin);
             if (securityMasterData != null) {
                 XRBInputData input = new XRBInputData();
                 Calendar calendar = new Calendar(securityMasterData.getCurrency());
                 LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, securityMasterData.getBusinessDays());
                 input.setValuationDate(valuationDate);
                 input.setReferencePrice(request.referencePrice);
-                input.setFrequency(Frequency.fromCode(securityMasterData.getFrequency().getCode()));
+                input.setFrequency(securityMasterData.getFrequency());
                 input.setDaycount(securityMasterData.getAccrualDaycount());
-                input.setCompounding(Compounding.COMPOUNDED);
+                input.setCompounding(securityMasterData.getCompounding());
 
                 XRBOutputData output = bondValuation(input, securityMasterData);
                 if (output != null) {
@@ -117,7 +115,7 @@ public class BondCalculator {
         LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, securityMasterData.getBusinessDays());
 
         double newPrice = bondPricer.calculatePrice(getCashFlow(securityMasterData.getCashFlows()), ytm, valuationDate,
-                securityMasterData.getAccrualDaycount(), Compounding.COMPOUNDED, securityMasterData.getFrequency());
+                securityMasterData.getAccrualDaycount(), securityMasterData.getCompounding(), securityMasterData.getFrequency());
 
         return newPrice;
     }

@@ -55,7 +55,7 @@ public class SecurityUsdImportMgr implements IImportMgr {
     private final RollConvention rollConvention = RollConvention.UNADJUSTED;
 
     private void fillAndSaveSecurityMasterData(RefDatum refDatum) {
-        securityMasterData = securityMasterDataDAO.findByIsin(refDatum.isin);
+        securityMasterData = securityMasterDataDAO.findByIsin(refDatum.isin).orElse(null);
         if (securityMasterData == null) {
             createEmptySecurityMasterData();
             securityMasterData.setCode(refDatum.isin);

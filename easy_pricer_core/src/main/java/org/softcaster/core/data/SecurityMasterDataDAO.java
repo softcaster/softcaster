@@ -17,17 +17,17 @@ public class SecurityMasterDataDAO extends AbstractMasterDataDAO<SecurityMasterD
     @Transactional(readOnly = true)
     public Optional<SecurityMasterData> findByIsin(String isin) {
         return repository.findByIsin(isin);
-    }    
+    }
 
     @Transactional(readOnly = true)
     public List<SecurityMasterDataDto> findAllDto() {
         List<SecurityMasterDataDto> listDto = null;
         List<SecurityMasterData> list = findAllByAssetClass("XRB");
-        
-        if(list != null && !list.isEmpty()) {
+
+        if (list != null && !list.isEmpty()) {
             listDto = new ArrayList<>();
             SecurityMasterDataDto smdDto;
-            for(SecurityMasterData smd: list) {
+            for (SecurityMasterData smd : list) {
                 smdDto = new SecurityMasterDataDto();
                 smdDto.setGenericMasterDataId(smd.getIdMasterData());
                 smdDto.setCode(smd.getIsin());
@@ -48,7 +48,7 @@ public class SecurityMasterDataDAO extends AbstractMasterDataDAO<SecurityMasterD
                 listDto.add(smdDto);
             }
         }
-        
+
         return listDto;
     }
 
@@ -61,5 +61,35 @@ public class SecurityMasterDataDAO extends AbstractMasterDataDAO<SecurityMasterD
     public Optional<SecurityMasterData> findByIdWithCashFlow(Integer id) {
         return repository.findByIdWithCashFlow(id);
     }
-    
+
+    @Transactional(readOnly = true)
+    public SecurityMasterData findByIdWithCashFlowAndHolidays(Integer id) {
+        SecurityMasterData md = repository.findByIdWithCashFlow(id).orElseThrow();
+
+        // Forza delle holidaysil caricamento mentre la sessione è aperta
+        md.getCurrency()
+                .getCalendar()
+                .getHolidays()
+                .size();
+
+        return md;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<SecurityMasterData> findByCodeWithCashFlow(String isin) {
+        return repository.findByCodeWithCashFlow(isin);
+    }
+
+    @Transactional(readOnly = true)
+    public SecurityMasterData findByCodeWithCashFlowAndHolidays(String isin) {
+        SecurityMasterData md = repository.findByCodeWithCashFlow(isin).orElseThrow();
+
+        // Forza delle holidaysil caricamento mentre la sessione è aperta
+        md.getCurrency()
+                .getCalendar()
+                .getHolidays()
+                .size();
+
+        return md;
+    }
 }

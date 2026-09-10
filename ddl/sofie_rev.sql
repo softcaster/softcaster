@@ -260,4 +260,7 @@ alter table journal_entry_lines add CONSTRAINT fk_jel_slot  FOREIGN KEY (account
 ALTER SEQUENCE account_mapping_s RESTART WITH 1;
 
 alter table currency add column decimal_places smallint NOT NULL DEFAULT 2;
+alter table master_data add column compounding integer NOT NULL DEFAULT 2;
+alter table master_data add CONSTRAINT fk_compounding FOREIGN KEY (compounding) REFERENCES compounding (id_compounding) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
 

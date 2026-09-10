@@ -384,6 +384,7 @@ CREATE TABLE master_data (
     asset_class integer NOT NULL,
     amortization_schedule integer NOT NULL,
     multiplier numeric(15, 5) NOT NULL DEFAULT 1, -- nel caso dei Bond sara 0.01
+    compounding integer NOT NULL,
     PRIMARY KEY (id_master_data),
     CONSTRAINT fk_daycount FOREIGN KEY (daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_accrual_daycount FOREIGN KEY (accrual_daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -395,6 +396,7 @@ CREATE TABLE master_data (
     CONSTRAINT fk_accrual_schedule_type FOREIGN KEY (accrual_schedule_type) REFERENCES accrual_schedule_type (id_accrual_schedule_type) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_asset_class FOREIGN KEY (asset_class) REFERENCES asset_class (id_asset_class) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_amortization_schedule FOREIGN KEY (amortization_schedule) REFERENCES amortization_schedule (id_amortization_schedule) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_compounding FOREIGN KEY (compounding) REFERENCES compounding (id_compounding) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 CREATE UNIQUE INDEX idx_master_data_code ON master_data (code);
