@@ -5,6 +5,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +16,15 @@ import java.util.List;
 @Table(name = "forex_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+            name = "ForexMasterData.currenciesGraph",
+            attributeNodes = {
+                @NamedAttributeNode("bcy"),
+                @NamedAttributeNode("ccy")
+            }
+    )
+})
 public class ForexMasterData extends MasterData {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -101,14 +113,14 @@ public class ForexMasterData extends MasterData {
 
         return currencies;
     }
-    
-        @Override
-        public Currency getSettlementCcy() {
-            return ccy;
-        }
 
-        @Override
-        public Currency getMasterDataCcy() {
-            return bcy;
-        }
+    @Override
+    public Currency getSettlementCcy() {
+        return ccy;
+    }
+
+    @Override
+    public Currency getMasterDataCcy() {
+        return bcy;
+    }
 }

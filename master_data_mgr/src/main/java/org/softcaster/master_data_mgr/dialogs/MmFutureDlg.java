@@ -655,7 +655,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         if (isInsert) {
             // Controlla univocita codice ISIN
             String isin = txtIsin.getText();
-            FxFutureMasterData ffmd = masterDataFacade.getFxFutureMasterDataDAO().findByIsin(isin);
+            FxFutureMasterData ffmd = masterDataFacade.getFxFutureMasterDataDAO().findByCode(isin);
             if (ffmd != null) {
                 return false;
             }

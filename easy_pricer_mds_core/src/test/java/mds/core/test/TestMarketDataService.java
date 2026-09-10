@@ -12,16 +12,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.softcaster.commons.utils.FileUtil;
-import org.softcaster.core.data.FltSecurityMasterData2;
-import org.softcaster.core.data.FltSecurityMasterDataDAO2;
-import org.softcaster.core.data.ForexMasterData2;
-import org.softcaster.core.data.ForexMasterDataDAO2;
-import org.softcaster.core.data.FxFutureMasterData2;
-import org.softcaster.core.data.FxFutureMasterDataDAO2;
+import org.softcaster.core.data.CmdFutureMasterData;
+import org.softcaster.core.data.CmdFutureMasterDataDAO;
+import org.softcaster.core.data.FltSecurityMasterData;
+import org.softcaster.core.data.FltSecurityMasterDataDAO;
+import org.softcaster.core.data.ForexMasterData;
+import org.softcaster.core.data.ForexMasterDataDAO;
+import org.softcaster.core.data.FxFutureMasterData;
+import org.softcaster.core.data.FxFutureMasterDataDAO;
+import org.softcaster.core.data.MmFutureMasterData;
+import org.softcaster.core.data.MmFutureMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterData;
-import org.softcaster.core.data.SecurityMasterData2;
+import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
-import org.softcaster.core.data.SecurityMasterDataDAO2;
+import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
@@ -84,7 +88,13 @@ public class TestMarketDataService {
     private FxFutureMasterDataDAO2 fxFutDAO2;
 */
     @Autowired
-    private FltSecurityMasterDataDAO2 fltSecurityMasterDataDAO2;
+    private FltSecurityMasterDataDAO fltSecurityMasterDataDAO2;
+    
+    @Autowired
+    private FxFutureMasterDataDAO fxFutureMasterDataDAO2;
+    
+    @Autowired
+    private CmdFutureMasterDataDAO cmdFutureMasterDataDAO2;
 
     private void testMasterData2() {
         /*
@@ -108,12 +118,16 @@ public class TestMarketDataService {
         for (FxFutureMasterData2 fut : futures) {
             System.out.println(fut.getDescription());
         }
-*/
+
         FltSecurityMasterData2 item = fltSecurityMasterDataDAO2.findByIdWithRefRateIndex(74).orElse(null);
         if(item != null) {
             System.out.println(item.getRefRateIndex().getCode() + " - " + item.getRefRateIndex().getDescription());
         }
-        
+*/        
+        List<CmdFutureMasterData> pairs = cmdFutureMasterDataDAO2.findAll();
+        for (CmdFutureMasterData pair : pairs) {
+            System.out.println(pair.getCode() + " - " + pair.getDescription() + " - " + pair.getCurrency().getIsoCode() + " - " + pair.getAssetClass().getCode());
+        }
     }
 
     private void testYieldCurve() {
@@ -173,7 +187,7 @@ public class TestMarketDataService {
     }
 
     private void testBondPricer() {
-        SecurityMasterData smd = smdDAO.findByIsin("IT0004532559");
+        SecurityMasterData smd = smdDAO.findByIsin("IT0004532559").orElse(null);
         if (smd != null) {
             // FMIRS ITAYIELD TERMESTR
             marketDataService.loadCurveCurveRates("ECBYC");

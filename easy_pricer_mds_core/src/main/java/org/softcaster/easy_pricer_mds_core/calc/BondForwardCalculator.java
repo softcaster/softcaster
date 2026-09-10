@@ -94,7 +94,7 @@ public class BondForwardCalculator {
 
     public CTDData getCTD(XRBForwardInputData input) {
         CTDData ctdData = null;
-        BondFutureMasterData bfmd = bondFutureMasterDataDAO.findByIsin(input.getCode());
+        BondFutureMasterData bfmd = bondFutureMasterDataDAO.findByIsin(input.getCode()).orElse(null);
         if (bfmd != null) {
             Calendar calendar = new Calendar(bfmd.getCurrency());
             SecurityMasterData smd = null;
@@ -104,7 +104,7 @@ public class BondForwardCalculator {
             double lastDelta = 0.;
             List<CashFlow> underlyingCashFlow = null;
             for (DeliverableBonds deliverable : bfmd.getDeliverables()) {
-                smd = smdDAO.findByIsin(deliverable.getIsin());
+                smd = smdDAO.findByIsin(deliverable.getIsin()).orElse(null);
 
                 // Titolo non disponibile in anagrafica
                 if (smd == null) {
@@ -209,7 +209,7 @@ public class BondForwardCalculator {
     public CTDData getCTD(ForwardPricingRequest request) {
 
         CTDData ctdData = null;
-        BondFutureMasterData bfmd = bondFutureMasterDataDAO.findByIsin(request.isin);
+        BondFutureMasterData bfmd = bondFutureMasterDataDAO.findByIsin(request.isin).orElse(null);
         if (bfmd != null) {
             Calendar calendar = new Calendar(bfmd.getCurrency());
             SecurityMasterData smd = null;
@@ -219,7 +219,7 @@ public class BondForwardCalculator {
             double lastDelta = 0.;
             List<CashFlow> underlyingCashFlow = null;
             for (DeliverableBonds deliverable : bfmd.getDeliverables()) {
-                smd = smdDAO.findByIsin(deliverable.getIsin());
+                smd = smdDAO.findByIsin(deliverable.getIsin()).orElse(null);
 
                 // Titolo non disponibile in anagrafica
                 if (smd == null) {

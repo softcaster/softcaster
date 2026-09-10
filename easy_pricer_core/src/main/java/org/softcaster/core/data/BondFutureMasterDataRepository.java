@@ -1,21 +1,23 @@
 package org.softcaster.core.data;
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface BondFutureMasterDataRepository extends JpaRepository<BondFutureMasterData, Integer> {
+public interface BondFutureMasterDataRepository extends BaseMasterDataRepository<BondFutureMasterData>  {
 
-    public BondFutureMasterData findByIdMasterData(Integer idMasterData);
-
-    public BondFutureMasterData findByIsin(String isin);
-
-    @Query("SELECT bfut FROM BondFutureMasterData bfut WHERE bfut.assetClass.code = :code ORDER BY bfut.maturityDate ASC")
-    public List<BondFutureMasterData> findAllByAssetClass(String code);
-
-    @EntityGraph(attributePaths = {"currency"})
+    @EntityGraph("MasterData.fullGraph")
     @Override
-    public List<BondFutureMasterData> findAll(Sort sort);
+    List<BondFutureMasterData> findAll(Sort sort);
+
+    @Query("""
+        SELECT bfmd
+        FROM BondFutureMasterData bfmd
+        WHERE bfmd.isin = :isin
+        """)
+    @EntityGraph("MasterData.valuationGraph")
+    public Optional<BondFutureMasterData> findByIsin(@Param("isin") String in);
 }

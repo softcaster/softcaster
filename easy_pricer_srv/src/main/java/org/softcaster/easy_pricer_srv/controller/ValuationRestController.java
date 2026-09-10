@@ -4,11 +4,8 @@
  */
 package org.softcaster.easy_pricer_srv.controller;
 
-import jakarta.annotation.PostConstruct;
-import java.util.List;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
-import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
@@ -89,7 +86,7 @@ public class ValuationRestController {
         if (request.foreignRCurve.isBlank() || request.domesticRCurve.isBlank()) {
             return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
         }
-        FxFutureMasterData fmd = fxFutureMasterDataDAO.findByIsin(request.isin);
+        FxFutureMasterData fmd = fxFutureMasterDataDAO.findByCode(request.isin);
         if (fmd == null) {
             return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
         }

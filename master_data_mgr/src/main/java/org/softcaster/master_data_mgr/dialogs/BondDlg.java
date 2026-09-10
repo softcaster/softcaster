@@ -13,8 +13,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFormattedTextField;
@@ -1254,7 +1252,7 @@ public class BondDlg extends javax.swing.JDialog {
         if (isInsert) {
             // Controlla univocita codice ISIN
             String isin = txtIsin.getText();
-            SecurityMasterData smd = masterDataFacade.getSecurityMasterDataDAO().findByIsin(isin);
+            SecurityMasterData smd = masterDataFacade.getSecurityMasterDataDAO().findByIsin(isin).orElse(null);
             if (smd != null) {
                 return false;
             }

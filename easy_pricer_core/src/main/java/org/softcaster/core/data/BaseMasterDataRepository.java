@@ -14,35 +14,47 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 @NoRepositoryBean
-public interface BaseMasterDataRepository<E extends MasterData2>
+public interface BaseMasterDataRepository<E extends MasterData>
         extends JpaRepository<E, Integer>,
         JpaSpecificationExecutor<E> {
 
-    E findByIdMasterData(Integer idMasterData);
-
-    E findByCode(String code);
-
     @Query("""
         SELECT md
-        FROM MasterData2 md
+        FROM MasterData md
         WHERE md.idMasterData = :id
         """)
     @EntityGraph("MasterData.fullGraph")
+    E findByIdMasterData(@Param("id") Integer idMasterData);
+
+    @Query("""
+        SELECT md
+        FROM MasterData md
+        WHERE md.code = :code
+        """)
+    @EntityGraph("MasterData.fullGraph")
+    E findByCode(@Param("code") String code);
+
+    @Query("""
+        SELECT md
+        FROM MasterData md
+        WHERE md.idMasterData = :id
+        """)
+    @EntityGraph("MasterData.valuationGraph")
     Optional<E> findByIdWithInstrumentValuation(
             @Param("id") Integer id);
 
     @Query("""
         SELECT md
-        FROM MasterData2 md
+        FROM MasterData md
         WHERE md.code = :code
         """)
-    @EntityGraph("MasterData.fullGraph")
+    @EntityGraph("MasterData.valuationGraph")
     Optional<E> findByCodeWithInstrumentValuation(
             @Param("code") String code);
 
     @Query("""
         SELECT md
-        FROM MasterData2 md
+        FROM MasterData md
         WHERE md.assetClass.code = :code
         ORDER BY md.maturityDate ASC
         """)

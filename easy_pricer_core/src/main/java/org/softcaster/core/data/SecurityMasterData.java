@@ -1,16 +1,19 @@
 package org.softcaster.core.data;
 
 import jakarta.persistence.CascadeType;
-import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.sql.Types;
+import java.util.ArrayList;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -19,8 +22,36 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Table(name = "security_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+            name = "SecurityMasterData.fullGraph",
+            attributeNodes = {
+                @NamedAttributeNode("currency"),
+                @NamedAttributeNode("assetClass"),
+                @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("issuer"),}
+    ),
+    @NamedEntityGraph(
+            name = "SecurityMasterData.referenceGraph",
+            attributeNodes = {
+                @NamedAttributeNode("currency"),
+                @NamedAttributeNode("assetClass"),
+                @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("issuer")
+            }
+    )
+})
 public class SecurityMasterData extends MasterData {
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issuer", nullable = true)
+    private Issuer issuer;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JoinColumn(name = "master_data", nullable = false) // FK in child table cash_flow_item
+    private List<CashFlowItem> cashFlows = new ArrayList<>();  
+    
     @Column(name = "isin")
     private String isin;
 
@@ -33,10 +64,6 @@ public class SecurityMasterData extends MasterData {
     @Column(name = "lei")
     private String lei;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "issuer", nullable = true)
-    private Issuer issuer;
-
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "nominal_value")
     private Double nominalValue;
@@ -47,11 +74,6 @@ public class SecurityMasterData extends MasterData {
 
     @Column(name = "first_coupon_payment_date")
     private java.sql.Date firstCouponPaymentDate;
-
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Fetch(value = FetchMode.SUBSELECT)
-    @JoinColumn(name = "master_data", nullable = false) // FK in child table cash_flow_item
-    private List<CashFlowItem> cashFlows = new ArrayList<>();    
 
     public String getIsin() {
         return isin;
@@ -108,20 +130,6 @@ public class SecurityMasterData extends MasterData {
     public void setFirstCouponPaymentDate(java.sql.Date firstCouponPaymentDate) {
         this.firstCouponPaymentDate = firstCouponPaymentDate;
     }
-    
-    /**
-     * @return the cashFlows
-     */
-    public List<CashFlowItem> getCashFlows() {
-        return cashFlows;
-    }
-
-    /**
-     * @param cashFlows the cashFlows to set
-     */
-    public void setCashFlows(List<CashFlowItem> cashFlows) {
-        this.cashFlows = cashFlows;
-    }
 
     /**
      * @return the issuer
@@ -140,5 +148,19 @@ public class SecurityMasterData extends MasterData {
     @Override
     public String toString() {
         return isin;
+    }
+
+    /**
+     * @return the cashFlows
+     */
+    public List<CashFlowItem> getCashFlows() {
+        return cashFlows;
+    }
+
+    /**
+     * @param cashFlows the cashFlows to set
+     */
+    public void setCashFlows(List<CashFlowItem> cashFlows) {
+        this.cashFlows = cashFlows;
     }
 }

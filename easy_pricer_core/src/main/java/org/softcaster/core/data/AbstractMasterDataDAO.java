@@ -14,7 +14,7 @@ import java.util.Optional;
 import org.softcaster.core.dto.MasterDataDto;
 
 public abstract class AbstractMasterDataDAO<
-        E extends MasterData2, R extends BaseMasterDataRepository<E>> {
+        E extends MasterData, R extends BaseMasterDataRepository<E>> {
 
     protected final R repository;
 
@@ -64,7 +64,7 @@ public abstract class AbstractMasterDataDAO<
             Date maturityGreatEq) {
 
         Specification<E> spec
-                = MasterDataSpecifications2.withFilters(
+                = MasterDataSpecifications.withFilters(
                         code,
                         maturityLessEq,
                         maturityGreatEq);

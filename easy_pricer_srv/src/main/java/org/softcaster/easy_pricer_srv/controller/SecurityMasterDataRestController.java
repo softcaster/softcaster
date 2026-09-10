@@ -6,7 +6,6 @@ import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.dto.SecurityMasterDataDto;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,7 +50,7 @@ public class SecurityMasterDataRestController {
 
     @GetMapping("/security_master_data/r03/{id}")
     public ResponseEntity findByIsin(@PathVariable("id") String isin) {
-        SecurityMasterData securityMasterData = dao.findByIsin(isin);
+        SecurityMasterData securityMasterData = dao.findByIsin(isin).orElse(null);
         if (securityMasterData == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
@@ -60,7 +59,7 @@ public class SecurityMasterDataRestController {
 
     @GetMapping("/security_master_data/r04/{id}")
     public ResponseEntity findByCurrency(@PathVariable("id") String currencyCode) {
-        List<SecurityMasterData> securityMasterDataList = dao.findByCurrency(currencyCode);
+        List<SecurityMasterData> securityMasterDataList = dao.findByCurrency(currencyCode).orElse(null);
         if (securityMasterDataList == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }

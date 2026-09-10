@@ -1,52 +1,28 @@
-    package org.softcaster.core.data;
+package org.softcaster.core.data;
 
 import java.util.List;
-import jakarta.annotation.Resource;
+import java.util.Optional;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service("bondFutureMasterDataDAO")
-public class BondFutureMasterDataDAO {
+@Repository
+public class BondFutureMasterDataDAO extends AbstractMasterDataDAO<BondFutureMasterData, BondFutureMasterDataRepository> {
 
-    @Resource
-    private BondFutureMasterDataRepository repository;
-    @Resource
-    private InstrumentQuoteRepository quoteRepository;
+    private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
-    private final Sort sortByIsin = Sort.by(Sort.Direction.ASC, "isin");
-
-    @Transactional(readOnly = true)
-    public BondFutureMasterData findByIdMasterData(Integer idMasterData) {
-        return repository.findByIdMasterData(idMasterData);
-    }
-
-    @Transactional
-    public BondFutureMasterData saveOrUpdate(BondFutureMasterData bondFutureMasterData) {
-        return repository.save(bondFutureMasterData);
-    }
-
-    @Transactional
-    public void delete(BondFutureMasterData bondFutureMasterData) {
-        if (bondFutureMasterData != null && bondFutureMasterData.getIdMasterData() != null) {
-            // Va cancellata prima la tabella storica che ha un riferimento
-            // alla tabella instrumet_quotes
-            quoteRepository.deleteInstrumentQuoteHist(bondFutureMasterData.getIdMasterData());
-            quoteRepository.deleteInstrumentQuotes(bondFutureMasterData.getIdMasterData());
-            repository.delete(bondFutureMasterData);
-        }
+    public BondFutureMasterDataDAO(BondFutureMasterDataRepository repository) {
+        super(repository);
     }
 
     @Transactional(readOnly = true)
+    @Override
     public List<BondFutureMasterData> findAll() {
-        return repository.findAll(sortByIsin);
+        return repository.findAll(sortByCode);
     }
 
-    public BondFutureMasterData findByIsin(String isin) {
+    public Optional<BondFutureMasterData> findByIsin(String isin) {
         return repository.findByIsin(isin);
-    }
+    }    
 
-    public List<BondFutureMasterData> findAllByAssetClass(String code) {
-        return repository.findAllByAssetClass(code);
-    }
 }

@@ -72,7 +72,7 @@ public class BondCalculator {
     public BondPricingResponse bondValuation(BondPricingRequest request) {
         BondPricingResponse response = null;
         if (smdDAO != null) {
-            SecurityMasterData securityMasterData = smdDAO.findByIsin(request.isin);
+            SecurityMasterData securityMasterData = smdDAO.findByIsin(request.isin).orElse(null);
             if (securityMasterData != null) {
                 XRBInputData input = new XRBInputData();
                 Calendar calendar = new Calendar(securityMasterData.getCurrency());

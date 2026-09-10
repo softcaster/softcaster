@@ -587,7 +587,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
         if (isInsert) {
             // Controlla univocita codice ISIN
             String isin = txtIsin.getText();
-            BondFutureMasterData bfmd = masterDataFacade.getBondFutureMasterDataDAO().findByIsin(isin);
+            BondFutureMasterData bfmd = masterDataFacade.getBondFutureMasterDataDAO().findByIsin(isin).orElse(null);
             if (bfmd != null) {
                 return false;
             }

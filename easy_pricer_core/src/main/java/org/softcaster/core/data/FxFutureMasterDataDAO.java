@@ -1,48 +1,22 @@
 package org.softcaster.core.data;
 
 import java.util.List;
-import jakarta.annotation.Resource;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service("fxFutureMasterDataDAO")
-public class FxFutureMasterDataDAO {
+@Repository
+public class FxFutureMasterDataDAO extends AbstractMasterDataDAO<FxFutureMasterData, FxFutureMasterDataRepository> {
 
-    @Resource
-    private FxFutureMasterDataRepository repository;
-    @Resource
-    private InstrumentQuoteRepository quoteRepository;
+    private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
-    private final Sort sortByIsin = Sort.by(Sort.Direction.ASC, "isin");
-
-    @Transactional(readOnly = true)
-    public FxFutureMasterData findByIdMasterData(Integer idMasterData) {
-        return repository.findByIdMasterData(idMasterData);
-    }
-
-    @Transactional
-    public FxFutureMasterData saveOrUpdate(FxFutureMasterData fxFutureMasterData) {
-        return repository.save(fxFutureMasterData);
-    }
-
-    @Transactional
-    public void delete(FxFutureMasterData fxFutureMasterData) {
-        if (fxFutureMasterData != null && fxFutureMasterData.getIdMasterData() != null) {
-            // Va cancellata prima la tabella storica che ha un riferimento
-            // alla tabella instrumet_quotes
-            quoteRepository.deleteInstrumentQuoteHist(fxFutureMasterData.getIdMasterData());
-            quoteRepository.deleteInstrumentQuotes(fxFutureMasterData.getIdMasterData());
-            repository.delete(fxFutureMasterData);
-        }
+    public FxFutureMasterDataDAO(FxFutureMasterDataRepository repository) {
+        super(repository);
     }
 
     @Transactional(readOnly = true)
+    @Override
     public List<FxFutureMasterData> findAll() {
-        return repository.findAll(sortByIsin);
-    }
-
-    public FxFutureMasterData findByIsin(String isin) {
-        return repository.findByIsin(isin);
+        return repository.findAll(sortByCode);
     }
 }

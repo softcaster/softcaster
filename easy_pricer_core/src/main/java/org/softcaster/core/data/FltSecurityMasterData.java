@@ -6,6 +6,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -18,6 +21,21 @@ import org.softcaster.engine.enums.FixingDayType;
 @Table(name = "flt_security_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+            name = "FltSecurityMasterData.fullGraph",
+            attributeNodes = {
+                @NamedAttributeNode("currency"),
+                @NamedAttributeNode("assetClass"),
+                @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("issuer"),
+            }),
+    @NamedEntityGraph(
+            name = "FltSecurityMasterData.indexGraph",
+            attributeNodes = {
+                @NamedAttributeNode("refRateIndex")
+            })
+})
 public class FltSecurityMasterData extends SecurityMasterData {
 
     @JdbcTypeCode(Types.NUMERIC)

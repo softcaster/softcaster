@@ -3,13 +3,11 @@ package org.softcaster.core.data;
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CmdFutureMasterDataRepository extends JpaRepository<CmdFutureMasterData, Integer> {
+public interface CmdFutureMasterDataRepository extends BaseMasterDataRepository<CmdFutureMasterData>  {
 
-    public CmdFutureMasterData findByIdMasterData(Integer idMasterData);
-    
-    @EntityGraph(attributePaths = {"currency"})
+    @EntityGraph("MasterData.fullGraph")
     @Override
-    public List<CmdFutureMasterData> findAll(Sort sort);
+    List<CmdFutureMasterData> findAll(Sort sort);
+
 }

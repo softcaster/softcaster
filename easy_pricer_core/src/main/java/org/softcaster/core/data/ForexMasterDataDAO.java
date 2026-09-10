@@ -1,40 +1,23 @@
 package org.softcaster.core.data;
 
 import java.util.List;
-import jakarta.annotation.Resource;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service("forexMasterDataDAO")
-public class ForexMasterDataDAO {
-
-    @Resource
-    private ForexMasterDataRepository repository;
+// @Repository abilita la traduzione automatica delle eccezioni di persistenza, a differenza di @Service
+// Quindi e`preferibile per oggetti DAO
+@Repository
+public class ForexMasterDataDAO extends AbstractMasterDataDAO<ForexMasterData, ForexMasterDataRepository> {
 
     private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
-    @Transactional(readOnly = true)
-    public ForexMasterData findByIdMasterData(Integer idMasterData) {
-        return repository.findByIdMasterData(idMasterData);
+    public ForexMasterDataDAO(ForexMasterDataRepository repository) {
+        super(repository);
     }
 
     @Transactional(readOnly = true)
-    public ForexMasterData findByCode(String code) {
-        return repository.findByCode(code);
-    }
-
-    @Transactional
-    public ForexMasterData saveOrUpdate(ForexMasterData forexMasterData) {
-        return repository.save(forexMasterData);
-    }
-
-    @Transactional
-    public void delete(ForexMasterData forexMasterData) {
-        repository.delete(forexMasterData);
-    }
-    
-    @Transactional(readOnly = true)
+    @Override
     public List<ForexMasterData> findAll() {
         return repository.findAll(sortByCode);
     }

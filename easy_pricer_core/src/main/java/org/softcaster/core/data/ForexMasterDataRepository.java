@@ -3,15 +3,15 @@ package org.softcaster.core.data;
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ForexMasterDataRepository extends JpaRepository<ForexMasterData, Integer> {
+/**
+ *
+ * @author ep
+ */
+public interface ForexMasterDataRepository extends BaseMasterDataRepository<ForexMasterData>  {
 
-    public ForexMasterData findByIdMasterData(Integer idMasterData);
-
-    public ForexMasterData findByCode(String code);
-
-    @EntityGraph(attributePaths = {"bcy", "ccy"})
+    @EntityGraph("ForexMasterData.currenciesGraph")
     @Override
-    public List<ForexMasterData> findAll(Sort sort);
+    List<ForexMasterData> findAll(Sort sort);
+
 }

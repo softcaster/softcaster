@@ -2,37 +2,21 @@ package org.softcaster.core.data;
 
 import java.util.List;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service("cmdFutureMasterDataDAO")
-public class CmdFutureMasterDataDAO {
+@Repository
+public class CmdFutureMasterDataDAO extends AbstractMasterDataDAO<CmdFutureMasterData, CmdFutureMasterDataRepository> {
 
-    private final CmdFutureMasterDataRepository repository;
-    private final Sort sortByIsin = Sort.by(Sort.Direction.ASC, "isin");
+    private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
     public CmdFutureMasterDataDAO(CmdFutureMasterDataRepository repository) {
-        this.repository = repository;
+        super(repository);
     }
 
     @Transactional(readOnly = true)
+    @Override
     public List<CmdFutureMasterData> findAll() {
-        return repository.findAll(sortByIsin);
+        return repository.findAll(sortByCode);
     }
-
-    @Transactional(readOnly = true)
-    public CmdFutureMasterData findByIdMasterData(Integer idMasterData) {
-        return repository.findByIdMasterData(idMasterData);
-    }
-
-    @Transactional
-    public CmdFutureMasterData saveOrUpdate(CmdFutureMasterData cmdFutureMasterData) {
-        return repository.save(cmdFutureMasterData);
-    }
-
-    @Transactional
-    public void delete(CmdFutureMasterData cmdFutureMasterData) {
-        repository.delete(cmdFutureMasterData);
-    }
-
 }

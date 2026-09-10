@@ -12,6 +12,9 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -40,6 +43,24 @@ import org.softcaster.engine.enums.TypeOfInterest;
 @Inheritance(
         strategy = InheritanceType.JOINED
 )
+
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+            name = "MasterData.fullGraph",
+            attributeNodes = {
+                @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("currency"),
+                @NamedAttributeNode("assetClass")
+            }
+    ),
+
+    @NamedEntityGraph(
+            name = "MasterData.valuationGraph",
+            attributeNodes = {
+                @NamedAttributeNode("instrumentValuation")
+            }
+    )
+})  
 public class MasterData implements Serializable {
 
     @Id
@@ -59,12 +80,12 @@ public class MasterData implements Serializable {
     @OneToOne(mappedBy = "masterData", fetch = FetchType.LAZY, orphanRemoval = true)
     private InstrumentValuation instrumentValuation;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "currency", nullable = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "currency", nullable = false)
     private Currency currency;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "asset_class", nullable = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false) // comunica a jpa/hibernate che la relazione deve esistere
+    @JoinColumn(name = "asset_class", nullable = false) // comunica il vincolo sulla colonna DB
     private AssetClass assetClass;
 
     @Convert(converter = DaycountConverter.class)
@@ -406,7 +427,7 @@ public class MasterData implements Serializable {
     public Currency getSettlementCcy() {
         return currency;
     }
-    
+
     public Currency getMasterDataCcy() {
         return currency;
     }

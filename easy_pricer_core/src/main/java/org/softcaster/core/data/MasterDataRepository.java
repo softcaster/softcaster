@@ -1,39 +1,12 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package org.softcaster.core.data;
 
-import java.util.List;
-import java.util.Optional;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-public interface MasterDataRepository extends JpaRepository<MasterData, Integer> {
-
-    public MasterData findByIdMasterData(Integer idMasterData);
-
-    public MasterData findByCode(String code);
-
-    // left join ottiene l'oggetto MasterData anche quando instrumentValuation non è presente
-    // Ricerca per ID con caricamento immediato della valutazione
-    @Query("""
-        select md
-        from MasterData md
-        left join fetch md.instrumentValuation iv
-        where md.idMasterData = :id
-    """)
-    Optional<MasterData> findByIdWithInstrumentValuation(@Param("id") Integer id);
-
-    // Ricerca per Codice con caricamento immediato della valutazione
-    @Query("""
-        select md
-        from MasterData md
-        left join fetch md.instrumentValuation iv
-        where md.code = :code
-    """)
-    Optional<MasterData> findByCodeWithInstrumentValuation(@Param("code") String code);
-
-    public List<MasterData> findAll(Specification<MasterData> spec);
-
-    @Query("SELECT md FROM MasterData md WHERE md.assetClass.code = :code ORDER BY md.maturityDate ASC")
-    public List<MasterData> findAllByAssetClass(String code);
+/**
+ *
+ * @author ep
+ */
+public interface MasterDataRepository extends BaseMasterDataRepository<MasterData>  {
 }

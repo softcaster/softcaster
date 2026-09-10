@@ -1,8 +1,6 @@
 package org.softcaster.core.data;
 
 import jakarta.persistence.CascadeType;
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,6 +8,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -61,6 +61,11 @@ public class BondFutureMasterData extends FutureMasterData {
         this.initialMargin = initialMargin;
     }
 
+    @Override
+    public String toString() {
+        return getCode();
+    }    
+
     /**
      * @return the deliverables
      */
@@ -74,9 +79,4 @@ public class BondFutureMasterData extends FutureMasterData {
     public void setDeliverables(List<DeliverableBonds> deliverables) {
         this.deliverables = deliverables;
     }
-
-    @Override
-    public String toString() {
-        return getCode();
-    }    
 }
