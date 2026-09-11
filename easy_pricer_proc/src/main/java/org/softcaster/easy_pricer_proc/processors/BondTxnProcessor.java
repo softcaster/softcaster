@@ -6,21 +6,16 @@ package org.softcaster.easy_pricer_proc.processors;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_mds_core.Calendar;
+import org.softcaster.easy_pricer_mds_core.calc.Utils;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.engine.analytics.BondPricer;
-import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
-import org.softcaster.engine.enums.CashFlowStatus;
-import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.TxnComponentType;
 import static org.softcaster.engine.enums.TxnSide.BUY;
 import static org.softcaster.engine.enums.TxnSide.SELL;
@@ -66,11 +61,10 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
         XRBInputData bondInputData = new XRBInputData();
         bondInputData.setReferencePrice(txn.getPrice());
         bondInputData.setValuationDate(valuationDate);
-        bondInputData.setCompounding(Compounding.COMPOUNDED);
+        bondInputData.setCompounding(smd.getCompounding());
         bondInputData.setDaycount(smd.getAccrualDaycount());
         bondInputData.setFrequency(smd.getFrequency());
-        List<CashFlow> flows = getFlows(smd.getCashFlows());
-        bondInputData.setFlows(flows);
+        bondInputData.setFlows(Utils.convertCashFlow(smd.getCashFlows()));
         XRBOutputData bondOutputData = bondPricer.calculate(bondInputData);
 
         // Per accrual stessa gestione di quantity e notionalValue
@@ -114,26 +108,5 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
     @Override
     protected boolean shortSellEnabled() {
         return true;
-    }
-
-    private List<CashFlow> getFlows(List<CashFlowItem> cashFlows) {
-        List<CashFlow> flows = null;
-
-        if (!cashFlows.isEmpty()) {
-            flows = new ArrayList<>();
-            for (CashFlowItem item : cashFlows) {
-                CashFlow flow = new CashFlow(
-                        item.getStartDate().toLocalDate(),
-                        item.getEnddate().toLocalDate(),
-                        item.getEnddate().toLocalDate(),
-                        item.getAmount(),
-                        item.getInterest(),
-                        0.,
-                        CashFlowStatus.RECORDED
-                );
-                flows.add(flow);
-            }
-        }
-        return flows;
     }
 }

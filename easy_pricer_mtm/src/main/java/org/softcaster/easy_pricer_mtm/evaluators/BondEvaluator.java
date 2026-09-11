@@ -17,7 +17,6 @@ import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
-import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,7 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
             input.setReferencePrice(mktPrice);
             input.setFrequency(Frequency.fromCode(smd.getFrequency().getCode()));
             input.setDaycount(smd.getAccrualDaycount());
-            input.setCompounding(Compounding.COMPOUNDED);
+            input.setCompounding(smd.getCompounding());
             output = bondCalculator.bondValuation(input, smd);
         }
         return output;

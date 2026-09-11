@@ -5,18 +5,15 @@
 package org.softcaster.easy_pricer_mtm.evaluators;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_mds_core.Calendar;
+import org.softcaster.easy_pricer_mds_core.calc.Utils;
 import org.softcaster.engine.analytics.BondPricer;
-import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
-import org.softcaster.engine.enums.CashFlowStatus;
-import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.Frequency;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -48,24 +45,11 @@ public class EvaluatorHelper {
                     input.setReferencePrice(mktPrice);
                     input.setFrequency(Frequency.fromCode(smd.getFrequency().getCode()));
                     input.setDaycount(smd.getAccrualDaycount());
-                    input.setCompounding(Compounding.COMPOUNDED);
+                    input.setCompounding(smd.getCompounding());
 
                     // Cash Flow
                     if (!smd.getCashFlows().isEmpty()) {
-                        List<CashFlow> flows = new ArrayList<>();
-                        for (org.softcaster.core.data.CashFlowItem item : smd.getCashFlows()) {
-                            CashFlow flow = new CashFlow(
-                                    item.getStartDate().toLocalDate(),
-                                    item.getEnddate().toLocalDate(),
-                                    item.getEnddate().toLocalDate(),
-                                    item.getAmount(),
-                                    item.getInterest(),
-                                    0.,
-                                    CashFlowStatus.RECORDED
-                            );
-                            flows.add(flow);
-                        }
-                        input.setFlows(flows);
+                        input.setFlows(Utils.convertCashFlow(smd.getCashFlows()));
                     }
                     output = bondPricer.calculate(input);
                 }

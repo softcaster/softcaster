@@ -5,9 +5,7 @@ package org.softcaster.easy_pricer_mds_core.calc;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
@@ -18,7 +16,6 @@ import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
-import org.softcaster.engine.enums.CashFlowStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -36,28 +33,11 @@ public class BondCalculator {
     @Qualifier("bondPricer") 
     private BondPricer bondPricer;
 
-    private List<CashFlow> getCashFlow(List<CashFlowItem> cfList) {
-        List<CashFlow> flows = new ArrayList<>();
-        for (CashFlowItem item : cfList) {
-            CashFlow flow = new CashFlow(
-                    item.getStartDate().toLocalDate(),
-                    item.getEnddate().toLocalDate(),
-                    item.getEnddate().toLocalDate(),
-                    item.getAmount(),
-                    item.getInterest(),
-                    0.,
-                    CashFlowStatus.RECORDED
-            );
-            flows.add(flow);
-        }
-        return flows;
-    }
-
     public XRBOutputData bondValuation(XRBInputData input, SecurityMasterData securityMasterData) {
         XRBOutputData output = null;
         if (securityMasterData != null) {
             if (!securityMasterData.getCashFlows().isEmpty()) {
-                List<CashFlow> flows = getCashFlow(securityMasterData.getCashFlows());
+                List<CashFlow> flows = Utils.convertCashFlow(securityMasterData.getCashFlows());
                 input.setFlows(flows);
             }
 
@@ -101,7 +81,7 @@ public class BondCalculator {
 
     public double getAccruals(SecurityMasterData securityMasterData, LocalDate accrualDate) {
         double accruals = 0.;
-        List<CashFlow> flows = getCashFlow(securityMasterData.getCashFlows());
+        List<CashFlow> flows = Utils.convertCashFlow(securityMasterData.getCashFlows());
         accruals = bondPricer.calculateAccruedInterest(flows, accrualDate, securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
         return accruals;
     }
@@ -114,7 +94,7 @@ public class BondCalculator {
         Calendar calendar = new Calendar(securityMasterData.getCurrency());
         LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, securityMasterData.getBusinessDays());
 
-        double newPrice = bondPricer.calculatePrice(getCashFlow(securityMasterData.getCashFlows()), ytm, valuationDate,
+        double newPrice = bondPricer.calculatePrice(Utils.convertCashFlow(securityMasterData.getCashFlows()), ytm, valuationDate,
                 securityMasterData.getAccrualDaycount(), securityMasterData.getCompounding(), securityMasterData.getFrequency());
 
         return newPrice;
@@ -125,7 +105,7 @@ public class BondCalculator {
         Calendar calendar = new Calendar(securityMasterData.getCurrency());
         LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, securityMasterData.getBusinessDays());
 
-        double newPrice = bondPricer.calculatePrice(getCashFlow(securityMasterData.getCashFlows()), yieldCurve, valuationDate,
+        double newPrice = bondPricer.calculatePrice(Utils.convertCashFlow(securityMasterData.getCashFlows()), yieldCurve, valuationDate,
                 securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
 
         return newPrice;
