@@ -11,7 +11,8 @@ package org.softcaster.engine.enums;
 public enum CouponProjectionMethod implements IdentifiableEnum {
 
     LAST_COUPON(1, "LAST_COUPON", "Last Coupon"),
-    FORWARD_CURVE(2, "FORWARD_CURVE", "Forward Curve");
+    FORWARD_CURVE(2, "FORWARD_CURVE", "Forward Curve"),
+    SHORT_BOND(3, "SHORT_BOND", "Short Bond");
 
     private final int id;
     private final String code;

@@ -39,7 +39,7 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
                 switch (item) {
                     case CURR_PAIR ->
                         setIcon(forexIcon);
-                    case BOND, EQUITY ->
+                    case BOND, EQUITY, FLT_BOND ->
                         setIcon(securityIcon);
                     case YC_UPDATE, YC_DEFINE ->
                         setIcon(forexIcon);

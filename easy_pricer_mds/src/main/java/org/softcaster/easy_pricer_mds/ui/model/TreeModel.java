@@ -8,7 +8,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.easy_pricer_mds.AppTreeItem;
-import static org.softcaster.easy_pricer_mds.AppTreeItem.CMD_FUTURE;
 
 /**
  *
@@ -24,6 +23,7 @@ public class TreeModel {
         DefaultMutableTreeNode securities = new DefaultMutableTreeNode("Securities");
         // Foglie
         securities.add(new DefaultMutableTreeNode(new FndtNode<>("Bonds", AppTreeItem.BOND)));
+        securities.add(new DefaultMutableTreeNode(new FndtNode<>("Flt Bonds", AppTreeItem.FLT_BOND)));
         securities.add(new DefaultMutableTreeNode(new FndtNode<>("Equities", AppTreeItem.EQUITY)));
         instruments.add(securities);
 

@@ -27,6 +27,7 @@ public class FixedIncomeInputData extends MarketInputData {
     /**
      * @param frequency the frequency to set
      */
+    @Override
     public void setFrequency(Frequency frequency) {
         this.frequency = frequency;
     }
@@ -34,6 +35,7 @@ public class FixedIncomeInputData extends MarketInputData {
     /**
      * @return the compounding
      */
+    @Override
     public Compounding getCompounding() {
         return compounding;
     }
@@ -41,6 +43,7 @@ public class FixedIncomeInputData extends MarketInputData {
     /**
      * @param compounding the compounding to set
      */
+    @Override
     public void setCompounding(Compounding compounding) {
         this.compounding = compounding;
     }

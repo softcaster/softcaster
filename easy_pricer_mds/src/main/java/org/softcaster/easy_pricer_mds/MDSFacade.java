@@ -11,6 +11,7 @@ import org.softcaster.core.data.CmdFutureMasterDataDAO;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
+import org.softcaster.core.data.FltSecurityMasterDataDAO;
 import org.softcaster.core.data.ForexMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.InstrumentQuoteDAO;
@@ -47,6 +48,8 @@ public class MDSFacade {
 
     @Autowired
     private SecurityMasterDataDAO securityMasterDataDAO;
+    @Autowired
+    private FltSecurityMasterDataDAO fltSecurityMasterDataDAO;
     @Autowired
     private BondFutureMasterDataDAO bondFutureMasterDataDAO;
     @Autowired
@@ -216,5 +219,12 @@ public class MDSFacade {
      */
     public BondCalculator getBondCalculator() {
         return bondCalculator;
+    }
+
+    /**
+     * @return the fltSecurityMasterDataDAO
+     */
+    public FltSecurityMasterDataDAO getFltSecurityMasterDataDAO() {
+        return fltSecurityMasterDataDAO;
     }
 }

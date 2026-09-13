@@ -29,6 +29,7 @@ import org.softcaster.easy_pricer_mds.view.BondFutPanel;
 import org.softcaster.easy_pricer_mds.view.BondPanel;
 import org.softcaster.easy_pricer_mds.view.CmdFutPanel;
 import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
+import org.softcaster.easy_pricer_mds.view.FltBondPanel;
 import org.softcaster.easy_pricer_mds.view.FxFutPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
 import org.softcaster.easy_pricer_mds.view.MmFutPanel;
@@ -128,6 +129,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                             case BOND -> {
                                 cl.show(mainPanel, AppCard.BOND_CARD.name());
                                 currentCard = AppCard.BOND_CARD;
+                            }
+                            case FLT_BOND -> {
+                                cl.show(mainPanel, AppCard.FLT_BOND_CARD.name());
+                                currentCard = AppCard.FLT_BOND_CARD;
                             }
                             case YC_DEFINE -> {
                                 cl.show(mainPanel, AppCard.YC_DEFINE_CARD.name());
@@ -365,6 +370,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.BOND_FUTURE_CARD, bondFutPanel);
         JPanel bondPanel = new BondPanel(mDSFacade);
         cardMap.put(AppCard.BOND_CARD, bondPanel);
+        JPanel fltBondPanel = new FltBondPanel(mDSFacade);
+        cardMap.put(AppCard.FLT_BOND_CARD, fltBondPanel);
         JPanel ycPanel = new YieldCurveDefPanel(mDSFacade);
         cardMap.put(AppCard.YC_DEFINE_CARD, ycPanel);
         JPanel ycUpdatePanel = new YieldCurvePanel(mDSFacade);
@@ -378,6 +385,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(cmdFutPanel, AppCard.CMD_FUTURE_CARD.name());
         mainPanel.add(bondFutPanel, AppCard.BOND_FUTURE_CARD.name());
         mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
+        mainPanel.add(fltBondPanel, AppCard.FLT_BOND_CARD.name());
         mainPanel.add(ycPanel, AppCard.YC_DEFINE_CARD.name());
         mainPanel.add(ycUpdatePanel, AppCard.YC_UPDATE_CARD.name());
 
@@ -404,7 +412,10 @@ public class JMarketDataService extends javax.swing.JFrame {
 
     private void calculateAction() {
         FndtAbstactPanel activePanel = getActiveCard();
-        if (activePanel != null && activePanel instanceof BondPanel bondPanel) {
+        if (activePanel != null && (activePanel instanceof BondPanel bondPanel)) {
+            bondPanel.calculateAction();
+        }
+        if (activePanel != null && (activePanel instanceof FltBondPanel bondPanel)) {
             bondPanel.calculateAction();
         }
     }

@@ -5,11 +5,14 @@
 package org.softcaster.engine.analytics;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.YieldCurve;
+import org.softcaster.engine.dto.FRBInputData;
+import org.softcaster.engine.dto.FRBOutputData;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.Compounding;
@@ -34,14 +37,47 @@ public class BondPricer extends AbstractFixedIncomePricer {
                 .filter(cf -> !valuationDate.isBefore(cf.accrualStart()) && valuationDate.isBefore(cf.accrualEnd()))
                 .findFirst()
                 .map(cf -> {
-                    // Rateo = Cedola Totale * (Giorni trascorsi dall'inizio / Giorni totali del periodo)
-                    double daysFromStart = dcb.calculate(cf.accrualStart(), valuationDate, freq);
-                    double totalDaysInPeriod = dcb.calculate(cf.accrualStart(), cf.accrualEnd(), freq);
 
-                    // In alternativa, se hai la cedola annua: nominal * annualRate * dcb.calculate(start, valuationDate)
-                    return cf.interest() * (daysFromStart / totalDaysInPeriod);
+                    long daysFromStart = ChronoUnit.DAYS.between(cf.accrualStart(), valuationDate);
+                    double theoreticalDaysInPeriod;
+
+                    if (dcb == DaycountBasis.ACT_360) {
+                        // Regola CCT: ignora la durata del semestre, usa sempre la base commerciale fissa (360 / 2 = 180)
+                        theoreticalDaysInPeriod = dcb.getTime() / freq.getYearFraction();
+                    } else {
+                        // Regola BTP (ACT/ACT ICMA): usa i giorni ESATTI di questo specifico semestre (nel tuo caso restituirà 183)
+                        theoreticalDaysInPeriod = ChronoUnit.DAYS.between(cf.accrualStart(), cf.accrualEnd());
+                    }
+
+                    return cf.interest() * ((double) daysFromStart / theoreticalDaysInPeriod);
                 })
                 .orElse(0.0); // Nessun rateo se siamo fuori dai periodi o il bond è scaduto
+    }
+
+    public double calculateFltShortBondYield(List<CashFlow> flows, LocalDate valuationDate, double referencePrice, double redemptionPrice, double accruedInterest, DaycountBasis dcb) {
+        // 1. Trova l'unico cash flow della cedola in corso (quella che scadrà a breve)
+        CashFlow currentFlow = flows.stream()
+                .filter(cf -> !valuationDate.isBefore(cf.accrualStart()) && valuationDate.isBefore(cf.accrualEnd()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Nessun periodo cedolare attivo alla data di valutazione"));
+
+        // 2. Calcola il Prezzo Tel Quel (Dirty Price) pagato sul mercato
+        double dirtyPrice = referencePrice + accruedInterest;
+
+        // 3. Calcola il valore totale ottenuto alla data di stacco (Capitale 100 + Cedola Semestrale Intera)
+        double totalPayoutAtReset = redemptionPrice + currentFlow.interest();
+
+        // 4. Calcola i giorni effettivi che mancano da OGGI (valuationDate) alla data di stacco cedola
+        long daysToReset = ChronoUnit.DAYS.between(valuationDate, currentFlow.accrualEnd());
+
+        // Frazione d'anno monetaria (ACT/360) per il tempo residuo
+        double yearFractionToReset = daysToReset / dcb.getTime();
+
+        // 5. Formula inversa per ricavare lo Yield (Rendimento annualizzato linearmente)
+        // dirtyPrice = totalPayoutAtReset / (1 + yield * yearFractionToReset)
+        double shortBondYield = ((totalPayoutAtReset / dirtyPrice) - 1.0) / yearFractionToReset;
+
+        return shortBondYield; // Restituisce es. 0.032 (3.2%)
     }
 
     /**
@@ -65,6 +101,18 @@ public class BondPricer extends AbstractFixedIncomePricer {
                 .toList();
 
         return solveInternalRateOfReturn(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency);
+    }
+
+    public double calculateDiscountMargin(List<CashFlow> flows, double cleanPrice, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency, double currentRate) {
+        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
+        double dirtyPrice = cleanPrice + accrued;
+
+        // Filtriamo solo i flussi futuri per l'attualizzazione
+        List<CashFlow> futureFlows = flows.stream()
+                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
+                .toList();
+
+        return solveDiscountMargin(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency, currentRate);
     }
 
     public double calculatePrice(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency) {
@@ -97,7 +145,7 @@ public class BondPricer extends AbstractFixedIncomePricer {
             double discountFactor = yieldCurve.getDiscountFactor(cf.accrualEnd());
             double amount = cf.getTotalAmount();
             double pv = amount * discountFactor;
-            
+
             if (FileUtil.dumpDebugInfo()) {
                 String message = "Accrual End: " + cf.accrualEnd() + "\tDF: " + discountFactor + "\tAmount:" + amount + "\tPresent Value:" + pv;
                 System.out.println(message);
@@ -191,6 +239,32 @@ public class BondPricer extends AbstractFixedIncomePricer {
         output.setDv01(dv01);
         return output;
     }
+
+    public FRBOutputData calculate(FRBInputData input) {
+        FRBOutputData output = new FRBOutputData();
+
+        // ytm
+        output.setYtm(calculateYtm(input.getFlows(), input.getReferencePrice(), input.getValuationDate(),
+                input.getDaycount(), input.getCompounding(), input.getFrequency()));
+
+        // accruals 
+        output.setAccruedInterest(calculateAccruedInterest(input.getFlows(), input.getValuationDate(),
+                input.getDaycount(), input.getFrequency()));
+
+        // mod duration
+        output.setModifiedDuration(calculateModifiedDuration(input.getFlows(), output.getYtm(), input.getValuationDate(),
+                input.getDaycount(), input.getFrequency()));
+
+        // 
+        output.setShortBondYield(calculateFltShortBondYield(input.getFlows(), input.getValuationDate(), input.getReferencePrice(), 100., output.getAccruedInterest(), input.getDaycount()));
+        output.setValuationDate(input.getValuationDate());
+        output.setMktPrice(input.getReferencePrice());
+
+        double dv01 = output.getMktPrice() * output.getModifiedDuration() * 0.0001;
+        output.setDv01(dv01);
+        return output;
+    }
+
     /*
     public double calculateZSpread(List<CashFlow> flows, double dirtyPrice, LocalDate valDate, 
                                DaycountBasis dcb, RateCurve curve) {

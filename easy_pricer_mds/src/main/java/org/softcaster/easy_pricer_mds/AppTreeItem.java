@@ -10,5 +10,5 @@ package org.softcaster.easy_pricer_mds;
  */
 public enum AppTreeItem {
     DEFAULT, BOND, EQUITY, BOND_FUTURE, MM_FUTURE, FX_FUTURE, CMD_FUTURE, CURR_PAIR,
-    YC_UPDATE, YC_DEFINE
+    YC_UPDATE, YC_DEFINE, FLT_BOND
 }

@@ -10,6 +10,7 @@ import org.softcaster.commons.ui.dialog.DialogHelper;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
+import org.softcaster.easy_pricer_mds.bean.FltBondBean;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
@@ -23,6 +24,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
 
     private final MDSFacade mDSFacade;
     private final BondBean bean;
+    private final FltBondBean fltBean;
 
     /**
      * Creates new form BondPricerDlg
@@ -35,6 +37,15 @@ public class BondPricerDlg extends javax.swing.JDialog {
     public BondPricerDlg(java.awt.Frame parent, boolean modal, BondBean bean, MDSFacade mDSFacade) {
         super(parent, modal);
         this.bean = bean;
+        this.fltBean = null;
+        this.mDSFacade = mDSFacade;
+        initComponents();
+        postInit();
+    }
+    public BondPricerDlg(java.awt.Frame parent, boolean modal, FltBondBean bean, MDSFacade mDSFacade) {
+        super(parent, modal);
+        this.bean = null;
+        this.fltBean = bean;
         this.mDSFacade = mDSFacade;
         initComponents();
         postInit();
@@ -318,7 +329,10 @@ public class BondPricerDlg extends javax.swing.JDialog {
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
         try {
             BondPricingRequest request = new BondPricingRequest();
-            request.isin = bean.getInstrumentQuote().getMasterData().getCode();
+            if(bean != null)
+                request.isin = bean.getInstrumentQuote().getMasterData().getCode();
+            if(fltBean != null)
+                request.isin = fltBean.getInstrumentQuote().getMasterData().getCode();
             request.referencePrice = Converter.toDouble(txtRefPrice.getText(), false);
             request.referenceDate = Date.valueOf(DateParser.parse(txtRefDate.getText()));
             
@@ -372,6 +386,10 @@ public class BondPricerDlg extends javax.swing.JDialog {
         if (bean != null) {
             txtISIN.setText(bean.getInstrumentQuote().getMasterData().getCode());
             txtDescription.setText(bean.getInstrumentQuote().getMasterData().getDescription());
+        }
+        if (fltBean != null) {
+            txtISIN.setText(fltBean.getInstrumentQuote().getMasterData().getCode());
+            txtDescription.setText(fltBean.getInstrumentQuote().getMasterData().getDescription());
         }
     }
 }

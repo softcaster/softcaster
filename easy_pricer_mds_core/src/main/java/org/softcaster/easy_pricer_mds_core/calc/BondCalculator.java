@@ -14,6 +14,8 @@ import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.YieldCurve;
+import org.softcaster.engine.dto.FRBInputData;
+import org.softcaster.engine.dto.FRBOutputData;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +32,25 @@ public class BondCalculator {
     @Autowired
     private SecurityMasterDataDAO smdDAO;
     @Autowired
-    @Qualifier("bondPricer") 
+    @Qualifier("bondPricer")
     private BondPricer bondPricer;
 
     public XRBOutputData bondValuation(XRBInputData input, SecurityMasterData securityMasterData) {
         XRBOutputData output = null;
+        if (securityMasterData != null) {
+            if (!securityMasterData.getCashFlows().isEmpty()) {
+                List<CashFlow> flows = Utils.convertCashFlow(securityMasterData.getCashFlows());
+                input.setFlows(flows);
+            }
+
+            output = bondPricer.calculate(input);
+        }
+
+        return output;
+    }
+
+    public FRBOutputData bondValuation(FRBInputData input, SecurityMasterData securityMasterData) {
+        FRBOutputData output = null;
         if (securityMasterData != null) {
             if (!securityMasterData.getCashFlows().isEmpty()) {
                 List<CashFlow> flows = Utils.convertCashFlow(securityMasterData.getCashFlows());
@@ -52,7 +68,7 @@ public class BondCalculator {
         if (smdDAO != null) {
             SecurityMasterData securityMasterData = smdDAO.findByCodeWithCashFlowAndHolidays(request.isin);
             if (securityMasterData != null) {
-                XRBInputData input = new XRBInputData();
+                FRBInputData input = new FRBInputData();
                 Calendar calendar = new Calendar(securityMasterData.getCurrency());
                 LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, securityMasterData.getBusinessDays());
                 input.setValuationDate(valuationDate);
@@ -61,7 +77,7 @@ public class BondCalculator {
                 input.setDaycount(securityMasterData.getAccrualDaycount());
                 input.setCompounding(securityMasterData.getCompounding());
 
-                XRBOutputData output = bondValuation(input, securityMasterData);
+                FRBOutputData output = bondValuation(input, securityMasterData);
                 if (output != null) {
                     response = new BondPricingResponse();
                     response.accruedInterest = output.getAccruedInterest();
@@ -85,7 +101,7 @@ public class BondCalculator {
         accruals = bondPricer.calculateAccruedInterest(flows, accrualDate, securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
         return accruals;
     }
-    
+
     public double repriceBondForYieldShift(SecurityMasterData securityMasterData, LocalDate officialDate, double ytm, double basisPoints) {
 
         double yieldShift = basisPoints / 100.;

@@ -56,4 +56,44 @@ public abstract class AbstractFixedIncomePricer {
 
         return MathUtil.rootNewton(nlpFunction, 0.10, compounding);
     }
+
+    public double solveDiscountMargin(
+            List<CashFlow> cashflows,
+            double dirtyPrice,
+            LocalDate valuationDate,
+            DaycountBasis dcb,
+            Compounding compounding,
+            Frequency frequency,
+            double currentRate // es Euribor6M noto (es. 0.0245 per 2.45%)
+    ) {
+
+        MathUtil.Function1 dmFunction = new MathUtil.Function1() {
+            @Override
+            public double f(double dm) {
+                return f(dm, compounding);
+            }
+
+            @Override
+            public double f(double dm, Compounding compounding) {
+                double pv = 0.0;
+                for (CashFlow cf : cashflows) {
+                    // Calcoliamo il tempo residuo secondo la convenzione del titolo
+                    double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
+
+                    // Il tasso totale di sconto per questo flusso è Euribor + lo spread incognito (DM)
+                    double totalDiscountRate = currentRate + dm;
+
+                    // Sfruttiamo il tuo metodo MathUtil esistente per il fattore di sconto
+                    pv += cf.getTotalAmount() * MathUtil.getDiscountFactor(compounding, totalDiscountRate, t);
+                }
+                // La radice cercherà il punto in cui PV - Prezzo di mercato = 0
+                return pv - dirtyPrice;
+            }
+        };
+
+        // Chiamiamo il tuo solutore Newton-Raphson esistente. 
+        // Usiamo un'ipotesi iniziale (guess) di 0.005 (ovvero +50 punti base di spread)
+        return MathUtil.rootNewton(dmFunction, 0.005, compounding);
+    }
+
 }
