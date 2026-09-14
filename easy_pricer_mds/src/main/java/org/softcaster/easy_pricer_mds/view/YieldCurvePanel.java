@@ -14,7 +14,6 @@ import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;

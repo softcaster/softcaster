@@ -452,9 +452,15 @@ public class BondPricerDlg extends javax.swing.JDialog {
             txtAccrued.setText(Converter.fromDouble(response.accruedInterest));
             txtYield.setText(Converter.fromDouble(response.yieldToMaturity * 100));
             txtModDuration.setText(Converter.fromDouble(response.modifiedDuration));
-            txtDiscountMargin.setText(Converter.fromDouble(response.discountMargin * 100.));
-            txtShortBondYield.setText(Converter.fromDouble(response.shortBondYield * 100.));
-            txtMarginDuration.setText(Converter.fromDouble(response.marginDuration));
+            if (fltBean != null) {
+                txtDiscountMargin.setText(Converter.fromDouble(response.discountMargin * 100.));
+                txtShortBondYield.setText(Converter.fromDouble(response.shortBondYield * 100.));
+                txtMarginDuration.setText(Converter.fromDouble(response.marginDuration));
+            } else {
+                txtDiscountMargin.setText("");
+                txtShortBondYield.setText("");
+                txtMarginDuration.setText("");
+            }
 
         } catch (ParseException ex) {
             System.getLogger(BondPricerDlg.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);

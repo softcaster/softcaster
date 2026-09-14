@@ -20,31 +20,31 @@ class PyProviderHelper(IProviderHelper):
         nodes= list()
        
         offset = Offset(1,OffsetType.YEARS);
-        node = Node("IT1Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT1Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(3,OffsetType.YEARS);
-        node = Node("IT3Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT3Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(5,OffsetType.YEARS);
-        node = Node("IT5Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT5Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(10,OffsetType.YEARS);
-        node = Node("IT10Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT10Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(15,OffsetType.YEARS);
-        node = Node("IT15Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT15Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(20,OffsetType.YEARS);
-        node = Node("IT20Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT20Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(30,OffsetType.YEARS);
-        node = Node("IT30Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("IT30Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         return nodes;
@@ -56,55 +56,55 @@ class PyProviderHelper(IProviderHelper):
         nodes= list()
        
         offset = Offset(1,OffsetType.MONTHS);
-        node = Node("U.S. 1M",offset, None, "ACT_365", "SIMPLE");
+        node = Node("U.S. 1M",offset, None, "ACT_365", "SIMPLE", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(2,OffsetType.MONTHS);
-        node = Node("U.S. 2M",offset, None, "ACT_365", "SIMPLE");
+        node = Node("U.S. 2M",offset, None, "ACT_365", "SIMPLE", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(3,OffsetType.MONTHS);
-        node = Node("U.S. 3M",offset, None, "ACT_365", "SIMPLE");
+        node = Node("U.S. 3M",offset, None, "ACT_365", "SIMPLE", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(4,OffsetType.MONTHS);
-        node = Node("U.S. 4M",offset, None, "ACT_365", "SIMPLE");
+        node = Node("U.S. 4M",offset, None, "ACT_365", "SIMPLE", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(6,OffsetType.MONTHS);
-        node = Node("U.S. 6M",offset, None, "ACT_365", "SIMPLE");
+        node = Node("U.S. 6M",offset, None, "ACT_365", "SIMPLE", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(1,OffsetType.YEARS);
-        node = Node("U.S. 1Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("U.S. 1Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(2,OffsetType.YEARS);
-        node = Node("U.S. 2Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("U.S. 2Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(3,OffsetType.YEARS);
-        node = Node("U.S. 3Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("U.S. 3Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(5,OffsetType.YEARS);
-        node = Node("U.S. 5Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("U.S. 5Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(7,OffsetType.YEARS);
-        node = Node("U.S. 7Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("U.S. 7Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(10,OffsetType.YEARS);
-        node = Node("U.S. 10Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("U.S. 10Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(20,OffsetType.YEARS);
-        node = Node("U.S. 20Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("U.S. 20Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(30,OffsetType.YEARS);
-        node = Node("U.S. 30Y",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("U.S. 30Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         return nodes;
@@ -117,19 +117,19 @@ class PyProviderHelper(IProviderHelper):
         nodes= list()
        
         offset = Offset(1,OffsetType.MONTHS);
-        node = Node("1M",offset, None, "ACT_360", "SIMPLE");
+        node = Node("1M",offset, None, "ACT_360", "SIMPLE", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(3,OffsetType.MONTHS);
-        node = Node("3M",offset, None, "ACT_360", "SIMPLE");
+        node = Node("3M",offset, None, "ACT_360", "SIMPLE", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(6,OffsetType.MONTHS);
-        node = Node("6M",offset, None, "ACT_360", "SIMPLE");
+        node = Node("6M",offset, None, "ACT_360", "SIMPLE", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(1,OffsetType.YEARS);
-        node = Node("1Y",offset, None, "ACT_360", "SIMPLE");
+        node = Node("1Y",offset, None, "ACT_360", "SIMPLE", "MONEY_MARKET");
         nodes.append(node);
 
         return nodes;
@@ -138,79 +138,78 @@ class PyProviderHelper(IProviderHelper):
     # Tassi Eurirs
     #
     def getEurirsNodes(self):
-
+        
         nodes = list()
-
         offset = Offset(1,OffsetType.YEARS);
-        node = Node("EUR 01A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 01A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(2,OffsetType.YEARS);
-        node = Node("EUR 02A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 02A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(3,OffsetType.YEARS);
-        node = Node("EUR 03A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 03A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(4,OffsetType.YEARS);
-        node = Node("EUR 04A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 04A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(5,OffsetType.YEARS);
-        node = Node("EUR 05A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 05A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(6,OffsetType.YEARS);
-        node = Node("EUR 06A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 06A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(7,OffsetType.YEARS);
-        node = Node("EUR 07A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 07A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(8,OffsetType.YEARS);
-        node = Node("EUR 08A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 08A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(9,OffsetType.YEARS);
-        node = Node("EUR 09A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 09A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(10,OffsetType.YEARS);
-        node = Node("EUR 10A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 10A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(11,OffsetType.YEARS);
-        node = Node("EUR 11A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 11A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(12,OffsetType.YEARS);
-        node = Node("EUR 12A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 12A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(15,OffsetType.YEARS);
-        node = Node("EUR 15A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 15A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(20,OffsetType.YEARS);
-        node = Node("EUR 20A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 20A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(25,OffsetType.YEARS);
-        node = Node("EUR 25A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 25A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(30,OffsetType.YEARS);
-        node = Node("EUR 30A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 30A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(40,OffsetType.YEARS);
-        node = Node("EUR 40A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 40A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         offset = Offset(50,OffsetType.YEARS);
-        node = Node("EUR 50A Irs",offset, None, "ACT_365", "COMPOUNDED");
+        node = Node("EUR 50A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         return nodes;
