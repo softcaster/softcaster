@@ -105,7 +105,7 @@ public class CsvProvider extends AbstractProvider {
             Offset offset = new Offset(Converter.toInt(s[2]), getOffsetType(Converter.toInt(s[1])));
             Data data = new Data(Converter.toDouble(s[3], false) / 100., Converter.toDouble(s[4], false) / 100.);
             String ric = s[0];
-            return new Node(ric, offset, data, getDaycount(Converter.toInt(s[6])), getCompounding(Converter.toInt(s[5])));
+            return new Node(ric, offset, data, getDaycount(Converter.toInt(s[6])), getCompounding(Converter.toInt(s[5])),"MONEY_MARKET");
         } catch (ParseException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return null;

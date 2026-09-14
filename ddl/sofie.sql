@@ -163,7 +163,6 @@ CREATE TABLE compounding (
 );
 
 CREATE UNIQUE INDEX idx_compounding_code ON compounding (code);
-
 ALTER TABLE compounding OWNER TO sofie;
 
 -- Creo sequenza
@@ -173,6 +172,31 @@ CREATE SEQUENCE compounding_s
 
 ALTER SEQUENCE compounding_s
     OWNER TO sofie;
+
+
+-- ----------------------------------------------------------------------------
+-- CouponProjectionMethod
+-- ----------------------------------------------------------------------------
+CREATE TABLE projection_method (
+    projection_method_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(50) NOT NULL,
+    PRIMARY KEY (projection_method_id)
+);
+CREATE UNIQUE INDEX idx_pm_code ON projection_method (code);
+ALTER TABLE projection_method OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- CurveNodeType
+-- ----------------------------------------------------------------------------
+CREATE TABLE node_type (
+    node_type_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(50) NOT NULL,
+    PRIMARY KEY (node_type_id)
+);
+CREATE UNIQUE INDEX idx_node_type_code ON node_type(code);
+ALTER TABLE node_type OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- calendar
@@ -719,11 +743,13 @@ CREATE TABLE yield_curve_item (
     offset_value smallint NOT NULL,
     bid numeric(15, 5) NOT NULL,
     ask numeric(15, 5) NOT NULL,
-    compounding smallint NOT NULL DEFAULT 1,
-    daycount smallint NOT NULL,
+    compounding integer NOT NULL DEFAULT 1,
+    daycount integer NOT NULL,
+    node_type integer not null,
     PRIMARY KEY (id_yield_curve_item),
     CONSTRAINT fk_yield_curve FOREIGN KEY (yield_curve) REFERENCES yield_curve (id_yield_curve) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_daycount FOREIGN KEY (daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_node_type FOREIGN KEY (node_type) REFERENCES node_type (node_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 CREATE UNIQUE INDEX idx_yield_curve_item_ric ON yield_curve_item (ric, yield_curve);
@@ -1356,3 +1382,4 @@ CREATE TABLE descriptors (
 ALTER TABLE descriptors OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS descriptors_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE descriptors_s OWNER TO sofie;
+

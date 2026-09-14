@@ -13,6 +13,7 @@ import org.softcaster.engine.enums.CouponProjectionMethod;
 public class FRBInputData extends XRBInputData {
 
     private double redemptionPrice = 0;
+    private double referenceRate = 0;
     private CouponProjectionMethod projectionMethod;
 
     /**
@@ -41,5 +42,19 @@ public class FRBInputData extends XRBInputData {
      */
     public void setProjectionMethod(CouponProjectionMethod projectionMethod) {
         this.projectionMethod = projectionMethod;
+    }
+
+    /**
+     * @return the referenceRate
+     */
+    public double getReferenceRate() {
+        return referenceRate;
+    }
+
+    /**
+     * @param referenceRate the referenceRate to set
+     */
+    public void setReferenceRate(double referenceRate) {
+        this.referenceRate = referenceRate;
     }
 }

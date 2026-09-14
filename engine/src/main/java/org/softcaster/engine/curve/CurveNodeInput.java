@@ -5,6 +5,7 @@
 package org.softcaster.engine.curve;
 
 import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 
 public record CurveNodeInput(
@@ -13,17 +14,18 @@ public record CurveNodeInput(
     double rate, 
     double discountFactor, 
     DaycountBasis daycount, 
-    Compounding compounding
+    Compounding compounding,
+    CurveNodeType nodeType
 ) {
 
-// Costruttore compatto per quando leggi da DB (senza DF)
-    public CurveNodeInput(String symbol, Offset tenorOffset, double rate, DaycountBasis daycount, Compounding compounding) {
-        this(symbol, tenorOffset, rate, 1.0, daycount, compounding); // 1.0 o Double.NaN come valore temporaneo
+    // Costruttore compatto per quando legge da DB (senza DF)
+    public CurveNodeInput(String symbol, Offset tenorOffset, double rate, DaycountBasis daycount, Compounding compounding, CurveNodeType nodeType) {
+        this(symbol, tenorOffset, rate, 1.0, daycount, compounding, nodeType); 
     }
 
     // Metodo Wither: crea una copia esatta aggiornando solo il DF
     public CurveNodeInput withDiscountFactor(double newDiscountFactor) {
-        return new CurveNodeInput(this.symbol, this.tenorOffset, this.rate, newDiscountFactor, this.daycount, this.compounding);
+        return new CurveNodeInput(this.symbol, this.tenorOffset, this.rate, newDiscountFactor, this.daycount, this.compounding, this.nodeType);
     }
 }
 

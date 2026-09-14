@@ -16,14 +16,16 @@ public class Node {
     private final String symbol;
     private final String daycount;
     private final String compounding;
+    private final String nodeType;
     private Data data;
     
-    public Node(String symbol, Offset offset, Data data, String daycount, String compounding) {
+    public Node(String symbol, Offset offset, Data data, String daycount, String compounding, String nodeType) {
         this.offset = offset;
         this.data = data;
         this.symbol = symbol;
         this.compounding = compounding;
         this.daycount = daycount;
+        this.nodeType = nodeType;
     }
 
     public LocalDate maturity(LocalDate officialDate) {
@@ -83,5 +85,12 @@ public class Node {
      */
     public String getCompounding() {
         return compounding;
+    }
+
+    /**
+     * @return the nodeType
+     */
+    public String getNodeType() {
+        return nodeType;
     }
 }

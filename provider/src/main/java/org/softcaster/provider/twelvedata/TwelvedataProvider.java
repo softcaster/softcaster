@@ -88,10 +88,10 @@ public class TwelvedataProvider extends AbstractProvider {
     private void parseForexResponse(String symbol) {
 
         if (!symbol.isEmpty()) {
-            String requestSymbol = symbol.substring(0,3) + "/" + symbol.substring(3,6);
+            String requestSymbol = symbol.substring(0, 3) + "/" + symbol.substring(3, 6);
             try {
-                double value  = client.getRate(requestSymbol);
-                Node node = new Node(symbol, null, new Data(value, value), "", "");
+                double value = client.getRate(requestSymbol);
+                Node node = new Node(symbol, null, new Data(value, value), "", "", "");
                 addQuote(CURRENCIES, node);
             } catch (JsonProcessingException ex) {
                 LoggerMgr.logError(ex.getLocalizedMessage());

@@ -73,6 +73,8 @@ public class BondCalculator {
                 LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, securityMasterData.getBusinessDays());
                 input.setValuationDate(valuationDate);
                 input.setReferencePrice(request.referencePrice);
+                input.setReferenceRate(request.referenceRate);
+                input.setRedemptionPrice(securityMasterData.getRedempionPrice());
                 input.setFrequency(securityMasterData.getFrequency());
                 input.setDaycount(securityMasterData.getAccrualDaycount());
                 input.setCompounding(securityMasterData.getCompounding());
@@ -88,6 +90,9 @@ public class BondCalculator {
                     response.convexity = 0.;
                     response.presentValue = 0.;
                     response.yieldToMaturityPV = 0.;
+                    response.discountMargin = output.getDiscountMargin();
+                    response.shortBondYield = output.getShortBondYield();
+                    response.marginDuration = output.getMarginDuration();
                 }
             }
         }

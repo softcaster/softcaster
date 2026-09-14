@@ -4,6 +4,8 @@
  */
 package ECBTest;
 
+import java.util.List;
+import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.ecb.ECBProvider;
 
 /**
@@ -17,8 +19,9 @@ public class ECBTest {
     }
 
     private static void testECB() {
+        System.out.println("Java Home in uso: " + System.getProperty("java.home"));
         ECBProvider provider = ECBProvider.getInstance();
-        double value = provider.getOvnEstr().getData().bid();
-        System.out.println(value);
+        List<Node> nodes = provider.getYieldCurveNodes("ECB");
+        System.out.println(nodes.size());
     }
 }

@@ -415,5 +415,9 @@ INSERT INTO ref_rate_index (ref_rate_index_id, code, description, currency, dayc
 INSERT INTO fixing_day_type(fixing_day_type_id,code, description) VALUES (1,'CALENDAR_DAYS','Calendar Days');
 INSERT INTO fixing_day_type(fixing_day_type_id,code, description) VALUES (2,'BUSINESS_DAYS','Business Days');
 
-alter table flt_security_master_data add column fixing_days_before INTEGER NOT NULL DEFAULT 2;
-alter table flt_security_master_data add column fixing_day_type INTEGER NOT NULL DEFAULT 2;
+INSERT INTO projection_method(projection_method_id,code, description) VALUES (1,'LAST_COUPON','Last Coupon');
+INSERT INTO projection_method(projection_method_id,code, description) VALUES (2,'FORWARD_CURVE','Forward Curve');
+INSERT INTO projection_method(projection_method_id,code, description) VALUES (3,'SHORT_BOND','Short Bond');
+INSERT INTO node_type(node_type_id,code, description) VALUES (1,'MONEY_MARKET','Money Market');
+INSERT INTO node_type(node_type_id,code, description) VALUES (2,'SWAP','Swap');
+

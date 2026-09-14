@@ -64,7 +64,7 @@ public abstract class AbstractFixedIncomePricer {
             DaycountBasis dcb,
             Compounding compounding,
             Frequency frequency,
-            double currentRate // es Euribor6M noto (es. 0.0245 per 2.45%)
+            double currentRate // es. Euribor 6M noto (0.0262)
     ) {
 
         MathUtil.Function1 dmFunction = new MathUtil.Function1() {
@@ -76,24 +76,44 @@ public abstract class AbstractFixedIncomePricer {
             @Override
             public double f(double dm, Compounding compounding) {
                 double pv = 0.0;
-                for (CashFlow cf : cashflows) {
-                    // Calcoliamo il tempo residuo secondo la convenzione del titolo
+                double freqValue = frequency.getYearFraction(); // es. 2.0 per semestrale
+
+                for (int i = 0; i < cashflows.size(); i++) {
+                    CashFlow cf = cashflows.get(i);
+
+                    // 1. Calcoliamo il tempo residuo per lo sconto
                     double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
 
-                    // Il tasso totale di sconto per questo flusso è Euribor + lo spread incognito (DM)
-                    double totalDiscountRate = currentRate + dm;
+                    // 2. STIMA DEL FLUSSO FUTURO (Indicizzazione costante all'Euribor attuale)
+                    // Ricostruiamo la cedola teorica del CCT: (Euribor + Spread del Titolo) * FrazioneAnnoPeriodo
+                    // Lo spread del titolo (0,75%) è fisso. Per ricavarlo dinamicamente dal flusso corrente:
+                    // Tasso Cedola Corrente = (Cedola Semestrale * Frequenza) / 100 -> es. (1.5935 * 2) / 100 = 3.187%
+                    // Spread Titolo = Tasso Cedola Corrente - currentRate -> 3.187% - 2.62% = 0.567% (o 0.75% a seconda della cedola)
+                    // NOTA: Se l'oggetto CashFlow ha già incorporato lo spread corretto all'emissione,
+                    // le cedole future stimate all'Euribor attuale avranno tasso annuo pari a (currentRate + spread)
+                    double cctSpread = 0.0075; // Lo spread dello 0,75% del tuo CCT-Eu Ot30
 
-                    // Sfruttiamo il tuo metodo MathUtil esistente per il fattore di sconto
-                    pv += cf.getTotalAmount() * MathUtil.getDiscountFactor(compounding, totalDiscountRate, t);
+                    double estimatedCouponRate = currentRate + cctSpread;
+                    double estimatedInterest = 100.0 * (estimatedCouponRate / freqValue);
+
+                    double expectedFlowAmount = estimatedInterest;
+
+                    // Se è l'ultimo flusso (scadenza), aggiungiamo il rimborso del capitale a 100
+                    if (i == cashflows.size() - 1) {
+                        expectedFlowAmount += 100.0;
+                    }
+
+                    // 3. ATTUALIZZAZIONE (Euribor + DM)
+                    double totalDiscountRate = currentRate + dm;
+                    double df = MathUtil.getDiscountFactor(compounding, totalDiscountRate, t);
+
+                    pv += expectedFlowAmount * df;
                 }
-                // La radice cercherà il punto in cui PV - Prezzo di mercato = 0
+
                 return pv - dirtyPrice;
             }
         };
 
-        // Chiamiamo il tuo solutore Newton-Raphson esistente. 
-        // Usiamo un'ipotesi iniziale (guess) di 0.005 (ovvero +50 punti base di spread)
         return MathUtil.rootNewton(dmFunction, 0.005, compounding);
     }
-
 }

@@ -306,7 +306,7 @@ public class FltBondPanel extends FndtAbstactPanel {
         }
 
         BondPricerDlg dialog = new BondPricerDlg(parentFrame, true, bean, mDSFacade);
-        dialog.setSize(500, 300);
+        dialog.setSize(500, 320);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);

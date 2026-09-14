@@ -86,7 +86,7 @@ public class BorsaItalianaProvider extends AbstractProvider {
     private void parseFutureResponse(String symbol) {
         if (!symbol.isEmpty()) {
             double value = client.getQuote(symbol, FUTURES);
-            Node node = new Node(symbol, null, new Data(value, value), "", "");
+            Node node = new Node(symbol, null, new Data(value, value), "", "", "");
             addQuote(FUTURES, node);
         }
     }
@@ -94,7 +94,7 @@ public class BorsaItalianaProvider extends AbstractProvider {
     private void parseBondResponse(String symbol) {
         if (!symbol.isEmpty()) {
             double value = client.getQuote(symbol, BONDS);
-            Node node = new Node(symbol, null, new Data(value, value), "", "");
+            Node node = new Node(symbol, null, new Data(value, value), "", "", "");
             addQuote(BONDS, node);
         }
     }

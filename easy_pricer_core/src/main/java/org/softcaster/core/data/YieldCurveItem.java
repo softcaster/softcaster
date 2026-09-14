@@ -2,6 +2,7 @@ package org.softcaster.core.data;
 
 import java.io.Serializable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,6 +11,12 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.CompoundingConverter;
+import org.softcaster.core.data.converters.CurveNodeTypeConverter;
+import org.softcaster.core.data.converters.DaycountConverter;
+import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveNodeType;
+import org.softcaster.engine.enums.DaycountBasis;
 
 @Entity
 @Table(name = "yield_curve_item")
@@ -43,12 +50,18 @@ public class YieldCurveItem implements Serializable {
     @Column(name = "ask")
     private Double ask;
 
+    @Convert(converter = CompoundingConverter.class)
     @Column(name = "compounding")
-    private Short compounding;
+    private Compounding compounding;
 
+    @Convert(converter = DaycountConverter.class)
     @Column(name = "daycount")
-    private Short daycount;
+    private DaycountBasis daycount;
 
+    @Convert(converter = CurveNodeTypeConverter.class)
+    @Column(name = "node_type")
+    private CurveNodeType nodeType;
+            
     public Integer getIdYieldCurveItem() {
         return idYieldCurveItem;
     }
@@ -125,28 +138,43 @@ public class YieldCurveItem implements Serializable {
     /**
      * @return the compounding
      */
-    public Short getCompounding() {
+    public Compounding getCompounding() {
         return compounding;
     }
 
     /**
      * @param compounding the compounding to set
      */
-    public void setCompounding(Short compounding) {
+    public void setCompounding(Compounding compounding) {
         this.compounding = compounding;
     }
 
     /**
      * @return the daycount
      */
-    public Short getDaycount() {
+    public DaycountBasis getDaycount() {
         return daycount;
     }
 
     /**
      * @param daycount the daycount to set
      */
-    public void setDaycount(Short daycount) {
+    public void setDaycount(DaycountBasis daycount) {
         this.daycount = daycount;
     }
+
+    /**
+     * @return the nodeType
+     */
+    public CurveNodeType getNodeType() {
+        return nodeType;
+    }
+
+    /**
+     * @param nodeType the nodeType to set
+     */
+    public void setNodeType(CurveNodeType nodeType) {
+        this.nodeType = nodeType;
+    }
+
 }

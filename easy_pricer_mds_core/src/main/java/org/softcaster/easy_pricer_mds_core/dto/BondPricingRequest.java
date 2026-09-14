@@ -12,4 +12,5 @@ public class BondPricingRequest extends PricingRequest {
 
     public String yieldCurve = "";
     public boolean fullCalc = false;
+    public double referenceRate = 0.; // valido per FRB
 }

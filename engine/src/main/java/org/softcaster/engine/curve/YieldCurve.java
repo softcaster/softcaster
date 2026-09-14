@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.engine.math.MathUtil;
@@ -38,7 +39,7 @@ public class YieldCurve {
         this.currency = currency;
 
         // Il giorno 0 (oggi) ha sempre un fattore di sconto pari a 1.0
-        CurveNodeInput todayInput = new CurveNodeInput("", new Offset(0, OffsetType.DAYS), 0, 1, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        CurveNodeInput todayInput = new CurveNodeInput("", new Offset(0, OffsetType.DAYS), 0, 1, DaycountBasis.ACT_365, Compounding.COMPOUNDED, CurveNodeType.MONEY_MARKET);
         this.discountFactors.put(0, todayInput);
 
         // Costruisci i Discount Factors partendo dagli input
@@ -145,9 +146,9 @@ public class YieldCurve {
         /*
         double logDf = Math.log(df0) + (Math.log(df1) - Math.log(df0)) * weight;
         return Math.exp(logDf);
-        */
+         */
         // Equivalente applicando l'esponenziale ad entrambi i lati
-        double df = df0 * Math.pow((df1/df0),weight);
+        double df = df0 * Math.pow((df1 / df0), weight);
         return df;
     }
 

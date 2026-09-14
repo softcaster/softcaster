@@ -20,4 +20,7 @@ public class BondPricingResponse implements Serializable {
     public double presentValue = 0.;
     public double yieldToMaturityPV = 0.;
     public double dv01 = 0.;
+    public double discountMargin = 0.;
+    public double shortBondYield = 0.;
+    public double marginDuration = 0;
 }

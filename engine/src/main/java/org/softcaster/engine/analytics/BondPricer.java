@@ -217,6 +217,148 @@ public class BondPricer extends AbstractFixedIncomePricer {
         return weightedSum / (dirtyPrice * Math.pow(1 + ytm, 2));
     }
 
+    /**
+     * Calcola la Margin Duration per un CCT-Eu tramite shock numerico del
+     * Discount Margin.
+     *
+     * @param cashflows Lista dei flussi futuri
+     * @param dirtyPrice Il prezzo Tel Quel di mercato attuale
+     * @param valuationDate Data di valutazione
+     * @param dcb Daycountbasis (es. ACT_360)
+     * @param compounding Compounding (es. COMPOUNDED)
+     * @param frequency Frequenza (es. SEMIANNUAL)
+     * @param currentRate L'Euribor 6M corrente (es. 0.0262)
+     * @param calculatedDm Il Discount Margin calcolato dal solutore (es.
+     * 0.0030486)
+     * @return La Margin Duration (espressa in anni, solitamente compresa tra
+     * 0.1 e 0.5)
+     */
+    public double calculateMarginDuration(
+            List<CashFlow> cashflows,
+            double dirtyPrice,
+            LocalDate valuationDate,
+            DaycountBasis dcb,
+            Compounding compounding,
+            Frequency frequency,
+            double currentRate,
+            double calculatedDm
+    ) {
+        // Dimensione dello shock: 1 punto base (0.01%)
+        double h = 0.0001;
+
+        // 1. Ricalcoliamo il Prezzo se lo spread sale (Calculated DM + 1 bp)
+        double priceUp = calculatePvForDm(cashflows, valuationDate, dcb, compounding, frequency, currentRate, calculatedDm + h);
+
+        // 2. Ricalcoliamo il Prezzo se lo spread scende (Calculated DM - 1 bp)
+        double priceDown = calculatePvForDm(cashflows, valuationDate, dcb, compounding, frequency, currentRate, calculatedDm - h);
+
+        // 3. Formula della Duration Modificata Numerica (Differenze Centrali):
+        // Duration = (PriceDown - PriceUp) / (2 * PriceOriginale * Shock)
+        double marginDuration = (priceDown - priceUp) / (2.0 * dirtyPrice * h);
+
+        return marginDuration;
+    }
+
+    /**
+     * Funzione privata di supporto per calcolare il PV dato un preciso livello
+     * di DM (Riprende esattamente la logica della tua funzione obiettivo)
+     */
+    private double calculatePvForDm(List<CashFlow> cashflows, LocalDate valuationDate, DaycountBasis dcb,
+            Compounding compounding, Frequency frequency, double currentRate, double dm) {
+        double pv = 0.0;
+        double freqValue = frequency.getYearFraction();
+        double cctSpread = 0.0075; // Spread contrattuale del CCT
+
+        for (int i = 0; i < cashflows.size(); i++) {
+            CashFlow cf = cashflows.get(i);
+            double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
+
+            // Stima della cedola condizionata al currentRate
+            double estimatedCouponRate = currentRate + cctSpread;
+            double expectedFlowAmount = 100.0 * (estimatedCouponRate / freqValue);
+
+            if (i == cashflows.size() - 1) {
+                expectedFlowAmount += 100.0; // Rimborso capitale
+            }
+
+            // Sconto con la combinazione corrente + spread incognito (shockato)
+            double totalDiscountRate = currentRate + dm;
+            double df = MathUtil.getDiscountFactor(compounding, totalDiscountRate, t);
+
+            pv += expectedFlowAmount * df;
+        }
+        return pv;
+    }
+
+    /**
+     * Ricalcola il PV simulando uno shock dell'Euribor per estrarre la Margin
+     * Duration reale.
+     *
+     * @param deltaRate Lo shock da applicare al tasso (es. +0.0001 o -0.0001)
+     */
+    private double calculatePvForRealDuration(
+            List<CashFlow> cashflows,
+            LocalDate valuationDate,
+            DaycountBasis dcb,
+            Compounding compounding,
+            Frequency frequency,
+            double currentRate,
+            double spread,
+            double dm,
+            double deltaDm // Lo shock applicato (+h oppure -h)
+    ) {
+        double pv = 0.0;
+        double freqValue = frequency.getYearFraction();
+
+        for (int i = 0; i < cashflows.size(); i++) {
+            CashFlow cf = cashflows.get(i);
+            double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
+
+            double expectedFlowAmount;
+
+            // I flussi NON vengono toccati dallo shock dello spread di credito.
+            // Rimangono ancorati alla proiezione dell'Euribor iniziale (currentRate).
+            if (i == 0) {
+                expectedFlowAmount = cf.interest();
+            } else {
+                double estimatedCouponRate = currentRate + spread;
+                expectedFlowAmount = 100.0 * (estimatedCouponRate / freqValue);
+            }
+
+            if (i == cashflows.size() - 1) {
+                expectedFlowAmount += 100.0; // Rimborso del capitale alla fine
+            }
+
+            // LO SCONTO: Risente dell'Euribor stabile + il Discount Margin shockato (+h o -h)
+            double totalDiscountRate = currentRate + (dm + deltaDm);
+            double df = MathUtil.getDiscountFactor(compounding, totalDiscountRate, t);
+
+            pv += expectedFlowAmount * df;
+        }
+        return pv;
+    }
+
+    public double calculateRealMarginDuration(
+            List<CashFlow> cashflows,
+            double dirtyPrice,
+            LocalDate valuationDate,
+            DaycountBasis dcb,
+            Compounding compounding,
+            Frequency frequency,
+            double currentRate,
+            double spread,
+            double calculatedDm
+    ) {
+        double h = 0.0001; // Shock di 1 punto base
+
+        // Applichiamo lo shock (+h e -h) all'Euribor, facendo ricalcolare flussi e sconti in modo coordinato
+        double priceUp = calculatePvForRealDuration(cashflows, valuationDate, dcb, compounding, frequency, currentRate, spread, calculatedDm, h);
+        double priceDown = calculatePvForRealDuration(cashflows, valuationDate, dcb, compounding, frequency, currentRate, spread, calculatedDm, -h);
+
+        // Formula della Duration Modificata classica
+        return (priceDown - priceUp) / (2.0 * dirtyPrice * h);
+    }
+
     public XRBOutputData calculate(XRBInputData input) {
         XRBOutputData output = new XRBOutputData();
 
@@ -255,10 +397,25 @@ public class BondPricer extends AbstractFixedIncomePricer {
         output.setModifiedDuration(calculateModifiedDuration(input.getFlows(), output.getYtm(), input.getValuationDate(),
                 input.getDaycount(), input.getFrequency()));
 
-        // 
-        output.setShortBondYield(calculateFltShortBondYield(input.getFlows(), input.getValuationDate(), input.getReferencePrice(), 100., output.getAccruedInterest(), input.getDaycount()));
+        // ShortBond Yield
+        output.setShortBondYield(calculateFltShortBondYield(input.getFlows(), input.getValuationDate(), input.getReferencePrice(), input.getRedemptionPrice(), output.getAccruedInterest(), input.getDaycount()));
+
         output.setValuationDate(input.getValuationDate());
         output.setMktPrice(input.getReferencePrice());
+
+        // Discount Margin
+        output.setDiscountMargin(calculateDiscountMargin(input.getFlows(), input.getReferencePrice(), input.getValuationDate(), input.getDaycount(), input.getCompounding(), input.getFrequency(), input.getReferenceRate()));
+
+        // Margin Duration
+        output.setMarginDuration(calculateRealMarginDuration(input.getFlows(),
+                input.getReferencePrice() + output.getAccruedInterest(),
+                input.getValuationDate(),
+                input.getDaycount(),
+                input.getCompounding(),
+                input.getFrequency(),
+                input.getReferenceRate(),
+                0.0075,
+                output.getDiscountMargin()));
 
         double dv01 = output.getMktPrice() * output.getModifiedDuration() * 0.0001;
         output.setDv01(dv01);

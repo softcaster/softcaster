@@ -87,7 +87,7 @@ public class FrankfurterProvider extends AbstractProvider {
             List<ExchRate> ratesList = List.of(ratesArray);
             for (ExchRate exchRate : ratesList) {
                 if (info.getExtraParameters().get(0).equals(exchRate.base + exchRate.quote)) {
-                    Node node = new Node(info.getExtraParameters().get(0), null, new Data(exchRate.rate, exchRate.rate), "", "");
+                    Node node = new Node(info.getExtraParameters().get(0), null, new Data(exchRate.rate, exchRate.rate), "", "", "");
                     addQuote(market, node);
                     break;
                 }

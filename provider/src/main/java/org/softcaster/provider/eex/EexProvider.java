@@ -105,7 +105,7 @@ public class EexProvider extends AbstractProvider {
         try {
             Root root = om.readValue(response, Root.class);
             double value = (double) root.data.get(0).get(1);
-            Node node = new Node(info.getExtraParameters().get(0), null, new Data(value, value), "", "");
+            Node node = new Node(info.getExtraParameters().get(0), null, new Data(value, value), "", "", "");
             addQuote(market, node);
 
         } catch (JsonProcessingException ex) {

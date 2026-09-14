@@ -39,6 +39,7 @@ import org.softcaster.engine.dto.OptionData;
 import org.softcaster.engine.dto.OptionOutputData;
 import org.softcaster.engine.enums.BusinessDayConvention;
 import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.enums.OffsetType;
@@ -260,22 +261,22 @@ public class Engine {
         List<CurveNodeInput> inputs = new ArrayList<>();
         CurveNodeInput node;
         // 1 Giorno
-        node = new CurveNodeInput("", new Offset(1, OffsetType.DAYS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE);
+        node = new CurveNodeInput("", new Offset(1, OffsetType.DAYS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE, CurveNodeType.MONEY_MARKET);
         inputs.add(node);
         // 1 Mese
-        node = new CurveNodeInput("", new Offset(1, OffsetType.MONTHS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE);
+        node = new CurveNodeInput("", new Offset(1, OffsetType.MONTHS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE, CurveNodeType.MONEY_MARKET);
         inputs.add(node);
         // 3 Mesi
-        node = new CurveNodeInput("", new Offset(3, OffsetType.MONTHS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE);
+        node = new CurveNodeInput("", new Offset(3, OffsetType.MONTHS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE, CurveNodeType.MONEY_MARKET);
         inputs.add(node);
         // 6 Mesi
-        node = new CurveNodeInput("", new Offset(6, OffsetType.MONTHS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE);
+        node = new CurveNodeInput("", new Offset(6, OffsetType.MONTHS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE, CurveNodeType.MONEY_MARKET);
         inputs.add(node);
         // 1 Anno
-        node = new CurveNodeInput("", new Offset(1, OffsetType.YEARS), 0.02189, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        node = new CurveNodeInput("", new Offset(1, OffsetType.YEARS), 0.02189, DaycountBasis.ACT_365, Compounding.COMPOUNDED, CurveNodeType.MONEY_MARKET);
         inputs.add(node);
         // 2 Anni
-        node = new CurveNodeInput("", new Offset(2, OffsetType.YEARS), 0.02189, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        node = new CurveNodeInput("", new Offset(2, OffsetType.YEARS), 0.02189, DaycountBasis.ACT_365, Compounding.COMPOUNDED, CurveNodeType.MONEY_MARKET);
         inputs.add(node);
 
         YieldCurve curve = new YieldCurve(officialDate, currency, inputs);

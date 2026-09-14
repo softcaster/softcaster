@@ -264,3 +264,8 @@ alter table master_data add column compounding integer NOT NULL DEFAULT 2;
 alter table master_data add CONSTRAINT fk_compounding FOREIGN KEY (compounding) REFERENCES compounding (id_compounding) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 
+ALTER TABLE yield_curve_item  ALTER COLUMN daycount TYPE integer;
+ALTER TABLE yield_curve_item  ALTER COLUMN compounding TYPE integer;
+ALTER TABLE yield_curve_item  add COLUMN node_type integer not null DEFAULT 1;
+ALTER TABLE yield_curve_item  add CONSTRAINT fk_node_type FOREIGN KEY (node_type) REFERENCES node_type (node_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION;
+

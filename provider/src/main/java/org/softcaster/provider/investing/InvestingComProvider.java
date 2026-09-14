@@ -247,10 +247,10 @@ public class InvestingComProvider extends AbstractProvider {
             }
             double bidValue = Converter.toDouble(bid, false);
             double askValue = Converter.toDouble(ask, false);
-            
-            Node node = new Node(bcy + ccy, null, new Data(bidValue, askValue), "", "");
+
+            Node node = new Node(bcy + ccy, null, new Data(bidValue, askValue), "", "", "");
             addQuote(CURRENCIES, node);
-             
+
         } catch (ParseException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
         }
@@ -265,7 +265,7 @@ public class InvestingComProvider extends AbstractProvider {
             double bidValue = Converter.toDouble(right[1], false);
             double askValue = Converter.toDouble(right[2], false);
 
-            Node node = new Node(bcy + ccy, null, new Data(bidValue, askValue), "", "");
+            Node node = new Node(bcy + ccy, null, new Data(bidValue, askValue), "", "", "");
             addQuote(CURRENCIES, node);
 
         } catch (ParseException ex) {

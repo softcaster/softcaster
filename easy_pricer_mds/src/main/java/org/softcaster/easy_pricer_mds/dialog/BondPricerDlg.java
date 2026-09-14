@@ -42,6 +42,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
         initComponents();
         postInit();
     }
+
     public BondPricerDlg(java.awt.Frame parent, boolean modal, FltBondBean bean, MDSFacade mDSFacade) {
         super(parent, modal);
         this.bean = null;
@@ -71,6 +72,8 @@ public class BondPricerDlg extends javax.swing.JDialog {
         jLabel4 = new javax.swing.JLabel();
         txtRefPrice = new javax.swing.JTextField();
         txtRefDate = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        txtRefRate = new javax.swing.JTextField();
         resultPanel = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -78,6 +81,12 @@ public class BondPricerDlg extends javax.swing.JDialog {
         txtAccrued = new javax.swing.JTextField();
         txtYield = new javax.swing.JTextField();
         txtModDuration = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        txtDiscountMargin = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        txtShortBondYield = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
+        txtMarginDuration = new javax.swing.JTextField();
         btnPanel = new javax.swing.JPanel();
         btnCalculate = new javax.swing.JButton();
         btnExit = new javax.swing.JButton();
@@ -125,6 +134,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -137,6 +147,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         inputPanel.add(jLabel3, gridBagConstraints);
 
@@ -146,7 +157,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         inputPanel.add(jLabel4, gridBagConstraints);
 
@@ -162,6 +173,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         inputPanel.add(txtRefPrice, gridBagConstraints);
 
@@ -175,10 +187,39 @@ public class BondPricerDlg extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipadx = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         inputPanel.add(txtRefDate, gridBagConstraints);
+
+        jLabel8.setText("Reference Rate(%)");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        inputPanel.add(jLabel8, gridBagConstraints);
+
+        txtRefRate.setColumns(15);
+        txtRefRate.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtRefRate.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtRefRateFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        inputPanel.add(txtRefRate, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -200,7 +241,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         resultPanel.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText("Yield to Maturity");
+        jLabel6.setText("Yield to Maturity(%)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -255,6 +296,72 @@ public class BondPricerDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         resultPanel.add(txtModDuration, gridBagConstraints);
+
+        jLabel9.setText("Discount Margin(%)");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(jLabel9, gridBagConstraints);
+
+        txtDiscountMargin.setEditable(false);
+        txtDiscountMargin.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtDiscountMargin.setToolTipText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(txtDiscountMargin, gridBagConstraints);
+
+        jLabel10.setText("Short Bond Yield(%)");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(jLabel10, gridBagConstraints);
+
+        txtShortBondYield.setEditable(false);
+        txtShortBondYield.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtShortBondYield.setToolTipText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(txtShortBondYield, gridBagConstraints);
+
+        jLabel11.setText("Margin Duration");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(jLabel11, gridBagConstraints);
+
+        txtMarginDuration.setEditable(false);
+        txtMarginDuration.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtMarginDuration.setToolTipText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        resultPanel.add(txtMarginDuration, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -319,7 +426,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(filler2, gridBagConstraints);
 
-        pack();
+        setBounds(0, 0, 586, 326);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
@@ -329,19 +436,25 @@ public class BondPricerDlg extends javax.swing.JDialog {
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
         try {
             BondPricingRequest request = new BondPricingRequest();
-            if(bean != null)
+            if (bean != null) {
                 request.isin = bean.getInstrumentQuote().getMasterData().getCode();
-            if(fltBean != null)
+            }
+            if (fltBean != null) {
                 request.isin = fltBean.getInstrumentQuote().getMasterData().getCode();
+                request.referenceRate = Converter.toDouble(txtRefRate.getText(), false) / 100.;
+            }
             request.referencePrice = Converter.toDouble(txtRefPrice.getText(), false);
             request.referenceDate = Date.valueOf(DateParser.parse(txtRefDate.getText()));
-            
+
             BondCalculator calculator = mDSFacade.getBondCalculator();
             BondPricingResponse response = calculator.bondValuation(request);
-            
+
             txtAccrued.setText(Converter.fromDouble(response.accruedInterest));
-            txtYield.setText(Converter.fromDouble(response.yieldToMaturity));
+            txtYield.setText(Converter.fromDouble(response.yieldToMaturity * 100));
             txtModDuration.setText(Converter.fromDouble(response.modifiedDuration));
+            txtDiscountMargin.setText(Converter.fromDouble(response.discountMargin * 100.));
+            txtShortBondYield.setText(Converter.fromDouble(response.shortBondYield * 100.));
+            txtMarginDuration.setText(Converter.fromDouble(response.marginDuration));
 
         } catch (ParseException ex) {
             System.getLogger(BondPricerDlg.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
@@ -356,6 +469,10 @@ public class BondPricerDlg extends javax.swing.JDialog {
         DialogHelper.textFieldDoubleFocusLost(txtRefPrice);
     }//GEN-LAST:event_txtRefPriceFocusLost
 
+    private void txtRefRateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtRefRateFocusLost
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtRefRateFocusLost
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCalculate;
@@ -365,20 +482,28 @@ public class BondPricerDlg extends javax.swing.JDialog {
     private javax.swing.Box.Filler filler2;
     private javax.swing.JPanel inputPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel resultPanel;
     private javax.swing.JTextField txtAccrued;
     private javax.swing.JTextField txtDescription;
+    private javax.swing.JTextField txtDiscountMargin;
     private javax.swing.JTextField txtISIN;
+    private javax.swing.JTextField txtMarginDuration;
     private javax.swing.JTextField txtModDuration;
     private javax.swing.JTextField txtRefDate;
     private javax.swing.JTextField txtRefPrice;
+    private javax.swing.JTextField txtRefRate;
+    private javax.swing.JTextField txtShortBondYield;
     private javax.swing.JTextField txtYield;
     // End of variables declaration//GEN-END:variables
 
@@ -386,6 +511,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
         if (bean != null) {
             txtISIN.setText(bean.getInstrumentQuote().getMasterData().getCode());
             txtDescription.setText(bean.getInstrumentQuote().getMasterData().getDescription());
+            txtRefRate.setEnabled(false);
         }
         if (fltBean != null) {
             txtISIN.setText(fltBean.getInstrumentQuote().getMasterData().getCode());

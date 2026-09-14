@@ -6,6 +6,7 @@ package org.softcaster.provider.ecb;
 
 import org.springframework.web.client.RestClient;
 import java.net.URI;
+import org.softcaster.commons.utils.LoggerMgr;
 
 public class EcbYieldClient {
 
@@ -36,7 +37,8 @@ public class EcbYieldClient {
                     .retrieve()
                     .body(String.class);
         } catch (Exception e) {
-            return "Errore di connessione: " + e.getMessage();
+            LoggerMgr.logError(e.getMessage());
+            return "";
         }
     }
 }

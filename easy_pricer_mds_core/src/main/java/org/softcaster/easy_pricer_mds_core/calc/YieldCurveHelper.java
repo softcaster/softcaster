@@ -15,6 +15,7 @@ import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.engine.curve.Offset;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.provider.bricks.Node;
@@ -46,8 +47,9 @@ public class YieldCurveHelper {
             Offset offset = new Offset(node.getOffset().step(), offsetType);
             DaycountBasis daycount = DaycountBasis.fromCode(node.getDaycount());
             Compounding compounding = Compounding.fromCode(node.getCompounding());
+            CurveNodeType nodeType = CurveNodeType.fromCode(node.getNodeType());
             cni = new CurveNodeInput(node.getSymbol(), offset, node.getData().bid(),
-                    daycount, compounding);
+                    daycount, compounding, nodeType);
             cniList.add(cni);
         }
         return cniList;

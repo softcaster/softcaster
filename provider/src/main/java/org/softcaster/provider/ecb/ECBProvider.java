@@ -65,7 +65,7 @@ public class ECBProvider extends AbstractProvider {
                 double value = Converter.toDouble(parsedResponse[0], false);
                 Node node = new Node("Ovn",
                         new Offset(1, OffsetType.DAYS),
-                        new Data(value, value), "ACT_360", "SIMPLE");
+                        new Data(value, value), "ACT_360", "SIMPLE", "MONEY_MARKET");
                 RateKey key = new RateKey("OVNESTR", RATES);
                 addRate(key, node);
             } catch (ParseException ex) {
@@ -145,7 +145,7 @@ public class ECBProvider extends AbstractProvider {
             }
             Offset offset = new Offset(step, offsetType);
             Data data = new Data(rate / 100., rate / 100.);
-            return new Node(maturity, offset, data, "ACT_365", "CONTINUOUS");
+            return new Node(maturity, offset, data, "ACT_365", "CONTINUOUS", "MONEY_MARKET");
         } catch (ParseException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return null;

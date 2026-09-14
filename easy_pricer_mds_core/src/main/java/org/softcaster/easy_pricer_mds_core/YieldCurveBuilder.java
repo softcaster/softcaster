@@ -15,6 +15,7 @@ import org.softcaster.core.data.YieldCurveItem;
 import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.engine.curve.Offset;
 import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.provider.bricks.IMarketDataProvider;
@@ -42,11 +43,8 @@ public class YieldCurveBuilder {
 
         OffsetType offsetType = OffsetType.fromId(item.getOffsetType());
         Offset offset = new Offset(item.getOffsetValue(), offsetType);
-        DaycountBasis daycount = DaycountBasis.fromId(item.getDaycount().intValue());
-        DaycountBasis daycount_ = DaycountBasis.fromCode(daycount.getCode());
-        Compounding compounding = Compounding.fromId(item.getCompounding());
         CurveNodeInput cni = new CurveNodeInput(item.getRic(), offset, item.getBid(),
-                daycount_, compounding);
+                item.getDaycount(), item.getCompounding(), item.getNodeType());
         return cni;
     }
 
@@ -54,8 +52,10 @@ public class YieldCurveBuilder {
         CurveNodeInput cni = null;
         OffsetType offsetType = OffsetType.fromCode(node.getOffset().offsetType().getCode());
         long step = node.getOffset().step();
-        cni = new CurveNodeInput(node.getSymbol(), new Offset(step, offsetType), node.getData().bid(), 
-                DaycountBasis.fromCode(node.getDaycount()), Compounding.fromCode(node.getCompounding()));
+        cni = new CurveNodeInput(node.getSymbol(), new Offset(step, offsetType), node.getData().bid(),
+                DaycountBasis.fromCode(node.getDaycount()),
+                Compounding.fromCode(node.getCompounding()),
+                CurveNodeType.fromCode(node.getNodeType()));
         return cni;
     }
 
@@ -114,7 +114,6 @@ public class YieldCurveBuilder {
             List<YieldCurveItem> updatedItems = new ArrayList<>();
 
             // 3. Allinea i dati finanziari con le entità DB
-            DaycountBasis daycount = null;
             for (CurveNodeInput node : newInputs) {
                 String key = node.symbol();
 
@@ -133,9 +132,8 @@ public class YieldCurveBuilder {
                     newItem.setOffsetType((short) node.tenorOffset().offsetType().getId());
                     newItem.setAsk(node.rate());
                     newItem.setBid(node.rate());
-                    daycount = node.daycount();
-                    newItem.setDaycount((short)daycount.getId());
-                    newItem.setCompounding((short) node.compounding().getId());
+                    newItem.setDaycount(node.daycount());
+                    newItem.setCompounding(node.compounding());
                     updatedItems.add(newItem);
                 }
             }
