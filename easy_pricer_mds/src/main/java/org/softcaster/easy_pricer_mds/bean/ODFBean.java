@@ -30,8 +30,8 @@ public class ODFBean implements IFndtModel, ITrendable {
             case 0 ->
                 odf.date();
             case 1 -> {
-                double tenor = odf.days() / 360.;
-                double rate = (1 - odf.discountFactor()) / (odf.discountFactor() * tenor);
+                double tenor = odf.days() / 365.;
+                double rate = Math.log(odf.discountFactor()) / (tenor * -1.);
                 rate *= 100.;
                 yield rate;
             }

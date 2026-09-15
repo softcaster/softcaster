@@ -40,7 +40,7 @@ public class MicroserviceDispatcher {
 
     private void loadService(Descriptors descriptor) {
         RestServiceDescriptor restDescriptor = new RestServiceDescriptor();
-        restDescriptor.setServiceName(descriptor.getServiceType().getDescription());
+        restDescriptor.setServiceName(descriptor.getServiceType().getCode());
         restDescriptor.setJarPath(descriptor.getJarPath());
         restDescriptor.setActiveProfile(descriptor.getActiveProfile());
         restDescriptor.setServiceInfo(null);

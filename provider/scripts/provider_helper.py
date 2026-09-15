@@ -44,7 +44,7 @@ class PyProviderHelper(IProviderHelper):
         nodes.append(node);
 
         offset = Offset(30,OffsetType.YEARS);
-        node = Node("IT30Y",offset, None, "ACT_365", "COMPOUNDED, "MONEY_MARKET");
+        node = Node("IT30Y",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
 
         return nodes;
@@ -138,13 +138,11 @@ class PyProviderHelper(IProviderHelper):
     # Tassi Eurirs
     #
     def getEurirsNodes(self):
-
+        
         nodes = list()
-        print("getEurirsNodes");
         offset = Offset(1,OffsetType.YEARS);
         node = Node("EUR 01A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");
         nodes.append(node);
-        print(node);
 
         offset = Offset(2,OffsetType.YEARS);
         node = Node("EUR 02A Irs",offset, None, "ACT_365", "COMPOUNDED", "MONEY_MARKET");

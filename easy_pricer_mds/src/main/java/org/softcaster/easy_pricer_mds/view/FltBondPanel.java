@@ -195,10 +195,10 @@ public class FltBondPanel extends FndtAbstactPanel {
                 // Questo metodo gira su un THREAD SEPARATO in background.
                 InstrumentQuoteDAO dao = mDSFacade.getInstrumentQuoteDAO();
                 if (dao != null) {
-                    BondBean bondBean = null;
-                    BondTableModel model = (BondTableModel) bondTable.getModel();
+                    FltBondBean bondBean = null;
+                    FltBondTableModel model = (FltBondTableModel) bondTable.getModel();
                     for (int i = 0; i < model.getRowCount(); i++) {
-                        bondBean = (BondBean) model.getElementAt(i);
+                        bondBean = (FltBondBean) model.getElementAt(i);
                         if (bondBean != null) {
                             dao.saveOrUpdate(bondBean.getInstrumentQuote());
                         }

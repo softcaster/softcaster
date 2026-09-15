@@ -1612,6 +1612,11 @@ export const fetchFxFutureMasterDataDto = async (): Promise<GenericMasterDataDto
 export const fetchXRBMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {
     return fetchMasterDataDto('XRB');
 };
+
+export const fetchFRBMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {
+    return fetchMasterDataDto('FRB');
+};
+
 export const fetchXRBMasterDataDto2 = async (): Promise<SecurityMasterDataDto[]> => {
     try {
         return await apiRequest<SecurityMasterDataDto[]>('/security_master_data/r11', 'GET');

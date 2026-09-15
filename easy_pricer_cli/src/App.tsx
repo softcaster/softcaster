@@ -10,7 +10,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import {
   navigationNodes, ForexView, FxFutureView, CmdFutureView, HomeView, PlaceholderView,
   BondView, XNoteView, BondPView, BondFutureView, BondFuturePView, PositionProspectView,
-  AccountingProspectView,FxFuturePView
+  AccountingProspectView,FxFuturePView,FltBondView
 } from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
@@ -191,6 +191,7 @@ const MainLayout = () => {
               <Route path="/fxfuture" element={<FxFutureView />} />
               <Route path="/cmdfuture" element={<CmdFutureView />} />
               <Route path="/bond" element={<BondView />} />
+              <Route path="/fbond" element={<FltBondView />} />
               <Route path="/xnote" element={<XNoteView />} />
               <Route path="/bond-p" element={<BondPView />} />
               <Route path="/bondfuture" element={<BondFutureView />} />
