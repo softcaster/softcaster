@@ -98,6 +98,8 @@ INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
     VALUES(nextval('account_mapping_s'),'CASH_ACCOUNT',1,24); -- 100010 Cash and Cash Equivalents
 INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) 
     VALUES(nextval('account_mapping_s'), 'BOND_COMMITMENT', 1, 89);
+INSERT INTO account_mapping(account_mapping_id,mapping_key,currency,gl_account)
+    VALUES(nextval('account_mapping_s'),'INTEREST_EXPENSE',1,103); -- 520020 Interest Expense
 
 -- =========================================================================
 -- 1. BOND_COMMITMENT_BUY (Impegni di acquisto titoli - es. 600010)

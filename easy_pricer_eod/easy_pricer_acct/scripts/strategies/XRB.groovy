@@ -4,6 +4,7 @@ import org.softcaster.engine.enums.AccountingPhase
 import java.math.MathContext
 import java.math.RoundingMode
 
+
 // ============================================================================
 // 1. UTILITIES
 // ============================================================================
@@ -29,11 +30,13 @@ def money = { BigDecimal value, int scale ->
     if (value == null)
     return BigDecimal.ZERO.setScale(
         scale,
-        RoundingMode.HALF_UP)
+        RoundingMode.HALF_UP
+    )
 
     return value.setScale(
         scale,
-        RoundingMode.HALF_UP)
+        RoundingMode.HALF_UP
+    )
 }
 
 
@@ -45,9 +48,9 @@ def money = { BigDecimal value, int scale ->
 //
 // Esempi:
 //
-//     BTP      -> EUR
-//     US T-Bond -> USD
-//     Gilt     -> GBP
+//     BTP        -> EUR
+//     US T-Bond  -> USD
+//     Gilt       -> GBP
 //     Swiss Bond -> CHF
 //
 // La System Currency NON entra nello script.
@@ -89,7 +92,6 @@ if (multiplier.compareTo(BigDecimal.ZERO) == 0) {
 TxnSide side =
 ctx.txn?.txnSide ?: TxnSide.BUY
 
-
 boolean isBuy =
 side == TxnSide.BUY
 
@@ -106,32 +108,44 @@ side == TxnSide.SELL
 
 String accBondAsset =
 accountResolver.resolve(
-                "BOND_ASSET",
-    settlementCcy)
+        "BOND_ASSET",
+    settlementCcy
+)
 
 
 String accAccruedInterest =
 accountResolver.resolve(
-                "ACCRUED_INTEREST",
-    settlementCcy)
+        "ACCRUED_INTEREST",
+    settlementCcy
+)
 
 
 String accInterestIncome =
 accountResolver.resolve(
-                "INTEREST_INCOME",
-    settlementCcy)
+        "INTEREST_INCOME",
+    settlementCcy
+)
+
+
+String accInterestExpense =
+accountResolver.resolve(
+        "INTEREST_EXPENSE",
+    settlementCcy
+)
 
 
 String accPositionControl =
 accountResolver.resolve(
-                "POSITION_CONTROL",
-    settlementCcy)
+        "POSITION_CONTROL",
+    settlementCcy
+)
 
 
 String accCash =
 accountResolver.resolve(
-                "CASH_ACCOUNT",
-    settlementCcy)
+        "CASH_ACCOUNT",
+    settlementCcy
+)
 
 
 // ============================================================================
@@ -140,14 +154,16 @@ accountResolver.resolve(
 
 String accCommitment =
 accountResolver.resolve(
-                "BOND_COMMITMENT",
-    settlementCcy)
+        "BOND_COMMITMENT",
+    settlementCcy
+)
 
 
 String accObsClearing =
 accountResolver.resolve(
-                "OBS_CLEARING",
-    settlementCcy)
+        "OBS_CLEARING",
+    settlementCcy
+)
 
 
 // ============================================================================
@@ -170,7 +186,8 @@ quantity
 BigDecimal totalAmount =
 cleanAmount.add(
     accruedInterest,
-    MC)
+    MC
+)
 
 
 // Rounding esclusivamente sul risultato monetario finale.
@@ -178,19 +195,22 @@ cleanAmount.add(
 BigDecimal cleanMoney =
 money(
     cleanAmount,
-    currencyScale)
+    currencyScale
+)
 
 
 BigDecimal accruedMoney =
 money(
     accruedInterest,
-    currencyScale)
+    currencyScale
+)
 
 
 BigDecimal totalMoney =
 money(
     totalAmount,
-    currencyScale)
+    currencyScale
+)
 
 
 // ============================================================================
@@ -212,12 +232,12 @@ case EventType.TRADE_EXECUTED:
      * BUY:
      *
      *     DR BOND_COMMITMENT
-     *     CR OBS_CLEARING
+     *        CR OBS_CLEARING
      *
      * SELL:
      *
      *     DR OBS_CLEARING
-     *     CR BOND_COMMITMENT
+     *        CR BOND_COMMITMENT
      *
      * Tutto nella valuta del bond.
      */
@@ -227,27 +247,39 @@ case EventType.TRADE_EXECUTED:
         ctx.journal.debit(
             accCommitment,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
         ctx.journal.credit(
             accObsClearing,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
     } else if (isSell) {
 
         ctx.journal.debit(
             accObsClearing,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
         ctx.journal.credit(
             accCommitment,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
+
+    } else {
+
+        throw new IllegalStateException(
+                "Unsupported transaction side: " + side
+        )
     }
 
-    ctx.accountingPhase = AccountingPhase.MEMO_POSTED
+    ctx.accountingPhase =
+    AccountingPhase.MEMO_POSTED
+
     break
 
 
@@ -272,47 +304,51 @@ case EventType.SETTLEMENT:
          *
          *     DR BOND_ASSET
          *     DR ACCRUED_INTEREST
-         *     CR POSITION_CONTROL
+         *        CR POSITION_CONTROL
          */
 
         ctx.journal.debit(
             accBondAsset,
             cleanMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
 
-        if (accruedMoney.compareTo(
-                BigDecimal.ZERO) != 0) {
+        if (accruedMoney.signum() != 0) {
 
             ctx.journal.debit(
                 accAccruedInterest,
                 accruedMoney,
-                settlementCcy)
+                settlementCcy
+            )
         }
 
 
         ctx.journal.credit(
             accPositionControl,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
 
         /*
          * 2. Regolamento cash
          *
          *     DR POSITION_CONTROL
-         *     CR CASH
+         *        CR CASH
          */
 
         ctx.journal.debit(
             accPositionControl,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
         ctx.journal.credit(
             accCash,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
 
     } else if (isSell) {
@@ -321,29 +357,31 @@ case EventType.SETTLEMENT:
          * 1. Eliminazione del bond dalla posizione
          *
          *     DR POSITION_CONTROL
-         *     CR BOND_ASSET
-         *     CR ACCRUED_INTEREST
+         *        CR BOND_ASSET
+         *        CR ACCRUED_INTEREST
          */
 
         ctx.journal.debit(
             accPositionControl,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
 
         ctx.journal.credit(
             accBondAsset,
             cleanMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
 
-        if (accruedMoney.compareTo(
-                BigDecimal.ZERO) != 0) {
+        if (accruedMoney.signum() != 0) {
 
             ctx.journal.credit(
                 accAccruedInterest,
                 accruedMoney,
-                settlementCcy)
+                settlementCcy
+            )
         }
 
 
@@ -351,21 +389,34 @@ case EventType.SETTLEMENT:
          * 2. Incasso cash
          *
          *     DR CASH
-         *     CR POSITION_CONTROL
+         *        CR POSITION_CONTROL
          */
 
         ctx.journal.debit(
             accCash,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
 
         ctx.journal.credit(
             accPositionControl,
             totalMoney,
-            settlementCcy)
+            settlementCcy
+        )
+
+
+    } else {
+
+        throw new IllegalStateException(
+                "Unsupported transaction side for SETTLEMENT: "
+            + side
+        )
     }
 
-    ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED        
+
+    ctx.accountingPhase =
+    AccountingPhase.OFFICIAL_POSTED
+
     break
 
 
@@ -376,37 +427,100 @@ case EventType.SETTLEMENT:
 case EventType.ACCRUAL:
 
     /*
-     * L'accrual è interamente nella valuta del bond.
+     * L'accrual viene calcolato dal lifecycle engine a EOD.
+     *
+     * getAccruedInterestAmount() deve rappresentare
+     * l'importo da contabilizzare nell'evento corrente.
+     *
+     * POSIZIONE LONG:
      *
      *     DR ACCRUED_INTEREST
-     *     CR INTEREST_INCOME
+     *        CR INTEREST_INCOME
+     *
+     * POSIZIONE SHORT:
+     *
+     *     DR INTEREST_EXPENSE
+     *        CR ACCRUED_INTEREST
+     *
+     * Tutto nella valuta del bond.
      */
 
     BigDecimal accrualAmount =
-    bd(ctx.getAccruedInterestAmount())
-
-
-    accrualAmount =
     money(
-        accrualAmount,
-        currencyScale)
+        bd(ctx.getAccruedInterestAmount()),
+        currencyScale
+    )
 
 
-    if (accrualAmount.compareTo(
-            BigDecimal.ZERO) != 0) {
+    if (accrualAmount.signum() == 0) {
+
+        ctx.accountingPhase =
+        AccountingPhase.OFFICIAL_POSTED
+
+        break
+    }
+
+
+    def positionSide =
+    ctx.getPositionSide()
+
+
+    if (positionSide == "BUY") {
+
+        /*
+         * Posizione LONG
+         *
+         * DR ACCRUED_INTEREST
+         *    CR INTEREST_INCOME
+         */
 
         ctx.journal.debit(
             accAccruedInterest,
             accrualAmount,
-            settlementCcy)
+            settlementCcy
+        )
 
         ctx.journal.credit(
             accInterestIncome,
             accrualAmount,
-            settlementCcy)
+            settlementCcy
+        )
+
+
+    } else if (positionSide == "SELL") {
+
+        /*
+         * Posizione SHORT
+         *
+         * DR INTEREST_EXPENSE
+         *    CR ACCRUED_INTEREST
+         */
+
+        ctx.journal.debit(
+            accInterestExpense,
+            accrualAmount,
+            settlementCcy
+        )
+
+        ctx.journal.credit(
+            accAccruedInterest,
+            accrualAmount,
+            settlementCcy
+        )
+
+
+    } else {
+
+        throw new IllegalStateException(
+                "Unsupported bond position side for ACCRUAL: "
+            + positionSide
+        )
     }
 
-    ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED        
+
+    ctx.accountingPhase =
+    AccountingPhase.OFFICIAL_POSTED
+
     break
 
 
@@ -419,40 +533,91 @@ case EventType.COUPON:
     /*
      * Coupon cash flow nella valuta del bond.
      *
+     * POSIZIONE LONG:
+     *
      *     DR CASH
-     *     CR ACCRUED_INTEREST
+     *        CR ACCRUED_INTEREST
+     *
+     * POSIZIONE SHORT:
+     *
+     *     DR ACCRUED_INTEREST
+     *        CR CASH
      *
      * Nessuna conversione nella System Currency.
-     *
-     * Il Risk Engine Forex genererà successivamente
-     * l'operazione FX necessaria.
      */
 
     BigDecimal couponAmount =
-    bd(ctx.getCouponAmount())
-
-
-    couponAmount =
     money(
-        couponAmount,
-        currencyScale)
+        bd(ctx.getCouponAmount()),
+        currencyScale
+    )
 
 
-    if (couponAmount.compareTo(
-            BigDecimal.ZERO) != 0) {
+    if (couponAmount.signum() == 0) {
+
+        ctx.accountingPhase =
+        AccountingPhase.OFFICIAL_POSTED
+
+        break
+    }
+
+
+    positionSide =
+    ctx.getPositionSide()
+
+
+    if (positionSide == "BUY") {
+
+        /*
+         * Posizione LONG
+         * Incasso cedola.
+         */
 
         ctx.journal.debit(
             accCash,
             couponAmount,
-            settlementCcy)
+            settlementCcy
+        )
 
         ctx.journal.credit(
             accAccruedInterest,
             couponAmount,
-            settlementCcy)
+            settlementCcy
+        )
+
+
+    } else if (positionSide == "SELL") {
+
+        /*
+         * Posizione SHORT
+         * Pagamento cedola.
+         */
+
+        ctx.journal.debit(
+            accAccruedInterest,
+            couponAmount,
+            settlementCcy
+        )
+
+        ctx.journal.credit(
+            accCash,
+            couponAmount,
+            settlementCcy
+        )
+
+
+    } else {
+
+        throw new IllegalStateException(
+                "Unsupported bond position side for COUPON: "
+            + positionSide
+        )
     }
 
-    ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED        
+
+    ctx.accountingPhase =
+    AccountingPhase.OFFICIAL_POSTED
+
     break
 
 
@@ -481,29 +646,34 @@ case EventType.MATURITY:
     maturityAmount =
     money(
         maturityAmount,
-        currencyScale)
+        currencyScale
+    )
 
 
-    if (maturityAmount.compareTo(
-            BigDecimal.ZERO) != 0) {
+    if (maturityAmount.signum() != 0) {
 
         /*
          *     DR CASH
-         *     CR BOND_ASSET
+         *        CR BOND_ASSET
          */
 
         ctx.journal.debit(
             accCash,
             maturityAmount,
-            settlementCcy)
+            settlementCcy
+        )
 
         ctx.journal.credit(
             accBondAsset,
             maturityAmount,
-            settlementCcy)
+            settlementCcy
+        )
     }
 
-    ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED        
+
+    ctx.accountingPhase =
+    AccountingPhase.OFFICIAL_POSTED
+
     break
 
 
@@ -514,7 +684,10 @@ case EventType.MATURITY:
 case EventType.TRADE_AMENDED:
 
     ctx.reverseJournal()
-    ctx.accountingPhase = txn.txnAcctPhase
+
+    ctx.accountingPhase =
+    ctx.txn.txnAcctPhase
+
     break
 
 
@@ -525,7 +698,10 @@ case EventType.TRADE_AMENDED:
 case EventType.TRADE_CANCELED:
 
     ctx.reverseJournal()
-    ctx.accountingPhase = txn.txnAcctPhase
+
+    ctx.accountingPhase =
+    ctx.txn.txnAcctPhase
+
     break
 
 
@@ -536,6 +712,7 @@ case EventType.TRADE_CANCELED:
 default:
 
     throw new IllegalArgumentException(
-                "Unsupported XRB accounting event: "
-        + ctx.event.eventType)
+            "Unsupported XRB accounting event: "
+        + ctx.event.eventType
+    )
 }
