@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.FinancialTxn;
+import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventAccruals;
@@ -30,8 +31,8 @@ public class BackdatedTxnProcessor {
         return eventKey;
     }
 
-    private String getEventKeyCoupon(FinancialTxn txn, CashFlowItem item) {
-        String eventKey = txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + "[" + EventType.COUPON.getCode() + "]" + item.getEnddate();
+    private String getEventKeyCoupon(MasterData masterData, Integer positionDetailId, LocalDate endDate) {
+        String eventKey = masterData.getCode() + " [" + positionDetailId + "] " + "[" + EventType.COUPON.getCode() + "]" + endDate;
         return eventKey;
     }
 
@@ -96,7 +97,7 @@ public class BackdatedTxnProcessor {
                                     event.setEventStatus(AccountingEventStatus.NEW);
                                     event.setEventType(EventType.COUPON);
                                     event.setSourceType(EventSourceType.INSTRUMENT);
-                                    event.setEventKey(getEventKeyCoupon(txn, item));
+                                    event.setEventKey(getEventKeyCoupon(smd, positionDetailId, item.getEnddate().toLocalDate()));
                                     event.setCreatedAt(LocalDateTime.now());
                                     event.setPositionDetail(positionDetailId);
                                     event.setGeneratedBy(txn.getMasterData().getIdMasterData());
