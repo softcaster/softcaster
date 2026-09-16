@@ -15,8 +15,10 @@ import org.softcaster.core.data.account.JournalEntryLines;
 import org.softcaster.core.data.account.JournalEntryLinesDAO;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
 import org.softcaster.engine.enums.AccountingPhase;
+import org.softcaster.engine.enums.EventType;
 import org.softcaster.engine.enums.NormalBalance;
 import org.softcaster.engine.enums.TxnComponentType;
+import org.softcaster.engine.enums.TxnSide;
 
 public class AccountingContext {
 
@@ -165,24 +167,57 @@ public class AccountingContext {
     }
 
     public double getMultiplier() {
-        if(txn != null)
+        if (txn != null) {
             return txn.getMasterData().getMultiplier();
-        else
+        } else {
             return 1.;
+        }
     }
-    
+
     // TO_DO
     public int getCurrencyScale(boolean isAccounting) {
         return 2;
     }
-    
+
     // TO_DO
     public double getFxRate() {
         return 1.;
     }
-    
+
     // TO_DO
     public double getOutstandingNominal() {
-        return 1.;
+        double outstandingNominal = 0.;
+        if (event instanceof AccountingEventAccruals eventAccrual) {
+            if (eventAccrual != null) {
+                outstandingNominal = eventAccrual.getAccountingNominal();
+            }
+        }
+        return outstandingNominal;
+    }
+
+    public double getCouponAmount() {
+        double couponAmount = 0.;
+        if (event.getEventType() == EventType.COUPON) {
+            if (event instanceof AccountingEventAccruals eventAccrual) {
+                if (eventAccrual != null) {
+                    couponAmount = eventAccrual.getAccrualAmount();
+                }
+            }
+        }
+        return couponAmount;
+    }
+
+    public TxnSide getPositionSide() {
+        TxnSide side = TxnSide.BUY;
+        if (txn != null) {
+            side = txn.getTxnSide();
+        } else {
+            switch (event.getEventType()) {
+                case COUPON, ACCRUAL -> side = getOutstandingNominal() > 0. ? TxnSide.BUY : TxnSide.SELL;
+                default -> {
+                }
+            }
+        }
+        return side;
     }
 }

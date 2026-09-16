@@ -327,9 +327,7 @@ case EventType.COUPON:
         break
     }
 
-    positionSide = ctx.getPositionSide()
-
-    if (positionSide == "BUY") {
+    if (ctx.getPositionSide() == TxnSide.BUY) {
 
         /*
          * Posizione LONG

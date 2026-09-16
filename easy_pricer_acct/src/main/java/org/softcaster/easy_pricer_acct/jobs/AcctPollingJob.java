@@ -14,6 +14,7 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.easy_pricer_acct.services.AccrualAccountingEventService;
+import org.softcaster.easy_pricer_acct.services.CouponAccountingEventService;
 import org.softcaster.easy_pricer_acct.services.EngineStateManager;
 import org.softcaster.engine.enums.EventSourceType;
 import org.softcaster.engine.enums.EventType;
@@ -39,6 +40,9 @@ public class AcctPollingJob {
     
     @Autowired
     private AccrualAccountingEventService accrualAccountingEventService;
+    
+    @Autowired
+    private CouponAccountingEventService couponAccountingEventService;
     
     @Autowired
     @Qualifier("acctEventExecutor")
@@ -129,6 +133,25 @@ public class AcctPollingJob {
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
     }
     
+    private void elabCouponEvents(List<AccountingEvent> couponEvents) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        for (AccountingEvent event : couponEvents) {
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    couponAccountingEventService.processEvent(event);
+                } catch (Exception e) {
+                    log.error("### ERROR EXECUTED ID {}: {}", event.getEventId(), e.getMessage());
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                }
+            }, taskExecutor);
+
+            futures.add(future);
+        }
+
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+    }
+    
     private void poolPendingAmendedTradeEvents() {
         List<AccountingEvent> pendingEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.TRADE,
                 EventType.TRADE_AMENDED);
@@ -189,6 +212,17 @@ public class AcctPollingJob {
             log.info("=== [BATCH END] Processing completed ===\n");
         }
     }
+    
+    protected void pollPendingCouponEvents() {
+        List<AccountingEvent> couponEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.INSTRUMENT,
+                EventType.COUPON);
+
+        if (!couponEvents.isEmpty()) {
+            log.info("=== [BATCH START] find {} COUPON event(s) ===", couponEvents.size());
+            elabCouponEvents(couponEvents);
+            log.info("=== [BATCH END] Processing completed ===\n");
+        }
+    }
 
     @Scheduled(fixedDelay = 15000)
     public void pollAccountinEvents() {
@@ -199,6 +233,7 @@ public class AcctPollingJob {
         pollPendingAccountingTradeEvents();
         pollPendingSettlementTradeEvents();
         pollPendingAccrualEvents();
+        pollPendingCouponEvents();
     }
 
 }

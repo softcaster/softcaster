@@ -49,9 +49,6 @@ public class BackdatedTxnProcessor {
             throw new TxnProcessingException(e.getLocalizedMessage());
         }
 
-        // Eventuali cedole antergate
-        generateCouponEvents(officialDate, txn, positionDetailId, events);
-
         return events;
     }
 
@@ -112,6 +109,10 @@ public class BackdatedTxnProcessor {
                                     event.setAccountingNominal(operationalAmount);
                                     event.setCouponRate(item.getInterest());
                                     event.setDaycount(smd.getAccrualDaycount());
+                                    LocalDate to = item.getEnddate().toLocalDate();
+                                    LocalDate from = item.getStartDate().toLocalDate();
+                                    int days = (int) java.time.temporal.ChronoUnit.DAYS.between(from, to);
+                                    event.setDays(days);
                                     events.add(event);
                                 }
                             }
