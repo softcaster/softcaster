@@ -73,7 +73,7 @@ public class AccountingContext {
      * @return
      */
     public double getBondAccruedInterest() {
-        if (txn.getComponents() == null || txn.getComponents().isEmpty()) {
+        if (txn == null || txn.getComponents() == null || txn.getComponents().isEmpty()) {
             return 0.0;
         }
 
@@ -88,7 +88,7 @@ public class AccountingContext {
     }
 
     public double getFutureInitialMargin() {
-        if (txn.getComponents() == null || txn.getComponents().isEmpty()) {
+        if (txn == null || txn.getComponents() == null || txn.getComponents().isEmpty()) {
             return 0.0;
         }
         return txn.getComponents().stream()

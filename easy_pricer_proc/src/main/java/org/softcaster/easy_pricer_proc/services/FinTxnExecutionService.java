@@ -4,7 +4,9 @@
  */
 package org.softcaster.easy_pricer_proc.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -18,6 +20,7 @@ import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
+import org.softcaster.easy_pricer_proc.processors.BackdatedTxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
 import org.softcaster.engine.enums.AccountingEventStatus;
@@ -134,6 +137,19 @@ public class FinTxnExecutionService {
         return eventKey;
     }
 
+    private boolean isBackdatedTxn(FinancialTxn txn) {
+        boolean backdatedTxn = false;
+
+// Controllo se transazione antergata
+        LocalDate officialDate = systemBusinessCalendarDAO.findBySbcId(1).getOfficialDate();
+        LocalDate settlementDate = txn.getSettlement().toLocalDate();
+        if (settlementDate.isBefore(officialDate)) {
+            backdatedTxn = true;
+        }
+
+        return backdatedTxn;
+    }
+
     private void generateAccountingEvent(FinancialTxn txn, Integer positionDetailId, TxnStatus status) {
         if (txn == null) {
             log.error("Invalid Txn");
@@ -171,6 +187,16 @@ public class FinTxnExecutionService {
             event.setGeneratedRef("");
             event.setPositionDetail(positionDetailId);
             accountingEventDAO.saveOrUpdate(event);
+
+            if (isBackdatedTxn(txn)) {
+                BackdatedTxnProcessor backdatedTxnProcessor = new BackdatedTxnProcessor();
+                List<AccountingEvent> events = backdatedTxnProcessor.generateEvents(txn, positionDetailId, systemBusinessCalendarDAO.findBySbcId(1).getOfficialDate());
+                if (events != null && !events.isEmpty()) {
+                    for (AccountingEvent backdatedEvent : events) {
+                        accountingEventDAO.saveOrUpdate(backdatedEvent);
+                    }
+                }
+            }
         } catch (Exception ex) {
             LoggerMgr.logInfo(ex.getLocalizedMessage());
             log.error(ex.getLocalizedMessage());
