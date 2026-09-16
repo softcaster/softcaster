@@ -11,6 +11,7 @@ public record AccountDetailsBalanceDto(
         Integer accountId,
         String code,
         String description,
+        String ccyCode,
         BigDecimal totalDebit,
         BigDecimal totalCredit) {
 

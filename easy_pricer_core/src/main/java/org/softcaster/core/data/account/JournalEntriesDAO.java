@@ -48,8 +48,9 @@ public class JournalEntriesDAO {
                 (Integer) row[1],
                 (String) row[2],
                 (String) row[3],
-                row[4] != null ? new BigDecimal(row[4].toString()) : BigDecimal.ZERO,
-                row[5] != null ? new BigDecimal(row[5].toString()) : BigDecimal.ZERO
+                (String) row[4],
+                row[5] != null ? new BigDecimal(row[5].toString()) : BigDecimal.ZERO,
+                row[6] != null ? new BigDecimal(row[6].toString()) : BigDecimal.ZERO
         )).toList();
         /*
         String sql = """

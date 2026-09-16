@@ -22,6 +22,7 @@ export const AccountingProspectTable = ({ data, loading }: AccountingProspectTab
             >
                 <Column field="accountId" header="Account Id" style={{ fontWeight: 'bold' }} />
                 <Column field="code" header="Code" />
+                <Column field="ccyCode" header="Currency" />
                 <Column field="description" header="Description" />
                 <Column field="totalDebit" header="Debit" style={{ textAlign: 'right' }} body={(r) => formatUnits(r.totalDebit)} />
                 <Column field="totalCredit" header="Credit" style={{ textAlign: 'right' }} body={(r) => formatPrice(r.totalCredit)} />

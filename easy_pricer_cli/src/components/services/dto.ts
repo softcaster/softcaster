@@ -199,6 +199,7 @@ export interface AccountDetailsBalanceDto {
     accountId: number;
     code: string;
     description: string;
+    ccyCode: string;
     totalDebit: number;
     totalCredit: number;
 }

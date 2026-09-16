@@ -181,7 +181,7 @@ export const AssetClassField = ({ label, value, options, onChange
         <Dropdown
             value={value}
             options={options}
-            dataKey="idAssetClass"
+            dataKey="genericMasterDataId"
             optionLabel="code"
             onChange={(e) => onChange(e.value)}
             placeholder={`Select ${label}`}

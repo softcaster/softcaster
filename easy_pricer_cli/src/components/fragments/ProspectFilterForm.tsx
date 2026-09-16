@@ -27,7 +27,7 @@ export const ProspectFilterForm = ({
 
     const currentPosition = positions.find(p => p.genericMasterDataId === filter.positionId) || null;
     const currentCounterparty = counterparties.find(c => c.genericMasterDataId === filter.counterpartyId) || null;
-    const currentAssetClass = assetClasses.find(c => c.genericMasterDataId === filter.assetClassId) || null;
+    const currentAssetClass = assetClasses.find(a => a.genericMasterDataId === filter.assetClassId) || null;
 
     return (
         <div className="bg-white p-2 border-bottom-1 surface-border w-full">
@@ -58,7 +58,7 @@ export const ProspectFilterForm = ({
                 />
                 <AssetClassField
                     label="Asset Class"
-                    value={currentAssetClass} // <-- Passa l'oggetto Counterparty intero
+                    value={currentAssetClass} // <-- Passa l'oggetto AssetClass intero
                     options={assetClasses}
                     onChange={(selectedAssetClasse: any) => {
                         // Quando cambia, estre l'ID numerico per aggiornare lo stato del filtro

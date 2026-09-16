@@ -16,6 +16,7 @@ public interface JournalEntriesRepository extends JpaRepository<JournalEntries, 
         ga.account_id AS accountId,
         ga.code AS code,
         ga.description AS description,
+        ccy.iso_code AS ccyCode,
         SUM(COALESCE(jel.debit_amount, 0.0)) AS totalDebit,
         SUM(COALESCE(jel.credit_amount, 0.0)) AS totalCredit
     FROM journal_entries je
@@ -23,8 +24,9 @@ public interface JournalEntriesRepository extends JpaRepository<JournalEntries, 
     JOIN journal_entry_lines jel ON jel.journal_entry = je.journal_entry_id
     JOIN gl_account_slots gas ON jel.account_slot = gas.account_slot_id
     JOIN gl_accounts ga ON gas.account = ga.account_id
+    JOIN currency ccy ON gas.currency = ccy.id_currency
     WHERE ae.position_detail IN :positionDetails
-    GROUP BY ae.position_detail, ga.account_id, ga.code, ga.description
+    GROUP BY ae.position_detail, ga.account_id, ga.code, ga.description, ccy.iso_code
     ORDER BY ga.code
     """,
             nativeQuery = true)
