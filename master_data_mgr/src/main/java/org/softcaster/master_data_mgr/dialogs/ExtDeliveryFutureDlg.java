@@ -8,11 +8,13 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFormattedTextField;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.ui.dialog.DialogHelper;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.core.data.CmdFutureMasterData;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.PowerFutureMasterData;
@@ -20,13 +22,15 @@ import org.softcaster.engine.enums.SettlementType;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.CommodityType;
+import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.DeliveryPeriodType;
 import org.softcaster.engine.enums.Form;
 import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.LoadType;
 import org.softcaster.engine.enums.RollConvention;
 import org.softcaster.engine.enums.TypeOfInterest;
 import org.softcaster.master_data_mgr.MasterDataFacade;
-import org.softcaster.master_data_mgr.models.beans.CmdFutBean;
 import org.softcaster.master_data_mgr.models.beans.PowerFutBean;
 
 /**
@@ -100,6 +104,22 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         jLabel13 = new javax.swing.JLabel();
         txtMainMant = new javax.swing.JTextField();
         jLabel14 = new javax.swing.JLabel();
+        deliveryPanel = new javax.swing.JPanel();
+        jLabel15 = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        txtDeliveryEnd = new javax.swing.JTextField();
+        cbDeliveryPeriodType = new javax.swing.JComboBox<>();
+        filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        jLabel18 = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
+        txtNotionaMWH = new javax.swing.JTextField();
+        jLabel20 = new javax.swing.JLabel();
+        txtDeliveryStart = new javax.swing.JTextField();
+        spinnerDH = new javax.swing.JSpinner();
+        txtNotionaMW = new javax.swing.JTextField();
+        jLabel21 = new javax.swing.JLabel();
+        cbLoadType = new javax.swing.JComboBox<>();
         btnPanel = new javax.swing.JPanel();
         btnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -435,6 +455,171 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
 
         tabbedPane.addTab("Additional", additionalPanel);
 
+        deliveryPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
+        deliveryPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel15.setText("Delivery Start");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(jLabel15, gridBagConstraints);
+
+        jLabel16.setText("Delivery End");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(jLabel16, gridBagConstraints);
+
+        jLabel17.setText("Delivery Period");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(jLabel17, gridBagConstraints);
+
+        txtDeliveryEnd.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtDeliveryEnd.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtDeliveryEndFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(txtDeliveryEnd, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(cbDeliveryPeriodType, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 1.0;
+        deliveryPanel.add(filler4, gridBagConstraints);
+
+        jLabel18.setText("Delivery Hours");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(jLabel18, gridBagConstraints);
+
+        jLabel19.setText("Notional MW");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(jLabel19, gridBagConstraints);
+
+        txtNotionaMWH.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtNotionaMWH.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtNotionaMWHFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(txtNotionaMWH, gridBagConstraints);
+
+        jLabel20.setText("Notional MWh");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(jLabel20, gridBagConstraints);
+
+        txtDeliveryStart.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtDeliveryStart.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtDeliveryStartFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(txtDeliveryStart, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(spinnerDH, gridBagConstraints);
+
+        txtNotionaMW.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtNotionaMW.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtNotionaMWFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(txtNotionaMW, gridBagConstraints);
+
+        jLabel21.setText("Delivery Type");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(jLabel21, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        deliveryPanel.add(cbLoadType, gridBagConstraints);
+
+        tabbedPane.addTab("Delivery", deliveryPanel);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -550,6 +735,23 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         DialogHelper.textFieldDoubleFocusLost(txtMainMant);
     }//GEN-LAST:event_txtMainMantFocusLost
 
+    private void txtNotionaMWHFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtNotionaMWHFocusLost
+        DialogHelper.textFieldDoubleFocusLost(txtNotionaMWH);
+    }//GEN-LAST:event_txtNotionaMWHFocusLost
+
+    private void txtNotionaMWFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtNotionaMWFocusLost
+        DialogHelper.textFieldDoubleFocusLost(txtNotionaMW);
+    }//GEN-LAST:event_txtNotionaMWFocusLost
+
+    private void txtDeliveryStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtDeliveryStartFocusLost
+
+        DialogHelper.textFieldDateFocusLost(txtDeliveryStart);
+    }//GEN-LAST:event_txtDeliveryStartFocusLost
+
+    private void txtDeliveryEndFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtDeliveryEndFocusLost
+        DialogHelper.textFieldDateFocusLost(txtDeliveryEnd);
+    }//GEN-LAST:event_txtDeliveryEndFocusLost
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel additionalPanel;
     private javax.swing.JButton btnCancel;
@@ -557,19 +759,30 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<Currency> cbCurrency;
     private javax.swing.JComboBox<DaycountBasis> cbDaycount;
+    private javax.swing.JComboBox<DeliveryPeriodType> cbDeliveryPeriodType;
+    private javax.swing.JComboBox<LoadType> cbLoadType;
     private javax.swing.JComboBox<SettlementType> cbSettlementType;
     private javax.swing.JComboBox<CommodityType> cbUnderlying;
+    private javax.swing.JPanel deliveryPanel;
     private javax.swing.JPanel fieldPanel;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
+    private javax.swing.Box.Filler filler4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -578,9 +791,12 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JSpinner spinnerDH;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JTextField txtContractCode;
     private javax.swing.JTextField txtContractValue;
+    private javax.swing.JTextField txtDeliveryEnd;
+    private javax.swing.JTextField txtDeliveryStart;
     private javax.swing.JTextField txtDescription;
     private javax.swing.JTextField txtExpiryDate;
     private javax.swing.JTextField txtInitMargin;
@@ -588,6 +804,8 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
     private javax.swing.JTextField txtIssueDate;
     private javax.swing.JTextField txtLastTradingDate;
     private javax.swing.JTextField txtMainMant;
+    private javax.swing.JTextField txtNotionaMW;
+    private javax.swing.JTextField txtNotionaMWH;
     private javax.swing.JTextField txtTickSize;
     // End of variables declaration//GEN-END:variables
 
@@ -596,6 +814,9 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         setUpDaycountCombo();
         setUpSettlementCombo();
         setUpUnderlyingCombo();
+        setUpDeliveryPeriodTypeCombo();
+        setUpLoadTypeCombo();
+        setUpSpinner();
 
         if (bean != null) {
             isInsert = false;
@@ -614,6 +835,14 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
             cbSettlementType.setSelectedItem(bean.getPowerFutureMasterData().getSettlementType());
             txtMainMant.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getMaintenanceMargin()));
             cbUnderlying.setSelectedItem(bean.getPowerFutureMasterData().getCommodityType());
+
+            cbLoadType.setSelectedItem(bean.getPowerFutureMasterData().getLoadType());
+            cbDeliveryPeriodType.setSelectedItem(bean.getPowerFutureMasterData().getDeliveryPeriodType());
+            txtDeliveryStart.setText(new Date(bean.getPowerFutureMasterData().getDeliveryStart()).toString());
+            txtDeliveryEnd.setText(new Date(bean.getPowerFutureMasterData().getDeliveryEnd()).toString());
+            txtNotionaMW.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getNotionalMw()));
+            txtNotionaMWH.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getNotionalMwh()));
+            spinnerDH.setValue(bean.getPowerFutureMasterData().getTotalDeliveryHours());
         }
 
         // Aggiungo i campi alla lista di validazione
@@ -704,7 +933,15 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
             ffmd.setAccrualDaycount(DaycountBasis.ACT_360);
             ffmd.setCommodityType((CommodityType) cbUnderlying.getSelectedItem());
             ffmd.setMaintenanceMargin(Converter.toDouble(txtMainMant.getText(), false));
-            masterDataFacade.getCmdFutureMasterDataDAO().saveOrUpdate(ffmd);
+            ffmd.setLoadType((LoadType) cbLoadType.getSelectedItem());
+            ffmd.setMarket("EEX");
+            ffmd.setDeliveryPeriodType((DeliveryPeriodType) cbDeliveryPeriodType.getSelectedItem());
+            ffmd.setDeliveryStart(new Date(txtDeliveryStart.getText()).sqlDate());
+            ffmd.setDeliveryEnd(new Date(txtDeliveryEnd.getText()).sqlDate());
+            ffmd.setNotionalMw(Converter.toDouble(txtNotionaMW.getText(), false));
+            ffmd.setNotionalMwh(Converter.toDouble(txtNotionaMWH.getText(), false));
+            ffmd.setTotalDeliveryHours((Integer) spinnerDH.getValue());
+            masterDataFacade.getPowerFutureMasterDataDAO().saveOrUpdate(ffmd);
             return true;
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
@@ -727,5 +964,31 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         bean.getPowerFutureMasterData().setIssuePrice(100.);
         bean.getPowerFutureMasterData().setRedempionPrice(100.);
         bean.getPowerFutureMasterData().setMultiplier(1.);
+        bean.getPowerFutureMasterData().setCompounding(Compounding.COMPOUNDED);
+    }
+
+    private void setUpDeliveryPeriodTypeCombo() {
+        List<DeliveryPeriodType> periods = List.of(DeliveryPeriodType.values());
+
+        // Crea il modello partendo dalla lista
+        DefaultComboBoxModel<DeliveryPeriodType> model = new DefaultComboBoxModel<>(periods.toArray(DeliveryPeriodType[]::new));
+        cbDeliveryPeriodType.setModel(model);
+    }
+
+    private void setUpLoadTypeCombo() {
+        List<LoadType> types = List.of(LoadType.values());
+
+        // Crea il modello partendo dalla lista
+        DefaultComboBoxModel<LoadType> model = new DefaultComboBoxModel<>(types.toArray(LoadType[]::new));
+        cbLoadType.setModel(model);
+    }
+
+    private void setUpSpinner() {
+        // Parametri del modello: valore iniziale (2), minimo (1), massimo (3), step (1)
+        SpinnerNumberModel model = new SpinnerNumberModel(24, 1, 24, 1);
+        spinnerDH.setModel(model);
+        // Per bloccare l'editing da tastiera e costringere l'uso delle frecce (opzionale):
+        JFormattedTextField txt = ((JSpinner.DefaultEditor) spinnerDH.getEditor()).getTextField();
+        txt.setEditable(false);
     }
 }

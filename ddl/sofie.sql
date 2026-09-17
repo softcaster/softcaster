@@ -1376,7 +1376,7 @@ CREATE UNIQUE INDEX commodity_type_code ON daycount (code);
 ALTER TABLE commodity_type OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- commodity_type
+-- load_type
 -- ----------------------------------------------------------------------------
 CREATE TABLE load_type (
     load_type_id INT PRIMARY KEY,

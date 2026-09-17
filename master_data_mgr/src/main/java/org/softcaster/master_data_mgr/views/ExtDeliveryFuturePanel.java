@@ -7,9 +7,12 @@ package org.softcaster.master_data_mgr.views;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.PowerFutureMasterData;
+import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.dialogs.ExtDeliveryFutureDlg;
 import org.softcaster.master_data_mgr.models.PowerFutTableModel;
@@ -117,10 +120,53 @@ public class ExtDeliveryFuturePanel extends FndtAbstactPanel {
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
+        int rowIndex = extDeliveryFutTable.getSelectedRow();
+        if (rowIndex != -1) {
+            java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+            java.awt.Frame parentFrame = null;
+
+            if (parentWindow instanceof java.awt.Frame frame) {
+                parentFrame = frame;
+            }
+
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = extDeliveryFutTable.convertRowIndexToModel(rowIndex);
+            PowerFutTableModel model = (PowerFutTableModel) extDeliveryFutTable.getModel();
+            PowerFutBean bean = model.getElementAt(modelRow);
+
+            ExtDeliveryFutureDlg dialog = new ExtDeliveryFutureDlg(parentFrame, true, bean, masterDataFacade);
+            dialog.setSize(600, 400);
+            // Centra la dialog rispetto al pannello
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+
+            // Post chiusura dialog
+            refreshModel(model);
+        }
     }
 
     @Override
     protected void acDelActionPerformed(ActionEvent evt) {
+        int rowIndex = extDeliveryFutTable.getSelectedRow();
+        if (rowIndex != -1) {
+            // 1. CONVERSIONE FONDAMENTALE
+            int modelRow = extDeliveryFutTable.convertRowIndexToModel(rowIndex);
+            PowerFutTableModel model = (PowerFutTableModel) extDeliveryFutTable.getModel();
+            PowerFutBean bean = model.getElementAt(modelRow);
+            if (JOptionPane.showConfirmDialog(this,
+                    "Are you sure to delete item? " + bean.getValueAt(0), JMasterDataMgr.TITLE,
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                try {
+                    masterDataFacade.getPowerFutureMasterDataDAO().delete(bean.getPowerFutureMasterData());
+                    refreshModel(model);
+                } catch (Exception ex) {
+                    LoggerMgr.logError(ex.getLocalizedMessage());
+                }
+            }
+            // Post chiusura dialog
+            refreshModel(model);
+        }
     }
 
     @Override

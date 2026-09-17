@@ -271,3 +271,4 @@ ALTER TABLE yield_curve_item  add CONSTRAINT fk_node_type FOREIGN KEY (node_type
 
 INSERT INTO gl_accounts (account_id, parent, code, description, is_postable,  statement_type, nature, balance)
 VALUES(nextval('gl_accounts_s'),21, '520020', 'Interest Expense - Sovereign Debt (Coupons)', TRUE, 2,5,1);
+--FDBM@IT@Base@POWER@F@202609
