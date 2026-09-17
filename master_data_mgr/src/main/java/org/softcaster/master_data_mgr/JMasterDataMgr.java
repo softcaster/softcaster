@@ -18,6 +18,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.utils.LoggerMgr;
 import static org.softcaster.master_data_mgr.AppTreeItem.BOND;
 import static org.softcaster.master_data_mgr.AppTreeItem.BOND_FUTURE;
+import static org.softcaster.master_data_mgr.AppTreeItem.CMD_FUTURE;
 import static org.softcaster.master_data_mgr.AppTreeItem.FX_FUTURE;
 import static org.softcaster.master_data_mgr.AppTreeItem.MM_FUTURE;
 import org.softcaster.master_data_mgr.models.MasterDataNode;
@@ -29,6 +30,7 @@ import org.softcaster.master_data_mgr.views.BondPanel;
 import org.softcaster.master_data_mgr.views.CmdFuturePanel;
 import org.softcaster.master_data_mgr.views.CounterpartyPanel;
 import org.softcaster.master_data_mgr.views.CurrPairPanel;
+import org.softcaster.master_data_mgr.views.ExtDeliveryFuturePanel;
 import org.softcaster.master_data_mgr.views.FltBondPanel;
 import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.FxFuturePanel;
@@ -129,6 +131,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case CMD_FUTURE -> {
                             cl.show(mainPanel, AppCard.CMD_FUTURE_CARD.name());
                             currentCard = AppCard.CMD_FUTURE_CARD;
+                        }
+                        case EXT_DELIVERY_FUTURE -> {
+                            cl.show(mainPanel, AppCard.EXT_DELIVERY_FUTURE_CARD.name());
+                            currentCard = AppCard.EXT_DELIVERY_FUTURE_CARD;
                         }
                         case CURR_PAIR -> {
                             cl.show(mainPanel, AppCard.CURR_PAIR_CARD.name());
@@ -421,6 +427,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         JPanel cmdFuturePanel = new CmdFuturePanel(masterDataFacade);
         cardMap.put(AppCard.CMD_FUTURE_CARD, cmdFuturePanel);
 
+        JPanel extDeliveryFuturePanel = new ExtDeliveryFuturePanel(masterDataFacade);
+        cardMap.put(AppCard.EXT_DELIVERY_FUTURE_CARD, cmdFuturePanel);
+
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT.name());
         mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
@@ -435,6 +444,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(positionPanel, AppCard.POSITION_CARD.name());
         mainPanel.add(issuerPanel, AppCard.ISSUER_CARD.name());
         mainPanel.add(cmdFuturePanel, AppCard.CMD_FUTURE_CARD.name());
+        mainPanel.add(extDeliveryFuturePanel, AppCard.EXT_DELIVERY_FUTURE_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

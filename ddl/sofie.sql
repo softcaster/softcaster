@@ -1330,33 +1330,6 @@ CREATE TABLE system_business_calendar (
 ALTER TABLE system_business_calendar OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- commodity_type
--- ----------------------------------------------------------------------------
-CREATE TABLE commodity_type (
-    commodity_type_id integer NOT NULL,
-    code varchar(25) NOT NULL,
-    description varchar(25) NOT NULL,
-    PRIMARY KEY (commodity_type_id)
-);
-CREATE UNIQUE INDEX commodity_type_code ON daycount (code);
-ALTER TABLE commodity_type OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
--- cmd_future_master_data - anagrafica commodity future
--- ----------------------------------------------------------------------------
-CREATE TABLE cmd_future_master_data (
-    id_master_data integer NOT NULL,
-    commodity_type integer NOT NULL,
-    contract_value numeric(15, 5) NOT NULL,
-    tick_size numeric(15, 5) NOT NULL,
-    initial_margin numeric(15, 5) NOT NULL,
-    maintenance_margin numeric(15, 5) NOT NULL,
-    CONSTRAINT fk_commodity_type FOREIGN KEY (commodity_type) REFERENCES commodity_type (commodity_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    PRIMARY KEY (id_master_data)
-);
-ALTER TABLE cmd_future_master_data OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
 -- service_types
 -- ----------------------------------------------------------------------------
 CREATE TABLE service_types (
@@ -1383,3 +1356,126 @@ ALTER TABLE descriptors OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS descriptors_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE descriptors_s OWNER TO sofie;
 
+--
+-- COMMODITY FUTURE
+--
+
+--
+-- Lookup Tables
+-- 
+-- ----------------------------------------------------------------------------
+-- commodity_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE commodity_type (
+    commodity_type_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(25) NOT NULL,
+    PRIMARY KEY (commodity_type_id)
+);
+CREATE UNIQUE INDEX commodity_type_code ON daycount (code);
+ALTER TABLE commodity_type OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- commodity_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE load_type (
+    load_type_id INT PRIMARY KEY,
+    code VARCHAR(16) NOT NULL,
+    description VARCHAR(64)
+);
+CREATE UNIQUE INDEX load_type_code ON daycount (code);
+ALTER TABLE load_type OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- delivery_period_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE delivery_period_type (
+    delivery_period_type_id INT PRIMARY KEY,
+    code VARCHAR(16) NOT NULL,
+    description VARCHAR(64)
+);
+CREATE UNIQUE INDEX load_dpt_code ON daycount (code);
+ALTER TABLE delivery_period_type OWNER TO sofie;
+
+--
+-- Livello 1: comune a TUTTI i future su commodity 
+--
+-- ----------------------------------------------------------------------------
+-- cmd_future_master_data - anagrafica commodity future
+-- ----------------------------------------------------------------------------
+CREATE TABLE cmd_future_master_data (
+    id_master_data integer NOT NULL,
+    commodity_type integer NOT NULL,
+    contract_value numeric(15, 5) NOT NULL,
+    tick_size numeric(15, 5) NOT NULL,
+    initial_margin numeric(15, 5) NOT NULL,
+    maintenance_margin numeric(15, 5) NOT NULL,
+    CONSTRAINT fk_commodity_type FOREIGN KEY (commodity_type) REFERENCES commodity_type (commodity_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    PRIMARY KEY (id_master_data)
+);
+ALTER TABLE cmd_future_master_data OWNER TO sofie;
+
+--
+-- Livello 2 : solo per commodity con delivery period esteso (Power, Gas)
+--
+-- ----------------------------------------------------------------------------
+-- extended_delivery_future_master_data - anagrafica base power/gas...
+-- ----------------------------------------------------------------------------
+CREATE TABLE extended_delivery_future_master_data (
+    id_master_data          INTEGER NOT NULL,
+
+    delivery_period_type    INTEGER NOT NULL,
+    delivery_start          DATE NOT NULL,
+    delivery_end            DATE NOT NULL,
+    total_delivery_hours    INTEGER NOT NULL,
+    market                  VARCHAR(16) NOT NULL,
+    notional_mw             NUMERIC NOT NULL,
+    notional_mwh            NUMERIC NOT NULL,
+    parent_master_data      INTEGER,
+
+    CONSTRAINT pk_extended_delivery_future_master_data
+        PRIMARY KEY (id_master_data),
+
+    CONSTRAINT fk_extended_delivery_parent_table
+        FOREIGN KEY (id_master_data)
+        REFERENCES cmd_future_master_data (id_master_data),
+
+    CONSTRAINT fk_extended_delivery_period_type
+        FOREIGN KEY (delivery_period_type)
+        REFERENCES delivery_period_type (delivery_period_type_id),
+
+    -- self-referencing per il cascading: ora scoperto correttamente solo
+    -- dove il cascading esiste davvero (Power, Gas), non su tutta cmd_future
+    CONSTRAINT fk_extended_delivery_parent_contract
+        FOREIGN KEY (parent_master_data)
+        REFERENCES extended_delivery_future_master_data (id_master_data),
+
+    CONSTRAINT chk_extended_delivery_dates
+        CHECK (delivery_end >= delivery_start),
+
+    CONSTRAINT chk_extended_delivery_notional_positive
+        CHECK (notional_mw > 0 AND notional_mwh > 0)
+);
+CREATE INDEX idx_extended_delivery_parent_contract
+    ON extended_delivery_future_master_data (parent_master_data);
+CREATE INDEX idx_extended_delivery_range
+    ON extended_delivery_future_master_data (delivery_start, delivery_end);
+ALTER TABLE extended_delivery_future_master_data OWNER TO sofie;
+
+--
+-- Livello 3: Power
+--
+-- ----------------------------------------------------------------------------
+-- power_future_master_data
+-- ----------------------------------------------------------------------------
+CREATE TABLE power_future_master_data (
+    id_master_data    INTEGER NOT NULL,
+    load_type         INTEGER NOT NULL,
+
+    CONSTRAINT pk_power_future_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_power_future_parent_table
+        FOREIGN KEY (id_master_data) REFERENCES extended_delivery_future_master_data (id_master_data),
+    CONSTRAINT fk_power_future_load_type
+        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
+);
+ALTER TABLE power_future_master_data OWNER TO sofie;

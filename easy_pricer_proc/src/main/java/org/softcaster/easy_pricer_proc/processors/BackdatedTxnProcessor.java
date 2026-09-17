@@ -87,7 +87,11 @@ public class BackdatedTxnProcessor {
                             AccountingEventAccruals event = null;
                             for (CashFlowItem item : cashFlow) {
                                 LocalDate settlement = txn.getSettlement().toLocalDate();
+                                LocalDate start = item.getStartDate().toLocalDate();
                                 LocalDate end = item.getEnddate().toLocalDate();
+                                if (start.isAfter(officialDate)) {
+                                    break;
+                                }
                                 if (end.isAfter(settlement) && end.isBefore(officialDate)) {
                                     event = new AccountingEventAccruals();
                                     event.setSourceId(txn.getIdFinancialTxn());

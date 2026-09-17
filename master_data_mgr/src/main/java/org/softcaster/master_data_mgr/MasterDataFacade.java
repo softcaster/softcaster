@@ -20,6 +20,7 @@ import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.MmFutureMasterDataDAO;
 import org.softcaster.core.data.PortfolioMasterDataDAO;
 import org.softcaster.core.data.PositionMasterDataDAO;
+import org.softcaster.core.data.PowerFutureMasterDataDAO;
 import org.softcaster.core.data.RefRateIndexDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SettlementTypeDAO;
@@ -56,7 +57,9 @@ public class MasterDataFacade {
     private MmFutureMasterDataDAO mmFutureMasterDataDAO;
     @Autowired
     private CmdFutureMasterDataDAO cmdFutureMasterDataDAO;
-
+    @Autowired
+    private PowerFutureMasterDataDAO powerFutureMasterDataDAO;
+    
     @Autowired
     private IssuerDAO issuerDAO;
     @Autowired
@@ -252,4 +255,10 @@ public class MasterDataFacade {
         return systemBusinessCalendarDAO;
     }
 
+    /**
+     * @return the powerFutureMasterData
+     */
+    public PowerFutureMasterDataDAO getPowerFutureMasterDataDAO() {
+        return powerFutureMasterDataDAO;
+    }
 }
