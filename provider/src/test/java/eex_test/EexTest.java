@@ -12,14 +12,19 @@ import static org.softcaster.provider.enums.Market.FUTURES;
  * @author ep
  */
 public class EexTest {
-    
+
     public static void main(String[] args) {
         testEex();
     }
 
     private static void testEex() {
+        //DEBY&commodity=DEBY&pricing=F&area=DE&product=Base&maturity=202701&startDate=2026-09-14&endDate=2026-09-18&maturityType=Year&isRolling=true
+        String productKeyDE = "DEBY@DE@Base@POWER@F@202701";
+        String productKeyIT = "FDBM@IT@Base@POWER@F@202701";
         EexProvider provider = EexProvider.getInstance();
-        double value = provider.getMktQuote("FDBM@IT@Base@POWER@F@202612",FUTURES).getData().bid();
+        double value = provider.getMktQuote(productKeyDE, FUTURES).getData().bid();
+        System.out.println(value);
+        value = provider.getMktQuote(productKeyIT, FUTURES).getData().bid();
         System.out.println(value);
     }
 }
