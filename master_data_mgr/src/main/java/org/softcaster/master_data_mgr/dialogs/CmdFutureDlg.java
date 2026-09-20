@@ -593,7 +593,7 @@ public class CmdFutureDlg extends javax.swing.JDialog {
         setUpCurrencyCombo();
         setUpDaycountCombo();
         setUpSettlementCombo();
-        setUpUnderlyingCombo();
+        setUpUnderlyingCombo(false);
 
         if (bean != null) {
             isInsert = false;
@@ -644,8 +644,10 @@ public class CmdFutureDlg extends javax.swing.JDialog {
         cbSettlementType.setModel(model);
     }
 
-    private void setUpUnderlyingCombo() {
-        CommodityType[] commodities = CommodityType.values();
+    private void setUpUnderlyingCombo(boolean extendedDeliveryOnly) {
+        CommodityType[] commodities = Arrays.stream(CommodityType.values())
+                .filter(c -> extendedDeliveryOnly == c.isExtendedDelivery())
+                .toArray(CommodityType[]::new);
         DefaultComboBoxModel<CommodityType> model = new DefaultComboBoxModel<>(commodities);
         cbUnderlying.setModel(model);
     }

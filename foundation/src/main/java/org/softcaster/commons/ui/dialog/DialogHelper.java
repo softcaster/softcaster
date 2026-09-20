@@ -15,11 +15,14 @@ import org.softcaster.commons.utils.Converter;
  * @author ep
  */
 public class DialogHelper {
-    
+
     public static void textFieldDoubleFocusLost(javax.swing.JTextField textField) {
         String doubleStr = textField.getText();
         try {
-            double price = Converter.toDouble(doubleStr, true);
+            double price = 0.;
+            if (doubleStr != null && !doubleStr.isEmpty()) {
+                price = Converter.toDouble(doubleStr, true);
+            }
             textField.setText(Converter.fromDouble(price));
         } catch (ParseException ex) {
             textField.setText("");
@@ -29,9 +32,13 @@ public class DialogHelper {
     public static void textFieldDateFocusLost(javax.swing.JTextField textField) {
         try {
             String dateStr = textField.getText();
-            DateParser parser = new DateParser(dateStr);
-            Date dt = new Date(parser.year(), parser.month(), parser.day());
-            textField.setText(dt.toString());
+            if (dateStr != null && !dateStr.isEmpty()) {
+                DateParser parser = new DateParser(dateStr);
+                Date dt = new Date(parser.year(), parser.month(), parser.day());
+                textField.setText(dt.toString());
+            } else {
+                textField.setText("");
+            }
         } catch (Exception ex) {
             textField.setText("");
         }
@@ -44,16 +51,17 @@ public class DialogHelper {
             textField.setText(today.toString());
         }
     }
-    
+
     /**
      *
      * @param fields
      * @return
      */
-    public static boolean validateFields (List<javax.swing.JTextField> fields) {
-        for(javax.swing.JTextField field: fields) {
-            if(field.getText().isBlank())
+    public static boolean validateFields(List<javax.swing.JTextField> fields) {
+        for (javax.swing.JTextField field : fields) {
+            if (field.getText().isBlank()) {
                 return false;
+            }
         }
         return true;
     }

@@ -67,8 +67,6 @@ case EventType.TRADE_EXECUTED:
      *
      * Tutto nella settlement currency del Future.
      */
-
-
     BigDecimal initialMargin = ctx.getFutureInitialMargin()
 
     if (initialMargin != null &&

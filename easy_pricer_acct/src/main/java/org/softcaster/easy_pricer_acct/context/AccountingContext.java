@@ -195,6 +195,16 @@ public class AccountingContext {
         return outstandingNominal;
     }
 
+    public double getAccruedInterestAmount() {
+        double accruedInterestAmount=0.;
+        if (event instanceof AccountingEventAccruals eventAccrual) {
+            if (eventAccrual != null) {
+                accruedInterestAmount = eventAccrual.getAccrualAmount();
+            }
+        }
+        return accruedInterestAmount;
+    }
+    
     public double getCouponAmount() {
         double couponAmount = 0.;
         if (event.getEventType() == EventType.COUPON) {

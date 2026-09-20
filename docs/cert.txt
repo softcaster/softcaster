@@ -1,4 +1,0 @@
-keytool -delete -alias ecb_api -keystore cacerts    
-keytool -importcert -trustcacerts -alias ecb_api -file "E:\tools\projects\DEVELOP\softcaster\docs\sectigo.crt" -keystore cacerts
-pwd changeit
-

@@ -52,6 +52,8 @@ public class FinTxnExecutionService {
     PositionTxnLinksDAO positionTxnLinksDAO;
     @Autowired
     private SystemBusinessCalendarDAO systemBusinessCalendarDAO;
+    @Autowired
+    private BackdatedTxnProcessor backdatedTxnProcessor;
 
     // Richiede una NUOVA transazione per salvare lo stato di REJECTED 
     // anche se la transazione principale fallisce e fa rollback
@@ -189,7 +191,6 @@ public class FinTxnExecutionService {
             accountingEventDAO.saveOrUpdate(event);
 
             if (isBackdatedTxn(txn)) {
-                BackdatedTxnProcessor backdatedTxnProcessor = new BackdatedTxnProcessor();
                 List<AccountingEvent> events = backdatedTxnProcessor.generateEvents(txn, positionDetailId, systemBusinessCalendarDAO.findBySbcId(1).getOfficialDate());
                 if (events != null && !events.isEmpty()) {
                     for (AccountingEvent backdatedEvent : events) {

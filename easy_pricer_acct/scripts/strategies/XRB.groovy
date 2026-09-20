@@ -265,8 +265,7 @@ case EventType.ACCRUAL:
         break
     }
 
-    def positionSide = ctx.getPositionSide()
-    if (positionSide == "BUY") {
+    if (ctx.getPositionSide() == TxnSide.BUY) {
 
         /*
          * Posizione LONG
@@ -278,7 +277,7 @@ case EventType.ACCRUAL:
         ctx.journal.debit(accAccruedInterest,accrualAmount,settlementCcy)
         ctx.journal.credit(accInterestIncome,accrualAmount,settlementCcy)
 
-    } else if (positionSide == "SELL") {
+    } else if (ctx.getPositionSide() == TxnSide.SELL) {
 
         /*
          * Posizione SHORT

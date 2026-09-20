@@ -10,25 +10,26 @@ package org.softcaster.engine.enums;
  */
 public enum CommodityType implements IdentifiableEnum {
 
-    CRUDE_OIL(1, "CRUDE_OIL", "Crude Oil"), 
-    POWER(2, "POWER", "Power"), // Energia elettrica
-    NATGAS(3, "NATGAS", "Natural Gas"),
-    GOLD(4, "GOLD", "Gold"),
-    SILVER(5, "SILVER", "Silver"),
-    PLATINUM(6, "PLATINUM", "Platinum"),
-    PALLADIUM(7, "PALLADIUM", "Palladium");
+    CRUDE_OIL(1, "CRUDE_OIL", "Crude Oil", false),
+    POWER(2, "POWER", "Power", true), // Energia elettrica
+    NATGAS(3, "NATGAS", "Natural Gas", true),
+    GOLD(4, "GOLD", "Gold", false),
+    SILVER(5, "SILVER", "Silver", false),
+    PLATINUM(6, "PLATINUM", "Platinum", false),
+    PALLADIUM(7, "PALLADIUM", "Palladium", false);
 
     private final int id;
     private final String code;
     private final String description;
-   
-    CommodityType(int id, String code, String description) {
+    private final boolean extendedDelivery;
+
+    CommodityType(int id, String code, String description, boolean extendedDelivery) {
         this.id = id;
         this.code = code;
         this.description = description;
+        this.extendedDelivery = extendedDelivery;
     }
 
-    
     @Override
     public int getId() {
         return id;
@@ -56,5 +57,12 @@ public enum CommodityType implements IdentifiableEnum {
 
     public static CommodityType fromCode(String code) {
         return IdentifiableEnum.fromCode(CommodityType.class, code);
+    }
+
+    /**
+     * @return the extendedDelivery
+     */
+    public boolean isExtendedDelivery() {
+        return extendedDelivery;
     }
 }
