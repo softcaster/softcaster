@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.account.AccountingEventDAO;
+import org.softcaster.core.data.account.AssetClassScriptMapping;
+import org.softcaster.core.data.account.AssetClassScriptMappingRepository;
 import org.softcaster.core.data.account.GlAccount;
 import org.softcaster.core.data.account.GlAccountDAO;
 import org.softcaster.core.data.account.GlAccountSlots;
@@ -76,6 +78,9 @@ public abstract class BaseAccountingEventService {
     @Autowired
     private GlAccountSlotsDAO glAccountSlotsDAO;
 
+    @Autowired
+    protected AssetClassScriptMappingRepository mappingRepository;
+
     @PostConstruct
     public void init() {
         log.info("=== [INITIALIZING ACCOUNTING SCRIPT] ===");
@@ -125,6 +130,9 @@ public abstract class BaseAccountingEventService {
                     }
                 }
                 log.info("All scripts compiled and cached successfully with debug info.");
+                
+                // controllo di integrità, mapping che punta a uno scriptCode inesistente
+                validateMappingIntegrity();
             }
         } catch (IOException | ScriptException ex) {
             log.error("Failed to compile accounting script during startup!", ex);
@@ -180,48 +188,44 @@ public abstract class BaseAccountingEventService {
                     glAccountDescription = parts[1];
                 }
             }
-        }
-    
-        else {
+        } else {
             // Gestione standard
             GlAccount glAccount = glAccountDAO.findByCode(line.account());
-        if (glAccount == null) {
-            throw new AccountingException(" Invalid account!");
+            if (glAccount == null) {
+                throw new AccountingException(" Invalid account!");
+            }
+            glAccountDescription = glAccount.getCode();
+            // Conto e divisa determinano la slot da utilizzare
+            GlAccountSlots glAccountSlots = glAccountSlotsDAO.findByAccountAndCurrency(glAccount.getAccountId(), line.currency());
+            if (glAccountSlots == null) {
+                throw new AccountingException(" Invalid slot!");
+            }
+            finalAccountSlotId = glAccountSlots.getAccountSlotId();
         }
-        glAccountDescription = glAccount.getCode();
         // Conto e divisa determinano la slot da utilizzare
-        GlAccountSlots glAccountSlots = glAccountSlotsDAO.findByAccountAndCurrency(glAccount.getAccountId(), line.currency());
-        if (glAccountSlots == null) {
-            throw new AccountingException(" Invalid slot!");
+
+        jel.setAccountSlot(finalAccountSlotId);
+
+        jel.setCurrency(line.currency());
+        jel.setDescription(glAccountDescription);
+        switch (line.balance()) {
+            case DEBIT ->
+                jel.setDebitAmount(line.amount());
+            case CREDIT ->
+                jel.setCreditAmount(line.amount());
+            default ->
+                throw new AccountingException(" Invalid balance!");
         }
-        finalAccountSlotId = glAccountSlots.getAccountSlotId();
-    }
-    // Conto e divisa determinano la slot da utilizzare
 
-    jel.setAccountSlot (finalAccountSlotId);
-
-    jel.setCurrency (line.currency
-
-    ());
-    jel.setDescription (glAccountDescription);
-    switch (line.balance()) {
-        case DEBIT ->
-            jel.setDebitAmount(line.amount());
-        case CREDIT ->
-            jel.setCreditAmount(line.amount());
-        default ->
-            throw new AccountingException(" Invalid balance!");
+        return jel;
     }
 
-    return jel ;
-}
-
-/**
- * Controlla che ogni valuta coinvolta nel DSL sia perfettamente quadrata a
- * zero. Se una valuta è sbilanciata, lancia una AccountingException bloccando
- * il flusso.
- */
-private void checkCurrencyBalancing(List<JournalLine> lines) {
+    /**
+     * Controlla che ogni valuta coinvolta nel DSL sia perfettamente quadrata a
+     * zero. Se una valuta è sbilanciata, lancia una AccountingException
+     * bloccando il flusso.
+     */
+    private void checkCurrencyBalancing(List<JournalLine> lines) {
         Map<Integer, Double> balanceMap = new HashMap<>();
 
         for (JournalLine line : lines) {
@@ -246,6 +250,20 @@ private void checkCurrencyBalancing(List<JournalLine> lines) {
                 LoggerMgr.logError(outOfBalanceError);
                 throw new AccountingException(outOfBalanceError);
             }
+        }
+    }
+
+    private void validateMappingIntegrity() {
+        List<String> missing = mappingRepository.findAll().stream()
+                .map(AssetClassScriptMapping::getScriptCode)
+                .distinct()
+                .filter(code -> !cachedStrategies.containsKey(code))
+                .toList();
+
+        if (!missing.isEmpty()) {
+            String error = "asset_class_script_mapping referenzia script_code inesistenti: " + missing;
+            log.error(error);
+            throw new IllegalStateException(error);
         }
     }
 }

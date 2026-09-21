@@ -202,6 +202,29 @@ ALTER SEQUENCE accounting_events_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
+-- asset_class_script_mapping - mappatura eventi asset-class
+-- ----------------------------------------------------------------------------
+CREATE TABLE asset_class_script_mapping (
+    asset_class_script_mapping_id   INTEGER NOT NULL,
+    asset_class                      INTEGER NOT NULL,   
+    event_type                       INTEGER, -- NULL = wildcard, tutti gli eventi
+    script_code                      VARCHAR(16) NOT NULL,
+
+    CONSTRAINT pk_asset_class_script_mapping PRIMARY KEY (asset_class_script_mapping_id),
+    CONSTRAINT fk_asset_class_script_mapping_asset_class
+        FOREIGN KEY (asset_class) REFERENCES asset_class (id_asset_class),  -- verifica nome PK reale
+    CONSTRAINT fk_asset_class_script_mapping_event_type
+        FOREIGN KEY (event_type) REFERENCES accounting_event_types (event_type_id),
+    -- unicita': un solo mapping per (asset_class, event_type),
+    -- incluso il caso event_type NULL (un solo wildcard per asset class)
+    CONSTRAINT uq_asset_class_script_mapping UNIQUE NULLS NOT DISTINCT (asset_class, event_type)
+);
+
+ALTER TABLE asset_class_script_mapping OWNER TO sofie;
+CREATE SEQUENCE asset_class_script_mapping_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE asset_class_script_mapping_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
 -- accounting_event_accruals - dettaglio evento contabile accrual
 -- ----------------------------------------------------------------------------
 CREATE TABLE accounting_event_accruals (

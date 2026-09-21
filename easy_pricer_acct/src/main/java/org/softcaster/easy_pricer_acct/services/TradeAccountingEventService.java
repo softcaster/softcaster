@@ -17,6 +17,7 @@ import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.JournalEntries;
 import org.softcaster.easy_pricer_acct.context.AccountingContext;
+import org.softcaster.easy_pricer_acct.context.AccountingScriptResolver;
 import org.softcaster.easy_pricer_acct.context.JournalDsl;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
 import org.softcaster.engine.enums.AccountingEventStatus;
@@ -31,6 +32,9 @@ public class TradeAccountingEventService extends BaseAccountingEventService {
 
     @Autowired
     private FinancialTxnDAO financialTxnDAO;
+
+    @Autowired
+    private AccountingScriptResolver accountingScriptResolver;
 
     /**
      *
@@ -71,7 +75,11 @@ public class TradeAccountingEventService extends BaseAccountingEventService {
                 String assetCode = txn.getMasterData().getAssetClass().getCode();
 
                 // Recuperiamo la strategia pre-compilata dalla cache
-                CompiledScript assetStrategy = cachedStrategies.get(assetCode);
+                String scriptCode = accountingScriptResolver.resolveScriptCode(
+                        txn.getMasterData().getAssetClass(),
+                        event.getEventType()
+                );
+                CompiledScript assetStrategy = cachedStrategies.get(scriptCode);
 
                 if (assetStrategy != null) {
                     // Aggiorna il FILENAME con il percorso specifico della sotto-strategia prima del lancio
@@ -89,7 +97,8 @@ public class TradeAccountingEventService extends BaseAccountingEventService {
                     txn.setTxnAcctPhase(ctx.getAccountingPhase());
                     financialTxnDAO.saveOrUpdate(txn);
                 } else {
-                    log.warn("No specific strategy script found cached for Asset Class: {}", assetCode);
+                    log.warn("No specific strategy script found cached for scriptCode: {} (assetClass={}, eventType={})",
+                            scriptCode, txn.getMasterData().getAssetClass().getCode(), event.getEventType());
                 }
             }
         } catch (Exception ex) {
