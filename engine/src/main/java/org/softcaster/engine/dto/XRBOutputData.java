@@ -5,6 +5,8 @@
 package org.softcaster.engine.dto;
 
 import java.time.LocalDate;
+import java.util.List;
+import org.softcaster.engine.cashflow.AmortizedCostPeriod;
 
 /**
  *
@@ -19,6 +21,7 @@ public class XRBOutputData extends MarketOutputData {
     private double macaulayDuration = 0.;
     private double accruedInterest = 0.;
     private LocalDate valuationDate = null;
+    private List<AmortizedCostPeriod> acpList = null;
     /**
      * @return the accruedInterest
      */
@@ -115,5 +118,19 @@ public class XRBOutputData extends MarketOutputData {
      */
     public void setMacaulayDuration(double macaulayDuration) {
         this.macaulayDuration = macaulayDuration;
+    }
+
+    /**
+     * @return the acpList
+     */
+    public List<AmortizedCostPeriod> getAcpList() {
+        return acpList;
+    }
+
+    /**
+     * @param acpList the acpList to set
+     */
+    public void setAcpList(List<AmortizedCostPeriod> acpList) {
+        this.acpList = acpList;
     }
   }

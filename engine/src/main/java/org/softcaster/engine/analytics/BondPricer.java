@@ -7,8 +7,10 @@ package org.softcaster.engine.analytics;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import org.softcaster.engine.cashflow.AmortizedCostPeriod;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.cashflow.CashFlowHelper;
+import org.softcaster.engine.cashflow.EffectiveInterestScheduleGenerator;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.FRBInputData;
 import org.softcaster.engine.dto.FRBOutputData;
@@ -314,6 +316,10 @@ public class BondPricer extends AbstractFixedIncomePricer {
 
         double dv01 = output.getMktPrice() * output.getModifiedDuration() * 0.0001;
         output.setDv01(dv01);
+        
+        EffectiveInterestScheduleGenerator generator = new EffectiveInterestScheduleGenerator();
+        output.setAcpList(generator.generate(input.getFlows(), input.getReferencePrice(), input.getDaycount(), input.getCompounding(), input.getFrequency(), output.getYtm()));
+
         return output;
     }
 

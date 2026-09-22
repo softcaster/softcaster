@@ -93,6 +93,7 @@ public class BondCalculator {
                     response.discountMargin = output.getDiscountMargin();
                     response.shortBondYield = output.getShortBondYield();
                     response.marginDuration = output.getMarginDuration();
+                    response.acpList = output.getAcpList();
                 }
             }
         }

@@ -36,6 +36,7 @@ import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.engine.analytics.FxForwardPricer;
+import org.softcaster.engine.cashflow.AmortizedCostPeriod;
 import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
 import org.softcaster.engine.dto.ForwardBaseInputData;
@@ -79,20 +80,20 @@ public class TestMarketDataService {
 
     @Autowired
     private SecurityMasterDataDAO smdDAO;
-/*
+    /*
     @Autowired
     private SecurityMasterDataDAO2 smdDAO2;
     @Autowired
     private ForexMasterDataDAO2 fxDAO2;
     @Autowired
     private FxFutureMasterDataDAO2 fxFutDAO2;
-*/
+     */
     @Autowired
     private FltSecurityMasterDataDAO fltSecurityMasterDataDAO2;
-    
+
     @Autowired
     private FxFutureMasterDataDAO fxFutureMasterDataDAO2;
-    
+
     @Autowired
     private CmdFutureMasterDataDAO cmdFutureMasterDataDAO2;
 
@@ -123,7 +124,7 @@ public class TestMarketDataService {
         if(item != null) {
             System.out.println(item.getRefRateIndex().getCode() + " - " + item.getRefRateIndex().getDescription());
         }
-*/        
+         */
         List<CmdFutureMasterData> pairs = cmdFutureMasterDataDAO2.findAll();
         for (CmdFutureMasterData pair : pairs) {
             System.out.println(pair.getCode() + " - " + pair.getDescription() + " - " + pair.getCurrency().getIsoCode() + " - " + pair.getAssetClass().getCode());
@@ -186,6 +187,42 @@ public class TestMarketDataService {
         System.out.println(response.yieldToMaturity);
     }
 
+    private void testFltBondPricer2() {
+        BondPricingRequest request = new BondPricingRequest();
+        request.isin = "IT00011223344";
+        LocalDate referenceDate = org.softcaster.engine.utils.DateParser.parse("22/09/2026");
+        request.referenceDate = java.sql.Date.valueOf(referenceDate);
+        request.referencePrice = 98.;
+        request.fullCalc = false;
+        request.yieldCurve = "";
+
+        BondPricingResponse response = bondCalculator.bondValuation(request);
+        System.out.println("Clean Price:" + "\t" + request.referencePrice);
+        System.out.println("Accrued Interest:" + "\t" + response.accruedInterest);
+        System.out.println("Yield To Maturity:" + "\t" + response.yieldToMaturity);
+
+        if (response.acpList != null && !response.acpList.isEmpty()) {
+            System.out.println("accrualStart\t"
+                    + "accrualEnd\t"
+                    + "openingCarryingValue\t"
+                    + "effectiveInterest\t"
+                    + "couponCashInterest\t"
+                    + "discountAccretion\t"
+                    + "closingCarryingValue\t"
+            );
+            for (AmortizedCostPeriod acp : response.acpList) {
+                System.out.println(
+                        acp.accrualStart() + "\t"
+                        + acp.accrualEnd() + "\t"
+                        + acp.openingCarryingValue() + "\t"
+                        + acp.effectiveInterest() + "\t"
+                        + acp.couponCashInterest() + "\t"
+                        + acp.discountAccretion() + "\t"
+                        + acp.closingCarryingValue() + "\t");
+            }
+        }
+    }
+
     private void testBondPricer() {
         SecurityMasterData smd = smdDAO.findByIsin("IT0004532559").orElse(null);
         if (smd != null) {
@@ -219,7 +256,7 @@ public class TestMarketDataService {
         // testRunner.testEcbYieldCurve();
         // testRunner.testBondPricer();
         //testRunner.testFltBondPricer();
-        testRunner.testMasterData2();
+        testRunner.testFltBondPricer2();
     }
 
     // Ricava i DF per una serie di date passate in input (ipotetiche scadenze

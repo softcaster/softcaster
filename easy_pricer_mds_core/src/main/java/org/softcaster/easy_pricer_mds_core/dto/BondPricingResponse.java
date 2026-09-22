@@ -5,6 +5,8 @@
 package org.softcaster.easy_pricer_mds_core.dto;
 
 import java.io.Serializable;
+import java.util.List;
+import org.softcaster.engine.cashflow.AmortizedCostPeriod;
 
 /**
  *
@@ -23,4 +25,5 @@ public class BondPricingResponse implements Serializable {
     public double discountMargin = 0.;
     public double shortBondYield = 0.;
     public double marginDuration = 0;
+    public List<AmortizedCostPeriod> acpList = null;
 }
