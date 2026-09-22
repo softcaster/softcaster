@@ -30,10 +30,8 @@ public class FrenchAmortizationStrategy implements AmortizationStrategy {
             PaymentPeriod period = periods.get(i);
 
             // 1. Quota Interessi: calcolata sul debito residuo
-            // Nota: Nel piano francese puro si usa il tasso periodico fisso, 
-            // ma per precisione di pricing usiamo la yearFraction del periodo
-            double interestPayment = remainingBalance * rate * period.yearFraction();
-
+            double interestPayment = remainingBalance * periodicRate;
+            
             // 2. Quota Capitale: Rata totale - Interessi
             double principalPayment = constantPayment - interestPayment;
 

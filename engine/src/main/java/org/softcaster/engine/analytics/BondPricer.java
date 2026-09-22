@@ -7,9 +7,8 @@ package org.softcaster.engine.analytics;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import org.softcaster.commons.utils.FileUtil;
-import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.cashflow.CashFlowHelper;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.FRBInputData;
 import org.softcaster.engine.dto.FRBOutputData;
@@ -32,26 +31,47 @@ public class BondPricer extends AbstractFixedIncomePricer {
      * @return
      */
     public double calculateAccruedInterest(List<CashFlow> flows, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
-        // 1. Trova la cedola in corso (quella il cui periodo include la valuationDate)
-        return flows.stream()
-                .filter(cf -> !valuationDate.isBefore(cf.accrualStart()) && valuationDate.isBefore(cf.accrualEnd()))
-                .findFirst()
-                .map(cf -> {
+        return CashFlowHelper.calculateAccruedInterest(flows, valuationDate, dcb, freq);
+    }
 
-                    long daysFromStart = ChronoUnit.DAYS.between(cf.accrualStart(), valuationDate);
-                    double theoreticalDaysInPeriod;
+    public double calculateYtm(List<CashFlow> flows, double cleanPrice, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency) {
+        return CashFlowHelper.calculateYtm(flows, cleanPrice, valuationDate, dcb, compounding, frequency);
+    }
 
-                    if (dcb == DaycountBasis.ACT_360) {
-                        // Regola CCT: ignora la durata del semestre, usa sempre la base commerciale fissa (360 / 2 = 180)
-                        theoreticalDaysInPeriod = dcb.getTime() / freq.getYearFraction();
-                    } else {
-                        // Regola BTP (ACT/ACT ICMA): usa i giorni ESATTI di questo specifico semestre (nel tuo caso restituirà 183)
-                        theoreticalDaysInPeriod = ChronoUnit.DAYS.between(cf.accrualStart(), cf.accrualEnd());
-                    }
+    public double calculatePrice(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency) {
+        return CashFlowHelper.calculatePrice(flows, ytm, valuationDate, dcb, compounding, frequency);
+    }
 
-                    return cf.interest() * ((double) daysFromStart / theoreticalDaysInPeriod);
-                })
-                .orElse(0.0); // Nessun rateo se siamo fuori dai periodi o il bond è scaduto
+    public double calculatePrice(List<CashFlow> flows, YieldCurve yieldCurve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
+        return CashFlowHelper.calculatePrice(flows, yieldCurve, valuationDate, dcb, frequency);
+    }
+
+    public double calculateMacaulayDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
+        return CashFlowHelper.calculateMacaulayDuration(flows, ytm, valuationDate, dcb, freq);
+    }
+
+    public double calculateModifiedDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
+        return CashFlowHelper.calculateModifiedDuration(flows, ytm, valuationDate, dcb, freq);
+    }
+
+    // Mentre la Duration ci dice quanto il prezzo varia in modo lineare, 
+    // la Convexity corregge l'errore di questa approssimazione quando i tassi si muovono molto   
+    public double calculateConvexity(List<CashFlow> flows, double ytm, double dirtyPrice, LocalDate valDate, DaycountBasis dcb, Compounding compounding) {
+        double weightedSum = 0.0;
+
+        for (CashFlow cf : flows) {
+            if (cf.paymentDate().isAfter(valDate)) {
+                double t = dcb.calculate(valDate, cf.paymentDate(), null);
+                // PV del flusso scontato allo YTM
+                double pv = cf.getTotalAmount() * MathUtil.getDiscountFactor(compounding, ytm, t);
+
+                // Termine della sommatoria: t * (t + 1) * PV
+                weightedSum += t * (t + 1) * pv;
+            }
+        }
+
+        // Convexity = Sommatoria / (Prezzo * (1 + y)^2)
+        return weightedSum / (dirtyPrice * Math.pow(1 + ytm, 2));
     }
 
     public double calculateFltShortBondYield(List<CashFlow> flows, LocalDate valuationDate, double referencePrice, double redemptionPrice, double accruedInterest, DaycountBasis dcb) {
@@ -78,143 +98,6 @@ public class BondPricer extends AbstractFixedIncomePricer {
         double shortBondYield = ((totalPayoutAtReset / dirtyPrice) - 1.0) / yearFractionToReset;
 
         return shortBondYield; // Restituisce es. 0.032 (3.2%)
-    }
-
-    /**
-     * Calcola lo YTM (IRR) partendo dal Clean Price (Prezzo di mercato).
-     *
-     * @param flows
-     * @param cleanPrice
-     * @param valuationDate
-     * @param dcb
-     * @param compounding
-     * @param frequency
-     * @return the Yield To Maturity
-     */
-    public double calculateYtm(List<CashFlow> flows, double cleanPrice, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency) {
-        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
-        double dirtyPrice = cleanPrice + accrued;
-
-        // Filtriamo solo i flussi futuri per l'attualizzazione
-        List<CashFlow> futureFlows = flows.stream()
-                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
-                .toList();
-
-        return solveInternalRateOfReturn(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency);
-    }
-
-    public double calculateDiscountMargin(List<CashFlow> flows, double cleanPrice, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency, double currentRate) {
-        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
-        double dirtyPrice = cleanPrice + accrued;
-
-        // Filtriamo solo i flussi futuri per l'attualizzazione
-        List<CashFlow> futureFlows = flows.stream()
-                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
-                .toList();
-
-        return solveDiscountMargin(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency, currentRate);
-    }
-
-    public double calculatePrice(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency) {
-        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
-        double dirtyPrice = 0;
-
-        // Filtriamo solo i flussi futuri per l'attualizzazione
-        List<CashFlow> futureFlows = flows.stream()
-                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
-                .toList();
-
-        for (CashFlow cf : futureFlows) {
-            double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
-            dirtyPrice += cf.getTotalAmount() * MathUtil.getDiscountFactor(compounding, ytm, t);
-        }
-
-        return dirtyPrice - accrued;
-    }
-
-    public double calculatePrice(List<CashFlow> flows, YieldCurve yieldCurve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
-        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
-        double dirtyPrice = 0;
-
-        // Filtriamo solo i flussi futuri per l'attualizzazione
-        List<CashFlow> futureFlows = flows.stream()
-                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
-                .toList();
-
-        for (CashFlow cf : futureFlows) {
-            double discountFactor = yieldCurve.getDiscountFactor(cf.accrualEnd());
-            double amount = cf.getTotalAmount();
-            double pv = amount * discountFactor;
-
-            if (FileUtil.dumpDebugInfo()) {
-                String message = "Accrual End: " + cf.accrualEnd() + "\tDF: " + discountFactor + "\tAmount:" + amount + "\tPresent Value:" + pv;
-                System.out.println(message);
-                LoggerMgr.logInfo(message);
-            }
-
-            dirtyPrice += pv;
-        }
-
-        return dirtyPrice - accrued;
-    }
-
-    public double calculateMacaulayDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
-        double dirtyPrice = 0.0;
-        double weightedSum = 0.0;
-
-        // Filtriamo solo i flussi futuri rispetto alla valutazione
-        List<CashFlow> futureFlows = flows.stream()
-                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
-                .toList();
-
-        // 1. Calcolo Macaulay Duration
-        for (CashFlow cf : futureFlows) {
-            // Tempo 't' tra oggi e il pagamento (usando il Market Daycount, es. ACT/ACT)
-            double t = dcb.calculate(valuationDate, cf.paymentDate(), freq);
-
-            // Valore attuale del flusso (PV)
-            double pv = cf.getTotalAmount() / Math.pow(1 + ytm, t);
-
-            dirtyPrice += pv;
-            weightedSum += t * pv;
-        }
-
-        if (dirtyPrice <= 0.) {
-            return 0.;
-        } else {
-            return (weightedSum / dirtyPrice);
-        }
-    }
-
-    public double calculateModifiedDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
-
-        double macaulayDuration = calculateMacaulayDuration(flows, ytm, valuationDate, dcb, freq);
-
-        // 2. Calcolo Modified Duration
-        // Nota: per i bond la formula standard usa la capitalizzazione composta annua 
-        // o legata alla frequenza (k). Per i BTP si usa spesso k=1 o k=frequenza.
-        int k = freq.getYearFraction() > 0 ? freq.getYearFraction() : 1;
-        return macaulayDuration / (1 + (ytm / k));
-    }
-
-    // Mentre la Duration ci dice quanto il prezzo varia in modo lineare, 
-    // la Convexity corregge l'errore di questa approssimazione quando i tassi si muovono molto   
-    public double calculateConvexity(List<CashFlow> flows, double ytm, double dirtyPrice, LocalDate valDate, DaycountBasis dcb, Compounding compounding) {
-        double weightedSum = 0.0;
-
-        for (CashFlow cf : flows) {
-            if (cf.paymentDate().isAfter(valDate)) {
-                double t = dcb.calculate(valDate, cf.paymentDate(), null);
-                // PV del flusso scontato allo YTM
-                double pv = cf.getTotalAmount() * MathUtil.getDiscountFactor(compounding, ytm, t);
-
-                // Termine della sommatoria: t * (t + 1) * PV
-                weightedSum += t * (t + 1) * pv;
-            }
-        }
-
-        // Convexity = Sommatoria / (Prezzo * (1 + y)^2)
-        return weightedSum / (dirtyPrice * Math.pow(1 + ytm, 2));
     }
 
     /**
@@ -357,6 +240,18 @@ public class BondPricer extends AbstractFixedIncomePricer {
 
         // Formula della Duration Modificata classica
         return (priceDown - priceUp) / (2.0 * dirtyPrice * h);
+    }
+
+    public double calculateDiscountMargin(List<CashFlow> flows, double cleanPrice, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency, double currentRate) {
+        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
+        double dirtyPrice = cleanPrice + accrued;
+
+        // Filtriamo solo i flussi futuri per l'attualizzazione
+        List<CashFlow> futureFlows = flows.stream()
+                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
+                .toList();
+
+        return solveDiscountMargin(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency, currentRate);
     }
 
     public XRBOutputData calculate(XRBInputData input) {

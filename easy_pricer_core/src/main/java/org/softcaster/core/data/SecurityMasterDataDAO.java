@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.softcaster.core.dto.SecurityMasterDataDto;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class SecurityMasterDataDAO extends AbstractMasterDataDAO<SecurityMasterData, SecurityMasterDataRepository> {
+
+    private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
     public SecurityMasterDataDAO(SecurityMasterDataRepository repository) {
         super(repository);
@@ -17,6 +20,11 @@ public class SecurityMasterDataDAO extends AbstractMasterDataDAO<SecurityMasterD
     @Transactional(readOnly = true)
     public Optional<SecurityMasterData> findByIsin(String isin) {
         return repository.findByIsin(isin);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<SecurityMasterData> findByIdWithIssuer(Integer id) {
+        return repository.findByIdWithIssuer(id);
     }
 
     @Transactional(readOnly = true)

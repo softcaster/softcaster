@@ -33,6 +33,16 @@ import org.hibernate.annotations.JdbcTypeCode;
                 @NamedAttributeNode("issuer"),}
     ),
     @NamedEntityGraph(
+            name = "SecurityMasterData.fullGraphWithCashFlow",
+            attributeNodes = {
+                @NamedAttributeNode("currency"),
+                @NamedAttributeNode("assetClass"),
+                @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("issuer"),
+                @NamedAttributeNode("cashFlows"),
+            }
+    ),
+    @NamedEntityGraph(
             name = "SecurityMasterData.withCashFlow",
             attributeNodes = {
                 @NamedAttributeNode("cashFlows"),

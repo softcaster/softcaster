@@ -116,6 +116,13 @@ public class BondPanel extends AbstactMDPanel {
         refreshModel(model);
     }
 
+
+    public SecurityMasterData refreshWithIssuer(Integer idMasterData) {
+        SecurityMasterData smd = masterDataFacade.getSecurityMasterDataDAO().findByIdWithIssuer(idMasterData).orElse(null);
+        return smd;
+    }
+    
+    
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
         int rowIndex = bondTable.getSelectedRow();
@@ -131,7 +138,8 @@ public class BondPanel extends AbstactMDPanel {
                 parentFrame = frame;
             }
 
-            BondDlg dialog = new BondDlg(parentFrame, true, bean, masterDataFacade);
+            SecurityBean fullBean = new SecurityBean(refreshWithIssuer(bean.getSecurityMasterData().getIdMasterData()));
+            BondDlg dialog = new BondDlg(parentFrame, true, fullBean, masterDataFacade);
             dialog.setSize(600, 400);
             // Centra la dialog rispetto al pannello
             dialog.setLocationRelativeTo(this);

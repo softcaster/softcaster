@@ -15,6 +15,14 @@ public interface SecurityMasterDataRepository extends BaseMasterDataRepository<S
         """)
     @EntityGraph("MasterData.fullGraph")
     public Optional<SecurityMasterData> findByIsin(@Param("isin") String isin);
+    
+    @Query("""
+        SELECT smd
+        FROM SecurityMasterData smd
+        WHERE smd.idMasterData = :id
+        """)
+    @EntityGraph("SecurityMasterData.fullGraphWithCashFlow")
+    public Optional<SecurityMasterData> findByIdWithIssuer(@Param("id") Integer id);
 
     @Query("""
         SELECT smd

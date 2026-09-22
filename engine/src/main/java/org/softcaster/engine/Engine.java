@@ -14,6 +14,7 @@ import static org.softcaster.engine.Test.CURR;
 import static org.softcaster.engine.Test.DATE;
 import static org.softcaster.engine.Test.FXFWD;
 import static org.softcaster.engine.Test.GAK;
+import static org.softcaster.engine.Test.LOAN;
 import static org.softcaster.engine.Test.YCURVE;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
 import org.softcaster.engine.analytics.BondForwardPricer;
@@ -329,6 +330,6 @@ public class Engine {
         // 4. Recupera Engine e lancia il test
         Engine engine = context.getBean(Engine.class);
 
-        engine.runTest(YCURVE);
+        engine.runTest(LOAN);
     }
 }

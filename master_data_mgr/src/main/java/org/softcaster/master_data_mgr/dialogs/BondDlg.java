@@ -37,6 +37,7 @@ import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.CashFlowStatus;
+import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.CouponProjectionMethod;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.FixingDayType;
@@ -135,6 +136,8 @@ public class BondDlg extends javax.swing.JDialog {
         cbAmortSched = new javax.swing.JComboBox<>();
         jLabel23 = new javax.swing.JLabel();
         accrDaycount = new javax.swing.JComboBox<>();
+        jLabel29 = new javax.swing.JLabel();
+        cbCompounding = new javax.swing.JComboBox<>();
         idxPanel = new javax.swing.JPanel();
         jLabel24 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
@@ -487,7 +490,7 @@ public class BondDlg extends javax.swing.JDialog {
         additionalPanel.add(cbDaycount, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         additionalPanel.add(filler3, gridBagConstraints);
@@ -607,6 +610,24 @@ public class BondDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         additionalPanel.add(accrDaycount, gridBagConstraints);
+
+        jLabel29.setText("Compounding");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(jLabel29, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(cbCompounding, gridBagConstraints);
 
         tabbedPane.addTab("Additional", additionalPanel);
 
@@ -1025,6 +1046,7 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JButton btnSave;
     private javax.swing.JPanel cashFlowPanel;
     private javax.swing.JComboBox<AmortizationSchedule> cbAmortSched;
+    protected javax.swing.JComboBox<Compounding> cbCompounding;
     private javax.swing.JComboBox<Currency> cbCurrency;
     private javax.swing.JComboBox<DaycountBasis> cbDaycount;
     private javax.swing.JComboBox<Form> cbForm;
@@ -1064,6 +1086,7 @@ public class BondDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1095,6 +1118,7 @@ public class BondDlg extends javax.swing.JDialog {
 
     protected void postInit() {
 
+        // Ricarico entity completa di issuer
         setUpCombos();
         setUpSpinner();
 
@@ -1121,7 +1145,8 @@ public class BondDlg extends javax.swing.JDialog {
             cbRollConv.setSelectedItem(bean.getSecurityMasterData().getRollConvention());
             cbForm.setSelectedItem(bean.getSecurityMasterData().getForm());
             cbToi.setSelectedItem(bean.getSecurityMasterData().getTypeOfInterest());
-            cbAmortSched.setSelectedItem(bean.getSecurityMasterData().getAmortizationSchedule());
+            cbToi.setSelectedItem(bean.getSecurityMasterData().getTypeOfInterest());
+            cbCompounding.setSelectedItem(bean.getSecurityMasterData().getCompounding());
             txtNominalValue.setText(Converter.fromDouble(bean.getSecurityMasterData().getNominalValue()));
             spinnerBD.setValue(bean.getSecurityMasterData().getBusinessDays());
         }
@@ -1169,8 +1194,17 @@ public class BondDlg extends javax.swing.JDialog {
         setUpRollConvCombo();
         setUpToiCombo();
         setUpAmSchedCombo();
+        setUpCompoundingCombo();
     }
 
+    private void setUpCompoundingCombo() {
+        List<Compounding> compoundings = List.of(Compounding.values());
+
+        // 2. Crea il modello partendo dalla lista
+        DefaultComboBoxModel<Compounding> model = new DefaultComboBoxModel<>(compoundings.toArray(Compounding[]::new));
+        cbCompounding.setModel(model);
+    }
+    
     private void setUpToiCombo() {
         List<TypeOfInterest> tois = List.of(TypeOfInterest.values());
 
@@ -1290,6 +1324,7 @@ public class BondDlg extends javax.swing.JDialog {
             smd.setFrequency((Frequency) cbFrequency.getSelectedItem());
             smd.setRollConvention((RollConvention) cbRollConv.getSelectedItem());
             smd.setTypeOfInterest((TypeOfInterest) cbToi.getSelectedItem());
+            smd.setCompounding((Compounding) cbCompounding.getSelectedItem());
             smd.setIssuer((Issuer) cbIssuer.getSelectedItem());
             smd.setNominalValue(Converter.toDouble(txtNominalValue.getText(), false));
             smd.setFirstCouponPaymentDate(new Date(txtFirstCpMaturity.getText()).sqlDate());
