@@ -4,6 +4,7 @@
  */
 package mds.core.test;
 
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Currency;
@@ -197,29 +198,49 @@ public class TestMarketDataService {
         request.yieldCurve = "";
 
         BondPricingResponse response = bondCalculator.bondValuation(request);
+        System.out.println("Reference Date:" + "\t" + request.referenceDate);
         System.out.println("Clean Price:" + "\t" + request.referencePrice);
         System.out.println("Accrued Interest:" + "\t" + response.accruedInterest);
         System.out.println("Yield To Maturity:" + "\t" + response.yieldToMaturity);
 
         if (response.acpList != null && !response.acpList.isEmpty()) {
-            System.out.println("accrualStart\t"
-                    + "accrualEnd\t"
-                    + "openingCarryingValue\t"
-                    + "effectiveInterest\t"
-                    + "couponCashInterest\t"
-                    + "discountAccretion\t"
-                    + "closingCarryingValue\t"
+            // Definiamo una stringa di formato: 
+            // %-12s  -> Stringa allineata a sinistra, larga 12 caratteri (per le date)
+            // %-18s  -> Stringa allineata a sinistra, larga 18 caratteri (per i titoli)
+            // %-18.10f -> Numero allineato a sinistra, largo 18 caratteri totali con 10 decimali
+
+            String formatoIntestazione = "%-12s %-12s %-18s %-18s %-18s %-18s %-18s\n";
+            String formatoDati = "%-12s %-12s %-18.10f %-18.10f %-18.10f %-18.10f %-18.10f\n";
+
+            // 1. Stampa delle intestazioni perfettamente spaziate
+            System.out.printf(formatoIntestazione,
+                    "Acc.Start",
+                    "Acc.End",
+                    "Opening C.V.",
+                    "E.Interest",
+                    "C.C Interest",
+                    "Disc.Accretion",
+                    "Closing C.V."
             );
+
+            double totalDiscountAccretion = 0.;
+            // Una linea separatrice opzionale per migliorare la leggibilità grafica
+            System.out.println("-".repeat(112));
+
+            // 2. Stampa dei dati (DecimalFormat non serve più, fa tutto printf)
             for (AmortizedCostPeriod acp : response.acpList) {
-                System.out.println(
-                        acp.accrualStart() + "\t"
-                        + acp.accrualEnd() + "\t"
-                        + acp.openingCarryingValue() + "\t"
-                        + acp.effectiveInterest() + "\t"
-                        + acp.couponCashInterest() + "\t"
-                        + acp.discountAccretion() + "\t"
-                        + acp.closingCarryingValue() + "\t");
+                System.out.printf(formatoDati,
+                        acp.accrualStart(),
+                        acp.accrualEnd(),
+                        acp.openingCarryingValue(),
+                        acp.effectiveInterest(),
+                        acp.couponCashInterest(),
+                        acp.discountAccretion(),
+                        acp.closingCarryingValue()
+                );
+                totalDiscountAccretion += acp.discountAccretion();
             }
+            System.out.println(totalDiscountAccretion);
         }
     }
 
