@@ -163,6 +163,7 @@ INSERT INTO txn_component_types(component_type_id,code, description) VALUES (3, 
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (4, 'MAINTENANCE_MARGIN', 'Maintenance Margin Requirement');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (5, 'OPTION_PREMIUM', 'Option Premium Paid or Written');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (6, 'BOND_ACCRUAL', 'Bond Accrual');
+INSERT INTO txn_component_types(component_type_id,code, description) VALUES (7, 'EFFECTIVE_INTEREST_RATE', 'Internal rate of return calculated at trade date for amortized cost accounting');
 
 -- ----------------------------------------------------------------------------
 -- counterparty_roles
