@@ -20,4 +20,8 @@
         <name>XML_FILENAME</name>
         <value>bonds_ita.xml</value>
     </param>
+    <param>
+        <name>EEX_CONTR_DETAILS</name>
+        <value>eex-contract-details-xls-data_20260911.xlsx</value>
+    </param>
 </params>

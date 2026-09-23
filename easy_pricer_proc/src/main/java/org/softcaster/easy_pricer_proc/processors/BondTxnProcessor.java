@@ -66,6 +66,8 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
         bondInputData.setFrequency(smd.getFrequency());
         bondInputData.setFlows(Utils.convertCashFlow(smd.getCashFlows()));
         XRBOutputData bondOutputData = bondPricer.calculate(bondInputData);
+        
+        double effectiveInterestRate = bondOutputData.getYtm();
 
         // Per accrual stessa gestione di quantity e notionalValue
         // Se transazione cancellata o modificata, inverto quantita, 
@@ -85,15 +87,24 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
             }
         }
 
-        // Aggiorno accrual transazione. Sono calcolati sempre a trade + 2
         if (txn.getTxnStatusPreElab() == PENDING || txn.getTxnStatusPreElab() == RESTARTING) {
-            FinancialTxnComponent accrualComponent = new FinancialTxnComponent();
-            accrualComponent.setCurrency(smd.getCurrency());
-            accrualComponent.setDescription("Accruals txn: " + txn.getIdFinancialTxn());
-            accrualComponent.setComponentType(TxnComponentType.BOND_ACCRUAL);
-            accrualComponent.setAmount(BigDecimal.valueOf(accruals));
-            txn.addTxnComponent(accrualComponent);
+            // Aggiorno accrual transazione. Sono calcolati sempre a trade + 2
+            FinancialTxnComponent component = new FinancialTxnComponent();
+            component.setCurrency(smd.getCurrency());
+            component.setDescription("Accruals txn: " + txn.getIdFinancialTxn());
+            component.setComponentType(TxnComponentType.BOND_ACCRUAL);
+            component.setAmount(BigDecimal.valueOf(accruals));
+            txn.addTxnComponent(component);
+            
+            // Aggiorno Internal rate of return calculated at trade date for amortized cost accounting
+            component = new FinancialTxnComponent();
+            component.setCurrency(smd.getCurrency());
+            component.setDescription("Effective Interest Rate txn: " + txn.getIdFinancialTxn());
+            component.setComponentType(TxnComponentType.EFFECTIVE_INTEREST_RATE);
+            component.setAmount(BigDecimal.valueOf(effectiveInterestRate));
+            txn.addTxnComponent(component);
         }
+        
         position.setYtm(bondOutputData.getYtm());
         position.setModDuration(bondOutputData.getModifiedDuration());
         position.setDuration(bondOutputData.getModifiedDuration());

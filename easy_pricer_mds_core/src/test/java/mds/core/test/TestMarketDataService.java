@@ -193,7 +193,7 @@ public class TestMarketDataService {
         request.isin = "IT00011223344";
         LocalDate referenceDate = org.softcaster.engine.utils.DateParser.parse("22/09/2026");
         request.referenceDate = java.sql.Date.valueOf(referenceDate);
-        request.referencePrice = 98.;
+        request.referencePrice = 97;
         request.fullCalc = false;
         request.yieldCurve = "";
 
@@ -217,8 +217,8 @@ public class TestMarketDataService {
                     "Acc.Start",
                     "Acc.End",
                     "Opening C.V.",
-                    "E.Interest",
-                    "C.C Interest",
+                    "Effective Interest",
+                    "Coupon Interest",
                     "Disc.Accretion",
                     "Closing C.V."
             );

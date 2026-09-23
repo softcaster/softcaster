@@ -55,10 +55,6 @@ import org.softcaster.easy_import.xml.BondLoaderMgr;
 import org.softcaster.easy_import.xml.ItemBond;
 import org.springframework.stereotype.Service;
 
-/**
- *
- * @author ep
- */
 @Service("Bonds")
 public class SecurityImportMgr implements IImportMgr {
 
