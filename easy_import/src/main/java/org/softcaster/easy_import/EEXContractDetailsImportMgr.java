@@ -16,6 +16,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.commons.xml.ParamsMgr;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +45,7 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
                 Row headerRow = rows.next();
             }
         } catch (IOException ex) {
-            Logger.getLogger(EEXContractDetailsImportMgr.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerMgr.logError(ex.getLocalizedMessage());
         }
     }
 
