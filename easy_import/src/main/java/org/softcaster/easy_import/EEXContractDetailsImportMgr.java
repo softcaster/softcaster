@@ -12,10 +12,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -31,11 +28,9 @@ import org.springframework.stereotype.Service;
 public class EEXContractDetailsImportMgr implements IImportMgr {
 
     private EexColumnsMapping ecm = null;
-    private IProgressInfo progressInfo = null;
 
     @Override
     public void start(IProgressInfo progressInfo) {
-        this.progressInfo = progressInfo;
         ParamsMgr paramsMgr = ParamsMgr.getInstance();
         String fileName = paramsMgr.getParamValue("EEX_CONTR_DETAILS");
         Path file = Paths.get(IMPORT_PATH + "/" + fileName);
@@ -71,9 +66,9 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
                         System.out.println("Error reading line: " + r);
                     }
 
-                    if (this.progressInfo != null) {
+                    if (progressInfo != null) {
                         int percent = (int) ((current / (double) total) * 100);
-                        this.progressInfo.updateProgress("Importing " + r + " (" + current + "/" + total + ")", percent);
+                        progressInfo.updateProgress("Importing " + r + " (" + current + "/" + total + ")", percent);
                     }
 
                 }
@@ -82,14 +77,14 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
             }
         } catch (IOException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
+        } finally {
+            progressInfo.updateProgress("Import terminated successfully", 100);
+            terminate();
         }
     }
 
     @Override
     public void terminate() {
-        if (progressInfo != null) {
-             progressInfo.updateProgress("End Importing ", 100);
-        }
     }
 
     private int findHeaderRow(Sheet sheet) {
