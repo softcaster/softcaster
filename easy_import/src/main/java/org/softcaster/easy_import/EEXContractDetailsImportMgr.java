@@ -6,6 +6,7 @@ package org.softcaster.easy_import;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,6 +52,7 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
                 int total = sheet.getLastRowNum();
                 int current = 0;
 
+                LocalDate today = LocalDate.now();
                 for (int r = headerIndex + 1;
                         r <= sheet.getLastRowNum();
                         r++) {
@@ -62,8 +64,9 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
                     }
 
                     // parse
-                    if (!parseRow(row, ecm, eexContractRowList)) {
+                    if (!parseRow(today, row, ecm, eexContractRowList)) {
                         System.out.println("Error reading line: " + r);
+                        break;
                     }
 
                     if (progressInfo != null) {
@@ -103,7 +106,7 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         );
     }
 
-    private boolean parseRow(Row row, EexColumnsMapping ecm, List<EexContractRow> eexContractRowList) {
+    private boolean parseRow(LocalDate officialDate, Row row, EexColumnsMapping ecm, List<EexContractRow> eexContractRowList) {
 
         Cell cell;
         EexContractRow eexContractRow = new EexContractRow();
@@ -145,7 +148,7 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         }
         rawDate = cell.getDateCellValue();
         dt = LocalDate.ofInstant(rawDate.toInstant(), ZoneId.systemDefault());
-        eexContractRow.setFirstTradingDate(dt);
+        eexContractRow.setLastTradingDate(dt);
 
         index = ecm.getColumnIndex("EXPIRY_DATE");
         cell = row.getCell(index);
@@ -156,7 +159,34 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         dt = LocalDate.ofInstant(rawDate.toInstant(), ZoneId.systemDefault());
         eexContractRow.setExpiryDate(dt);
 
-        eexContractRowList.add(eexContractRow);
+        index = ecm.getColumnIndex("FIRST_DELIVERY_DATE");
+        cell = row.getCell(index);
+        if (cell == null) {
+            return false;
+        }
+        rawDate = cell.getDateCellValue();
+        dt = LocalDate.ofInstant(rawDate.toInstant(), ZoneId.systemDefault());
+        eexContractRow.setFirstDeliveryDate(dt);
+
+        index = ecm.getColumnIndex("LAST_DELIVERY_DATE");
+        cell = row.getCell(index);
+        if (cell == null) {
+            return false;
+        }
+        rawDate = cell.getDateCellValue();
+        dt = LocalDate.ofInstant(rawDate.toInstant(), ZoneId.systemDefault());
+        eexContractRow.setLastDeliveryDate(dt);
+
+        index = ecm.getColumnIndex("CONTRACT_SIZE");
+        cell = row.getCell(index);
+        if (cell == null) {
+            return false;
+        }
+        eexContractRow.setContractSize(BigDecimal.valueOf(cell.getNumericCellValue()));
+
+        if (!eexContractRow.getLastDeliveryDate().isBefore(officialDate)) {
+            eexContractRowList.add(eexContractRow);
+        }
         return true;
     }
 }
