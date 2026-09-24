@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -23,6 +24,7 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.easy_import.beans.EexColumnsMapping;
 import org.softcaster.easy_import.beans.EexContractRow;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service("EEX Contract Details")
@@ -31,13 +33,17 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
     private EexColumnsMapping ecm = null;
 
     @Override
+    @Async("importTaskExecutor")
     public void start(IProgressInfo progressInfo) {
         ParamsMgr paramsMgr = ParamsMgr.getInstance();
         String fileName = paramsMgr.getParamValue("EEX_CONTR_DETAILS");
         Path file = Paths.get(IMPORT_PATH + "/" + fileName);
 
-        try (InputStream is = Files.newInputStream(file); Workbook workbook = WorkbookFactory.create(is)) {
+        String tokens = paramsMgr.getParamValue("EEX_TOKENS");
+        List<String> tokenList = getTokens(tokens);
 
+        String token = "DEBY";
+        try (InputStream is = Files.newInputStream(file); Workbook workbook = WorkbookFactory.create(is)) {
             for (Sheet sheet : workbook) {
 
                 int headerIndex = findHeaderRow(sheet);
@@ -50,7 +56,8 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
                 List<EexContractRow> eexContractRowList = new ArrayList<>();
 
                 int total = sheet.getLastRowNum();
-                int current = 0;
+                int step = total / 100;
+                int cnt = 0;
 
                 LocalDate today = LocalDate.now();
                 for (int r = headerIndex + 1;
@@ -64,19 +71,23 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
                     }
 
                     // parse
-                    if (!parseRow(today, row, ecm, eexContractRowList)) {
-                        System.out.println("Error reading line: " + r);
-                        break;
+                    if (hasToken(tokenList, row, ecm)) {
+                        EexContractRow last = parseRow(today, row, ecm, eexContractRowList);
+                        if (last == null) {
+                            System.out.println("Error reading line: " + r);
+                            break;
+                        }
                     }
-
                     if (progressInfo != null) {
-                        int percent = (int) ((current / (double) total) * 100);
-                        progressInfo.updateProgress("Importing " + r + " (" + current + "/" + total + ")", percent);
+                        if (cnt == step) {
+                            progressInfo.updateProgress("Scanning: " + r + " records", cnt);
+                            cnt = 0;
+                        } else {
+                            cnt++;
+                        }
                     }
-
                 }
-                int size = eexContractRowList.size();
-                System.out.println(size);
+                progressInfo.updateProgress("Imported: " + eexContractRowList.size() + " records", cnt);
             }
         } catch (IOException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
@@ -106,7 +117,7 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         );
     }
 
-    private boolean parseRow(LocalDate officialDate, Row row, EexColumnsMapping ecm, List<EexContractRow> eexContractRowList) {
+    private EexContractRow parseRow(LocalDate officialDate, Row row, EexColumnsMapping ecm, List<EexContractRow> eexContractRowList) {
 
         Cell cell;
         EexContractRow eexContractRow = new EexContractRow();
@@ -114,28 +125,28 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         int index = ecm.getColumnIndex("PRODUCT_ID");
         cell = row.getCell(index);
         if (cell == null) {
-            return false;
+            return null;
         }
         eexContractRow.setProductId(cell.getStringCellValue());
 
         index = ecm.getColumnIndex("EXPIRY_YEAR");
         cell = row.getCell(index);
         if (cell == null) {
-            return false;
+            return null;
         }
         eexContractRow.setExpiryYear((int) cell.getNumericCellValue());
 
         index = ecm.getColumnIndex("EXPIRY_MONTH");
         cell = row.getCell(index);
         if (cell == null) {
-            return false;
+            return null;
         }
         eexContractRow.setExpiryMonth((int) cell.getNumericCellValue());
 
         index = ecm.getColumnIndex("FIRST_TRADING_DATE");
         cell = row.getCell(index);
         if (cell == null) {
-            return false;
+            return null;
         }
         java.util.Date rawDate = cell.getDateCellValue();
         java.time.LocalDate dt = LocalDate.ofInstant(rawDate.toInstant(), ZoneId.systemDefault());
@@ -144,7 +155,7 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         index = ecm.getColumnIndex("LAST_TRADING_DATE");
         cell = row.getCell(index);
         if (cell == null) {
-            return false;
+            return null;
         }
         rawDate = cell.getDateCellValue();
         dt = LocalDate.ofInstant(rawDate.toInstant(), ZoneId.systemDefault());
@@ -153,7 +164,7 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         index = ecm.getColumnIndex("EXPIRY_DATE");
         cell = row.getCell(index);
         if (cell == null) {
-            return false;
+            return null;
         }
         rawDate = cell.getDateCellValue();
         dt = LocalDate.ofInstant(rawDate.toInstant(), ZoneId.systemDefault());
@@ -162,7 +173,7 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         index = ecm.getColumnIndex("FIRST_DELIVERY_DATE");
         cell = row.getCell(index);
         if (cell == null) {
-            return false;
+            return null;
         }
         rawDate = cell.getDateCellValue();
         dt = LocalDate.ofInstant(rawDate.toInstant(), ZoneId.systemDefault());
@@ -171,7 +182,7 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         index = ecm.getColumnIndex("LAST_DELIVERY_DATE");
         cell = row.getCell(index);
         if (cell == null) {
-            return false;
+            return null;
         }
         rawDate = cell.getDateCellValue();
         dt = LocalDate.ofInstant(rawDate.toInstant(), ZoneId.systemDefault());
@@ -180,13 +191,33 @@ public class EEXContractDetailsImportMgr implements IImportMgr {
         index = ecm.getColumnIndex("CONTRACT_SIZE");
         cell = row.getCell(index);
         if (cell == null) {
-            return false;
+            return null;
         }
         eexContractRow.setContractSize(BigDecimal.valueOf(cell.getNumericCellValue()));
 
         if (!eexContractRow.getLastDeliveryDate().isBefore(officialDate)) {
             eexContractRowList.add(eexContractRow);
         }
-        return true;
+        return eexContractRow;
+    }
+
+    private boolean hasToken(List<String> tokens, Row row, EexColumnsMapping ecm) {
+        int index = ecm.getColumnIndex("PRODUCT_ID");
+        Cell cell = row.getCell(index);
+        if (cell == null) {
+            return false;
+        }
+        for (String token : tokens) {
+            if (cell.getStringCellValue().equals(token)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private List<String> getTokens(String tokens) {
+        // Eliminare spazi bianchi extra 
+        return Arrays.asList(tokens.split("\\s*,\\s*"));
     }
 }

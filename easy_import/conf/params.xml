@@ -22,6 +22,10 @@
     </param>
     <param>
         <name>EEX_CONTR_DETAILS</name>
-        <value>eex-contract-details-xls-data_20260911.xlsx</value>
+        <value>ST_TERMIN_DE_FULL.xlsx</value>
+    </param>
+    <param>
+        <name>EEX_TOKENS</name>
+        <value>FDBY,DEBY,ESPY</value>
     </param>
 </params>
