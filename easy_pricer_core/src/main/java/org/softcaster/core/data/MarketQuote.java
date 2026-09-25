@@ -29,8 +29,8 @@ public class MarketQuote implements Serializable {
     @Id
     @SequenceGenerator(name = "market_quote_seq", sequenceName = "market_quote_s", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "market_quote_seq")
-    @Column(name = "id_market_quote")
-    private Integer idMarketQuote;
+    @Column(name = "market_quote_id")
+    private Integer marketQuoteId;
 
     @Column(name = "business_date", nullable = false)
     private java.sql.Date businessDate;
@@ -47,8 +47,8 @@ public class MarketQuote implements Serializable {
     @Column(name = "price", nullable = false)
     private Double price;
 
-    @Column(name = "source", length = 32, nullable = false)
-    private String source; // 'MANUAL_ENTRY', 'EEX_FEED', 'VENDOR_X'...
+    @Column(name = "mkt_source", length = 32, nullable = false)
+    private String mktSource; // 'MANUAL_ENTRY', 'EEX_FEED', 'VENDOR_X'...
 
     protected MarketQuote() {
         // richiesto da JPA
@@ -60,11 +60,11 @@ public class MarketQuote implements Serializable {
         this.masterData = masterData;
         this.loadType = loadType;
         this.price = price;
-        this.source = source;
+        this.mktSource = source;
     }
 
     public Integer getIdMarketQuote() {
-        return idMarketQuote;
+        return marketQuoteId;
     }
 
     public java.sql.Date getBusinessDate() {
@@ -83,7 +83,7 @@ public class MarketQuote implements Serializable {
         return price;
     }
 
-    public String getSource() {
-        return source;
+    public String getMktSource() {
+        return mktSource;
     }
 }

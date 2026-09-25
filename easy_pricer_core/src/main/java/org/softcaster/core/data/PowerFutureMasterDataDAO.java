@@ -19,4 +19,9 @@ public class PowerFutureMasterDataDAO extends AbstractMasterDataDAO<PowerFutureM
     public List<PowerFutureMasterData> findAll() {
         return repository.findAll(sortByCode);
     }
+
+    @Transactional(readOnly = true)
+    public PowerFutureMasterData findByIdWithDeliveryProfile(Integer idMasterData) {
+        return repository.findByIdWithDeliveryProfile(idMasterData);
+    }
 }

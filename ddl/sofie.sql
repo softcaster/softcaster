@@ -1415,123 +1415,89 @@ CREATE TABLE cmd_future_master_data (
 );
 ALTER TABLE cmd_future_master_data OWNER TO sofie;
 
---
--- Livello 2 : solo per commodity con delivery period esteso (Power, Gas)
---
--- ----------------------------------------------------------------------------
--- extended_delivery_future_master_data - anagrafica base power/gas...
--- ----------------------------------------------------------------------------
-CREATE TABLE extended_delivery_future_master_data (
-    id_master_data          INTEGER NOT NULL,
+--DROP TABLE extended_delivery_future_master_data;
+-- ============================================================
+-- ANAGRAFICA FUTURE ET
+-- ============================================================
+-- cmd_future_master_data: gia' esistente, comune a tutte le commodity ET
+-- (id_master_data, commodity_type, contract_value, tick_size, initial_margin, maintenance_margin)
 
-    delivery_period_type    INTEGER NOT NULL,
-    delivery_start          DATE NOT NULL,
-    delivery_end            DATE NOT NULL,
-    total_delivery_hours    INTEGER NOT NULL,
-    market                  VARCHAR(16) NOT NULL,
-    notional_mw             NUMERIC NOT NULL,
-    notional_mwh            NUMERIC NOT NULL,
-    parent_master_data      INTEGER,
-
-    CONSTRAINT pk_extended_delivery_future_master_data
-        PRIMARY KEY (id_master_data),
-
-    CONSTRAINT fk_extended_delivery_parent_table
-        FOREIGN KEY (id_master_data)
-        REFERENCES cmd_future_master_data (id_master_data),
-
-    CONSTRAINT fk_extended_delivery_period_type
-        FOREIGN KEY (delivery_period_type)
-        REFERENCES delivery_period_type (delivery_period_type_id),
-
-    -- self-referencing per il cascading: ora scoperto correttamente solo
-    -- dove il cascading esiste davvero (Power, Gas), non su tutta cmd_future
-    CONSTRAINT fk_extended_delivery_parent_contract
-        FOREIGN KEY (parent_master_data)
-        REFERENCES extended_delivery_future_master_data (id_master_data),
-
-    CONSTRAINT chk_extended_delivery_dates
-        CHECK (delivery_end >= delivery_start),
-
-    CONSTRAINT chk_extended_delivery_notional_positive
-        CHECK (notional_mw > 0 AND notional_mwh > 0)
-);
-CREATE INDEX idx_extended_delivery_parent_contract
-    ON extended_delivery_future_master_data (parent_master_data);
-CREATE INDEX idx_extended_delivery_range
-    ON extended_delivery_future_master_data (delivery_start, delivery_end);
-ALTER TABLE extended_delivery_future_master_data OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
--- commodity_delivery_profile
--- ----------------------------------------------------------------------------
-CREATE TABLE commodity_delivery_profile (
-    delivery_profile_id     INTEGER NOT NULL,
-    id_master_data          INTEGER NOT NULL,   -- FK 1-1 verso PowerFutureMasterData o PowerForwardMasterData
-
-    delivery_period_type    INTEGER NOT NULL,
-    delivery_start          DATE NOT NULL,
-    delivery_end            DATE NOT NULL,
-    total_delivery_hours    INTEGER NOT NULL,
-    market                  VARCHAR(16) NOT NULL,
-    notional_mw             NUMERIC NOT NULL,
-    notional_mwh            NUMERIC NOT NULL,
-
-    -- popolato SOLO per strumenti che cascano (ET future); resta NULL per
-    -- forward OTC per una ragione strutturale reale (il cascading e' una
-    -- convenzione di quotazione exchange, non un dato mancante) - diverso
-    -- dal caso "nullable posticcio" scartato prima per crude oil
-    parent_profile          INTEGER,
-
-    CONSTRAINT pk_commodity_delivery_profile PRIMARY KEY (delivery_profile_id),
-    CONSTRAINT uq_commodity_delivery_profile_master_data UNIQUE (id_master_data),
-    CONSTRAINT fk_delivery_profile_period_type
-        FOREIGN KEY (delivery_period_type) REFERENCES delivery_period_type (delivery_period_type_id),
-    CONSTRAINT fk_delivery_profile_parent
-        FOREIGN KEY (parent_profile) REFERENCES commodity_delivery_profile (delivery_profile_id),
-    CONSTRAINT chk_delivery_profile_dates CHECK (delivery_end >= delivery_start)
-);
-ALTER TABLE commodity_delivery_profile OWNER TO sofie;
-CREATE SEQUENCE IF NOT EXISTS commodity_delivery_profile_s START WITH 1 INCREMENT BY 1;
-ALTER SEQUENCE commodity_delivery_profile_s OWNER TO sofie;
-
---
--- Livello 3: Power
---
--- ----------------------------------------------------------------------------
--- power_future_master_data
--- ----------------------------------------------------------------------------
 CREATE TABLE power_future_master_data (
     id_master_data    INTEGER NOT NULL,
     load_type         INTEGER NOT NULL,
-
     CONSTRAINT pk_power_future_master_data PRIMARY KEY (id_master_data),
-    CONSTRAINT fk_power_future_parent_table
-        FOREIGN KEY (id_master_data) REFERENCES extended_delivery_future_master_data (id_master_data),
+    CONSTRAINT fk_power_future_master_data_parent_table
+        FOREIGN KEY (id_master_data) REFERENCES cmd_future_master_data (id_master_data),
     CONSTRAINT fk_power_future_load_type
         FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
 );
 ALTER TABLE power_future_master_data OWNER TO sofie;
 
--- ----------------------------------------------------------------------------
--- market_quote
--- ----------------------------------------------------------------------------
+-- ============================================================
+-- ANAGRAFICA FORWARD OTC (stesso pattern minimale)
+-- ============================================================
+-- cmd_forward_master_data: analogo a cmd_future_master_data ma per il ramo OTC
+-- (id_master_data, commodity_type — niente contract_value/tick_size/margini, non applicabili a OTC)
+CREATE TABLE power_forward_master_data (
+    id_master_data    INTEGER NOT NULL,
+    load_type         INTEGER NOT NULL,
+    CONSTRAINT pk_power_forward_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_power_forward_master_data_parent_table
+        FOREIGN KEY (id_master_data) REFERENCES cmd_forward_master_data (id_master_data),
+    CONSTRAINT fk_power_forward_load_type
+        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
+);
+ALTER TABLE power_forward_master_data OWNER TO sofie;
+
+-- ============================================================
+-- DELIVERY PROFILE: entita' satellite condivisa (composizione)
+-- ============================================================
+CREATE TABLE commodity_delivery_profile (
+    id_master_data          INTEGER NOT NULL,   -- FK 1-1 verso power_future_master_data o power_forward_master_data
+    delivery_period_type    INTEGER NOT NULL,
+    delivery_start          DATE NOT NULL,
+    delivery_end            DATE NOT NULL,
+    total_delivery_hours    INTEGER NOT NULL,
+    market                  VARCHAR(16) NOT NULL,
+    notional_mw             NUMERIC NOT NULL,
+    notional_mwh            NUMERIC NOT NULL,
+    parent_profile          INTEGER,             -- self-ref cascading; NULL per Year e per i Forward OTC
+
+    CONSTRAINT pk_commodity_delivery_profile PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_delivery_profile_period_type
+        FOREIGN KEY (delivery_period_type) REFERENCES delivery_period_type (delivery_period_type_id),
+    CONSTRAINT fk_delivery_profile_parent
+        FOREIGN KEY (parent_profile) REFERENCES commodity_delivery_profile (id_master_data),
+    CONSTRAINT uq_delivery_profile_natural_key
+        UNIQUE (market, delivery_period_type, delivery_start, delivery_end),
+    CONSTRAINT chk_delivery_profile_dates CHECK (delivery_end >= delivery_start),
+    CONSTRAINT chk_delivery_profile_notional_positive
+        CHECK (notional_mw > 0 AND notional_mwh > 0)
+);
+
+CREATE INDEX idx_delivery_profile_parent ON commodity_delivery_profile (parent_profile);
+CREATE INDEX idx_delivery_profile_range ON commodity_delivery_profile (delivery_start, delivery_end);
+
+ALTER TABLE commodity_delivery_profile OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS commodity_delivery_profile_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE commodity_delivery_profile_s OWNER TO sofie;
+
+-- ============================================================
+-- MARKET DATA: quotazioni blocco (time-series, non yield curve)
+-- ============================================================
 CREATE TABLE market_quote (
-    id_market_quote     INTEGER NOT NULL,
-    business_date       DATE NOT NULL,          -- business date EOD in cui e' stata congelata
-    id_master_data      INTEGER NOT NULL,       -- FK al contratto specifico (es. Q1-27 Base)
+    market_quote_id     INTEGER NOT NULL,
+    business_date       DATE NOT NULL,
+    id_master_data      INTEGER NOT NULL,        -- FK a commodity_delivery_profile
     load_type           INTEGER NOT NULL,
     price               NUMERIC(15,5) NOT NULL,
-    mkt_source              VARCHAR(32) NOT NULL,   -- 'EEX_SETTLEMENT', 'VENDOR_XYZ', ecc.
+    mkt_source              VARCHAR(32) NOT NULL,     -- 'MANUAL_ENTRY', 'EEX_FEED', 'VENDOR_X'
 
-    CONSTRAINT pk_market_quote PRIMARY KEY (id_market_quote),
-    CONSTRAINT fk_market_quote_master_data
-        FOREIGN KEY (id_master_data) REFERENCES cmd_future_master_data (id_master_data),
+    CONSTRAINT pk_market_quote PRIMARY KEY (market_quote_id),
+    CONSTRAINT fk_market_quote_delivery_profile
+        FOREIGN KEY (id_master_data) REFERENCES commodity_delivery_profile (id_master_data),
     CONSTRAINT fk_market_quote_load_type
         FOREIGN KEY (load_type) REFERENCES load_type (load_type_id),
-
-    -- un solo prezzo per contratto/load-type/business date: garantisce
-    -- che lo snapshot congelato dall'EOD sia univoco e non sovrascrivibile
     CONSTRAINT uq_market_quote_snapshot
         UNIQUE (business_date, id_master_data, load_type)
 );
@@ -1541,28 +1507,27 @@ ALTER TABLE market_quote OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS market_quote_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE market_quote_s OWNER TO sofie;
 
--- ----------------------------------------------------------------------------
--- shape_profile
--- ----------------------------------------------------------------------------
+-- ============================================================
+-- SHAPE PROFILE: fattori di forma per il bootstrap
+-- ============================================================
 CREATE TABLE shape_profile (
-    id_shape_profile    INTEGER NOT NULL,
-    profile_code        VARCHAR(32) NOT NULL,    -- es. 'EEX_POWER_DE_HISTORICAL_3Y'
-    market              VARCHAR(16) NOT NULL,
-    load_type           INTEGER NOT NULL,
+    shape_profile_id    INTEGER NOT NULL,
+    profile_code        VARCHAR(32) NOT NULL,
+    market               VARCHAR(16) NOT NULL,
+    load_type            INTEGER NOT NULL,
+    day_of_week          INTEGER,                 -- 1-7, null se il fattore e' solo mensile
+    month_of_year        INTEGER,                 -- 1-12, null se il fattore e' solo settimanale
+    weight_factor        NUMERIC(10,6) NOT NULL,  -- fattore moltiplicativo relativo
+    valid_from           DATE NOT NULL,
+    valid_to             DATE,                     -- null = tuttora valido
 
-    day_of_week         INTEGER,                 -- 1-7, null se il fattore e' solo mensile
-    month_of_year       INTEGER,                 -- 1-12, null se il fattore e' solo settimanale
-    weight_factor       NUMERIC(10,6) NOT NULL,  -- fattore moltiplicativo relativo alla media del blocco
-
-    valid_from          DATE NOT NULL,
-    valid_to            DATE,                     -- null = tuttora valido
-
-    CONSTRAINT pk_shape_profile PRIMARY KEY (id_shape_profile),
+    CONSTRAINT pk_shape_profile PRIMARY KEY (shape_profile_id),
     CONSTRAINT fk_shape_profile_load_type
         FOREIGN KEY (load_type) REFERENCES load_type (load_type_id),
     CONSTRAINT chk_shape_profile_dow CHECK (day_of_week BETWEEN 1 AND 7),
     CONSTRAINT chk_shape_profile_month CHECK (month_of_year BETWEEN 1 AND 12)
 );
+
 CREATE INDEX idx_shape_profile_lookup
     ON shape_profile (profile_code, market, load_type, valid_from);
 
@@ -1570,35 +1535,28 @@ ALTER TABLE shape_profile OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS shape_profile_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE shape_profile_s OWNER TO sofie;
 
--- ----------------------------------------------------------------------------
--- granular_curve
--- ----------------------------------------------------------------------------
+-- ============================================================
+-- GRANULAR CURVE: output del bootstrap+shaping, un prezzo per delivery_date
+-- ============================================================
 CREATE TABLE granular_curve (
-    id_granular_curve     INTEGER NOT NULL,
-    business_date          DATE NOT NULL,           -- business date EOD (immutabile, versionata)
-    delivery_date          DATE NOT NULL,           -- il giorno specifico a cui questo prezzo si riferisce
+    granular_curve_id      BIGINT NOT NULL,
+    business_date          DATE NOT NULL,
+    delivery_date          DATE NOT NULL,
     load_type              INTEGER NOT NULL,
     market                 VARCHAR(16) NOT NULL,
     price                  NUMERIC(15,5) NOT NULL,
-
-    -- tracciabilita': da quale quotazione blocco e quale shape deriva questo prezzo
     source_market_quote    INTEGER NOT NULL,
     source_shape_profile   INTEGER NOT NULL,
 
-    CONSTRAINT pk_granular_curve PRIMARY KEY (id_granular_curve),
-    CONSTRAINT fk_granular_curve_load_type
-        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id),
+    CONSTRAINT pk_granular_curve PRIMARY KEY (granular_curve_id),
     CONSTRAINT fk_granular_curve_market_quote
-        FOREIGN KEY (source_market_quote) REFERENCES market_quote (id_market_quote),
+        FOREIGN KEY (source_market_quote) REFERENCES market_quote (market_quote_id),
     CONSTRAINT fk_granular_curve_shape_profile
-        FOREIGN KEY (source_shape_profile) REFERENCES shape_profile (id_shape_profile),
-
+        FOREIGN KEY (source_shape_profile) REFERENCES shape_profile (shape_profile_id),
     CONSTRAINT uq_granular_curve_snapshot
         UNIQUE (business_date, delivery_date, load_type, market)
 );
-
-CREATE INDEX idx_granular_curve_lookup
-    ON granular_curve (business_date, delivery_date, load_type);
+CREATE INDEX idx_granular_curve_lookup ON granular_curve (business_date, delivery_date, load_type);
 
 ALTER TABLE granular_curve OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS granular_curve_s START WITH 1 INCREMENT BY 1;

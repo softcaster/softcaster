@@ -8,58 +8,64 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.List;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.softcaster.core.data.converters.DeliveryPeriodTypeConverter;
 import org.softcaster.engine.enums.DeliveryPeriodType;
 
 @Entity
-@Table(name = "extended_delivery_future_master_data")
-@SuppressWarnings("PersistenceUnitPresent")
-public abstract class ExtendedDeliveryFutureMasterData extends CmdFutureMasterData {
+@Table(name = "commodity_delivery_profile")
+public class CommodityDeliveryProfile {
+
+    @Id
+    @Column(name = "id_master_data")
+    private Integer idMasterData;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId // dice esplicitamente a Hibernate: "l'id di CommodityDeliveryProfile deve coincidere con l'id di PowerFutureMasterData"
+    @JoinColumn(name = "id_master_data")
+    private PowerFutureMasterData masterData;
 
     @Convert(converter = DeliveryPeriodTypeConverter.class)
-    @Column(name = "delivery_period_type", nullable = false)
     private DeliveryPeriodType deliveryPeriodType;
 
-    @Column(name = "delivery_start", nullable = false)
-    private java.sql.Date deliveryStart;
+    private java.sql.Date deliveryStart, deliveryEnd;
 
-    @Column(name = "delivery_end", nullable = false)
-    private java.sql.Date deliveryEnd;
-
-    @Column(name = "total_delivery_hours", nullable = false)
     private Integer totalDeliveryHours;
 
-    @Column(name = "market", length = 16, nullable = false)
     private String market;
 
     @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "notional_mw", nullable = false)
-    private Double notionalMw;
+    private Double notionalMw, notionalMwh;
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "notional_mwh", nullable = false)
-    private Double notionalMwh;
+    @ManyToOne
+    @JoinColumn(name = "parent_profile")
+    private CommodityDeliveryProfile parentProfile;
 
-    // self-referencing per il cascading: tipizzato sulla classe astratta,
-    // cosi' un Gas Future potra' cascare solo su altri contratti con
-    // delivery period esteso, mai su un Crude Oil (che non ha questo livello)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_master_data")
-    private ExtendedDeliveryFutureMasterData parentContract;
+    @OneToMany(mappedBy = "parentProfile")
+    private List<CommodityDeliveryProfile> cascadeChildren;
 
-    @OneToMany(mappedBy = "parentContract", fetch = FetchType.LAZY)
-    @Fetch(value = FetchMode.SUBSELECT)
-    private List<ExtendedDeliveryFutureMasterData> cascadeChildren = new ArrayList<>();
+    /**
+     * @return the idMasterData
+     */
+    public Integer getIdMasterData() {
+        return idMasterData;
+    }
+
+    /**
+     * @param idMasterData the idMasterData to set
+     */
+    public void setIdMasterData(Integer idMasterData) {
+        this.idMasterData = idMasterData;
+    }
 
     /**
      * @return the deliveryPeriodType
@@ -160,30 +166,45 @@ public abstract class ExtendedDeliveryFutureMasterData extends CmdFutureMasterDa
     }
 
     /**
-     * @return the parentContract
+     * @return the parentProfile
      */
-    public ExtendedDeliveryFutureMasterData getParentContract() {
-        return parentContract;
+    public CommodityDeliveryProfile getParentProfile() {
+        return parentProfile;
     }
 
     /**
-     * @param parentContract the parentContract to set
+     * @param parentProfile the parentProfile to set
      */
-    public void setParentContract(ExtendedDeliveryFutureMasterData parentContract) {
-        this.parentContract = parentContract;
+    public void setParentProfile(CommodityDeliveryProfile parentProfile) {
+        this.parentProfile = parentProfile;
     }
 
     /**
      * @return the cascadeChildren
      */
-    public List<ExtendedDeliveryFutureMasterData> getCascadeChildren() {
+    public List<CommodityDeliveryProfile> getCascadeChildren() {
         return cascadeChildren;
     }
 
     /**
      * @param cascadeChildren the cascadeChildren to set
      */
-    public void setCascadeChildren(List<ExtendedDeliveryFutureMasterData> cascadeChildren) {
+    public void setCascadeChildren(List<CommodityDeliveryProfile> cascadeChildren) {
         this.cascadeChildren = cascadeChildren;
     }
+
+    /**
+     * @return the masterData
+     */
+    protected PowerFutureMasterData getMasterData() {
+        return masterData;
+    }
+
+    /**
+     * @param masterData the masterData to set
+     */
+    protected void setMasterData(PowerFutureMasterData masterData) {
+        this.masterData = masterData;
+    }
+
 }

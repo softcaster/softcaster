@@ -837,12 +837,14 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
             cbUnderlying.setSelectedItem(bean.getPowerFutureMasterData().getCommodityType());
 
             cbLoadType.setSelectedItem(bean.getPowerFutureMasterData().getLoadType());
+            
             cbDeliveryPeriodType.setSelectedItem(bean.getPowerFutureMasterData().getDeliveryPeriodType());
             txtDeliveryStart.setText(new Date(bean.getPowerFutureMasterData().getDeliveryStart()).toString());
             txtDeliveryEnd.setText(new Date(bean.getPowerFutureMasterData().getDeliveryEnd()).toString());
             txtNotionaMW.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getNotionalMw()));
             txtNotionaMWH.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getNotionalMwh()));
             spinnerDH.setValue(bean.getPowerFutureMasterData().getTotalDeliveryHours());
+
         }
 
         // Aggiungo i campi alla lista di validazione
@@ -936,6 +938,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
             ffmd.setCommodityType((CommodityType) cbUnderlying.getSelectedItem());
             ffmd.setMaintenanceMargin(Converter.toDouble(txtMainMant.getText(), false));
             ffmd.setLoadType((LoadType) cbLoadType.getSelectedItem());
+            
             ffmd.setMarket("EEX");
             ffmd.setDeliveryPeriodType((DeliveryPeriodType) cbDeliveryPeriodType.getSelectedItem());
             ffmd.setDeliveryStart(new Date(txtDeliveryStart.getText()).sqlDate());
@@ -943,6 +946,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
             ffmd.setNotionalMw(Converter.toDouble(txtNotionaMW.getText(), false));
             ffmd.setNotionalMwh(Converter.toDouble(txtNotionaMWH.getText(), false));
             ffmd.setTotalDeliveryHours((Integer) spinnerDH.getValue());
+
             masterDataFacade.getPowerFutureMasterDataDAO().saveOrUpdate(ffmd);
             return true;
         } catch (Exception ex) {

@@ -26,8 +26,8 @@ public class ShapeProfile implements Serializable {
     @Id
     @SequenceGenerator(name = "shape_profile_seq", sequenceName = "shape_profile_s", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "shape_profile_seq")
-    @Column(name = "id_shape_profile")
-    private Integer idShapeProfile;
+    @Column(name = "shape_profile_id")
+    private Integer shapeProfileId;
 
     @Column(name = "profile_code", length = 32, nullable = false)
     private String profileCode;
@@ -72,8 +72,8 @@ public class ShapeProfile implements Serializable {
         this.validTo = validTo;
     }
 
-    public Integer getIdShapeProfile() {
-        return idShapeProfile;
+    public Integer getShapeProfileId() {
+        return shapeProfileId;
     }
 
     public String getProfileCode() {

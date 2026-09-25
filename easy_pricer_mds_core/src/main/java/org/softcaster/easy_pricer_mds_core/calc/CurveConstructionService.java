@@ -5,7 +5,13 @@
 package org.softcaster.easy_pricer_mds_core.calc;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import org.softcaster.core.data.MarketQuote;
+import org.softcaster.core.data.ShapeProfile;
+import org.softcaster.core.data.ShapeProfileRepository;
 import org.softcaster.engine.curve.GranularCurvePoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +25,11 @@ public class CurveConstructionService {
     /**
      * Scompone un prezzo di blocco (market_quote) sui singoli giorni del
      * periodo di delivery, usando i fattori dello shape_profile applicabile.
+     * @param blockQuote
+     * @param deliveryStart
+     * @param deliveryEnd
+     * @param shapeProfileCode
+     * @return 
      */
     public List<GranularCurvePoint> buildGranularCurve(
             MarketQuote blockQuote,        // prezzo del blocco, es. Q1-27 Base = 127.5
@@ -28,9 +39,8 @@ public class CurveConstructionService {
 
         // 1. Carica i fattori di forma applicabili al periodo/mercato/load type
         List<ShapeProfile> factors = shapeProfileRepository.findApplicable(
-            shapeProfileCode, blockQuote.getMarket(), blockQuote.getLoadType(),
-            deliveryStart, deliveryEnd
-        );
+            shapeProfileCode, blockQuote.getMktSource(), blockQuote.getLoadType(),
+            deliveryStart);
 
         // 2. Calcola il fattore grezzo per ogni giorno del periodo
         Map<LocalDate, Double> rawWeightByDay = new LinkedHashMap<>();
@@ -56,8 +66,8 @@ public class CurveConstructionService {
             points.add(new GranularCurvePoint(
                 entry.getKey(),
                 dailyPrice,
-                blockQuote.getId(),
-                factors.isEmpty() ? null : factors.get(0).getId() // semplificato, vedi nota sotto
+                blockQuote.getIdMarketQuote(),
+                factors.isEmpty() ? null : factors.get(0).getShapeProfileId()// semplificato, vedi nota sotto
             ));
         }
 

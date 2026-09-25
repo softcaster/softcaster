@@ -16,7 +16,9 @@ public interface MarketQuoteRepository extends JpaRepository<MarketQuote, Intege
         LocalDate businessDate, CmdFutureMasterData masterData, LoadType loadType
     );
 
+    /*
     List<MarketQuote> findByBusinessDateAndMarketDataMarket(
         LocalDate businessDate, String market
     );
+*/
 }

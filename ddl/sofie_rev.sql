@@ -273,7 +273,12 @@ INSERT INTO gl_accounts (account_id, parent, code, description, is_postable,  st
 VALUES(nextval('gl_accounts_s'),21, '520020', 'Interest Expense - Sovereign Debt (Coupons)', TRUE, 2,5,1);
 --FDBM@IT@Base@POWER@F@202609
 
-delete from instrument_quote where master_data=65;
-delete from cmd_future_master_data where id_master_data=65;
-delete from future_master_data where id_master_data=65;
-delete from master_data where id_master_data=65;
+delete from instrument_quote where master_data=76;
+delete from power_future_master_data where id_master_data=76;
+delete from extended_delivery_future_master_data where id_master_data=76;
+delete from cmd_future_master_data where id_master_data=76;
+delete from future_master_data where id_master_data=76;
+delete from master_data where id_master_data=76;
+
+DROP TABLE power_future_master_data;
+DROP TABLE extended_delivery_future_master_data;

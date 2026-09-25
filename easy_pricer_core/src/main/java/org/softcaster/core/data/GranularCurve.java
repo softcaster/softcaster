@@ -29,8 +29,8 @@ public class GranularCurve implements Serializable {
     @Id
     @SequenceGenerator(name = "granular_curve_seq", sequenceName = "granular_curve_s", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "granular_curve_seq")
-    @Column(name = "id_granular_curve")
-    private Long idGranularCurve;
+    @Column(name = "granular_curve_id")
+    private Long granularCurveId;
 
     @Column(name = "business_date", nullable = false)
     private java.sql.Date businessDate;
@@ -73,8 +73,8 @@ public class GranularCurve implements Serializable {
         this.sourceShapeProfile = sourceShapeProfile;
     }
 
-    public Long getIdGranularCurve() {
-        return idGranularCurve;
+    public Long getGranularCurveId() {
+        return granularCurveId;
     }
 
     public java.sql.Date getBusinessDate() {
