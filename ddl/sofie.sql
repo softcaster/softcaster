@@ -1482,83 +1482,351 @@ ALTER TABLE commodity_delivery_profile OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS commodity_delivery_profile_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE commodity_delivery_profile_s OWNER TO sofie;
 
+-- ==================================================================
+-- Tabelle gestione power futures
+-- ==================================================================
+-- Tabelle lookup
+CREATE TABLE shape_calculation_method (
+    calculation_method_id INTEGER NOT NULL,
+    code                  VARCHAR(32) NOT NULL,
+    description           VARCHAR(255) NOT NULL,
+
+    CONSTRAINT pk_shape_calculation_method
+        PRIMARY KEY (calculation_method_id),
+
+    CONSTRAINT uq_shape_calculation_method_code
+        UNIQUE (code)
+);
+ALTER TABLE shape_calculation_method OWNER TO sofie;
+
+CREATE TABLE shape_granularity (
+    granularity_id INTEGER NOT NULL,
+    code           VARCHAR(32) NOT NULL,
+    description    VARCHAR(255) NOT NULL,
+
+    CONSTRAINT pk_shape_granularity
+        PRIMARY KEY (granularity_id),
+
+    CONSTRAINT uq_shape_granularity_code
+        UNIQUE (code)
+);
+ALTER TABLE shape_granularity OWNER TO sofie;
+
+CREATE TABLE market_data_source (
+    data_source_id INTEGER NOT NULL,
+    code           VARCHAR(32) NOT NULL,
+    description    VARCHAR(255) NOT NULL,
+
+    CONSTRAINT pk_market_data_source
+        PRIMARY KEY (data_source_id),
+
+    CONSTRAINT uq_market_data_source_code
+        UNIQUE (code)
+);
+ALTER TABLE market_data_source OWNER TO sofie;
+
+-- ============================================================
+-- PREZZI SPOT: usati per costruire i fattori di forma
+-- ============================================================
+--
+-- power_spot_price_definition - La testata identifica quale serie storica stiamo osservando
+--
+CREATE TABLE power_spot_price_definition (
+    spot_price_definition_id INTEGER NOT NULL,
+    code                  VARCHAR(32) NOT NULL,
+    description           VARCHAR(255) NOT NULL,
+    id_country               INTEGER NOT NULL,
+    load_type                INTEGER NOT NULL,
+    data_source              INTEGER NOT NULL,
+
+    CONSTRAINT pk_power_spot_price_definition
+        PRIMARY KEY (spot_price_definition_id),
+
+    CONSTRAINT fk_pspd_country
+        FOREIGN KEY (id_country)
+        REFERENCES country(id_country),
+
+    CONSTRAINT fk_pspd_load_type
+        FOREIGN KEY (load_type)
+        REFERENCES load_type(load_type_id),
+
+    CONSTRAINT fk_pspd_data_source
+        FOREIGN KEY (data_source)
+        REFERENCES market_data_source(data_source_id),
+
+    CONSTRAINT uq_pspd_code UNIQUE (code),
+
+    CONSTRAINT uq_power_spot_price_definition
+        UNIQUE (
+            id_country,
+            load_type,
+            data_source
+        )
+);
+ALTER TABLE power_spot_price_definition OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS power_spot_price_definition_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE power_spot_price_definition_s OWNER TO sofie;
+
+--
+-- power_spot_price - prezzi spot effettivamente osservati.
+--
+CREATE TABLE power_spot_price (
+    spot_price_id            INTEGER NOT NULL,
+    spot_price_definition_id INTEGER NOT NULL,
+    delivery_date            DATE NOT NULL,
+    price                    NUMERIC(15,5) NOT NULL,
+
+    CONSTRAINT pk_power_spot_price
+        PRIMARY KEY (spot_price_id),
+
+    CONSTRAINT fk_power_spot_definition
+        FOREIGN KEY (spot_price_definition_id)
+        REFERENCES power_spot_price_definition(spot_price_definition_id),
+
+    CONSTRAINT uq_power_spot_price
+        UNIQUE (
+            spot_price_definition_id,
+            delivery_date
+        )
+);
+ALTER TABLE power_spot_price OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS power_spot_price_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE power_spot_price_s OWNER TO sofie;
+
+-- ============================================================
+-- SHAPE PROFILE: fattori di forma per il bootstrap
+-- ============================================================--
+-- shape_profile_definition - testata shape.
+--
+CREATE TABLE shape_profile_definition (
+    shape_profile_id       INTEGER NOT NULL,
+    profile_code           VARCHAR(32) NOT NULL,
+    description            VARCHAR(255) NOT NULL,
+    id_country             INTEGER NOT NULL,
+    load_type              INTEGER NOT NULL,
+    calculation_method     INTEGER NOT NULL,
+    granularity            INTEGER NOT NULL,
+    data_source            INTEGER NOT NULL,
+    historical_years       INTEGER,
+    valid_from             DATE NOT NULL,
+    valid_to               DATE, -- null -> ancora valida
+
+    CONSTRAINT pk_shape_profile_definition
+        PRIMARY KEY (shape_profile_id),
+    CONSTRAINT uq_shape_profile_code
+        UNIQUE (profile_code),
+    CONSTRAINT fk_shape_profile_country
+        FOREIGN KEY (id_country)
+        REFERENCES country(id_country),
+    CONSTRAINT fk_shape_profile_load_type
+        FOREIGN KEY (load_type)
+        REFERENCES load_type(load_type_id),
+    CONSTRAINT fk_shape_profile_calc_method
+        FOREIGN KEY (calculation_method)
+        REFERENCES shape_calculation_method(calculation_method_id),
+    CONSTRAINT fk_shape_profile_granularity
+        FOREIGN KEY (granularity)
+        REFERENCES shape_granularity(granularity_id),
+    CONSTRAINT fk_shape_profile_data_source
+        FOREIGN KEY (data_source)
+        REFERENCES market_data_source(data_source_id),
+    CONSTRAINT chk_shape_profile_years
+        CHECK (
+            historical_years IS NULL
+            OR historical_years > 0
+        ),
+    CONSTRAINT chk_shape_profile_dates
+        CHECK (
+            valid_to IS NULL
+            OR valid_to >= valid_from
+        ),
+    CONSTRAINT uq_shape_profile_code UNIQUE (profile_code)
+);
+ALTER TABLE shape_profile_definition OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS shape_profile_definition_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE shape_profile_definition_s OWNER TO sofie;
+
+--
+-- shape_profile_spot_data - link osservazioni spot e shape.
+--
+CREATE TABLE shape_profile_spot_series (
+    shape_profile_spot_series_id BIGINT NOT NULL,
+    shape_profile_id             INTEGER NOT NULL,
+    spot_price_definition_id     INTEGER NOT NULL,
+    observation_from              DATE,
+    observation_to                DATE,
+
+    CONSTRAINT pk_shape_profile_spot_series
+        PRIMARY KEY (shape_profile_spot_series_id),
+
+    CONSTRAINT uq_shape_profile_spot_series
+        UNIQUE (
+            shape_profile_id,
+            spot_price_definition_id
+        ),
+
+    CONSTRAINT fk_spss_shape_profile
+        FOREIGN KEY (shape_profile_id)
+        REFERENCES shape_profile_definition(shape_profile_id),
+
+    CONSTRAINT fk_spss_spot_definition
+        FOREIGN KEY (spot_price_definition_id)
+        REFERENCES power_spot_price_definition(spot_price_definition_id)
+);
+ALTER TABLE shape_profile_spot_series OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS shape_profile_spot_series_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE shape_profile_spot_series_s OWNER TO sofie;
+
+--
+-- shape_profile_factor - coefficienti calcolati a partire dagli spot storici
+--
+CREATE TABLE shape_profile_factor (
+    shape_profile_factor_id BIGINT NOT NULL,
+    shape_profile_id        INTEGER NOT NULL,
+    month_of_year           SMALLINT,
+    day_of_week             SMALLINT,
+    hour_of_day             SMALLINT,
+    is_holiday              BOOLEAN,
+    weight_factor           NUMERIC(18,10) NOT NULL,
+
+    CONSTRAINT pk_shape_profile_factor
+        PRIMARY KEY (shape_profile_factor_id),
+
+    CONSTRAINT fk_shape_profile_factor_profile
+        FOREIGN KEY (shape_profile_id)
+        REFERENCES shape_profile_definition(shape_profile_id),
+
+    CONSTRAINT chk_shape_factor_month
+        CHECK (
+            month_of_year IS NULL
+            OR month_of_year BETWEEN 1 AND 12
+        ),
+
+    CONSTRAINT chk_shape_factor_dow
+        CHECK (
+            day_of_week IS NULL
+            OR day_of_week BETWEEN 1 AND 7
+        ),
+
+    CONSTRAINT chk_shape_factor_hour
+        CHECK (
+            hour_of_day IS NULL
+            OR hour_of_day BETWEEN 0 AND 23
+        )
+);
+ALTER TABLE shape_profile_factor OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS shape_profile_factor_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE shape_profile_factor_s OWNER TO sofie;
+
 -- ============================================================
 -- MARKET DATA: quotazioni blocco (time-series, non yield curve)
 -- ============================================================
-CREATE TABLE market_quote (
-    market_quote_id     INTEGER NOT NULL,
-    business_date       DATE NOT NULL,
-    id_master_data      INTEGER NOT NULL,        -- FK a commodity_delivery_profile
-    load_type           INTEGER NOT NULL,
-    price               NUMERIC(15,5) NOT NULL,
-    mkt_source              VARCHAR(32) NOT NULL,     -- 'MANUAL_ENTRY', 'EEX_FEED', 'VENDOR_X'
+-- market_quote_definition - testata della serie storica delle quotazioni forward/future
+CREATE TABLE market_quote_definition (
+    market_quote_definition_id INTEGER NOT NULL,
+    code                       VARCHAR(32) NOT NULL,
+    description                VARCHAR(255) NOT NULL,
+    id_master_data             INTEGER NOT NULL,
+    data_source                INTEGER NOT NULL,
 
-    CONSTRAINT pk_market_quote PRIMARY KEY (market_quote_id),
-    CONSTRAINT fk_market_quote_delivery_profile
-        FOREIGN KEY (id_master_data) REFERENCES commodity_delivery_profile (id_master_data),
-    CONSTRAINT fk_market_quote_load_type
-        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id),
-    CONSTRAINT uq_market_quote_snapshot
-        UNIQUE (business_date, id_master_data, load_type)
+    CONSTRAINT pk_market_quote_definition
+        PRIMARY KEY (market_quote_definition_id),
+
+    CONSTRAINT fk_mqd_master_data
+        FOREIGN KEY (id_master_data)
+        REFERENCES commodity_delivery_profile(id_master_data),
+
+    CONSTRAINT fk_mqd_data_source
+        FOREIGN KEY (data_source)
+        REFERENCES market_data_source(data_source_id),
+
+    CONSTRAINT uq_market_quote_definition
+        UNIQUE (id_master_data, data_source),
+   
+    CONSTRAINT uq_mqd_code UNIQUE (code)
 );
-CREATE INDEX idx_market_quote_business_date ON market_quote (business_date);
+ALTER TABLE market_quote_definition OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS market_quote_definition_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE market_quote_definition_s OWNER TO sofie;
 
+-- market_quote - Sono le osservazioni storiche della quotazione.
+CREATE TABLE market_quote (
+    market_quote_id            INTEGER NOT NULL,
+    market_quote_definition_id INTEGER NOT NULL,
+    business_date              DATE NOT NULL,
+    price                      NUMERIC(15,5) NOT NULL,
+
+    CONSTRAINT pk_market_quote
+        PRIMARY KEY (market_quote_id),
+
+    CONSTRAINT fk_market_quote_definition
+        FOREIGN KEY (market_quote_definition_id)
+        REFERENCES market_quote_definition(market_quote_definition_id),
+
+    CONSTRAINT uq_market_quote
+        UNIQUE (market_quote_definition_id, business_date)
+);
 ALTER TABLE market_quote OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS market_quote_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE market_quote_s OWNER TO sofie;
 
 -- ============================================================
--- SHAPE PROFILE: fattori di forma per il bootstrap
--- ============================================================
-CREATE TABLE shape_profile (
-    shape_profile_id    INTEGER NOT NULL,
-    profile_code        VARCHAR(32) NOT NULL,
-    market               VARCHAR(16) NOT NULL,
-    load_type            INTEGER NOT NULL,
-    day_of_week          INTEGER,                 -- 1-7, null se il fattore e' solo mensile
-    month_of_year        INTEGER,                 -- 1-12, null se il fattore e' solo settimanale
-    weight_factor        NUMERIC(10,6) NOT NULL,  -- fattore moltiplicativo relativo
-    valid_from           DATE NOT NULL,
-    valid_to             DATE,                     -- null = tuttora valido
-
-    CONSTRAINT pk_shape_profile PRIMARY KEY (shape_profile_id),
-    CONSTRAINT fk_shape_profile_load_type
-        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id),
-    CONSTRAINT chk_shape_profile_dow CHECK (day_of_week BETWEEN 1 AND 7),
-    CONSTRAINT chk_shape_profile_month CHECK (month_of_year BETWEEN 1 AND 12)
-);
-
-CREATE INDEX idx_shape_profile_lookup
-    ON shape_profile (profile_code, market, load_type, valid_from);
-
-ALTER TABLE shape_profile OWNER TO sofie;
-CREATE SEQUENCE IF NOT EXISTS shape_profile_s START WITH 1 INCREMENT BY 1;
-ALTER SEQUENCE shape_profile_s OWNER TO sofie;
-
--- ============================================================
 -- GRANULAR CURVE: output del bootstrap+shaping, un prezzo per delivery_date
 -- ============================================================
-CREATE TABLE granular_curve (
-    granular_curve_id      BIGINT NOT NULL,
-    business_date          DATE NOT NULL,
-    delivery_date          DATE NOT NULL,
-    load_type              INTEGER NOT NULL,
-    market                 VARCHAR(16) NOT NULL,
-    price                  NUMERIC(15,5) NOT NULL,
-    source_market_quote    INTEGER NOT NULL,
-    source_shape_profile   INTEGER NOT NULL,
+--
+-- granular_curve_definition
+--
+CREATE TABLE granular_curve_definition (
+    granular_curve_id       INTEGER NOT NULL,
+    code                       VARCHAR(32) NOT NULL,
+    description                VARCHAR(255) NOT NULL,
+    market_quote_definition_id INTEGER NOT NULL,
+    shape_profile_id        INTEGER NOT NULL,
 
-    CONSTRAINT pk_granular_curve PRIMARY KEY (granular_curve_id),
-    CONSTRAINT fk_granular_curve_market_quote
-        FOREIGN KEY (source_market_quote) REFERENCES market_quote (market_quote_id),
-    CONSTRAINT fk_granular_curve_shape_profile
-        FOREIGN KEY (source_shape_profile) REFERENCES shape_profile (shape_profile_id),
-    CONSTRAINT uq_granular_curve_snapshot
-        UNIQUE (business_date, delivery_date, load_type, market)
+    CONSTRAINT pk_granular_curve_definition
+        PRIMARY KEY (granular_curve_id),
+
+    CONSTRAINT fk_gcd_quote_definition
+        FOREIGN KEY (market_quote_definition_id)
+        REFERENCES market_quote_definition(market_quote_definition_id),
+
+    CONSTRAINT fk_gcd_shape_profile
+        FOREIGN KEY (shape_profile_id)
+        REFERENCES shape_profile_definition(shape_profile_id),
+
+    CONSTRAINT uq_granular_curve
+        UNIQUE (
+            market_quote_definition_id,
+            shape_profile_id
+        ),
+    CONSTRAINT uq_gcd_code UNIQUE (code)
 );
-CREATE INDEX idx_granular_curve_lookup ON granular_curve (business_date, delivery_date, load_type);
+ALTER TABLE granular_curve_definition OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS granular_curve_definition_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE granular_curve_definition_s OWNER TO sofie;
 
-ALTER TABLE granular_curve OWNER TO sofie;
-CREATE SEQUENCE IF NOT EXISTS granular_curve_s START WITH 1 INCREMENT BY 1;
-ALTER SEQUENCE granular_curve_s OWNER TO sofie;
+--
+-- granular_curve_point
+--
+CREATE TABLE granular_curve_point (
+    granular_curve_point_id BIGINT NOT NULL,
+    granular_curve_id       INTEGER NOT NULL,
+    delivery_date           DATE NOT NULL,
+    forward_price           NUMERIC(15,5) NOT NULL,
 
+    CONSTRAINT pk_granular_curve_point
+        PRIMARY KEY (granular_curve_point_id),
+
+    CONSTRAINT fk_gcp_curve
+        FOREIGN KEY (granular_curve_id)
+        REFERENCES granular_curve_definition(granular_curve_id),
+
+    CONSTRAINT uq_granular_curve_point
+        UNIQUE (
+            granular_curve_id,
+            delivery_date
+        )
+);
+ALTER TABLE granular_curve_point OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS granular_curve_point_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE granular_curve_point_s OWNER TO sofie;

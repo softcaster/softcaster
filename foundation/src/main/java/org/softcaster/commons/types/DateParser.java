@@ -39,10 +39,10 @@ public class DateParser {
 
     public int year() {
         int tmp = Integer.parseInt(output_y);
-        if (tmp < 30) {
+        if (tmp < 70) {
             return 2000 + tmp;
         }
-        if (tmp > 30 && tmp < 99) {
+        if (tmp > 70 && tmp < 99) {
             return 1900 + tmp;
         }
         if (tmp > 1900) {

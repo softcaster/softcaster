@@ -430,3 +430,21 @@ INSERT INTO delivery_period_type VALUES (1, 'YEAR', 'Year Future - annual delive
 INSERT INTO delivery_period_type VALUES (2, 'QUARTER', 'Quarter Future - quarterly delivery contract');
 INSERT INTO delivery_period_type VALUES (3, 'MONTH', 'Month Future - monthly delivery contract');
 INSERT INTO delivery_period_type VALUES (4, 'DAY', 'Daily delivery - post final cascading');
+
+INSERT INTO shape_calculation_method VALUES (1, 'AVERAGE', 'Average');
+INSERT INTO shape_calculation_method VALUES (2, 'MEDIAN', 'Median');
+INSERT INTO shape_calculation_method VALUES (3, 'WEIGHTED_AVERAGE', 'Weighted Average');
+
+INSERT INTO shape_granularity VALUES (1, 'WEEKLY', 'Weekly profile');
+INSERT INTO shape_granularity VALUES (2, 'MONTHLY', 'Monthly profile');
+INSERT INTO shape_granularity VALUES (3, 'MONTH_DOW', 'Monthly profile differentiated by day of week');
+INSERT INTO shape_granularity VALUES (4, 'MONTH_DOW_HOUR', 'Monthly profile differentiated by day of week and hour');
+
+INSERT INTO market_data_source VALUES (1, 'EEX', 'Eex');
+INSERT INTO market_data_source VALUES (2, 'ENTSO_E', 'Entso E');
+INSERT INTO market_data_source VALUES (3, 'VENDOR', 'Vendor');
+INSERT INTO market_data_source VALUES (4, 'INTERNAL', 'Internal');
+
+
+
+

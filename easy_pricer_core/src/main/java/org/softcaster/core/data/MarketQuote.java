@@ -5,24 +5,30 @@
 package org.softcaster.core.data;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.io.Serializable;
-import java.sql.Types;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.softcaster.core.data.converters.LoadTypeConverter;
-import org.softcaster.engine.enums.LoadType;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "market_quote")
+@Table(
+        name = "market_quote",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uq_market_quote",
+                    columnNames = {
+                        "market_quote_definition_id",
+                        "business_date"
+                    }
+            )
+        }
+)
 @SuppressWarnings("PersistenceUnitPresent")
 public class MarketQuote implements Serializable {
 
@@ -32,58 +38,76 @@ public class MarketQuote implements Serializable {
     @Column(name = "market_quote_id")
     private Integer marketQuoteId;
 
+    @Column(name = "market_quote_definition_id", insertable = false, updatable = false)
+    private Integer marketQuoteDefinition;
+
     @Column(name = "business_date", nullable = false)
-    private java.sql.Date businessDate;
+    private LocalDate businessDate;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_master_data", nullable = false)
-    private CmdFutureMasterData masterData;
+    @Column(
+            name = "price",
+            precision = 15,
+            scale = 5,
+            nullable = false
+    )
+    private BigDecimal price;
 
-    @Convert(converter = LoadTypeConverter.class)
-    @Column(name = "load_type", nullable = false)
-    private LoadType loadType;
+    // getter/setter
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "price", nullable = false)
-    private Double price;
-
-    @Column(name = "mkt_source", length = 32, nullable = false)
-    private String mktSource; // 'MANUAL_ENTRY', 'EEX_FEED', 'VENDOR_X'...
-
-    protected MarketQuote() {
-        // richiesto da JPA
-    }
-
-    public MarketQuote(java.sql.Date businessDate, CmdFutureMasterData masterData,
-            LoadType loadType, Double price, String source) {
-        this.businessDate = businessDate;
-        this.masterData = masterData;
-        this.loadType = loadType;
-        this.price = price;
-        this.mktSource = source;
-    }
-
-    public Integer getIdMarketQuote() {
+    /**
+     * @return the marketQuoteId
+     */
+    public Integer getMarketQuoteId() {
         return marketQuoteId;
     }
 
-    public java.sql.Date getBusinessDate() {
+    /**
+     * @param marketQuoteId the marketQuoteId to set
+     */
+    public void setMarketQuoteId(Integer marketQuoteId) {
+        this.marketQuoteId = marketQuoteId;
+    }
+
+    /**
+     * @return the marketQuoteDefinition
+     */
+    public Integer getMarketQuoteDefinition() {
+        return marketQuoteDefinition;
+    }
+
+    /**
+     * @param marketQuoteDefinition the marketQuoteDefinition to set
+     */
+    public void setMarketQuoteDefinition(Integer marketQuoteDefinition) {
+        this.marketQuoteDefinition = marketQuoteDefinition;
+    }
+
+    /**
+     * @return the businessDate
+     */
+    public LocalDate getBusinessDate() {
         return businessDate;
     }
 
-    public CmdFutureMasterData getMasterData() {
-        return masterData;
+    /**
+     * @param businessDate the businessDate to set
+     */
+    public void setBusinessDate(LocalDate businessDate) {
+        this.businessDate = businessDate;
     }
 
-    public LoadType getLoadType() {
-        return loadType;
-    }
-
-    public Double getPrice() {
+    /**
+     * @return the price
+     */
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public String getMktSource() {
-        return mktSource;
+    /**
+     * @param price the price to set
+     */
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
+    
 }

@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.softcaster.core.data.MarketQuote;
-import org.softcaster.core.data.ShapeProfile;
-import org.softcaster.core.data.ShapeProfileRepository;
 import org.softcaster.engine.curve.GranularCurvePoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,8 +16,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class CurveConstructionService {
 
-    @Autowired
-    private ShapeProfileRepository shapeProfileRepository;
+    //@Autowired
+    //private ShapeProfileRepository shapeProfileRepository;
 
     /**
      * Scompone un prezzo di blocco (market_quote) sui singoli giorni del
@@ -31,6 +28,7 @@ public class CurveConstructionService {
      * @param shapeProfileCode
      * @return 
      */
+    /*
     public List<GranularCurvePoint> buildGranularCurve(
             MarketQuote blockQuote,        // prezzo del blocco, es. Q1-27 Base = 127.5
             LocalDate deliveryStart,       // dal delivery profile del contratto
@@ -73,12 +71,13 @@ public class CurveConstructionService {
 
         return points;
     }
-
+*/
     /**
      * Combina i fattori day-of-week e month-of-year applicabili a un
      * singolo giorno. Se lo shape_profile ha righe granulari diverse
      * (solo dow, solo month, o entrambi), i fattori si moltiplicano.
      */
+    /*
     private double resolveWeight(List<ShapeProfile> factors, LocalDate day) {
         double weight = 1.0;
         int dow = day.getDayOfWeek().getValue();
@@ -93,4 +92,5 @@ public class CurveConstructionService {
         }
         return weight;
     }
+*/
 }
