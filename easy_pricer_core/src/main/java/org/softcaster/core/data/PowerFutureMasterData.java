@@ -8,8 +8,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedEntityGraphs;
@@ -30,7 +28,7 @@ import org.softcaster.engine.enums.LoadType;
                 @NamedAttributeNode("currency"),
                 @NamedAttributeNode("assetClass"),
                 @NamedAttributeNode("instrumentValuation"),
-                @NamedAttributeNode("deliveryProfile"),}
+                @NamedAttributeNode("deliveryProfile")}
     )
 })
 public class PowerFutureMasterData extends CmdFutureMasterData {

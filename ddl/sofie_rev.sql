@@ -282,3 +282,19 @@ delete from master_data where id_master_data=76;
 
 DROP TABLE power_future_master_data;
 DROP TABLE extended_delivery_future_master_data;
+
+alter table market_quote_definition add column code VARCHAR(32) NOT NULL;
+alter table market_quote_definition add column description VARCHAR(255) NOT NULL;
+INSERT INTO market_data_source VALUES (5, 'GME', 'Gestore Mercati Energetici');
+
+alter table market_quote_definition drop CONSTRAINT fk_mqd_master_data;
+alter table market_quote_definition drop CONSTRAINT uq_market_quote_definition;
+alter table market_quote_definition drop column id_master_data;
+alter table market_quote_definition add column id_country INTEGER NOT NULL;
+alter table market_quote_definition add CONSTRAINT fk_mqd_country FOREIGN KEY (id_country) REFERENCES country(id_country);
+
+alter table commodity_delivery_profile add column  market_quote_definition_id INTEGER;
+alter table commodity_delivery_profile add CONSTRAINT fk_delivery_profile_mdp FOREIGN KEY (market_quote_definition_id) REFERENCES market_quote_definition(market_quote_definition_id);
+
+insert into market_quote_definition(market_quote_definition_id,code,description,id_country,data_source)
+ values(nextval('market_quote_definition_s'), 'GME-POWER-M','GME-POWER-M',1,5);

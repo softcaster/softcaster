@@ -34,6 +34,13 @@ public class CommodityDeliveryProfile {
     @JoinColumn(name = "id_master_data")
     private PowerFutureMasterData masterData;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "market_quote_definition_id",
+            nullable = false
+    )
+    private MarketQuoteDefinition marketQuoteDefinition;
+
     @Convert(converter = DeliveryPeriodTypeConverter.class)
     private DeliveryPeriodType deliveryPeriodType;
 
@@ -205,6 +212,20 @@ public class CommodityDeliveryProfile {
      */
     protected void setMasterData(PowerFutureMasterData masterData) {
         this.masterData = masterData;
+    }
+
+    /**
+     * @return the marketQuoteDefinition
+     */
+    public MarketQuoteDefinition getMarketQuoteDefinition() {
+        return marketQuoteDefinition;
+    }
+
+    /**
+     * @param marketQuoteDefinition the marketQuoteDefinition to set
+     */
+    public void setMarketQuoteDefinition(MarketQuoteDefinition marketQuoteDefinition) {
+        this.marketQuoteDefinition = marketQuoteDefinition;
     }
 
 }

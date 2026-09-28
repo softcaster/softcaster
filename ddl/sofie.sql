@@ -1359,129 +1359,6 @@ ALTER SEQUENCE descriptors_s OWNER TO sofie;
 --
 -- COMMODITY FUTURE
 --
-
---
--- Lookup Tables
--- 
--- ----------------------------------------------------------------------------
--- commodity_type
--- ----------------------------------------------------------------------------
-CREATE TABLE commodity_type (
-    commodity_type_id integer NOT NULL,
-    code varchar(25) NOT NULL,
-    description varchar(25) NOT NULL,
-    PRIMARY KEY (commodity_type_id)
-);
-CREATE UNIQUE INDEX commodity_type_code ON daycount (code);
-ALTER TABLE commodity_type OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
--- load_type
--- ----------------------------------------------------------------------------
-CREATE TABLE load_type (
-    load_type_id INT PRIMARY KEY,
-    code VARCHAR(16) NOT NULL,
-    description VARCHAR(64)
-);
-CREATE UNIQUE INDEX load_type_code ON daycount (code);
-ALTER TABLE load_type OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
--- delivery_period_type
--- ----------------------------------------------------------------------------
-CREATE TABLE delivery_period_type (
-    delivery_period_type_id INT PRIMARY KEY,
-    code VARCHAR(16) NOT NULL,
-    description VARCHAR(64)
-);
-CREATE UNIQUE INDEX load_dpt_code ON daycount (code);
-ALTER TABLE delivery_period_type OWNER TO sofie;
-
---
--- Livello 1: comune a TUTTI i future su commodity 
---
--- ----------------------------------------------------------------------------
--- cmd_future_master_data - anagrafica commodity future
--- ----------------------------------------------------------------------------
-CREATE TABLE cmd_future_master_data (
-    id_master_data integer NOT NULL,
-    commodity_type integer NOT NULL,
-    contract_value numeric(15, 5) NOT NULL,
-    tick_size numeric(15, 5) NOT NULL,
-    initial_margin numeric(15, 5) NOT NULL,
-    maintenance_margin numeric(15, 5) NOT NULL,
-    CONSTRAINT fk_commodity_type FOREIGN KEY (commodity_type) REFERENCES commodity_type (commodity_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    PRIMARY KEY (id_master_data)
-);
-ALTER TABLE cmd_future_master_data OWNER TO sofie;
-
---DROP TABLE extended_delivery_future_master_data;
--- ============================================================
--- ANAGRAFICA FUTURE ET
--- ============================================================
--- cmd_future_master_data: gia' esistente, comune a tutte le commodity ET
--- (id_master_data, commodity_type, contract_value, tick_size, initial_margin, maintenance_margin)
-
-CREATE TABLE power_future_master_data (
-    id_master_data    INTEGER NOT NULL,
-    load_type         INTEGER NOT NULL,
-    CONSTRAINT pk_power_future_master_data PRIMARY KEY (id_master_data),
-    CONSTRAINT fk_power_future_master_data_parent_table
-        FOREIGN KEY (id_master_data) REFERENCES cmd_future_master_data (id_master_data),
-    CONSTRAINT fk_power_future_load_type
-        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
-);
-ALTER TABLE power_future_master_data OWNER TO sofie;
-
--- ============================================================
--- ANAGRAFICA FORWARD OTC (stesso pattern minimale)
--- ============================================================
--- cmd_forward_master_data: analogo a cmd_future_master_data ma per il ramo OTC
--- (id_master_data, commodity_type — niente contract_value/tick_size/margini, non applicabili a OTC)
-CREATE TABLE power_forward_master_data (
-    id_master_data    INTEGER NOT NULL,
-    load_type         INTEGER NOT NULL,
-    CONSTRAINT pk_power_forward_master_data PRIMARY KEY (id_master_data),
-    CONSTRAINT fk_power_forward_master_data_parent_table
-        FOREIGN KEY (id_master_data) REFERENCES cmd_forward_master_data (id_master_data),
-    CONSTRAINT fk_power_forward_load_type
-        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
-);
-ALTER TABLE power_forward_master_data OWNER TO sofie;
-
--- ============================================================
--- DELIVERY PROFILE: entita' satellite condivisa (composizione)
--- ============================================================
-CREATE TABLE commodity_delivery_profile (
-    id_master_data          INTEGER NOT NULL,   -- FK 1-1 verso power_future_master_data o power_forward_master_data
-    delivery_period_type    INTEGER NOT NULL,
-    delivery_start          DATE NOT NULL,
-    delivery_end            DATE NOT NULL,
-    total_delivery_hours    INTEGER NOT NULL,
-    market                  VARCHAR(16) NOT NULL,
-    notional_mw             NUMERIC NOT NULL,
-    notional_mwh            NUMERIC NOT NULL,
-    parent_profile          INTEGER,             -- self-ref cascading; NULL per Year e per i Forward OTC
-
-    CONSTRAINT pk_commodity_delivery_profile PRIMARY KEY (id_master_data),
-    CONSTRAINT fk_delivery_profile_period_type
-        FOREIGN KEY (delivery_period_type) REFERENCES delivery_period_type (delivery_period_type_id),
-    CONSTRAINT fk_delivery_profile_parent
-        FOREIGN KEY (parent_profile) REFERENCES commodity_delivery_profile (id_master_data),
-    CONSTRAINT uq_delivery_profile_natural_key
-        UNIQUE (market, delivery_period_type, delivery_start, delivery_end),
-    CONSTRAINT chk_delivery_profile_dates CHECK (delivery_end >= delivery_start),
-    CONSTRAINT chk_delivery_profile_notional_positive
-        CHECK (notional_mw > 0 AND notional_mwh > 0)
-);
-
-CREATE INDEX idx_delivery_profile_parent ON commodity_delivery_profile (parent_profile);
-CREATE INDEX idx_delivery_profile_range ON commodity_delivery_profile (delivery_start, delivery_end);
-
-ALTER TABLE commodity_delivery_profile OWNER TO sofie;
-CREATE SEQUENCE IF NOT EXISTS commodity_delivery_profile_s START WITH 1 INCREMENT BY 1;
-ALTER SEQUENCE commodity_delivery_profile_s OWNER TO sofie;
-
 -- ==================================================================
 -- Tabelle gestione power futures
 -- ==================================================================
@@ -1726,23 +1603,20 @@ CREATE TABLE market_quote_definition (
     market_quote_definition_id INTEGER NOT NULL,
     code                       VARCHAR(32) NOT NULL,
     description                VARCHAR(255) NOT NULL,
-    id_master_data             INTEGER NOT NULL,
+    id_country                 INTEGER NOT NULL,
     data_source                INTEGER NOT NULL,
 
     CONSTRAINT pk_market_quote_definition
         PRIMARY KEY (market_quote_definition_id),
 
-    CONSTRAINT fk_mqd_master_data
-        FOREIGN KEY (id_master_data)
-        REFERENCES commodity_delivery_profile(id_master_data),
+    CONSTRAINT fk_mqd_country
+        FOREIGN KEY (id_country)
+        REFERENCES country(id_country),
 
     CONSTRAINT fk_mqd_data_source
         FOREIGN KEY (data_source)
         REFERENCES market_data_source(data_source_id),
 
-    CONSTRAINT uq_market_quote_definition
-        UNIQUE (id_master_data, data_source),
-   
     CONSTRAINT uq_mqd_code UNIQUE (code)
 );
 ALTER TABLE market_quote_definition OWNER TO sofie;
@@ -1830,3 +1704,127 @@ CREATE TABLE granular_curve_point (
 ALTER TABLE granular_curve_point OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS granular_curve_point_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE granular_curve_point_s OWNER TO sofie;
+
+--
+-- Lookup Tables
+-- 
+-- ----------------------------------------------------------------------------
+-- commodity_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE commodity_type (
+    commodity_type_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(25) NOT NULL,
+    PRIMARY KEY (commodity_type_id)
+);
+CREATE UNIQUE INDEX commodity_type_code ON daycount (code);
+ALTER TABLE commodity_type OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- load_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE load_type (
+    load_type_id INT PRIMARY KEY,
+    code VARCHAR(16) NOT NULL,
+    description VARCHAR(64)
+);
+CREATE UNIQUE INDEX load_type_code ON daycount (code);
+ALTER TABLE load_type OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- delivery_period_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE delivery_period_type (
+    delivery_period_type_id INT PRIMARY KEY,
+    code VARCHAR(16) NOT NULL,
+    description VARCHAR(64)
+);
+CREATE UNIQUE INDEX load_dpt_code ON daycount (code);
+ALTER TABLE delivery_period_type OWNER TO sofie;
+
+--
+-- Livello 1: comune a TUTTI i future su commodity 
+--
+-- ----------------------------------------------------------------------------
+-- cmd_future_master_data - anagrafica commodity future
+-- ----------------------------------------------------------------------------
+CREATE TABLE cmd_future_master_data (
+    id_master_data integer NOT NULL,
+    commodity_type integer NOT NULL,
+    contract_value numeric(15, 5) NOT NULL,
+    tick_size numeric(15, 5) NOT NULL,
+    initial_margin numeric(15, 5) NOT NULL,
+    maintenance_margin numeric(15, 5) NOT NULL,
+    CONSTRAINT fk_commodity_type FOREIGN KEY (commodity_type) REFERENCES commodity_type (commodity_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    PRIMARY KEY (id_master_data)
+);
+ALTER TABLE cmd_future_master_data OWNER TO sofie;
+
+--DROP TABLE extended_delivery_future_master_data;
+-- ============================================================
+-- ANAGRAFICA FUTURE ET
+-- ============================================================
+-- cmd_future_master_data: gia' esistente, comune a tutte le commodity ET
+-- (id_master_data, commodity_type, contract_value, tick_size, initial_margin, maintenance_margin)
+
+CREATE TABLE power_future_master_data (
+    id_master_data    INTEGER NOT NULL,
+    load_type         INTEGER NOT NULL,
+    CONSTRAINT pk_power_future_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_power_future_master_data_parent_table
+        FOREIGN KEY (id_master_data) REFERENCES cmd_future_master_data (id_master_data),
+    CONSTRAINT fk_power_future_load_type
+        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
+);
+ALTER TABLE power_future_master_data OWNER TO sofie;
+
+-- ============================================================
+-- ANAGRAFICA FORWARD OTC (stesso pattern minimale)
+-- ============================================================
+-- cmd_forward_master_data: analogo a cmd_future_master_data ma per il ramo OTC
+-- (id_master_data, commodity_type — niente contract_value/tick_size/margini, non applicabili a OTC)
+CREATE TABLE power_forward_master_data (
+    id_master_data    INTEGER NOT NULL,
+    load_type         INTEGER NOT NULL,
+    CONSTRAINT pk_power_forward_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_power_forward_master_data_parent_table
+        FOREIGN KEY (id_master_data) REFERENCES cmd_forward_master_data (id_master_data),
+    CONSTRAINT fk_power_forward_load_type
+        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
+);
+ALTER TABLE power_forward_master_data OWNER TO sofie;
+
+-- ============================================================
+-- DELIVERY PROFILE: entita' satellite condivisa (composizione)
+-- ============================================================
+CREATE TABLE commodity_delivery_profile (
+    id_master_data          INTEGER NOT NULL,   -- FK 1-1 verso power_future_master_data o power_forward_master_data
+    delivery_period_type    INTEGER NOT NULL,
+    delivery_start          DATE NOT NULL,
+    delivery_end            DATE NOT NULL,
+    total_delivery_hours    INTEGER NOT NULL,
+    market                  VARCHAR(16) NOT NULL,
+    notional_mw             NUMERIC NOT NULL,
+    notional_mwh            NUMERIC NOT NULL,
+    parent_profile          INTEGER,             -- self-ref cascading; NULL per Year e per i Forward OTC
+    market_quote_definition_id INTEGER,
+
+    CONSTRAINT pk_commodity_delivery_profile PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_delivery_profile_period_type
+        FOREIGN KEY (delivery_period_type) REFERENCES delivery_period_type (delivery_period_type_id),
+    CONSTRAINT fk_delivery_profile_parent
+        FOREIGN KEY (parent_profile) REFERENCES commodity_delivery_profile (id_master_data),
+    CONSTRAINT uq_delivery_profile_natural_key
+        UNIQUE (market, delivery_period_type, delivery_start, delivery_end),
+    CONSTRAINT chk_delivery_profile_dates CHECK (delivery_end >= delivery_start),
+    CONSTRAINT chk_delivery_profile_notional_positive
+        CHECK (notional_mw > 0 AND notional_mwh > 0)
+);
+
+CREATE INDEX idx_delivery_profile_parent ON commodity_delivery_profile (parent_profile);
+CREATE INDEX idx_delivery_profile_range ON commodity_delivery_profile (delivery_start, delivery_end);
+
+ALTER TABLE commodity_delivery_profile OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS commodity_delivery_profile_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE commodity_delivery_profile_s OWNER TO sofie;
+

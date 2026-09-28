@@ -8,7 +8,8 @@ public enum MarketDataSource  implements IdentifiableEnum {
     EEX(1, "EEX", "Eex"), 
     ENTSO_E(2, "ENTSO_E", "Entso E"), 
     VENDOR(3, "VENDOR", "Vendor"), 
-    INTERNAL(4, "INTERNAL", "Internal"); 
+    INTERNAL(4, "INTERNAL", "Internal"),
+    GME(5, "GME", "Gestore Mercati Energetici"); 
     private final int id;
     private final String code;
     private final String description;

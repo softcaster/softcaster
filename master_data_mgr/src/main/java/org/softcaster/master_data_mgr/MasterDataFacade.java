@@ -16,6 +16,7 @@ import org.softcaster.core.data.FltSecurityMasterDataDAO;
 import org.softcaster.core.data.ForexMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.IssuerDAO;
+import org.softcaster.core.data.MarketQuoteDefinitionDAO;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.MmFutureMasterDataDAO;
 import org.softcaster.core.data.PortfolioMasterDataDAO;
@@ -85,6 +86,8 @@ public class MasterDataFacade {
     private GlAccountDAO glAccountDAO;
     @Autowired
     private RefRateIndexDAO refRateIndexDAO;
+    @Autowired
+    private MarketQuoteDefinitionDAO marketQuoteDefinitionDAO;
     
     @Autowired
     @Qualifier("backwardScheduleGenerator")
@@ -260,5 +263,12 @@ public class MasterDataFacade {
      */
     public PowerFutureMasterDataDAO getPowerFutureMasterDataDAO() {
         return powerFutureMasterDataDAO;
+    }
+
+    /**
+     * @return the marketQuoteDefinitionDAO
+     */
+    public MarketQuoteDefinitionDAO getMarketQuoteDefinitionDAO() {
+        return marketQuoteDefinitionDAO;
     }
 }

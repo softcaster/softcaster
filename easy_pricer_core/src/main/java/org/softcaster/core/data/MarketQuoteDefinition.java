@@ -14,6 +14,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -36,6 +39,14 @@ import org.softcaster.engine.enums.MarketDataSource;
     }
 )
 @SuppressWarnings("PersistenceUnitPresent")
+
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+            name = "MarketQuoteDefinition.fullWithCountry",
+            attributeNodes = {
+                @NamedAttributeNode("country")}
+    )
+})
 public class MarketQuoteDefinition implements Serializable {
 
     @Id
@@ -44,12 +55,18 @@ public class MarketQuoteDefinition implements Serializable {
     @Column(name = "market_quote_definition_id")
     private Integer marketQuoteDefinitionId;
 
+    @Column(name = "code")
+    private String code;
+
+    @Column(name = "description")
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-        name = "id_master_data",
+        name = "id_country",
         nullable = false
     )
-    private MasterData masterData;
+    private Country country;
 
     @Convert(converter = MarketDataSourceConverter.class)
     private MarketDataSource dataSource;
@@ -73,20 +90,6 @@ public class MarketQuoteDefinition implements Serializable {
      */
     public void setMarketQuoteDefinitionId(Integer marketQuoteDefinitionId) {
         this.marketQuoteDefinitionId = marketQuoteDefinitionId;
-    }
-
-    /**
-     * @return the masterData
-     */
-    public MasterData getMasterData() {
-        return masterData;
-    }
-
-    /**
-     * @param masterData the masterData to set
-     */
-    public void setMasterData(MasterData masterData) {
-        this.masterData = masterData;
     }
 
     /**
@@ -115,5 +118,47 @@ public class MarketQuoteDefinition implements Serializable {
      */
     public void setQuotes(List<MarketQuote> quotes) {
         this.quotes = quotes;
+    }
+
+    /**
+     * @return the code
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * @param code the code to set
+     */
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * @return the country
+     */
+    public Country getCountry() {
+        return country;
+    }
+
+    /**
+     * @param country the country to set
+     */
+    public void setCountry(Country country) {
+        this.country = country;
     }
 }

@@ -36,6 +36,7 @@ import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.FxFuturePanel;
 import org.softcaster.master_data_mgr.views.HomePanel;
 import org.softcaster.master_data_mgr.views.IssuerPanel;
+import org.softcaster.master_data_mgr.views.MarketQuoteDefinitionPanel;
 import org.softcaster.master_data_mgr.views.MmFuturePanel;
 import org.softcaster.master_data_mgr.views.PortfolioPanel;
 import org.softcaster.master_data_mgr.views.PositionPanel;
@@ -155,6 +156,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case ISSUER -> {
                             cl.show(mainPanel, AppCard.ISSUER_CARD.name());
                             currentCard = AppCard.ISSUER_CARD;
+                        }
+                        case MARKET_QUOTE_DEFINITION -> {
+                            cl.show(mainPanel, AppCard.MARKET_QUOTE_DEFINITION_CARD.name());
+                            currentCard = AppCard.MARKET_QUOTE_DEFINITION_CARD;
                         }
                         default -> {
                             cl.show(mainPanel, "DEFAULT");
@@ -415,6 +420,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         JPanel counterpartyPanel = new CounterpartyPanel(masterDataFacade);
         cardMap.put(AppCard.COUNTERPARTY_CARD, counterpartyPanel);
 
+        JPanel mqdPanel = new MarketQuoteDefinitionPanel(masterDataFacade);
+        cardMap.put(AppCard.MARKET_QUOTE_DEFINITION_CARD, mqdPanel);
+
         JPanel portfolioPanel = new PortfolioPanel(masterDataFacade);
         cardMap.put(AppCard.PORTFOLIO_CARD, portfolioPanel);
 
@@ -440,6 +448,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(fxFuturePanel, AppCard.FX_FUTURE_CARD.name());
         mainPanel.add(mmFuturePanel, AppCard.MM_FUTURE_CARD.name());
         mainPanel.add(counterpartyPanel, AppCard.COUNTERPARTY_CARD.name());
+        mainPanel.add(mqdPanel, AppCard.MARKET_QUOTE_DEFINITION_CARD.name());
         mainPanel.add(portfolioPanel, AppCard.PORTFOLIO_CARD.name());
         mainPanel.add(positionPanel, AppCard.POSITION_CARD.name());
         mainPanel.add(issuerPanel, AppCard.ISSUER_CARD.name());

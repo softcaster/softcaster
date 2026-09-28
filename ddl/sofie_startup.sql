@@ -444,7 +444,6 @@ INSERT INTO market_data_source VALUES (1, 'EEX', 'Eex');
 INSERT INTO market_data_source VALUES (2, 'ENTSO_E', 'Entso E');
 INSERT INTO market_data_source VALUES (3, 'VENDOR', 'Vendor');
 INSERT INTO market_data_source VALUES (4, 'INTERNAL', 'Internal');
-
-
+INSERT INTO market_data_source VALUES (5, 'GME', 'Gestore Mercati Energetici');
 
 

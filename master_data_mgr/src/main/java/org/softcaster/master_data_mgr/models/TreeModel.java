@@ -58,6 +58,11 @@ public class TreeModel {
         references.add(new DefaultMutableTreeNode(new MasterDataNode("Positions",AppTreeItem.POSITION)));
         root.add(references);
 
+        // Hist Series
+        DefaultMutableTreeNode histSeries = new DefaultMutableTreeNode("Historical Series");
+        histSeries.add(new DefaultMutableTreeNode(new MasterDataNode("Market Quote Definitions",AppTreeItem.MARKET_QUOTE_DEFINITION)));
+        root.add(histSeries);
+
         DefaultTreeModel model = new DefaultTreeModel(root);
         return model;
     }
