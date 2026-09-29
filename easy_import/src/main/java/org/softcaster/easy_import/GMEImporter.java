@@ -4,6 +4,7 @@
  */
 package org.softcaster.easy_import;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,12 +20,25 @@ import org.softcaster.commons.types.DateParser;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.commons.xml.ParamsMgr;
+import org.softcaster.core.data.MarketQuote;
+import org.softcaster.core.data.MarketQuoteDAO;
+import org.softcaster.core.data.MarketQuoteDefinition;
+import org.softcaster.core.data.MarketQuoteDefinitionDAO;
 import static org.softcaster.easy_import.IImportMgr.IMPORT_PATH;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("GME Power Market Quotes")
 public class GMEImporter implements IImportMgr {
-
+    
+    @Autowired
+    private MarketQuoteDefinitionDAO marketQuoteDefinitionDAO;
+    @Autowired
+    private MarketQuoteDAO marketQuoteDAO;
+    
+    private final Map<String, List<MarketQuoteRecord>> marketQuotes = new HashMap<>();
+    private MarketQuoteDefinition marketQuoteDefinition = null;
+    
     @Override
     public void start(IProgressInfo progressInfo) {
         ParamsMgr paramsMgr = ParamsMgr.getInstance();
@@ -53,6 +67,8 @@ public class GMEImporter implements IImportMgr {
 
                 // Testata
                 mqDefinition = s[0].trim();
+                // Sostituisce il carattere BOM iniziale se presente
+                mqDefinition = s[0].trim().replace("\uFEFF", "");
                 // Data
                 parser = new DateParser(s[1].trim());
                 dt = new Date(parser.year(), parser.month(), parser.day());
@@ -65,6 +81,7 @@ public class GMEImporter implements IImportMgr {
                 cnt++;
             }
 
+            insertOrUpdateMarketQuote(marketQuotes);
             progressInfo.updateProgress("Terminated", 100);
         } catch (Exception ex) {
             String error = ex.getLocalizedMessage();
@@ -77,16 +94,33 @@ public class GMEImporter implements IImportMgr {
 
     @Override
     public void terminate() {
+    }
+
+    private void insertOrUpdateMarketQuote(Map<String, List<MarketQuoteRecord>> marketQuotes) {
+        
         marketQuotes.forEach((ticker, listaRecord) -> {
             for (MarketQuoteRecord record : listaRecord) {
-                System.out.println("Ticker: " + ticker + " - Data: " + record.businessDate() + " - Prezzo: " + record.price());
+                if(marketQuoteDefinition == null) {
+                    marketQuoteDefinition = marketQuoteDefinitionDAO.findByCodeWithCountry(ticker);
+                }
+                if(marketQuoteDefinition != null) {
+                    MarketQuote marketQuote = marketQuoteDAO.findByMarketQuoteIdAndBusinessDate(
+                            marketQuoteDefinition.getMarketQuoteDefinitionId(), record.businessDate());
+                    if(marketQuote != null) {
+                        marketQuote.setPrice(BigDecimal.valueOf(record.price));
+                    } else {
+                        marketQuote = new MarketQuote();
+                        marketQuote.setBusinessDate(record.businessDate());
+                        marketQuote.setPrice(BigDecimal.valueOf(record.price));
+                        marketQuote.setMarketQuoteDefinition(marketQuoteDefinition.getMarketQuoteDefinitionId());
+                        marketQuote.setMarketQuoteId(null);
+                    }
+                    marketQuoteDAO.saveOrUpdate(marketQuote);
+                }
             }
         });
     }
 
-    private final Map<String, List<MarketQuoteRecord>> marketQuotes = new HashMap<>();
-
     private record MarketQuoteRecord(LocalDate businessDate, double price) {
-
     }
 }

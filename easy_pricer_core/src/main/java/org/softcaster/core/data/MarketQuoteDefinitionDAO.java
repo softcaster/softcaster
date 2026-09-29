@@ -39,4 +39,9 @@ public class MarketQuoteDefinitionDAO {
     public MarketQuoteDefinition findByIdWithCountry(Integer id){
         return repository.findByIdWithCountry(id);
     }
+    
+    @Transactional(readOnly = true)
+    public MarketQuoteDefinition findByCodeWithCountry(String code){
+        return repository.findByCodeWithCountry(code);
+    }
 }
