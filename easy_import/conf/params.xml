@@ -28,4 +28,8 @@
         <name>EEX_TOKENS</name>
         <value>FDBY,DEBY,ESPY</value>
     </param>
+    <param>
+        <name>GME_MKT_QUOTES</name>
+        <value>20250928_20260928_PUN.csv</value>
+    </param>
 </params>
