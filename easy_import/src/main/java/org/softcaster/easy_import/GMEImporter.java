@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.types.Date;
@@ -21,7 +22,6 @@ import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.commons.xml.ParamsMgr;
 import org.softcaster.core.data.MarketQuote;
-import org.softcaster.core.data.MarketQuoteDAO;
 import org.softcaster.core.data.MarketQuoteDefinition;
 import org.softcaster.core.data.MarketQuoteDefinitionDAO;
 import static org.softcaster.easy_import.IImportMgr.IMPORT_PATH;
@@ -30,15 +30,13 @@ import org.springframework.stereotype.Service;
 
 @Service("GME Power Market Quotes")
 public class GMEImporter implements IImportMgr {
-    
+
     @Autowired
     private MarketQuoteDefinitionDAO marketQuoteDefinitionDAO;
-    @Autowired
-    private MarketQuoteDAO marketQuoteDAO;
-    
+
     private final Map<String, List<MarketQuoteRecord>> marketQuotes = new HashMap<>();
     private MarketQuoteDefinition marketQuoteDefinition = null;
-    
+
     @Override
     public void start(IProgressInfo progressInfo) {
         ParamsMgr paramsMgr = ParamsMgr.getInstance();
@@ -97,27 +95,33 @@ public class GMEImporter implements IImportMgr {
     }
 
     private void insertOrUpdateMarketQuote(Map<String, List<MarketQuoteRecord>> marketQuotes) {
-        
+
         marketQuotes.forEach((ticker, listaRecord) -> {
             for (MarketQuoteRecord record : listaRecord) {
-                if(marketQuoteDefinition == null) {
-                    marketQuoteDefinition = marketQuoteDefinitionDAO.findByCodeWithCountry(ticker);
+                if (marketQuoteDefinition == null) {
+                    marketQuoteDefinition = marketQuoteDefinitionDAO.findByCodeWithQuotes(ticker);
                 }
-                if(marketQuoteDefinition != null) {
-                    MarketQuote marketQuote = marketQuoteDAO.findByMarketQuoteIdAndBusinessDate(
-                            marketQuoteDefinition.getMarketQuoteDefinitionId(), record.businessDate());
-                    if(marketQuote != null) {
-                        marketQuote.setPrice(BigDecimal.valueOf(record.price));
+                if (marketQuoteDefinition != null) {
+
+                    final LocalDate businessDate = record.businessDate(); // Variabile finale per la lambda
+                    Optional<MarketQuote> quoteEsistente = marketQuoteDefinition.getQuotes().stream()
+                            .filter(q -> q.getBusinessDate().equals(businessDate))
+                            .findFirst();
+
+                    if (quoteEsistente.isPresent()) {
+                        // SE ESISTE: Aggiorno solo il prezzo (Hibernate farà un UPDATE)
+                        quoteEsistente.get().setPrice(BigDecimal.valueOf(record.price()));
                     } else {
-                        marketQuote = new MarketQuote();
-                        marketQuote.setBusinessDate(record.businessDate());
-                        marketQuote.setPrice(BigDecimal.valueOf(record.price));
-                        marketQuote.setMarketQuoteDefinition(marketQuoteDefinition.getMarketQuoteDefinitionId());
-                        marketQuote.setMarketQuoteId(null);
+                        // SE NON ESISTE: Creo un nuovo record (Hibernate farà un INSERT)
+                        MarketQuote newQuote = new MarketQuote();
+                        newQuote.setBusinessDate(businessDate);
+                        newQuote.setPrice(BigDecimal.valueOf(record.price()));
+
+                        marketQuoteDefinition.getQuotes().add(newQuote);
                     }
-                    marketQuoteDAO.saveOrUpdate(marketQuote);
                 }
             }
+            marketQuoteDefinitionDAO.saveOrUpdate(marketQuoteDefinition);
         });
     }
 

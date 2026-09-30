@@ -5,10 +5,10 @@
 package org.softcaster.engine.shape;
 
 import java.util.List;
+import java.util.Map;
 
 public record ShapeCalculationResult(
         List<ShapeFactor> factors,
-        double normalizationCheck
-        ) {
+        Map<Integer, Double> normalizationChecks) {
 
 }

@@ -8,6 +8,7 @@ import java.time.DayOfWeek;
 
 public record ShapeBucket(
         int month,
-        DayOfWeek  dayOfWeek) {
+        DayOfWeek dayOfWeek,
+        int hourOfDay) {
 
 }

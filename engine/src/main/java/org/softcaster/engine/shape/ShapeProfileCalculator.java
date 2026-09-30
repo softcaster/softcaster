@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.softcaster.engine.enums.ShapeGranularity;
 
 public class ShapeProfileCalculator {
 
@@ -32,7 +33,7 @@ public class ShapeProfileCalculator {
          * 1. Aggregate observations by month + day of week
          */
         Map<ShapeBucket, BucketAggregate> aggregates
-                = aggregate(input.observations());
+                = aggregate(input.observations(), input.granularity());
 
         /*
          * 2. Calculate monthly averages
@@ -77,39 +78,45 @@ public class ShapeProfileCalculator {
          * Weighted average of the shape factors over
          * the observations must be 1.
          */
-        double normalizationCheck
+        Map<Integer, Double> normalizationChecks
                 = calculateNormalization(
                         aggregates,
                         monthlyAverages
                 );
 
-        if (Math.abs(normalizationCheck - 1.0) > EPSILON) {
-            throw new IllegalStateException(
-                    "Shape factors are not normalized. "
-                    + "Expected 1.0 but got "
-                    + normalizationCheck
-            );
+        for (Map.Entry<Integer, Double> entry
+                : normalizationChecks.entrySet()) {
+
+            if (Math.abs(entry.getValue() - 1.0) > EPSILON) {
+
+                throw new IllegalStateException(
+                        "Shape factors are not normalized for month "
+                        + entry.getKey()
+                        + ". Expected 1.0 but got "
+                        + entry.getValue()
+                );
+
+            }
+
         }
 
         return new ShapeCalculationResult(
                 factors,
-                normalizationCheck
+                normalizationChecks
         );
     }
 
     private Map<ShapeBucket, BucketAggregate> aggregate(
-            List<SpotObservation> observations) {
+            List<SpotObservation> observations,
+            ShapeGranularity granularity) {
 
-        Map<ShapeBucket, BucketAggregate> result
-                = new HashMap<>();
+        Map<ShapeBucket, BucketAggregate> result = new HashMap<>();
 
         for (SpotObservation observation : observations) {
 
-            LocalDate date = observation.date();
-
-            ShapeBucket bucket = new ShapeBucket(
-                    date.getMonthValue(),
-                    date.getDayOfWeek()
+            ShapeBucket bucket = createBucket(
+                    observation,
+                    granularity
             );
 
             BucketAggregate aggregate
@@ -168,22 +175,10 @@ public class ShapeProfileCalculator {
         return result;
     }
 
-    private double calculateNormalization(
+    private Map<Integer, Double> calculateNormalization(
             Map<ShapeBucket, BucketAggregate> aggregates,
             Map<Integer, Double> monthlyAverages) {
 
-        /*
-         * For each month:
-         *
-         * sum(
-         *     numberOfDaysInBucket / totalDaysInMonth
-         *     * shapeFactor
-         * ) = 1
-         *
-         * Since the aggregate is based on actual observations,
-         * count() represents the number of observations in
-         * each month/day-of-week bucket.
-         */
         Map<Integer, Integer> totalMonthlyObservations
                 = new HashMap<>();
 
@@ -199,13 +194,13 @@ public class ShapeProfileCalculator {
             );
         }
 
-        double totalWeighted = 0.0;
+        Map<Integer, Double> normalizationChecks
+                = new HashMap<>();
 
         for (Map.Entry<ShapeBucket, BucketAggregate> entry
                 : aggregates.entrySet()) {
 
             ShapeBucket bucket = entry.getKey();
-
             BucketAggregate aggregate = entry.getValue();
 
             int month = bucket.month();
@@ -222,10 +217,14 @@ public class ShapeProfileCalculator {
             double weight
                     = (double) aggregate.count() / totalDays;
 
-            totalWeighted += weight * factor;
+            normalizationChecks.merge(
+                    month,
+                    weight * factor,
+                    Double::sum
+            );
         }
 
-        return totalWeighted;
+        return normalizationChecks;
     }
 
     private static class BucketAggregate {
@@ -251,5 +250,36 @@ public class ShapeProfileCalculator {
                     ? 0.0
                     : sum / count;
         }
+    }
+
+    private ShapeBucket createBucket(
+            SpotObservation observation,
+            ShapeGranularity granularity) {
+
+        LocalDate date = observation.date();
+
+        return switch (granularity) {
+
+            case MONTHLY, WEEKLY ->
+                new ShapeBucket(
+                date.getMonthValue(),
+                null,
+                -1
+                );
+
+            case MONTH_DOW ->
+                new ShapeBucket(
+                date.getMonthValue(),
+                date.getDayOfWeek(),
+                -1
+                );
+
+            case MONTH_DOW_HOUR ->
+                new ShapeBucket(
+                date.getMonthValue(),
+                date.getDayOfWeek(),
+                -1/*observation.hourOfDay()*/
+                );
+        };
     }
 }

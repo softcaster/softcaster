@@ -45,6 +45,11 @@ import org.softcaster.engine.enums.MarketDataSource;
             name = "MarketQuoteDefinition.fullWithCountry",
             attributeNodes = {
                 @NamedAttributeNode("country")}
+    ),
+    @NamedEntityGraph(
+            name = "MarketQuoteDefinition.fullWithQuotes",
+            attributeNodes = {
+                @NamedAttributeNode("quotes")}
     )
 })
 public class MarketQuoteDefinition implements Serializable {

@@ -28,4 +28,12 @@ public interface MarketQuoteDefinitionRepository extends JpaRepository<MarketQuo
         """)
     @EntityGraph("MarketQuoteDefinition.fullWithCountry")
     public MarketQuoteDefinition findByCodeWithCountry(@Param("code") String code);
+
+    @Query("""
+        SELECT mqd
+        FROM MarketQuoteDefinition mqd
+        WHERE mqd.code = :code
+        """)
+    @EntityGraph("MarketQuoteDefinition.fullWithQuotes")
+    public MarketQuoteDefinition findByCodeWithQuotes(@Param("code") String code);
 }
