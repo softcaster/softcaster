@@ -14,12 +14,25 @@ import java.time.temporal.ChronoUnit;
 public class DayCountCalculators {
 
     public static final DayCountCalculator ACT_360 = (start, end, freq)
-            -> ChronoUnit.DAYS.between(start, end) / 360.0;
+            -> {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Start date " + start + " is after end date " + end);
+        }
+        return ChronoUnit.DAYS.between(start, end) / 360.0;
+    };
 
     public static final DayCountCalculator ACT_365 = (start, end, freq)
-            -> ChronoUnit.DAYS.between(start, end) / 365.0;
+            -> {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Start date " + start + " is after end date " + end);
+        }
+        return ChronoUnit.DAYS.between(start, end) / 365.0;
+    };
 
     public static final DayCountCalculator NASD_30_360 = (start, end, freq) -> {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Start date " + start + " is after end date " + end);
+        }
         int d1 = Math.min(start.getDayOfMonth(), 30);
         int d2 = (d1 == 30) ? Math.min(end.getDayOfMonth(), 30) : end.getDayOfMonth();
         return ((end.getYear() - start.getYear()) * 360
@@ -28,6 +41,9 @@ public class DayCountCalculators {
     };
 
     public static final DayCountCalculator ACT_ACT_ICMA = (start, end, freq) -> {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Start date " + start + " is after end date " + end);
+        }
         if (freq == null || freq.getYearFraction() <= 0) {
             return ChronoUnit.DAYS.between(start, end) / 365.0;
         }
@@ -50,6 +66,9 @@ public class DayCountCalculators {
     };
 
     public static final DayCountCalculator EUR_30_360 = (start, end, freq) -> {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Start date " + start + " is after end date " + end);
+        }
         int d1 = Math.min(start.getDayOfMonth(), 30);
         int d2 = Math.min(end.getDayOfMonth(), 30);
         return ((end.getYear() - start.getYear()) * 360
@@ -58,6 +77,9 @@ public class DayCountCalculators {
     };
 
     public static final DayCountCalculator ACT_ACT_ISDA = (start, end, freq) -> {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Start date " + start + " is after end date " + end);
+        }
         int y1 = start.getYear();
         int y2 = end.getYear();
 
