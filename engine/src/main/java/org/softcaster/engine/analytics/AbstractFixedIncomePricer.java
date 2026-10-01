@@ -5,12 +5,15 @@
 package org.softcaster.engine.analytics;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.math.MathUtil;
+import org.softcaster.engine.math.MathUtil.Function1;
 
 public abstract class AbstractFixedIncomePricer {
 
@@ -115,5 +118,48 @@ public abstract class AbstractFixedIncomePricer {
         };
 
         return MathUtil.rootNewton(dmFunction, 0.005, compounding);
+    }
+
+    public double solveZSpread(
+            List<CashFlow> cashflows,
+            double dirtyPrice,
+            LocalDate valuationDate,
+            DaycountBasis dcb,
+            Compounding compounding,
+            Frequency frequency,
+            YieldCurve curve
+    ) {
+
+        double dfSettle = curve.getDiscountFactor(valuationDate);
+
+        // keep only flows paid after settlement
+        List<CashFlow> future = cashflows.stream()
+                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
+                .toList();
+
+        final double[] t = new double[future.size()];
+        final double[] amountTimesDf = new double[future.size()];
+        for (int i = 0; i < future.size(); i++) {
+            CashFlow cf = future.get(i);
+            t[i] = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
+            amountTimesDf[i] = cf.getTotalAmount() * curve.getDiscountFactor(cf.paymentDate()) / dfSettle;
+        }
+
+        Function1 objective = new Function1() {
+            @Override
+            public double f(double s) {
+                return f(s, Compounding.CONTINUOUS);
+            }
+
+            @Override
+            public double f(double s, Compounding c) {
+                double pv = 0;
+                for (int i = 0; i < t.length; i++) {
+                    pv += amountTimesDf[i] * Math.exp(-s * t[i]);YieldCurve.discountFactorFromRate(s, t[i], c);
+                }
+                return pv - dirtyPrice;
+            }
+        };
+        return MathUtil.rootNewton(objective, 0.001, 1e-8, 50, compounding);
     }
 }

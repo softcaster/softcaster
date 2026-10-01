@@ -31,19 +31,44 @@ public class DayCountCalculators {
         if (freq == null || freq.getYearFraction() <= 0) {
             return ChronoUnit.DAYS.between(start, end) / 365.0;
         }
+        int perYear = (int) freq.getYearFraction();          // adjust if it means something else
+        int months = 12 / perYear;
 
-        // 1. Quanti giorni ci sono tra le due date cedolari?
-        double actualDays = ChronoUnit.DAYS.between(start, end);
+        int whole = 0;
+        // whole periods counted backwards from end (anchored on 'end' to avoid month-end drift)
+        while (!end.minusMonths((long) (whole + 1) * months).isBefore(start)) {
+            whole++;
+        }
+        LocalDate stubEnd = end.minusMonths((long) whole * months);
+        if (stubEnd.isEqual(start)) {
+            return whole / (double) perYear;
+        }
+        LocalDate refStart = end.minusMonths((long) (whole + 1) * months);
+        double stub = (double) ChronoUnit.DAYS.between(start, stubEnd)
+                / ChronoUnit.DAYS.between(refStart, stubEnd);
+        return (whole + stub) / perYear;
+    };
 
-        // 2. Quanti giorni ci sarebbero stati se il periodo fosse stato "pieno"?
-        // Se il periodo è già pieno (es. 6 mesi su semestrale), coincide con actualDays.
-        // Usiamo la frequenza per determinare la durata del periodo di riferimento.
-        long monthsInPeriod = 12 / freq.getYearFraction();
-        LocalDate theoreticalStart = end.minusMonths(monthsInPeriod);
-        double daysInReferencePeriod = ChronoUnit.DAYS.between(theoreticalStart, end);
+    public static final DayCountCalculator EUR_30_360 = (start, end, freq) -> {
+        int d1 = Math.min(start.getDayOfMonth(), 30);
+        int d2 = Math.min(end.getDayOfMonth(), 30);
+        return ((end.getYear() - start.getYear()) * 360
+                + (end.getMonthValue() - start.getMonthValue()) * 30
+                + (d2 - d1)) / 360.0;
+    };
 
-        // 3. Formula ICMA:
-        // (Giorni Effettivi / Giorni Periodo Riferimento) / Frequenza
-            return (actualDays / daysInReferencePeriod) / (double) freq.getYearFraction();
+    public static final DayCountCalculator ACT_ACT_ISDA = (start, end, freq) -> {
+        int y1 = start.getYear();
+        int y2 = end.getYear();
+
+        // same calendar year: actual days / days in that year
+        if (y1 == y2) {
+            return ChronoUnit.DAYS.between(start, end) / (double) start.lengthOfYear();
+        }
+
+        // portion in the first year, whole years in between, portion in the last year
+        double first = ChronoUnit.DAYS.between(start, LocalDate.of(y1 + 1, 1, 1)) / (double) start.lengthOfYear();
+        double last = ChronoUnit.DAYS.between(LocalDate.of(y2, 1, 1), end) / (double) end.lengthOfYear();
+        return first + (y2 - y1 - 1) + last;
     };
 }

@@ -77,26 +77,36 @@ public final class MathUtil {
      * @param function
      * @param guess initial guess of the location of the root. Excel's RATE() &
      * IRR() default is 0.10
-     * @param h for convergence criteria and computing numerical derivative
+     * @param tol
      * @param maxIterates max number of iterates before bailing out
      * @param compounding
      * @return
      */
-    public static double rootNewton(Function1 function, double guess, double h, int maxIterates, Compounding compounding) {
-        double x0 = guess * 100;                  // dummy default
-        double x1 = guess;
-        int iterates = 0;
+    public static double rootNewton(Function1 function, double guess, double tol,
+            int maxIterates, Compounding compounding) {
+        double x = guess;
+        for (int i = 0; i < maxIterates; i++) {
+            double fx = function.f(x, compounding);
+            double dfx = derivative(function, x, compounding);
 
-        while (Math.abs(x1 - x0) > h) {
-            x0 = x1;
-            x1 = x0 - function.f(x0, compounding) / differentiateSterling0(function, x0, h);
-            iterates++;
-            if (iterates > maxIterates) {
-                throw new ArithmeticException("Failed to converge after " + Integer.toString(maxIterates) + " iterations.");
+            if (!Double.isFinite(fx) || !Double.isFinite(dfx) || dfx == 0.0) {
+                throw new ArithmeticException("Newton failed at x=" + x + ": f=" + fx + ", f'=" + dfx);
             }
+            double next = x - fx / dfx;
+            if (Math.abs(next - x) <= tol) {
+                return next;
+            }
+            x = next;
         }
+        throw new ArithmeticException("Failed to converge after " + maxIterates + " iterations.");
+    }
 
-        return x1;
+    /**
+     * Central difference, using the same compounding as the objective.
+     */
+    private static double derivative(Function1 f, double x, Compounding c) {
+        final double h = 1e-6;
+        return (f.f(x + h, c) - f.f(x - h, c)) / (2.0 * h);
     }
 
     /**

@@ -250,12 +250,12 @@ public class TestMarketDataService {
         SecurityMasterData smd = smdDAO.findByIsin("IT0004532559").orElse(null);
         if (smd != null) {
             // FMIRS ITAYIELD TERMESTR
-            marketDataService.loadCurveCurveRates("ECBYC");
-            org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("ECBYC");
+            marketDataService.loadCurveCurveRates("EcbYiedCurve");
+            org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("EcbYiedCurve");
             if (yieldCurve != null) {
                 double price = bondCalculator.calculatePrice(smd, marketDataService.getOfficialDate(), yieldCurve);
                 System.out.println(price);
-                System.out.println(marketDataService.getSpotPrice("IT0004532559", RequestType.ASK));
+                System.out.println(marketDataService.getSpotPrice("IT0004532559", RequestType.BID));
             }
         }
     }
@@ -308,7 +308,7 @@ public class TestMarketDataService {
     private void testEcbYieldCurve() {
 
         ECBProvider provider = ECBProvider.getInstance();
-        List<Node> nodes = provider.getYieldCurveNodes("EcbYiedCurve");
+        List<Node> nodes = provider.getYieldCurveNodes("ECBYC");
 
         List<CurveNodeInput> rawNodes = YieldCurveHelper.getCNIList(nodes);
         LocalDate officialDate = marketDataService.getOfficialDate();
