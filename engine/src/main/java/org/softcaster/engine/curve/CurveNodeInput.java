@@ -18,7 +18,7 @@ public record CurveNodeInput(
     CurveNodeType nodeType
 ) {
 
-    // Costruttore compatto per quando legge da DB (senza DF)
+    // Costruttore secondario per quando legge da DB (senza DF)
     public CurveNodeInput(String symbol, Offset tenorOffset, double rate, DaycountBasis daycount, Compounding compounding, CurveNodeType nodeType) {
         this(symbol, tenorOffset, rate, 1.0, daycount, compounding, nodeType); 
     }
@@ -27,5 +27,7 @@ public record CurveNodeInput(
     public CurveNodeInput withDiscountFactor(double newDiscountFactor) {
         return new CurveNodeInput(this.symbol, this.tenorOffset, this.rate, newDiscountFactor, this.daycount, this.compounding, this.nodeType);
     }
+    
+    public boolean hasDiscountFactor() { return !Double.isNaN(discountFactor); }
 }
 

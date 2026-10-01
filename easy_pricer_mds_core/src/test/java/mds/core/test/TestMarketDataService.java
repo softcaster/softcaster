@@ -38,6 +38,8 @@ import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.cashflow.AmortizedCostPeriod;
+import org.softcaster.engine.curve.CurveBootstrapper;
+import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
 import org.softcaster.engine.dto.ForwardBaseInputData;
@@ -146,7 +148,7 @@ public class TestMarketDataService {
         input.setDomesticRateCurve(domesticYC);
         input.setUnderlyingReferencePrice(marketDataService.getSpotPrice("EURUSD", RequestType.BID));
         input.setValuationDate(LocalDate.now());
-        input.setMaturityDate(LocalDate.of(2026, 06, 05));
+        input.setMaturityDate(LocalDate.of(2026, 10, 05));
 
         FxForwardPricer pricer = new FxForwardPricer();
         double f = pricer.forwardPrice2(input);
@@ -274,10 +276,10 @@ public class TestMarketDataService {
         //testRunner.testDbAccess();
         //testRunner.testYieldCurve();
         //testRunner.testDiscountFactor();
-        // testRunner.testEcbYieldCurve();
+        testRunner.testEcbYieldCurve();
         // testRunner.testBondPricer();
         //testRunner.testFltBondPricer();
-        testRunner.testFltBondPricer2();
+        //testRunner.testFltBondPricer2();
     }
 
     // Ricava i DF per una serie di date passate in input (ipotetiche scadenze
@@ -310,7 +312,8 @@ public class TestMarketDataService {
 
         List<CurveNodeInput> rawNodes = YieldCurveHelper.getCNIList(nodes);
         LocalDate officialDate = marketDataService.getOfficialDate();
-        org.softcaster.engine.curve.YieldCurve yc = new org.softcaster.engine.curve.YieldCurve(officialDate, Currency.getInstance("EUR"), rawNodes);
+        List<CurveNode> curveNodes = CurveBootstrapper.bootstrapFromCNI(officialDate, rawNodes);
+        org.softcaster.engine.curve.YieldCurve yc = org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, Currency.getInstance("EUR"), curveNodes);
 
         List<OrderedDiscountFactor> dfs = yc.getOrderedDiscountFactors();
         for (OrderedDiscountFactor odf : dfs) {

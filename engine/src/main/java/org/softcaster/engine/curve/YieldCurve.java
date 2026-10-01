@@ -4,155 +4,245 @@
  */
 package org.softcaster.engine.curve;
 
-import java.time.LocalDate;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.stream.Collectors;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import org.softcaster.engine.enums.Compounding;
-import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
-import org.softcaster.engine.enums.OffsetType;
-import org.softcaster.engine.math.MathUtil;
 
-public class YieldCurve {
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
-    private final LocalDate valuationDate; // officialDate
-    private final Currency currency;       // La divisa della curva (es. EUR, USD)
+/**
+ * Immutable discount curve (the snapshot is replaced atomically).
+ *
+ * Internally: days from the valuation date -> discount factor. Log-linear
+ * interpolation on DFs (equivalent to a constant continuous forward rate
+ * between nodes, with an ACT/365 time scale). Extrapolation uses a constant
+ * continuous zero rate beyond the last node. Day count and compounding only
+ * matter on input (nodesFromZeroRates) and on output (getZeroRate,
+ * getForwardRate).
+ */
+public final class YieldCurve {
 
-    // Struttura interna core: mappa i giorni dal valuationDate al Discount Factor
-    // // Struttura thread-safe concorrente e ordinata 
-    private final ConcurrentSkipListMap<Integer, CurveNodeInput> discountFactors = new ConcurrentSkipListMap<>();
+    private final LocalDate valuationDate;
+    private final Currency currency;
+    private final DaycountBasis daycount = DaycountBasis.ACT_365;
 
-    /**
-     * Costruttore della YieldCurve
-     *
-     * @param officialDate Data di valutazione a partire dalla quale calcolare
-     * le scadenze
-     * @param currency Valuta di riferimento della curva
-     * @param rawNodes
-     */
-    public YieldCurve(LocalDate officialDate, Currency currency, List<CurveNodeInput> rawNodes) {
-        this.valuationDate = officialDate;
-        this.currency = currency;
+    // Immutable snapshot: days -> DF. Always contains day 0 with DF = 1.
+    private volatile NavigableMap<Integer, Double> dfs;
 
-        // Il giorno 0 (oggi) ha sempre un fattore di sconto pari a 1.0
-        CurveNodeInput todayInput = new CurveNodeInput("", new Offset(0, OffsetType.DAYS), 0, 1, DaycountBasis.ACT_365, Compounding.COMPOUNDED, CurveNodeType.MONEY_MARKET);
-        this.discountFactors.put(0, todayInput);
-
-        // Costruisci i Discount Factors partendo dagli input
-        buildCurve(rawNodes);
+    private YieldCurve(LocalDate valuationDate, Currency currency, List<CurveNode> nodes) {
+        this.valuationDate = Objects.requireNonNull(valuationDate, "valuationDate must not be null");
+        this.currency = Objects.requireNonNull(currency, "currency must not be null");
+        this.dfs = build(nodes);
+    }
+    
+    // ------------------------------------------------------------------ construction
+    public static YieldCurve fromDiscountFactors(LocalDate valuationDate, Currency currency, List<CurveNode> nodes) {
+        return new YieldCurve(valuationDate, currency, nodes);
     }
 
-    private void buildCurve(List<CurveNodeInput> rawNodes) {
-        for (CurveNodeInput node : rawNodes) {
-            LocalDate maturityDate = parseTenorOffset(this.valuationDate, node.tenorOffset());
-            int days = (int) java.time.temporal.ChronoUnit.DAYS.between(this.valuationDate, maturityDate);
+    /**
+     * Atomically replaces the nodes. Readers see either the old or the new
+     * curve, never a mix.
+     * @param nodes
+     */
+    public void update(List<CurveNode> nodes) {
+        this.dfs = build(nodes);
+    }
 
-            // 1. Tempo nativo del nodo (es. days / 360.0)
-            double tNodo = (double) days / node.daycount().getTime();
+    public void updateCurve(List<CurveNodeInput> nodes) {
+    }
 
-            // 2. Tempo target uniforme per la curva continua (days / 365.0)
-            double t365 = (double) days / 365.0;
-
-            // 3. Conversione esatta usando entrambe le frazioni d'anno
-            double continuousRate = MathUtil.toContinuousRate(node.compounding(), node.rate(), tNodo, t365);
-
-            // 4. DF calcolato in continua su base 365
-            double df = Math.exp(-continuousRate * t365);
-
-            // Memorizziamo il nodo aggiornato nella mappa concorrente
-            CurveNodeInput finalizedNode = node.withDiscountFactor(df);
-            this.discountFactors.put(days, finalizedNode);
+    private static NavigableMap<Integer, Double> build(List<CurveNode> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            throw new IllegalArgumentException("No nodes provided for the curve.");
         }
-    }
-
-    /**
-     * Aggiorna i fattori di sconto della curva sostituendo i vecchi valori con
-     * i nuovi input ricevuti dal provider.
-     *
-     * @param newInputs La nuova lista di nodi aggiornati dal provider
-     */
-    public synchronized void updateCurve(List<CurveNodeInput> newInputs) {
-        if (newInputs == null || newInputs.isEmpty()) {
-            throw new IllegalArgumentException("Update failed.");
+        TreeMap<Integer, Double> m = new TreeMap<>();
+        m.put(0, 1.0);
+        for (CurveNode n : nodes) {
+            if (m.put(n.days(), n.df()) != null) {
+                throw new IllegalArgumentException("Duplicate maturity at " + n.days() + " days");
+            }
         }
-
-        // 1. Svuota la struttura 
-        this.discountFactors.clear();
-
-        // 2. Ricostruisci i fattori di sconto usando la logica esistente
-        this.buildCurve(newInputs);
+        return Collections.unmodifiableNavigableMap(m);
     }
 
     /**
-     * Parsing rudimentale ma efficace dell'offset per calcolare la data futura
+     * Converts zero-rate quotes (e.g. ECB spot rates) into nodes with discount
+     * factors. Uses the day count and compounding of each quote.
+     * @param valuationDate
+     * @param zeroQuotes
+     * @return 
      */
-    private LocalDate parseTenorOffset(LocalDate baseDate, Offset offset) {
+    public static List<CurveNode> nodesFromZeroRates(LocalDate valuationDate, List<MarketQuote> zeroQuotes) {
+        List<CurveNode> out = new ArrayList<>();
+        for (MarketQuote q : zeroQuotes) {
+            LocalDate mat = addOffset(valuationDate, q.tenorOffset());
+            int days = (int) ChronoUnit.DAYS.between(valuationDate, mat);
+            double tau = yearFraction(valuationDate, mat, q.daycount());
+            out.add(new CurveNode(days, discountFactorFromRate(q.rate(), tau, q.compounding())));
+        }
+        return out;
+    }
 
-        return switch (offset.offsetType()) {
-            case DAYS ->
-                baseDate.plusDays(offset.step());
-            case MONTHS ->
-                baseDate.plusMonths(offset.step());
-            case YEARS ->
-                baseDate.plusYears(offset.step());
-            //case NONE ->{};
-            default ->
-                throw new IllegalArgumentException("Offset not supported: " + offset.offsetType().getDescription());
+    // ------------------------------------------------------------------ discount factors
+    public double getDiscountFactor(LocalDate date) {
+        return getDiscountFactor((int) ChronoUnit.DAYS.between(valuationDate, date));
+    }
+
+    public double getDiscountFactor(int days) {
+        if (days < 0) {
+            throw new IllegalArgumentException("Date is before the valuation date");
+        }
+        final NavigableMap<Integer, Double> snap = this.dfs;   // read the volatile field only once
+
+        Map.Entry<Integer, Double> low = snap.floorEntry(days);   // never null: day 0 is always present
+        if (low.getKey() == days) {
+            return low.getValue();
+        }
+        Map.Entry<Integer, Double> high = snap.ceilingEntry(days);
+
+        if (high == null) {   // beyond the last node: constant continuous zero rate
+            double z = -Math.log(low.getValue()) / (low.getKey() / 365.0);
+            return Math.exp(-z * days / 365.0);
+        }
+        double w = (double) (days - low.getKey()) / (high.getKey() - low.getKey());
+        return low.getValue() * Math.pow(high.getValue() / low.getValue(), w);
+    }
+
+    // ------------------------------------------------------------------ output rates
+    /**
+     * Zero rate from the valuation date to 'date'.
+     * @param date
+     * @param dc
+     * @param c
+     * @return 
+     */
+    public double getZeroRate(LocalDate date, DaycountBasis dc, Compounding c) {
+        return getForwardRate(valuationDate, date, dc, c);
+    }
+
+    /**
+     * Forward rate between start and end, with the requested day count and
+     * compounding.
+     * @param start
+     * @param end
+     * @param dc
+     * @param c
+     * @return 
+     */
+    public double getForwardRate(LocalDate start, LocalDate end, DaycountBasis dc, Compounding c) {
+        if (start.isBefore(valuationDate)) {
+            throw new IllegalArgumentException("Start date is before the valuation date");
+        }
+        if (!end.isAfter(start)) {
+            throw new IllegalArgumentException("End date must be after the start date");
+        }
+        double tau = yearFraction(start, end, dc);
+        double growth = getDiscountFactor(start) / getDiscountFactor(end);
+        return switch (c) {
+            case CONTINUOUS ->
+                Math.log(growth) / tau;
+            case SIMPLE ->
+                (growth - 1.0) / tau;
+            case COMPOUNDED ->
+                Math.pow(growth, 1.0 / tau) - 1.0;
+            case SIMPLE_THEN_COMPOUNDED ->
+                tau <= 1.0
+                ? (growth - 1.0) / tau
+                : Math.pow(growth, 1.0 / tau) - 1.0;
         };
     }
 
-    public double getDiscountFactor(LocalDate targetDate) {
-        int days = (int) java.time.temporal.ChronoUnit.DAYS.between(this.valuationDate, targetDate);
-        return getDiscountFactor(days);
+    // ------------------------------------------------------------------ static utilities
+    /**
+     * Discount factor equivalent to a given rate over a period of year fraction
+     * tau.
+     * @param rate
+     * @param tau
+     * @param c
+     * @return 
+     */
+    public static double discountFactorFromRate(double rate, double tau, Compounding c) {
+        return switch (c) {
+            case CONTINUOUS ->
+                Math.exp(-rate * tau);
+            case SIMPLE ->
+                1.0 / (1.0 + rate * tau);
+            case COMPOUNDED ->
+                Math.pow(1.0 + rate, -tau);
+            case SIMPLE_THEN_COMPOUNDED ->
+                tau <= 1.0
+                ? 1.0 / (1.0 + rate * tau)
+                : Math.pow(1.0 + rate, -tau);
+        };
     }
 
     /**
-     * Interpola log-linearmente la curva per restituire il Discount Factor a un
-     * giorno generico T
-     *
-     * @param targetDays
-     * @return
+     * Year fraction for day counts suitable for curve rates (no ACT/ACT: it
+     * needs coupon dates).
+     * @param from
+     * @param to
+     * @param dc
+     * @return 
      */
-    public double getDiscountFactor(int targetDays) {
-        // 1. Corrispondenza esatta sul nodo
-        if (discountFactors.containsKey(targetDays)) {
-            return discountFactors.get(targetDays).discountFactor();
-        }
-
-        // 2. Recupero dei nodi adiacenti
-        Map.Entry<Integer, CurveNodeInput> low = discountFactors.floorEntry(targetDays);
-        Map.Entry<Integer, CurveNodeInput> high = discountFactors.ceilingEntry(targetDays);
-
-        // 3. Estrapolazione piatta sui confini
-        if (low == null) {
-            return high.getValue().discountFactor();
-        }
-        if (high == null) {
-            return low.getValue().discountFactor();
-        }
-
-        int t0 = low.getKey();
-        int t1 = high.getKey();
-
-        double df0 = low.getValue().discountFactor();
-        double df1 = high.getValue().discountFactor();
-
-        // 4. Interpolazione log-lineare originale sui DF
-        double weight = (double) (targetDays - t0) / (double) (t1 - t0);
-        /*
-        double logDf = Math.log(df0) + (Math.log(df1) - Math.log(df0)) * weight;
-        return Math.exp(logDf);
-         */
-        // Equivalente applicando l'esponenziale ad entrambi i lati
-        double df = df0 * Math.pow((df1 / df0), weight);
-        return df;
+    public static double yearFraction(LocalDate from, LocalDate to, DaycountBasis dc) {
+        long d = ChronoUnit.DAYS.between(from, to);
+        return switch (dc) {
+            case ACT_360 ->
+                d / 360.0;
+            case ACT_365 ->
+                d / 365.0;
+            case NASD_30_360 ->
+                thirty360(from, to, false);
+            case EUR_30_360 ->
+                thirty360(from, to, true);
+            default ->
+                throw new IllegalArgumentException("Day count not supported for curves: " + dc);
+        };
     }
 
-    // Getters di servizio
+    // Simplified version: does not handle the end-of-February rules of US 30/360.
+    private static double thirty360(LocalDate a, LocalDate b, boolean european) {
+        int d1 = a.getDayOfMonth();
+        int d2 = b.getDayOfMonth();
+        if (european) {
+            d1 = Math.min(d1, 30);
+            d2 = Math.min(d2, 30);
+        } else {
+            if (d1 == 31) {
+                d1 = 30;
+            }
+            if (d2 == 31 && d1 == 30) {
+                d2 = 30;
+            }
+        }
+        return (360.0 * (b.getYear() - a.getYear())
+                + 30.0 * (b.getMonthValue() - a.getMonthValue())
+                + (d2 - d1)) / 360.0;
+    }
+
+    static LocalDate addOffset(LocalDate base, Offset o) {
+        return switch (o.offsetType()) {
+            case DAYS ->
+                base.plusDays(o.step());
+            case MONTHS ->
+                base.plusMonths(o.step());
+            case YEARS ->
+                base.plusYears(o.step());
+            default ->
+                throw new IllegalArgumentException("Offset type not supported: " + o.offsetType());
+        };
+    }
+
+    // ------------------------------------------------------------------ getters
     public LocalDate getValuationDate() {
         return valuationDate;
     }
@@ -162,57 +252,24 @@ public class YieldCurve {
     }
 
     /**
-     * Calcola il tasso Forward implicito composto continuo (ACT/365) tra due
-     * date future.
-     *
-     * @param startDate Data di inizio del periodo Forward (deve essere >=
-     * valuationDate)
-     * @param endDate Data di fine del periodo Forward (deve essere > startDate)
-     * @return Il tasso Forward continuo annualizzato (es. 0.0365 per il 3.65%)
+     * Nodes (excluding day 0), ordered by maturity.
+     * @return 
      */
-    public double getContinuousForwardRate(LocalDate startDate, LocalDate endDate) {
-        if (startDate.isBefore(this.valuationDate)) {
-            throw new IllegalArgumentException("La data di inizio Forward non può essere antecedente alla data di valutazione della curva.");
-        }
-        if (!endDate.isAfter(startDate)) {
-            throw new IllegalArgumentException("La data di fine Forward deve essere successiva alla data di inizio.");
-        }
-
-        // 1. Calcola i giorni relativi dalla data di valutazione (T) ai due nodi futuri
-        int daysToStart = (int) java.time.temporal.ChronoUnit.DAYS.between(this.valuationDate, startDate);
-        int daysToEnd = (int) java.time.temporal.ChronoUnit.DAYS.between(this.valuationDate, endDate);
-
-        // 2. Estrae i rispettivi fattori di sconto (sfruttando l'interpolazione log-lineare interna)
-        double dfStart = this.getDiscountFactor(daysToStart);
-        double dfEnd = this.getDiscountFactor(daysToEnd);
-
-        // 3. Calcola il tenor (frazione d'anno) del periodo Forward su base ACT/365
-        double forwardTenor365 = (double) (daysToEnd - daysToStart) / 365.0;
-
-        // 4. Applica la formula di non arbitraggio dei DF continui: ln(DF_start / DF_end) / Tenor
-        return Math.log(dfStart / dfEnd) / forwardTenor365;
-    }
-
-    public List<OrderedDiscountFactor> getOrderedDiscountFactors() {
-        if (valuationDate == null) {
-            throw new IllegalArgumentException("La data ufficiale non può essere nulla.");
-        }
-
-        // Sfruttiamo lo stream della mappa. Essendo una ConcurrentSkipListMap,
-        // l'entrySet() viene già iterato in ordine crescente di giorni (chiave Integer).
-        return discountFactors.entrySet().stream()
-                .map(entry -> {
-                    int daysToAdd = entry.getKey();
-                    // Aggiunge i giorni alla data ufficiale di riferimento
-                    LocalDate calculatedDate = valuationDate.plusDays(daysToAdd);
-
-                    return new OrderedDiscountFactor(calculatedDate, entry.getValue().discountFactor(), daysToAdd);
-                })
+    public List<CurveNode> getNodes() {
+        return dfs.entrySet().stream()
+                .filter(e -> e.getKey() > 0)
+                .map(e -> new CurveNode(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
     }
 
-    public Collection<CurveNodeInput> getAllNodes() {
-        // Restituisce una vista non modificabile dei valori della ConcurrentSkipListMap
-        return java.util.Collections.unmodifiableCollection(this.discountFactors.values());
+    public List<CurveNodeInput> getAllNodes() {
+        return null;
+    }
+
+    public List<OrderedDiscountFactor> getOrderedDiscountFactors() {
+        final NavigableMap<Integer, Double> snap = this.dfs;
+        return snap.entrySet().stream()
+                .map(e -> new OrderedDiscountFactor(valuationDate.plusDays(e.getKey()), e.getValue(), e.getKey()))
+                .collect(Collectors.toList());
     }
 }

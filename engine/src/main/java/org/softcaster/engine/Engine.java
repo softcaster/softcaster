@@ -280,7 +280,7 @@ public class Engine {
         node = new CurveNodeInput("", new Offset(2, OffsetType.YEARS), 0.02189, DaycountBasis.ACT_365, Compounding.COMPOUNDED, CurveNodeType.MONEY_MARKET);
         inputs.add(node);
 
-        YieldCurve curve = new YieldCurve(officialDate, currency, inputs);
+        YieldCurve curve = null/*YieldCurve.fromDiscountFactors2(officialDate, currency, inputs)*/;
 
         LocalDate targetDate = LocalDate.of(2026, 9, 27);
         double df = curve.getDiscountFactor(targetDate);

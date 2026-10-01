@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.core.data.YieldCurveItem;
+import org.softcaster.engine.curve.CurveBootstrapper;
+import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.CurveNodeInput;
 import org.softcaster.engine.curve.Offset;
 import org.softcaster.engine.enums.Compounding;
@@ -33,7 +35,8 @@ public class YieldCurveBuilder {
         org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
         if (dbCurve != null) {
             Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
-            return new org.softcaster.engine.curve.YieldCurve(officialDate, currency, newInputs);
+            List<CurveNode> nodes = CurveBootstrapper.bootstrapFromCNI(officialDate, newInputs);
+            return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
         } else {
             return null;
         }

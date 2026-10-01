@@ -11,7 +11,8 @@ package org.softcaster.engine.enums;
 public enum CurveNodeType implements IdentifiableEnum {
 
     MONEY_MARKET(1, "MONEY_MARKET", "Money Market"),
-    SWAP(2, "SWAP", "Swap");
+    SWAP(2, "SWAP", "Swap"),
+    ZERO_RATES(3, "ZERO_RATES", "Zero Rate");
 
     private final int id;
     private final String code;
