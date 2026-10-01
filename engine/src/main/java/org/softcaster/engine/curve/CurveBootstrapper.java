@@ -55,11 +55,14 @@ public final class CurveBootstrapper {
             throw new IllegalArgumentException("No quotes provided.");
         }
 
-        // 1. Split deposits and swaps
+        // 1. Split deposits, swaps and zero_rates
+        List<MarketQuote> zeroRates = new ArrayList<>();
         List<MarketQuote> depos = new ArrayList<>();
         TreeMap<Integer, MarketQuote> swaps = new TreeMap<>();   // years -> quote
         for (MarketQuote q : quotes) {
             switch (q.nodeType()) {
+                case ZERO_RATES ->
+                    zeroRates.add(q);
                 case MONEY_MARKET ->
                     depos.add(q);
                 case SWAP -> {
@@ -118,6 +121,23 @@ public final class CurveBootstrapper {
             }
             double tau = YieldCurve.yearFraction(valuationDate, mat, d.daycount());
             result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(d.rate(), tau, Compounding.SIMPLE)));
+        }
+
+        // 4. Zero rates: DF depends on each quote's compounding/day count
+        for (MarketQuote zr : zeroRates) {
+            if (zr.daycount() != DaycountBasis.ACT_360 && zr.daycount() != DaycountBasis.ACT_365) {
+                throw new IllegalArgumentException("Unsupported zero-rate day count: " + zr.symbol());
+            }
+            if (zr.compounding() != Compounding.COMPOUNDED && zr.compounding() != Compounding.CONTINUOUS) {
+                throw new IllegalArgumentException("Zero rates must use COMPOUNDED or CONTINUOUS compounding: " + zr.symbol());
+            }
+            LocalDate mat = YieldCurve.addOffset(valuationDate, zr.tenorOffset());
+            int days = (int) ChronoUnit.DAYS.between(valuationDate, mat);
+            if (days <= 0) {
+                throw new IllegalArgumentException("Zero-rate maturity must be positive: " + zr.symbol());
+            }
+            double tau = YieldCurve.yearFraction(valuationDate, mat, zr.daycount());
+            result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(zr.rate(), tau, zr.compounding())));
         }
 
         result.sort(Comparator.comparingInt(CurveNode::days));

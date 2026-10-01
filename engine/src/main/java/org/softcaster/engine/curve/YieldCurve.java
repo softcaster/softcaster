@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * interpolation on DFs (equivalent to a constant continuous forward rate
  * between nodes, with an ACT/365 time scale). Extrapolation uses a constant
  * continuous zero rate beyond the last node. Day count and compounding only
- * matter on input (nodesFromZeroRates) and on output (getZeroRate,
+ * matter on input and on output (getZeroRate,
  * getForwardRate).
  */
 public final class YieldCurve {
@@ -72,24 +72,6 @@ public final class YieldCurve {
             }
         }
         return Collections.unmodifiableNavigableMap(m);
-    }
-
-    /**
-     * Converts zero-rate quotes (e.g. ECB spot rates) into nodes with discount
-     * factors. Uses the day count and compounding of each quote.
-     * @param valuationDate
-     * @param zeroQuotes
-     * @return 
-     */
-    public static List<CurveNode> nodesFromZeroRates(LocalDate valuationDate, List<MarketQuote> zeroQuotes) {
-        List<CurveNode> out = new ArrayList<>();
-        for (MarketQuote q : zeroQuotes) {
-            LocalDate mat = addOffset(valuationDate, q.tenorOffset());
-            int days = (int) ChronoUnit.DAYS.between(valuationDate, mat);
-            double tau = yearFraction(valuationDate, mat, q.daycount());
-            out.add(new CurveNode(days, discountFactorFromRate(q.rate(), tau, q.compounding())));
-        }
-        return out;
     }
 
     // ------------------------------------------------------------------ discount factors

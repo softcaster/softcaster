@@ -145,7 +145,7 @@ public class ECBProvider extends AbstractProvider {
             }
             Offset offset = new Offset(step, offsetType);
             Data data = new Data(rate / 100., rate / 100.);
-            return new Node(maturity, offset, data, "ACT_365", "CONTINUOUS", "MONEY_MARKET");
+            return new Node(maturity, offset, data, "ACT_365", "CONTINUOUS", "ZERO_RATES");
         } catch (ParseException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return null;
