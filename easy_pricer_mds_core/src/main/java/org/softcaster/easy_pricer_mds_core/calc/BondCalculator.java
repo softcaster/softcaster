@@ -108,6 +108,19 @@ public class BondCalculator {
         return accruals;
     }
 
+    public double getZSpread(SecurityMasterData securityMasterData,
+            double dirtyPrice,
+            LocalDate valuationDate,
+            YieldCurve curve) {
+        
+        double zSpread = 0.;
+        List<CashFlow> cashflows = Utils.convertCashFlow(securityMasterData.getCashFlows());
+        zSpread = bondPricer.solveZSpread(cashflows, dirtyPrice, valuationDate, securityMasterData.getAccrualDaycount(), 
+                securityMasterData.getCompounding(), securityMasterData.getFrequency(), curve);
+        
+        return zSpread;
+    }
+
     public double repriceBondForYieldShift(SecurityMasterData securityMasterData, LocalDate officialDate, double ytm, double basisPoints) {
 
         double yieldShift = basisPoints / 100.;

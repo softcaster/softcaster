@@ -12,8 +12,8 @@ package org.softcaster.engine.curve;
 public record CurveNode(int days, double df, MarketQuote mq) {
 
     public CurveNode {
-        if (days <= 0) {
-            throw new IllegalArgumentException("days must be > 0 (day 0 is implicit): " + days);
+        if (days < 0) {
+            throw new IllegalArgumentException("days must be >= 0 : " + days);
         }
         if (!Double.isFinite(df) || df <= 0.0) {
             throw new IllegalArgumentException("Invalid discount factor at " + days + " days: " + df);

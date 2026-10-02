@@ -25,30 +25,6 @@ public final class CurveBootstrapper {
     private CurveBootstrapper() {
     }
 
-    private static List<MarketQuote> fromCNI(List<CurveNodeInput> quotes) {
-        if (quotes != null && !quotes.isEmpty()) {
-
-            List<MarketQuote> marketQuotes = new ArrayList<>();
-            for (CurveNodeInput input : quotes) {
-                MarketQuote mq = new MarketQuote(input.getMarketQuote().symbol(),
-                        input.getMarketQuote().tenorOffset(),
-                        input.getMarketQuote().rate(),
-                        input.getMarketQuote().daycount(),
-                        input.getMarketQuote().compounding(),
-                        input.getMarketQuote().nodeType());
-                marketQuotes.add(mq);
-            }
-            return marketQuotes;
-        } else {
-            return null;
-        }
-    }
-
-    public static List<CurveNode> bootstrapFromCNI(LocalDate valuationDate, List<CurveNodeInput> cniQuotes) {
-        List<MarketQuote> quotes = fromCNI(cniQuotes);
-        return bootstrap(valuationDate, quotes);
-    }
-
     public static List<CurveNode> bootstrap(LocalDate valuationDate, List<MarketQuote> quotes) {
         Objects.requireNonNull(valuationDate, "valuationDate must not be null");
         if (quotes == null || quotes.isEmpty()) {
@@ -98,7 +74,7 @@ public final class CurveBootstrapper {
                 }
                 annuity += df;
                 int days = (int) ChronoUnit.DAYS.between(valuationDate, valuationDate.plusYears(n));
-                result.add(new CurveNode(days, df, null));
+                result.add(new CurveNode(days, df, swaps.get(n)));
             }
             firstSwapDays = result.get(0).days();
         }
@@ -120,7 +96,7 @@ public final class CurveBootstrapper {
                 continue;
             }
             double tau = YieldCurve.yearFraction(valuationDate, mat, d.daycount());
-            result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(d.rate(), tau, d.compounding()),null));
+            result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(d.rate(), tau, d.compounding()), d));
         }
 
         // 4. Zero rates: DF depends on each quote's compounding/day count
@@ -137,7 +113,7 @@ public final class CurveBootstrapper {
                 throw new IllegalArgumentException("Zero-rate maturity must be positive: " + zr.symbol());
             }
             double tau = YieldCurve.yearFraction(valuationDate, mat, zr.daycount());
-            result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(zr.rate(), tau, zr.compounding()),null));
+            result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(zr.rate(), tau, zr.compounding()), zr));
         }
 
         result.sort(Comparator.comparingInt(CurveNode::days));

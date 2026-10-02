@@ -154,11 +154,14 @@ public abstract class AbstractFixedIncomePricer {
             public double f(double s, Compounding c) {
                 double pv = 0;
                 for (int i = 0; i < t.length; i++) {
-                    pv += amountTimesDf[i] * Math.exp(-s * t[i]);YieldCurve.discountFactorFromRate(s, t[i], c);
+                    //pv += amountTimesDf[i] * Math.exp(-s * t[i]);
+                    pv += amountTimesDf[i] * YieldCurve.discountFactorFromRate(s, t[i], c);
+                    //YieldCurve.discountFactorFromRate(s, t[i], c);
                 }
+                System.out.println(pv + " : " + dirtyPrice + "\t" + s);
                 return pv - dirtyPrice;
             }
         };
-        return MathUtil.rootNewton(objective, 0.001, 1e-8, 50, compounding);
+        return MathUtil.rootNewton(objective, 0.001, 1e-8, 150, compounding);
     }
 }

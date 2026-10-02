@@ -5,7 +5,6 @@ package org.softcaster.engine;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 import static org.softcaster.engine.Test.BOND;
@@ -30,10 +29,6 @@ import org.softcaster.engine.cashflow.FrenchAmortizationStrategy;
 import org.softcaster.engine.cashflow.HolidayCalendar;
 import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.config.EngineAutoConfiguration;
-import org.softcaster.engine.curve.CurveNodeInput;
-import org.softcaster.engine.curve.MarketQuote;
-import org.softcaster.engine.curve.Offset;
-import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.BondOptionInputData;
 import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.engine.dto.FxOptionInputData;
@@ -41,10 +36,8 @@ import org.softcaster.engine.dto.OptionData;
 import org.softcaster.engine.dto.OptionOutputData;
 import org.softcaster.engine.enums.BusinessDayConvention;
 import org.softcaster.engine.enums.Compounding;
-import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
-import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.engine.enums.OptionStyle;
 import org.softcaster.engine.enums.OptionType;
 import org.softcaster.engine.utils.CashFlowExporter;
@@ -257,42 +250,6 @@ public class Engine {
         System.out.println(c1.getDefaultFractionDigits());
     }
 
-    private void testYieldCurve() {
-        LocalDate officialDate = LocalDate.of(2026, 5, 14);
-        Currency currency = Currency.getInstance("EUR");
-        List<CurveNodeInput> inputs = new ArrayList<>();
-        CurveNodeInput node;
-        // 1 Giorno
-        node = new CurveNodeInput(new MarketQuote("", new Offset(1, OffsetType.DAYS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE, CurveNodeType.MONEY_MARKET));
-        inputs.add(node);
-        // 1 Mese
-        node = new CurveNodeInput(new MarketQuote("", new Offset(1, OffsetType.MONTHS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE, CurveNodeType.MONEY_MARKET));
-        inputs.add(node);
-        // 3 Mesi
-        node = new CurveNodeInput(new MarketQuote("", new Offset(3, OffsetType.MONTHS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE, CurveNodeType.MONEY_MARKET));
-        inputs.add(node);
-        // 6 Mesi
-        node = new CurveNodeInput(new MarketQuote("", new Offset(6, OffsetType.MONTHS), 0.02189, DaycountBasis.ACT_360, Compounding.SIMPLE, CurveNodeType.MONEY_MARKET));
-        inputs.add(node);
-        // 1 Anno
-        node = new CurveNodeInput(new MarketQuote("", new Offset(1, OffsetType.YEARS), 0.02189, DaycountBasis.ACT_365, Compounding.COMPOUNDED, CurveNodeType.MONEY_MARKET));
-        inputs.add(node);
-        // 2 Anni
-        node = new CurveNodeInput(new MarketQuote("", new Offset(2, OffsetType.YEARS), 0.02189, DaycountBasis.ACT_365, Compounding.COMPOUNDED, CurveNodeType.MONEY_MARKET));
-        inputs.add(node);
-
-        YieldCurve curve = null/*YieldCurve.fromDiscountFactors2(officialDate, currency, inputs)*/;
-
-        LocalDate targetDate = LocalDate.of(2026, 9, 27);
-        double df = curve.getDiscountFactor(targetDate);
-        System.out.println(df);
-
-        targetDate = LocalDate.of(2026, 5, 21);
-        df = curve.getDiscountFactor(targetDate);
-        System.out.println(df);
-
-    }
-
     private void runTest(Test test) {
         switch (test) {
             case BOND ->
@@ -332,5 +289,9 @@ public class Engine {
         Engine engine = context.getBean(Engine.class);
 
         engine.runTest(LOAN);
+    }
+
+    private void testYieldCurve() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

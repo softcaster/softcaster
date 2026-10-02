@@ -10,9 +10,7 @@ import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 
 /**
- * Raw market quote (deposit, swap par rate, ECB zero rate). Replaces
- * CurveNodeInput: it carries no discount factor. The rate is a decimal (0.0365
- * = 3.65%).
+ * Raw market quote (deposit, swap par rate, ECB zero rate)
  */
 public record MarketQuote(
         String symbol,

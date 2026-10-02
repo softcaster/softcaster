@@ -25,8 +25,7 @@ import java.util.stream.Collectors;
  * interpolation on DFs (equivalent to a constant continuous forward rate
  * between nodes, with an ACT/365 time scale). Extrapolation uses a constant
  * continuous zero rate beyond the last node. Day count and compounding only
- * matter on input and on output (getZeroRate,
- * getForwardRate).
+ * matter on input and on output (getZeroRate, getForwardRate).
  */
 public final class YieldCurve {
 
@@ -35,14 +34,14 @@ public final class YieldCurve {
     private final DaycountBasis daycount = DaycountBasis.ACT_365;
 
     // Immutable snapshot: days -> DF. Always contains day 0 with DF = 1.
-    private volatile NavigableMap<Integer, Double> dfs;
+    private volatile NavigableMap<Integer, CurveNode> dfs;
 
     private YieldCurve(LocalDate valuationDate, Currency currency, List<CurveNode> nodes) {
         this.valuationDate = Objects.requireNonNull(valuationDate, "valuationDate must not be null");
         this.currency = Objects.requireNonNull(currency, "currency must not be null");
         this.dfs = build(nodes);
     }
-    
+
     // ------------------------------------------------------------------ construction
     public static YieldCurve fromDiscountFactors(LocalDate valuationDate, Currency currency, List<CurveNode> nodes) {
         return new YieldCurve(valuationDate, currency, nodes);
@@ -51,23 +50,21 @@ public final class YieldCurve {
     /**
      * Atomically replaces the nodes. Readers see either the old or the new
      * curve, never a mix.
+     *
      * @param nodes
      */
     public void update(List<CurveNode> nodes) {
         this.dfs = build(nodes);
     }
 
-    public void updateCurve(List<CurveNodeInput> nodes) {
-    }
-
-    private static NavigableMap<Integer, Double> build(List<CurveNode> nodes) {
+    private static NavigableMap<Integer, CurveNode> build(List<CurveNode> nodes) {
         if (nodes == null || nodes.isEmpty()) {
             throw new IllegalArgumentException("No nodes provided for the curve.");
         }
-        TreeMap<Integer, Double> m = new TreeMap<>();
-        m.put(0, 1.0);
+        TreeMap<Integer, CurveNode> m = new TreeMap<>();
+        m.put(0, new CurveNode(0, 1, null));
         for (CurveNode n : nodes) {
-            if (m.put(n.days(), n.df()) != null) {
+            if (m.put(n.days(), n) != null) {
                 throw new IllegalArgumentException("Duplicate maturity at " + n.days() + " days");
             }
         }
@@ -83,29 +80,30 @@ public final class YieldCurve {
         if (days < 0) {
             throw new IllegalArgumentException("Date is before the valuation date");
         }
-        final NavigableMap<Integer, Double> snap = this.dfs;   // read the volatile field only once
+        final NavigableMap<Integer, CurveNode> snap = this.dfs;   // read the volatile field only once
 
-        Map.Entry<Integer, Double> low = snap.floorEntry(days);   // never null: day 0 is always present
+        Map.Entry<Integer, CurveNode> low = snap.floorEntry(days);   // never null: day 0 is always present
         if (low.getKey() == days) {
-            return low.getValue();
+            return low.getValue().df();
         }
-        Map.Entry<Integer, Double> high = snap.ceilingEntry(days);
+        Map.Entry<Integer, CurveNode> high = snap.ceilingEntry(days);
 
         if (high == null) {   // beyond the last node: constant continuous zero rate
-            double z = -Math.log(low.getValue()) / (low.getKey() / 365.0);
+            double z = -Math.log(low.getValue().df()) / (low.getKey() / 365.0);
             return Math.exp(-z * days / 365.0);
         }
         double w = (double) (days - low.getKey()) / (high.getKey() - low.getKey());
-        return low.getValue() * Math.pow(high.getValue() / low.getValue(), w);
+        return low.getValue().df() * Math.pow(high.getValue().df() / low.getValue().df(), w);
     }
 
     // ------------------------------------------------------------------ output rates
     /**
      * Zero rate from the valuation date to 'date'.
+     *
      * @param date
      * @param dc
      * @param c
-     * @return 
+     * @return
      */
     public double getZeroRate(LocalDate date, DaycountBasis dc, Compounding c) {
         return getForwardRate(valuationDate, date, dc, c);
@@ -114,11 +112,12 @@ public final class YieldCurve {
     /**
      * Forward rate between start and end, with the requested day count and
      * compounding.
+     *
      * @param start
      * @param end
      * @param dc
      * @param c
-     * @return 
+     * @return
      */
     public double getForwardRate(LocalDate start, LocalDate end, DaycountBasis dc, Compounding c) {
         if (start.isBefore(valuationDate)) {
@@ -147,10 +146,11 @@ public final class YieldCurve {
     /**
      * Discount factor equivalent to a given rate over a period of year fraction
      * tau.
+     *
      * @param rate
      * @param tau
      * @param c
-     * @return 
+     * @return
      */
     public static double discountFactorFromRate(double rate, double tau, Compounding c) {
         return switch (c) {
@@ -170,10 +170,11 @@ public final class YieldCurve {
     /**
      * Year fraction for day counts suitable for curve rates (no ACT/ACT: it
      * needs coupon dates).
+     *
      * @param from
      * @param to
      * @param dc
-     * @return 
+     * @return
      */
     public static double yearFraction(LocalDate from, LocalDate to, DaycountBasis dc) {
         long d = ChronoUnit.DAYS.between(from, to);
@@ -235,23 +236,20 @@ public final class YieldCurve {
 
     /**
      * Nodes (excluding day 0), ordered by maturity.
-     * @return 
+     *
+     * @return
      */
     public List<CurveNode> getNodes() {
         return dfs.entrySet().stream()
                 .filter(e -> e.getKey() > 0)
-                .map(e -> new CurveNode(e.getKey(), e.getValue(),null))
+                .map(e -> new CurveNode(e.getKey(), e.getValue().df(), e.getValue().mq()))
                 .collect(Collectors.toList());
     }
 
-    public List<CurveNodeInput> getAllNodes() {
-        return null;
-    }
-
     public List<OrderedDiscountFactor> getOrderedDiscountFactors() {
-        final NavigableMap<Integer, Double> snap = this.dfs;
+        final NavigableMap<Integer, CurveNode> snap = this.dfs;
         return snap.entrySet().stream()
-                .map(e -> new OrderedDiscountFactor(valuationDate.plusDays(e.getKey()), e.getValue(), e.getKey()))
+                .map(e -> new OrderedDiscountFactor(valuationDate.plusDays(e.getKey()), e.getValue().df(), e.getKey()))
                 .collect(Collectors.toList());
     }
 }

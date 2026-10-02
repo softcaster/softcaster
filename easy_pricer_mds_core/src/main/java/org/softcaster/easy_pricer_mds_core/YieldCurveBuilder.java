@@ -14,7 +14,7 @@ import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.core.data.YieldCurveItem;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
-import org.softcaster.engine.curve.CurveNodeInput;
+import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.engine.curve.Offset;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.CurveNodeType;
@@ -31,72 +31,72 @@ public class YieldCurveBuilder {
     @Autowired
     YieldCurveDAO yieldCurveDAO;
 
-    public org.softcaster.engine.curve.YieldCurve buildYieldCurve(String idCurve, List<CurveNodeInput> newInputs, LocalDate officialDate) {
+    public org.softcaster.engine.curve.YieldCurve buildYieldCurve(String idCurve, List<MarketQuote> newInputs, LocalDate officialDate) {
         org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
         if (dbCurve != null) {
             Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
-            List<CurveNode> nodes = CurveBootstrapper.bootstrapFromCNI(officialDate, newInputs);
+            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, newInputs);
             return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
         } else {
             return null;
         }
     }
 
-    private CurveNodeInput getCNI(YieldCurveItem item) {
+    private MarketQuote getMarketQuote(YieldCurveItem item) {
 
         OffsetType offsetType = OffsetType.fromId(item.getOffsetType());
         Offset offset = new Offset(item.getOffsetValue(), offsetType);
-        CurveNodeInput cni = new CurveNodeInput(item.getRic(), offset, item.getBid(),
+        MarketQuote marketQuote = new MarketQuote(item.getRic(), offset, item.getBid(),
                 item.getDaycount(), item.getCompounding(), item.getNodeType());
-        return cni;
+        return marketQuote;
     }
 
-    private CurveNodeInput getCNI(Node node) {
-        CurveNodeInput cni = null;
+    private MarketQuote getMarketQuote(Node node) {
+        MarketQuote marketQuote = null;
         OffsetType offsetType = OffsetType.fromCode(node.getOffset().offsetType().getCode());
         long step = node.getOffset().step();
-        cni = new CurveNodeInput(node.getSymbol(), new Offset(step, offsetType), node.getData().bid(),
+        marketQuote = new MarketQuote(node.getSymbol(), new Offset(step, offsetType), node.getData().bid(),
                 DaycountBasis.fromCode(node.getDaycount()),
                 Compounding.fromCode(node.getCompounding()),
                 CurveNodeType.fromCode(node.getNodeType()));
-        return cni;
+        return marketQuote;
     }
 
-    List<CurveNodeInput> getNewInput(IMarketDataProvider provider, String curveId) {
-        List<CurveNodeInput> newInput = null;
+    List<MarketQuote> getNewInput(IMarketDataProvider provider, String curveId) {
+        List<MarketQuote> newInput = null;
         List<Node> nodes = provider.getYieldCurveNodes(curveId);
         if (nodes != null && !nodes.isEmpty()) {
             newInput = new ArrayList<>();
-            CurveNodeInput cni;
+            MarketQuote marketQuote;
             for (Node n : nodes) {
-                cni = getCNI(n);
-                if (cni != null) {
-                    newInput.add(cni);
+                marketQuote = getMarketQuote(n);
+                if (marketQuote != null) {
+                    newInput.add(marketQuote);
                 }
             }
         }
         return newInput;
     }
 
-    List<CurveNodeInput> getNewInput(String curveId) {
-        List<CurveNodeInput> newInput = null;
+    List<MarketQuote> getNewInput(String curveId) {
+        List<MarketQuote> newInput = null;
         // Recupero yield curve
         org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
         if (dbCurve != null && dbCurve.getItems() != null) {
             List<YieldCurveItem> existingDbItems = dbCurve.getItems();
             newInput = new ArrayList<>();
-            CurveNodeInput cni;
+            MarketQuote marketQuote;
             for (YieldCurveItem item : existingDbItems) {
-                cni = getCNI(item);
-                if (cni != null) {
-                    newInput.add(cni);
+                marketQuote = getMarketQuote(item);
+                if (marketQuote != null) {
+                    newInput.add(marketQuote);
                 }
             }
         }
         return newInput;
     }
 
-    public void saveOrUpdateCurve(String curveId, List<CurveNodeInput> newInputs) {
+    public void saveOrUpdateCurve(String curveId, List<CurveNode> newInputs) {
 
         if (newInputs == null || newInputs.isEmpty()) {
             return;
@@ -117,27 +117,29 @@ public class YieldCurveBuilder {
             List<YieldCurveItem> updatedItems = new ArrayList<>();
 
             // 3. Allinea i dati finanziari con le entità DB
-            for (CurveNodeInput node : newInputs) {
-                String key = node.symbol();
-
-                if (existingDbItems.containsKey(key)) {
-                    // Il nodo esiste già a DB: aggiorna solo tasso e discount factor (UPDATE)
-                    YieldCurveItem existingItem = existingDbItems.get(key);
-                    existingItem.setAsk(node.rate());
-                    existingItem.setBid(node.rate());
-                    updatedItems.add(existingItem);
-                } else {
-                    // Il nodo è nuovo: crea una nuova entità (INSERT)
-                    YieldCurveItem newItem = new YieldCurveItem();
-                    newItem.setRic(node.symbol());
-                    newItem.setYieldCurve(dbCurve.getIdYieldCurve());
-                    newItem.setOffsetValue((short) node.tenorOffset().step());
-                    newItem.setOffsetType((short) node.tenorOffset().offsetType().getId());
-                    newItem.setAsk(node.rate());
-                    newItem.setBid(node.rate());
-                    newItem.setDaycount(node.daycount());
-                    newItem.setCompounding(node.compounding());
-                    updatedItems.add(newItem);
+            for (CurveNode node : newInputs) {
+                if (node.mq() != null) {
+                    String key = node.mq().symbol();
+                    if (existingDbItems.containsKey(key)) {
+                        // Il nodo esiste già a DB: aggiorna solo tasso e discount factor (UPDATE)
+                        YieldCurveItem existingItem = existingDbItems.get(key);
+                        existingItem.setAsk(node.mq().rate());
+                        existingItem.setBid(node.mq().rate());
+                        updatedItems.add(existingItem);
+                    } else {
+                        // Il nodo è nuovo: crea una nuova entità (INSERT)
+                        YieldCurveItem newItem = new YieldCurveItem();
+                        newItem.setRic(node.mq().symbol());
+                        newItem.setYieldCurve(dbCurve.getIdYieldCurve());
+                        newItem.setOffsetValue((short) node.mq().tenorOffset().step());
+                        newItem.setOffsetType((short) node.mq().tenorOffset().offsetType().getId());
+                        newItem.setAsk(node.mq().rate());
+                        newItem.setBid(node.mq().rate());
+                        newItem.setDaycount(node.mq().daycount());
+                        newItem.setCompounding(node.mq().compounding());
+                        newItem.setNodeType(node.mq().nodeType());
+                        updatedItems.add(newItem);
+                    }
                 }
             }
 

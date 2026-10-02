@@ -4,28 +4,18 @@
  */
 package mds.core.test;
 
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.core.data.CmdFutureMasterData;
 import org.softcaster.core.data.CmdFutureMasterDataDAO;
-import org.softcaster.core.data.FltSecurityMasterData;
 import org.softcaster.core.data.FltSecurityMasterDataDAO;
-import org.softcaster.core.data.ForexMasterData;
-import org.softcaster.core.data.ForexMasterDataDAO;
-import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
-import org.softcaster.core.data.MmFutureMasterData;
-import org.softcaster.core.data.MmFutureMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterData;
-import org.softcaster.core.data.SecurityMasterData;
-import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
@@ -40,7 +30,7 @@ import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.cashflow.AmortizedCostPeriod;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
-import org.softcaster.engine.curve.CurveNodeInput;
+import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
 import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.provider.bricks.Node;
@@ -276,10 +266,11 @@ public class TestMarketDataService {
         //testRunner.testDbAccess();
         //testRunner.testYieldCurve();
         //testRunner.testDiscountFactor();
-        testRunner.testEcbYieldCurve();
+        //testRunner.testEcbYieldCurve();
         // testRunner.testBondPricer();
         //testRunner.testFltBondPricer();
         //testRunner.testFltBondPricer2();
+        testRunner.testZSpread();
     }
 
     // Ricava i DF per una serie di date passate in input (ipotetiche scadenze
@@ -305,14 +296,29 @@ public class TestMarketDataService {
         }
     }
 
+    private void testZSpread() {
+         SecurityMasterData smd = smdDAO.findByCodeWithCashFlow("IT0005676504").orElse(null);
+        if (smd != null) {
+            marketDataService.loadCurveCurveRates("ECBYC");
+            org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("ECBYC");
+            if (yieldCurve != null) {
+                double accrual = bondCalculator.getAccruals(smd, marketDataService.getOfficialDate());
+                double cleanPrice = 91.95/*marketDataService.getSpotPrice("IT0005676504", RequestType.BID)*/;
+                double dirtyPrice = cleanPrice + accrual;
+                double zSpread = bondCalculator.getZSpread(smd, dirtyPrice, marketDataService.getOfficialDate(), yieldCurve);
+                System.out.println(zSpread);
+            }
+        }
+   }
+    
     private void testEcbYieldCurve() {
 
         ECBProvider provider = ECBProvider.getInstance();
         List<Node> nodes = provider.getYieldCurveNodes("ECBYC");
 
-        List<CurveNodeInput> rawNodes = YieldCurveHelper.getCNIList(nodes);
+        List<MarketQuote> rawNodes = YieldCurveHelper.getMarketList(nodes);
         LocalDate officialDate = marketDataService.getOfficialDate();
-        List<CurveNode> curveNodes = CurveBootstrapper.bootstrapFromCNI(officialDate, rawNodes);
+        List<CurveNode> curveNodes = CurveBootstrapper.bootstrap(officialDate, rawNodes);
         org.softcaster.engine.curve.YieldCurve yc = org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, Currency.getInstance("EUR"), curveNodes);
 
         List<OrderedDiscountFactor> dfs = yc.getOrderedDiscountFactors();

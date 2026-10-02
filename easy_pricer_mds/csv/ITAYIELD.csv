@@ -1,4 +1,4 @@
-ric;offset_type;offset_value;bid;ask;compounding;daycount,node_type
+ric;offset_type;offset_value;bid;ask;compounding;daycount;node_type
 Italy 1M;2;1;2.199;2232;1;2;1
 Italy 3M;2;3;2.504;2503;1;2;1
 Italy 6M;2;6;2.599;2.599;1;2;1

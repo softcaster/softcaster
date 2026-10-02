@@ -15,7 +15,9 @@ import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.SystemBusinessCalendar;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
-import org.softcaster.engine.curve.CurveNodeInput;
+import org.softcaster.engine.curve.CurveBootstrapper;
+import org.softcaster.engine.curve.CurveNode;
+import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
@@ -145,7 +147,7 @@ public class MarketDataService {
      * @return true se la curva è stata aggiornata, false se non era presente
      * nella cache
      */
-    public boolean updateYieldCurveInCache(String curveId, List<CurveNodeInput> newInputs) {
+    public boolean updateYieldCurveInCache(String curveId, List<MarketQuote> newInputs) {
         if (curveId == null || newInputs == null) {
             throw new IllegalArgumentException("L'ID curva e i nuovi input non possono essere nulli.");
         }
@@ -161,7 +163,7 @@ public class MarketDataService {
                 return yieldCurveBuilder.buildYieldCurve(id, newInputs, getOfficialDate());
             } else {
                 // Se esiste già, sfruttiamo il metodo synchronized esistente
-                existingCurve.updateCurve(newInputs);
+                existingCurve.update(CurveBootstrapper.bootstrap(getOfficialDate(), newInputs));
                 return existingCurve;
             }
         });
@@ -172,7 +174,7 @@ public class MarketDataService {
     public void updateYieldCurve(String strProvider, String curveId) {
         IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
         if (provider != null && curveId != null && !curveId.isBlank()) {
-            List<CurveNodeInput> newInput = yieldCurveBuilder.getNewInput(provider, curveId);
+            List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(provider, curveId);
             updateYieldCurveInCache(curveId, newInput);
         }
     }
@@ -193,12 +195,12 @@ public class MarketDataService {
     public void saveOrUpdateCurveRates(String curveId) {
         YieldCurve yc = yieldCurves.get(curveId);
 
-        List<CurveNodeInput> newInputs = new ArrayList<>(yc.getAllNodes());
+        List<CurveNode> newInputs = new ArrayList<>(yc.getNodes());
         yieldCurveBuilder.saveOrUpdateCurve(curveId, newInputs);
     }
 
     public void loadCurveCurveRates(String curveId) {
-        List<CurveNodeInput> newInput = yieldCurveBuilder.getNewInput(curveId);
+        List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(curveId);
         updateYieldCurveInCache(curveId, newInput);
     }
 
