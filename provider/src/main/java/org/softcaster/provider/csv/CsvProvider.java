@@ -105,7 +105,7 @@ public class CsvProvider extends AbstractProvider {
             Offset offset = new Offset(Converter.toInt(s[2]), getOffsetType(Converter.toInt(s[1])));
             Data data = new Data(Converter.toDouble(s[3], false) / 100., Converter.toDouble(s[4], false) / 100.);
             String ric = s[0];
-            return new Node(ric, offset, data, getDaycount(Converter.toInt(s[6])), getCompounding(Converter.toInt(s[5])),"MONEY_MARKET");
+            return new Node(ric, offset, data, getDaycount(Converter.toInt(s[6])), getCompounding(Converter.toInt(s[5])),getNodeType(Converter.toInt(s[7])));
         } catch (ParseException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return null;
@@ -145,6 +145,22 @@ public class CsvProvider extends AbstractProvider {
                 value = "SIMPLE_THEN_COMPOUNDED";
             case 4 ->
                 value = "CONTINUOUS";
+            default -> {
+            }
+        }
+
+        return value;
+    }
+
+    String getNodeType(Integer type) {
+        String value = "";
+        switch (type) {
+            case 1 ->
+                value = "MONEY_MARKET";
+            case 2 ->
+                value = "SWAP";
+            case 3 ->
+                value = "ZERO_RATES";
             default -> {
             }
         }

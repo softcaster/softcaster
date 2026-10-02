@@ -240,7 +240,7 @@ public final class YieldCurve {
     public List<CurveNode> getNodes() {
         return dfs.entrySet().stream()
                 .filter(e -> e.getKey() > 0)
-                .map(e -> new CurveNode(e.getKey(), e.getValue()))
+                .map(e -> new CurveNode(e.getKey(), e.getValue(),null))
                 .collect(Collectors.toList());
     }
 

@@ -7,8 +7,9 @@ package org.softcaster.engine.curve;
 /**
  * What the curve stores: calendar days from the valuation date and the discount factor.
  * The DF is a pure number, with no day count or compounding attached.
+ * MarketQuote mq serve per salvare la curva su db
  */
-public record CurveNode(int days, double df) {
+public record CurveNode(int days, double df, MarketQuote mq) {
 
     public CurveNode {
         if (days <= 0) {

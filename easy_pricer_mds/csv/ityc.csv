@@ -1,8 +1,8 @@
 yield_curve;ric;offset_type;offset_value;bid;ask;compounding;daycount
-9;Italy 1M;2;1;2.232;2.232;1;3
-9;Italy 3M;2;3;2.503;2.503;1;3
-9;Italy 6M;2;6;2.588;2.588;1;3
-9;Italy 9M;2;9;2.702;2.702;1;3
+9;Italy 1M;2;1;2.232;2.232;1;2
+9;Italy 3M;2;3;2.503;2.503;1;2
+9;Italy 6M;2;6;2.588;2.588;1;2
+9;Italy 9M;2;9;2.702;2.702;1;2
 9;Italy 1Y;3;1;2.782;2.782;2;3
 9;Italy 2Y;3;2;3.061;3.061;2;3
 9;Italy 3Y;3;3;3.159;3.159;2;3

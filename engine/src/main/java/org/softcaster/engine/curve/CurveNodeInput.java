@@ -4,20 +4,42 @@
  */
 package org.softcaster.engine.curve;
 
-import org.softcaster.engine.enums.Compounding;
-import org.softcaster.engine.enums.CurveNodeType;
-import org.softcaster.engine.enums.DaycountBasis;
+public class CurveNodeInput {
 
-public record CurveNodeInput(
-    String symbol,
-    Offset tenorOffset, 
-    double rate, 
-    double discountFactor, 
-    DaycountBasis daycount, 
-    Compounding compounding,
-    CurveNodeType nodeType
-) {
+    private final MarketQuote marketQuote;
+    private double discountFactor;     
+    
+    public CurveNodeInput(MarketQuote marketQuote) {
+        this.marketQuote = marketQuote;
+    }
+    
+    public boolean hasDiscountFactor() { 
+        return !Double.isNaN(discountFactor); 
+    }
 
+    /**
+     * @return the marketQuote
+     */
+    public MarketQuote getMarketQuote() {
+        return marketQuote;
+    }
+
+    /**
+     * @return the discountFactor
+     */
+    public double getDiscountFactor() {
+        return discountFactor;
+    }
+
+    /**
+     * @param discountFactor the discountFactor to set
+     */
+    public void setDiscountFactor(double discountFactor) {
+        this.discountFactor = discountFactor;
+    }
+}
+
+/*
     // Costruttore secondario per quando legge da DB (senza DF)
     public CurveNodeInput(String symbol, Offset tenorOffset, double rate, DaycountBasis daycount, Compounding compounding, CurveNodeType nodeType) {
         this(symbol, tenorOffset, rate, 1.0, daycount, compounding, nodeType); 
@@ -27,7 +49,4 @@ public record CurveNodeInput(
     public CurveNodeInput withDiscountFactor(double newDiscountFactor) {
         return new CurveNodeInput(this.symbol, this.tenorOffset, this.rate, newDiscountFactor, this.daycount, this.compounding, this.nodeType);
     }
-    
-    public boolean hasDiscountFactor() { return !Double.isNaN(discountFactor); }
-}
-
+*/    

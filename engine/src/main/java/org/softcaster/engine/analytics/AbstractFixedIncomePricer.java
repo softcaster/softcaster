@@ -5,7 +5,6 @@
 package org.softcaster.engine.analytics;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.YieldCurve;

@@ -30,12 +30,12 @@ public final class CurveBootstrapper {
 
             List<MarketQuote> marketQuotes = new ArrayList<>();
             for (CurveNodeInput input : quotes) {
-                MarketQuote mq = new MarketQuote(input.symbol(),
-                        input.tenorOffset(),
-                        input.rate(),
-                        input.daycount(),
-                        input.compounding(),
-                        input.nodeType());
+                MarketQuote mq = new MarketQuote(input.getMarketQuote().symbol(),
+                        input.getMarketQuote().tenorOffset(),
+                        input.getMarketQuote().rate(),
+                        input.getMarketQuote().daycount(),
+                        input.getMarketQuote().compounding(),
+                        input.getMarketQuote().nodeType());
                 marketQuotes.add(mq);
             }
             return marketQuotes;
@@ -98,7 +98,7 @@ public final class CurveBootstrapper {
                 }
                 annuity += df;
                 int days = (int) ChronoUnit.DAYS.between(valuationDate, valuationDate.plusYears(n));
-                result.add(new CurveNode(days, df));
+                result.add(new CurveNode(days, df, null));
             }
             firstSwapDays = result.get(0).days();
         }
@@ -120,7 +120,7 @@ public final class CurveBootstrapper {
                 continue;
             }
             double tau = YieldCurve.yearFraction(valuationDate, mat, d.daycount());
-            result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(d.rate(), tau, Compounding.SIMPLE)));
+            result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(d.rate(), tau, d.compounding()),null));
         }
 
         // 4. Zero rates: DF depends on each quote's compounding/day count
@@ -137,7 +137,7 @@ public final class CurveBootstrapper {
                 throw new IllegalArgumentException("Zero-rate maturity must be positive: " + zr.symbol());
             }
             double tau = YieldCurve.yearFraction(valuationDate, mat, zr.daycount());
-            result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(zr.rate(), tau, zr.compounding())));
+            result.add(new CurveNode(days, YieldCurve.discountFactorFromRate(zr.rate(), tau, zr.compounding()),null));
         }
 
         result.sort(Comparator.comparingInt(CurveNode::days));
