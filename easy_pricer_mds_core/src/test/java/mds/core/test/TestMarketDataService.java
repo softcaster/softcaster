@@ -19,6 +19,7 @@ import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.YieldCurve;
 import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
@@ -297,20 +298,30 @@ public class TestMarketDataService {
     }
 
     private void testZSpread() {
-         SecurityMasterData smd = smdDAO.findByCodeWithCashFlow("IT0005676504").orElse(null);
+        //SecurityMasterData smd = smdDAO.findByCodeWithCashFlowAndHolidays("IT0005676504");
+        SecurityMasterData smd = smdDAO.findByCodeWithCashFlowAndHolidays("IT0005676504");
         if (smd != null) {
             marketDataService.loadCurveCurveRates("ECBYC");
             org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("ECBYC");
             if (yieldCurve != null) {
-                double accrual = bondCalculator.getAccruals(smd, marketDataService.getOfficialDate());
-                double cleanPrice = 91.95/*marketDataService.getSpotPrice("IT0005676504", RequestType.BID)*/;
+                Calendar calendar = new Calendar(smd.getCurrency());
+                LocalDate valuationDate = calendar.getNextBusinessDate(marketDataService.getOfficialDate(), smd.getBusinessDays());
+                double accrual = bondCalculator.getAccruals(smd, valuationDate);
+                double cleanPrice = 91.85/*marketDataService.getSpotPrice("IT0005676504", RequestType.BID)*/;
                 double dirtyPrice = cleanPrice + accrual;
-                double zSpread = bondCalculator.getZSpread(smd, dirtyPrice, marketDataService.getOfficialDate(), yieldCurve);
-                System.out.println(zSpread);
+                double zSpread = bondCalculator.getZSpread(smd, dirtyPrice, valuationDate, yieldCurve);
+                System.out.println("Dirty Price: " + dirtyPrice + "\t" + "Z Spread: " + zSpread);
+
+                System.out.println("Calc with ECB curve");
+                dirtyPrice = bondCalculator.calculatePrice(smd, marketDataService.getOfficialDate(), yieldCurve);
+                dirtyPrice += accrual;
+                System.out.println(dirtyPrice);
+                zSpread = bondCalculator.getZSpread(smd, dirtyPrice, valuationDate, yieldCurve);
+                System.out.println("Z Spread theoretical price: "+zSpread);
             }
         }
-   }
-    
+    }
+
     private void testEcbYieldCurve() {
 
         ECBProvider provider = ECBProvider.getInstance();

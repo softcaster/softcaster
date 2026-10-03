@@ -209,6 +209,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JToolBar.Separator();
         btnFilter = new javax.swing.JButton();
         btnDown = new javax.swing.JButton();
+        btnCsvDownload = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         itemFilter = new javax.swing.JMenuItem();
@@ -273,6 +274,17 @@ public class JMasterDataMgr extends javax.swing.JFrame {
             }
         });
         toolBar.add(btnDown);
+
+        btnCsvDownload.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/attachment16dp.png"))); // NOI18N
+        btnCsvDownload.setFocusable(false);
+        btnCsvDownload.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnCsvDownload.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnCsvDownload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCsvDownloadActionPerformed(evt);
+            }
+        });
+        toolBar.add(btnCsvDownload);
 
         getContentPane().add(toolBar, java.awt.BorderLayout.PAGE_START);
 
@@ -340,7 +352,13 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         filterAction();
     }//GEN-LAST:event_btnFilterActionPerformed
 
+    private void btnCsvDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCsvDownloadActionPerformed
+        // TODO add your handling code here:
+        downLoadCsvAction();
+    }//GEN-LAST:event_btnCsvDownloadActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCsvDownload;
     private javax.swing.JButton btnDown;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnFilter;
@@ -458,6 +476,13 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();
         cl.show(mainPanel, AppCard.DEFAULT.name());
+    }
+
+    private void downLoadCsvAction() {
+        AbstactMDPanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.exportCsvAction();
+        }
     }
 
 }

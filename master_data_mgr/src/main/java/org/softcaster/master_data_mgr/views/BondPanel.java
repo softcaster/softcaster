@@ -5,6 +5,11 @@
 package org.softcaster.master_data_mgr.views;
 
 import java.awt.event.ActionEvent;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -18,12 +23,17 @@ import org.softcaster.master_data_mgr.dialogs.BondFilterDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.SecurityBean;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
+import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.enums.Market;
+import org.softcaster.provider.euronext.BorsaItalianaProvider;
 
 /**
  *
  * @author softc
  */
 public class BondPanel extends AbstactMDPanel {
+
+    public static final String CSV_PATH = System.getProperty("user.dir") + "/csv";
 
     private final MasterDataFacade masterDataFacade;
 
@@ -116,13 +126,11 @@ public class BondPanel extends AbstactMDPanel {
         refreshModel(model);
     }
 
-
     public SecurityMasterData refreshWithIssuer(Integer idMasterData) {
         SecurityMasterData smd = masterDataFacade.getSecurityMasterDataDAO().findByIdWithIssuer(idMasterData).orElse(null);
         return smd;
     }
-    
-    
+
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
         int rowIndex = bondTable.getSelectedRow();
@@ -191,6 +199,13 @@ public class BondPanel extends AbstactMDPanel {
     }
 
     @Override
+    public void exportCsvAction() {
+        List<SecurityMasterData> bonds = masterDataFacade.getSecurityMasterDataDAO().findAllByAssetClass("XRB");
+        Path path = Paths.get(CSV_PATH + "/securities.csv");
+        CsvExporterNative.exportMasterDataToCsv(bonds, path.toString());
+    }
+
+    @Override
     public void filterAction() {
         java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
         java.awt.Frame parentFrame = null;
@@ -206,8 +221,8 @@ public class BondPanel extends AbstactMDPanel {
         dialog.setVisible(true);
 
         List<MasterData> bonds = masterDataFacade.getMasterDataDAO().findByCriteria(
-                dialog.getFilterCriteria().getIsinContains(), 
-                dialog.getFilterCriteria().getMaturityLE(), 
+                dialog.getFilterCriteria().getIsinContains(),
+                dialog.getFilterCriteria().getMaturityLE(),
                 dialog.getFilterCriteria().getMaturityGE());
         if (!bonds.isEmpty()) {
             List<SecurityBean> securityBeanList = new ArrayList<>();
@@ -222,4 +237,75 @@ public class BondPanel extends AbstactMDPanel {
             model.setData(securityBeanList);
         }
     }
+
+    private class CsvExporterNative {
+
+        // Definiamo il separatore (il punto e virgola è l'ideale per Excel in italiano)
+        private static final String CSV_SEPARATOR = ";";
+
+        public static void exportMasterDataToCsv(List<SecurityMasterData> dataList, String filePath) {
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+
+                // 1. Scrittura dell'intestazione (Header)
+                String[] headers = {
+                    "Code",
+                    "Description",
+                    "Maturity Date",
+                    "Interest Rate",
+                    "Clean Price"
+                };
+                writer.write(String.join(CSV_SEPARATOR, headers));
+                writer.newLine(); // Va a capo
+
+                BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
+                // 2. Scrittura dei dati
+                for (MasterData data : dataList) {
+
+                    // Estraiamo in sicurezza i campi, gestendo i potenziali NullPointerException
+                    String code = sanitize(data.getCode());
+                    String description = sanitize(data.getDescription());
+
+                    // Gestione di date e numeri
+                    String maturityDate = (data.getIssueDate() != null) ? data.getMaturityDate().toString() : "";
+                    String interestRate = (data.getInterestRate() != null) ? String.valueOf(data.getInterestRate()) : "";
+
+                    // Costruiamo la riga del CSV
+                    Node node = provider.getMktQuote(code, Market.BONDS);
+                    double cleanPrice = node != null ? node.getData().bid() : 0.;
+                    StringBuilder row = new StringBuilder();
+                    row.append(code).append(CSV_SEPARATOR)
+                            .append(description).append(CSV_SEPARATOR)
+                            .append(maturityDate).append(CSV_SEPARATOR)
+                            .append(interestRate).append(CSV_SEPARATOR)
+                            .append(cleanPrice);
+
+                    writer.write(row.toString());
+                    writer.newLine(); // Va a capo per il prossimo record
+                }
+
+            } catch (IOException e) {
+                LoggerMgr.logError(e.getLocalizedMessage());
+            }
+        }
+
+        /**
+         * Pulisce le stringhe per evitare che caratteri speciali (come i punti
+         * e virgola interni o i ritorni a capo) rompano la struttura del file
+         * CSV.
+         */
+        private static String sanitize(String value) {
+            if (value == null) {
+                return "";
+            }
+            // Se la stringa contiene il separatore o le virgolette, la racchiudiamo tra virgolette
+            if (value.contains(CSV_SEPARATOR) || value.contains("\"") || value.contains("\n") || value.contains("\r")) {
+                // Raddoppia le virgolette esistenti per fare l'escaping secondo lo standard CSV
+                value = value.replace("\"", "\"\"");
+                return "\"" + value + "\"";
+            }
+            return value;
+        }
+    }
+
 }

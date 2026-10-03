@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.softcaster.commons.utils.FileUtil;
-import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
@@ -100,30 +99,72 @@ public class CashFlowHelper {
         return dirtyPrice - accrued;
     }
 
-    public static double calculatePrice(List<CashFlow> flows, YieldCurve yieldCurve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
-        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
-        double dirtyPrice = 0;
-
-        // Filtriamo solo i flussi futuri per l'attualizzazione
-        List<CashFlow> futureFlows = flows.stream()
-                .filter(cf -> cf.paymentDate().isAfter(valuationDate))
-                .toList();
-
+    /**
+     * PV at settlement of the given cashflows, with an additive continuous
+     * spread over ACT/365 time. The caller must pass only flows paid after
+     * settlement.
+     *
+     * @param futureFlows
+     * @param curve
+     * @param settlement
+     * @param spread
+     * @param dcb
+     * @param frequency
+     * @return
+     */
+    public static double presentValue(List<CashFlow> futureFlows, YieldCurve curve,
+            LocalDate settlement, double spread, DaycountBasis dcb, Frequency frequency) {
+        double dfSettle = curve.getDiscountFactor(settlement);
+        double pv = 0.0;
         for (CashFlow cf : futureFlows) {
-            double discountFactor = yieldCurve.getDiscountFactor(cf.accrualEnd());
-            double amount = cf.getTotalAmount();
-            double pv = amount * discountFactor;
+            if (!cf.paymentDate().isAfter(settlement)) {
+                throw new IllegalArgumentException("Cashflow on " + cf.paymentDate()
+                        + " is not after settlement " + settlement);
+            }
+            double t = dcb.calculate(settlement, cf.paymentDate(), frequency);
+            pv += cf.getTotalAmount()
+                    * curve.getDiscountFactor(cf.paymentDate()) / dfSettle
+                    * Math.exp(-spread * t);
+        }
+        return pv;
+    }
 
-            if (FileUtil.dumpDebugInfo()) {
-                String message = "Accrual End: " + cf.accrualEnd() + "\tDF: " + discountFactor + "\tAmount:" + amount + "\tPresent Value:" + pv;
-                System.out.println(message);
-                LoggerMgr.logInfo(message);
+    public static List<CashFlow> futureFlows(List<CashFlow> flows, LocalDate settlement) {
+        return flows.stream().filter(cf -> cf.paymentDate().isAfter(settlement)).toList();
+    }
+
+    public static double solveZSpread(
+            List<CashFlow> cashflows,
+            double dirtyPrice,
+            LocalDate valuationDate,
+            DaycountBasis dcb,
+            Compounding compounding,
+            Frequency frequency,
+            YieldCurve curve
+    ) {
+
+        MathUtil.Function1 objective = new MathUtil.Function1() {
+            @Override
+            public double f(double s) {
+                return f(s, Compounding.CONTINUOUS);
             }
 
-            dirtyPrice += pv;
-        }
+            @Override
+            public double f(double s, Compounding c) {
+                double pv = presentValue(futureFlows(cashflows, valuationDate), curve, valuationDate, s, dcb, frequency);
+                if(FileUtil.dumpDebugInfo()) {
+                    System.out.println("Present Value: " +pv + "\t" + "Dirty Price: " + dirtyPrice + "\t" + "Spread: " + s);
+                }
+                return pv - dirtyPrice;
+            }
+        };
+        return MathUtil.rootNewton(objective, 0.001, 1e-8, 150, compounding);
+    }
 
-        return dirtyPrice - accrued;
+    public static double calculatePrice(List<CashFlow> flows, YieldCurve yieldCurve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
+        double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
+         double dirty = presentValue(futureFlows(flows, valuationDate), yieldCurve, valuationDate, 0., dcb, frequency);
+        return dirty - accrued;      // clean price
     }
 
     public static double calculateMacaulayDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {

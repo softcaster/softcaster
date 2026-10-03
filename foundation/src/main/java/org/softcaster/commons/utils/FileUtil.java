@@ -24,6 +24,7 @@ public class FileUtil {
      * defined on non Hotspot VM implementations.
      */
     public static final String SUN_JAVA_COMMAND = "sun.java.command";
+    private static ParamsMgr paramsMgr = ParamsMgr.getInstance();
 
     // Tabulazionr
     public static final String TAB = "    ";
@@ -154,7 +155,7 @@ public class FileUtil {
             throw new IOException("Error while trying to restart the application", e);
         }
     }
-    
+
     public static void initializeLogger() {
 
         // Impostazioni log file
@@ -179,37 +180,49 @@ public class FileUtil {
         PythonInterpreter.initialize(System.getProperties(), props, new String[]{""});
 
     }
-  
+
+    public String getParamValue(String paramName) {
+        String value = "";
+        if (paramsMgr != null) {
+            // Legge parametro log debug info
+            value = paramsMgr.getParamValue(paramName);
+        }
+
+        return value;
+    }
+
     public static boolean dumpDebugInfo() {
-        
+
         boolean debugInfo = false;
-        
-        ParamsMgr paramsMgr = ParamsMgr.getInstance();
+
         if (paramsMgr != null) {
             // Legge parametro log debug info
             String info = paramsMgr.getParamValue("DEBUG_INFO");
-            if(info != null && !info.isBlank()) {
-            if(info.equalsIgnoreCase("TRUE"))
-                debugInfo = true;
+            if (info != null && !info.isBlank()) {
+                if (info.equalsIgnoreCase("TRUE")) {
+                    debugInfo = true;
+                }
             }
         }
-        
+
         return debugInfo;
     }
-    
+
     public static boolean enablePythonDebug() {
-        
+
         boolean pythonDebug = false;
-        
+
         ParamsMgr paramsMgr = ParamsMgr.getInstance();
         if (paramsMgr != null) {
             // Legge parametro log debug info
             String info = paramsMgr.getParamValue("PY_DEBUG");
-            if(info != null && !info.isBlank()) {
-            if(info.equalsIgnoreCase("TRUE"))
-                pythonDebug = true;
+            if (info != null && !info.isBlank()) {
+                if (info.equalsIgnoreCase("TRUE")) {
+                    pythonDebug = true;
+                }
             }
         }
-        
+
         return pythonDebug;
-    }}
+    }
+}

@@ -115,7 +115,7 @@ public class BondCalculator {
         
         double zSpread = 0.;
         List<CashFlow> cashflows = Utils.convertCashFlow(securityMasterData.getCashFlows());
-        zSpread = bondPricer.solveZSpread(cashflows, dirtyPrice, valuationDate, securityMasterData.getAccrualDaycount(), 
+        zSpread = bondPricer.calculateZSpread(cashflows, dirtyPrice, valuationDate, securityMasterData.getAccrualDaycount(), 
                 securityMasterData.getCompounding(), securityMasterData.getFrequency(), curve);
         
         return zSpread;

@@ -194,8 +194,10 @@ public class BondPricer extends AbstractFixedIncomePricer {
         double pv = 0.0;
         double freqValue = frequency.getYearFraction();
 
-        for (int i = 0; i < cashflows.size(); i++) {
-            CashFlow cf = cashflows.get(i);
+        List<CashFlow> futureCashFlows = CashFlowHelper.futureFlows(cashflows,valuationDate);
+        
+        for (int i = 0; i < futureCashFlows.size(); i++) {
+            CashFlow cf = futureCashFlows.get(i);
             double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
 
             double expectedFlowAmount;
@@ -323,33 +325,21 @@ public class BondPricer extends AbstractFixedIncomePricer {
         return output;
     }
 
-    /*
-    public double calculateZSpread(List<CashFlow> flows, double dirtyPrice, LocalDate valDate, 
-                               DaycountBasis dcb, RateCurve curve) {
-    
-    MathUtil.Function1 zFunction = new MathUtil.Function1() {
-        @Override
-        public double f(double z) {
-            double pv = 0.0;
-            for (CashFlow cf : flows) {
-                if (cf.paymentDate().isAfter(valDate)) {
-                    double t = dcb.calculate(valDate, cf.paymentDate(), null);
-                    // Recuperiamo il tasso risk-free per la scadenza t dalla curva
-                    double r = curve.getRate(t); 
-                    // Scontiamo al tasso (r + z)
-                    pv += cf.getTotalAmount() / Math.pow(1 + r + z, t);
-                }
-            }
-            return pv - dirtyPrice;
-        }
+    public double calculateZSpread(
+            List<CashFlow> cashflows,
+            double dirtyPrice,
+            LocalDate valuationDate,
+            DaycountBasis dcb,
+            Compounding compounding,
+            Frequency frequency,
+            YieldCurve curve) {
+        return CashFlowHelper.solveZSpread(cashflows,
+                dirtyPrice,
+                valuationDate,
+                dcb,
+                compounding,
+                frequency,
+                curve);
 
-        @Override public double f(double x, Compounding c) { return f(x); }
-    };
-
-    // Usiamo Newton-Raphson per trovare lo spread z
-    // Guess iniziale: 0.01 (100 basis points)
-    return MathUtil.rootNewton(zFunction, 0.01);
-}
-
-     */
+    }
 }

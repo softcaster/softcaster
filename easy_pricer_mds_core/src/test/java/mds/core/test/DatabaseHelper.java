@@ -8,7 +8,6 @@ import org.softcaster.core.data.account.GlAccount;
 import org.softcaster.core.data.account.GlAccountDAO;
 import org.softcaster.core.data.account.GlAccountSlots;
 import org.softcaster.core.data.account.GlAccountSlotsDAO;
-import org.softcaster.core.dto.SecurityMasterDataDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
