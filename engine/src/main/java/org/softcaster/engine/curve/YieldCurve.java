@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * continuous zero rate beyond the last node. Day count and compounding only
  * matter on input and on output (getZeroRate, getForwardRate).
  */
-public final class YieldCurve {
+public final class YieldCurve implements DiscountCurve {
 
     private final LocalDate valuationDate;
     private final Currency currency;
@@ -72,6 +72,7 @@ public final class YieldCurve {
     }
 
     // ------------------------------------------------------------------ discount factors
+    @Override
     public double getDiscountFactor(LocalDate date) {
         return getDiscountFactor((int) ChronoUnit.DAYS.between(valuationDate, date));
     }
@@ -89,57 +90,11 @@ public final class YieldCurve {
         Map.Entry<Integer, CurveNode> high = snap.ceilingEntry(days);
 
         if (high == null) {   // beyond the last node: constant continuous zero rate
-            double z = -Math.log(low.getValue().df()) / (low.getKey() / 365.0);
-            return Math.exp(-z * days / 365.0);
+            double z = -Math.log(low.getValue().df()) / (low.getKey() / daycount.getTime());
+            return Math.exp(-z * days / daycount.getTime());
         }
         double w = (double) (days - low.getKey()) / (high.getKey() - low.getKey());
         return low.getValue().df() * Math.pow(high.getValue().df() / low.getValue().df(), w);
-    }
-
-    // ------------------------------------------------------------------ output rates
-    /**
-     * Zero rate from the valuation date to 'date'.
-     *
-     * @param date
-     * @param dc
-     * @param c
-     * @return
-     */
-    public double getZeroRate(LocalDate date, DaycountBasis dc, Compounding c) {
-        return getForwardRate(valuationDate, date, dc, c);
-    }
-
-    /**
-     * Forward rate between start and end, with the requested day count and
-     * compounding.
-     *
-     * @param start
-     * @param end
-     * @param dc
-     * @param c
-     * @return
-     */
-    public double getForwardRate(LocalDate start, LocalDate end, DaycountBasis dc, Compounding c) {
-        if (start.isBefore(valuationDate)) {
-            throw new IllegalArgumentException("Start date is before the valuation date");
-        }
-        if (!end.isAfter(start)) {
-            throw new IllegalArgumentException("End date must be after the start date");
-        }
-        double tau = yearFraction(start, end, dc);
-        double growth = getDiscountFactor(start) / getDiscountFactor(end);
-        return switch (c) {
-            case CONTINUOUS ->
-                Math.log(growth) / tau;
-            case SIMPLE ->
-                (growth - 1.0) / tau;
-            case COMPOUNDED ->
-                Math.pow(growth, 1.0 / tau) - 1.0;
-            case SIMPLE_THEN_COMPOUNDED ->
-                tau <= 1.0
-                ? (growth - 1.0) / tau
-                : Math.pow(growth, 1.0 / tau) - 1.0;
-        };
     }
 
     // ------------------------------------------------------------------ static utilities
@@ -212,7 +167,7 @@ public final class YieldCurve {
                 + (d2 - d1)) / 360.0;
     }
 
-    static LocalDate addOffset(LocalDate base, Offset o) {
+    public static LocalDate addOffset(LocalDate base, Offset o) {
         return switch (o.offsetType()) {
             case DAYS ->
                 base.plusDays(o.step());
@@ -226,6 +181,7 @@ public final class YieldCurve {
     }
 
     // ------------------------------------------------------------------ getters
+    @Override
     public LocalDate getValuationDate() {
         return valuationDate;
     }
