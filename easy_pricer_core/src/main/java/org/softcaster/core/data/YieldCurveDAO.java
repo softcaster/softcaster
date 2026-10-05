@@ -5,10 +5,10 @@ import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import org.softcaster.core.dto.YieldCurveDto;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service("yieldCurveDAO")
+@Component("yieldCurveDAO")
 public class YieldCurveDAO {
 
     @Resource

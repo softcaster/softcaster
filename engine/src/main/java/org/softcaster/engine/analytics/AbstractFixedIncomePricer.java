@@ -7,12 +7,10 @@ package org.softcaster.engine.analytics;
 import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
-import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.math.MathUtil;
-import org.softcaster.engine.math.MathUtil.Function1;
 
 public abstract class AbstractFixedIncomePricer {
 

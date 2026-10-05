@@ -5,13 +5,15 @@
 package org.softcaster.engine.curve;
 
 import java.time.LocalDate;
+import java.util.Currency;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 
 public interface DiscountCurve {
 
     LocalDate getValuationDate();
-
+    Currency getCurrency() ;
+ 
     double getDiscountFactor(LocalDate date);
 
     default double getZeroRate(LocalDate date, DaycountBasis dc, Compounding c) {

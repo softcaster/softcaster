@@ -13,6 +13,7 @@ import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.FRBInputData;
 import org.softcaster.engine.dto.FRBOutputData;
@@ -111,7 +112,7 @@ public class BondCalculator {
     public double getZSpread(SecurityMasterData securityMasterData,
             double dirtyPrice,
             LocalDate valuationDate,
-            YieldCurve curve) {
+            DiscountCurve curve) {
         
         double zSpread = 0.;
         List<CashFlow> cashflows = Utils.convertCashFlow(securityMasterData.getCashFlows());

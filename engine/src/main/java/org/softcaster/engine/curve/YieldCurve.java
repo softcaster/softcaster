@@ -186,6 +186,7 @@ public final class YieldCurve implements DiscountCurve {
         return valuationDate;
     }
 
+    @Override
     public Currency getCurrency() {
         return currency;
     }

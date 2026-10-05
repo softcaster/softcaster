@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.softcaster.commons.utils.FileUtil;
-import org.softcaster.engine.curve.YieldCurve;
+import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
@@ -112,7 +112,7 @@ public class CashFlowHelper {
      * @param frequency
      * @return
      */
-    public static double presentValue(List<CashFlow> futureFlows, YieldCurve curve,
+    public static double presentValue(List<CashFlow> futureFlows, DiscountCurve curve,
             LocalDate settlement, double spread, DaycountBasis dcb, Frequency frequency) {
         double dfSettle = curve.getDiscountFactor(settlement);
         double pv = 0.0;
@@ -140,7 +140,7 @@ public class CashFlowHelper {
             DaycountBasis dcb,
             Compounding compounding,
             Frequency frequency,
-            YieldCurve curve
+            DiscountCurve curve
     ) {
 
         MathUtil.Function1 objective = new MathUtil.Function1() {
@@ -161,9 +161,9 @@ public class CashFlowHelper {
         return MathUtil.rootNewton(objective, 0.001, 1e-8, 150, compounding);
     }
 
-    public static double calculatePrice(List<CashFlow> flows, YieldCurve yieldCurve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
+    public static double calculatePrice(List<CashFlow> flows, DiscountCurve curve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
         double accrued = calculateAccruedInterest(flows, valuationDate, dcb, frequency);
-         double dirty = presentValue(futureFlows(flows, valuationDate), yieldCurve, valuationDate, 0., dcb, frequency);
+         double dirty = presentValue(futureFlows(flows, valuationDate), curve, valuationDate, 0., dcb, frequency);
         return dirty - accrued;      // clean price
     }
 

@@ -715,6 +715,8 @@ CREATE TABLE yield_curve (
     calendar integer NOT NULL,
     compounding smallint NOT NULL DEFAULT 1,
     provider varchar(50) NOT NULL DEFAULT '',
+    use_spreads BOOLEAN not null default false, -- not use spreads
+    max_age_days integer not null default 0,
     PRIMARY KEY (id_yield_curve),
     CONSTRAINT fk_calendar FOREIGN KEY (calendar) REFERENCES calendar (id_calendar) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION

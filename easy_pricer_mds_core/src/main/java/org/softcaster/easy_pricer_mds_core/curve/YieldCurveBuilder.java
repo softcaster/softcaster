@@ -1,0 +1,305 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package org.softcaster.easy_pricer_mds_core.curve;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Currency;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.softcaster.commons.utils.NumberUtils;
+import org.softcaster.core.data.MasterData;
+import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.core.data.SecurityMasterDataDAO;
+import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveItem;
+import org.softcaster.core.data.YieldCurveSpread;
+import org.softcaster.core.data.YieldCurveSpreadDAO;
+import org.softcaster.easy_pricer_mds_core.Calendar;
+import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.engine.curve.CurveBootstrapper;
+import org.softcaster.engine.curve.CurveNode;
+import org.softcaster.engine.curve.DiscountCurve;
+import org.softcaster.engine.curve.MarketQuote;
+import org.softcaster.engine.curve.Offset;
+import org.softcaster.engine.curve.SpreadProfile;
+import org.softcaster.engine.curve.SpreadedCurve;
+import org.softcaster.engine.curve.YieldCurve;
+import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveNodeType;
+import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.OffsetType;
+import org.softcaster.provider.bricks.AbstractProvider;
+import org.softcaster.provider.bricks.IMarketDataProvider;
+import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.enums.Market;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component("yieldCurveBuilder")
+public class YieldCurveBuilder {
+
+    @Autowired
+    private SecurityMasterDataDAO smdDAO;
+    @Autowired
+    private BondCalculator bondCalculator;
+
+    @Autowired
+    YieldCurveDAO yieldCurveDAO;
+
+    @Autowired
+    YieldCurveSpreadDAO yieldCurveSpreadDAO;
+
+    public DiscountCurve buildDiscountCurve(String idCurve, LocalDate officialDate) {
+        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
+        if (dbCurve == null) {
+            throw new IllegalArgumentException("Unknown curve: " + idCurve);
+        }
+        YieldCurve base = buildYieldCurve(dbCurve, officialDate);   // rates from the provider (ECB)
+        if (!dbCurve.isUseSpreads()) {
+            return base;
+        } else {
+            return null;
+        }
+    }
+
+    public DiscountCurve buildDiscountCurve(String idCurve, List<MarketQuote> quotes,
+            LocalDate officialDate, boolean useSpreads, int maxAgeDays) {
+        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
+        if (dbCurve == null) {
+            throw new IllegalArgumentException("Unknown curve: " + idCurve);
+        }
+
+        YieldCurve base = buildYieldCurve(idCurve, quotes, officialDate);   // rates from the provider (ECB)
+        if (!dbCurve.isUseSpreads()) {
+            return base;
+        }
+
+        List<YieldCurveSpread> rows = yieldCurveSpreadDAO.findLatest(dbCurve.getIdYieldCurve(), officialDate);
+        if (rows.isEmpty()) {
+            throw new IllegalStateException("Curve " + idCurve + " requires z-spreads but none found on or before " + officialDate);
+        }
+        LocalDate asOf = rows.get(0).getAsOfDate();
+        if (ChronoUnit.DAYS.between(asOf, officialDate) > maxAgeDays) {
+            throw new IllegalStateException("Z-spreads for " + idCurve + " are stale: as of " + asOf);
+        }
+        String expectedBase = dbCurve.getProvider();                          // or the field that holds the base curve code
+        for (YieldCurveSpread r : rows) {
+            if (!expectedBase.equals(r.getBaseCurveCode())) {
+                throw new IllegalStateException("Z-spreads calibrated on " + r.getBaseCurveCode() + ", expected " + expectedBase);
+            }
+        }
+
+        Map<Offset, Double> buckets = new LinkedHashMap<>();
+        for (YieldCurveSpread r : rows) {
+            buckets.put(new Offset(r.getOffsetValue(), /* OffsetType from r.getOffsetType() */ OffsetType.YEARS), r.getzSpread());
+        }
+        return new SpreadedCurve(base, SpreadProfile.of(officialDate, buckets));
+    }
+
+    public org.softcaster.engine.curve.YieldCurve buildYieldCurve(String idCurve, List<MarketQuote> newInputs, LocalDate officialDate) {
+        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
+        if (dbCurve != null) {
+            Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
+            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, newInputs);
+            return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
+        } else {
+            return null;
+        }
+    }
+
+    public org.softcaster.engine.curve.YieldCurve buildYieldCurve(org.softcaster.core.data.YieldCurve dbCurve, LocalDate officialDate) {
+        if (dbCurve != null) {
+            List<MarketQuote> marketQuotes = getMarketQuotes(dbCurve);
+            Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
+            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, marketQuotes);
+            return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
+        } else {
+            return null;
+        }
+    }
+
+    private MarketQuote getMarketQuote(YieldCurveItem item) {
+
+        OffsetType offsetType = OffsetType.fromId(item.getOffsetType());
+        Offset offset = new Offset(item.getOffsetValue(), offsetType);
+        MarketQuote marketQuote = new MarketQuote(item.getRic(), offset, item.getBid(),
+                item.getDaycount(), item.getCompounding(), item.getNodeType());
+        return marketQuote;
+    }
+
+    private MarketQuote getMarketQuote(Node node) {
+        MarketQuote marketQuote = null;
+        OffsetType offsetType = OffsetType.fromCode(node.getOffset().offsetType().getCode());
+        long step = node.getOffset().step();
+        marketQuote = new MarketQuote(node.getSymbol(), new Offset(step, offsetType), node.getData().bid(),
+                DaycountBasis.fromCode(node.getDaycount()),
+                Compounding.fromCode(node.getCompounding()),
+                CurveNodeType.fromCode(node.getNodeType()));
+        return marketQuote;
+    }
+
+    public List<MarketQuote> getNewInput(IMarketDataProvider provider, String curveId) {
+        List<MarketQuote> newInput = null;
+        List<Node> nodes = provider.getYieldCurveNodes(curveId);
+        if (nodes != null && !nodes.isEmpty()) {
+            newInput = new ArrayList<>();
+            MarketQuote marketQuote;
+            for (Node n : nodes) {
+                marketQuote = getMarketQuote(n);
+                if (marketQuote != null) {
+                    newInput.add(marketQuote);
+                }
+            }
+        }
+        return newInput;
+    }
+
+    public List<MarketQuote> getNewInput(String curveId) {
+        List<MarketQuote> newInput = null;
+        // Recupero yield curve
+        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
+        if (dbCurve != null && dbCurve.getItems() != null) {
+            List<YieldCurveItem> existingDbItems = dbCurve.getItems();
+            newInput = new ArrayList<>();
+            MarketQuote marketQuote;
+            for (YieldCurveItem item : existingDbItems) {
+                marketQuote = getMarketQuote(item);
+                if (marketQuote != null) {
+                    newInput.add(marketQuote);
+                }
+            }
+        }
+        return newInput;
+    }
+
+    public List<MarketQuote> getMarketQuotes(org.softcaster.core.data.YieldCurve dbCurve) {
+        List<MarketQuote> newInput = null;
+        // Recupero yield curve
+        if (dbCurve != null && dbCurve.getItems() != null) {
+            List<YieldCurveItem> existingDbItems = dbCurve.getItems();
+            newInput = new ArrayList<>();
+            MarketQuote marketQuote;
+            for (YieldCurveItem item : existingDbItems) {
+                marketQuote = getMarketQuote(item);
+                if (marketQuote != null) {
+                    newInput.add(marketQuote);
+                }
+            }
+        }
+        return newInput;
+    }
+
+    public void saveOrUpdateCurve(String curveId, List<CurveNode> newInputs) {
+
+        if (newInputs == null || newInputs.isEmpty()) {
+            return;
+        }
+
+        // Recupero yield curve
+        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
+        if (dbCurve != null && dbCurve.getItems() != null) {
+
+            // Mappa gli item attualmente presenti sul DB per una ricerca veloce O(1)
+            // Usiamo come chiave la combinazione "step_code" (es. "3_MONTHS")
+            Map<String, YieldCurveItem> existingDbItems = dbCurve.getItems().stream()
+                    .collect(Collectors.toMap(
+                            item -> item.getRic(),
+                            item -> item
+                    ));
+
+            List<YieldCurveItem> updatedItems = new ArrayList<>();
+
+            // 3. Allinea i dati finanziari con le entità DB
+            for (CurveNode node : newInputs) {
+                if (node.mq() != null) {
+                    String key = node.mq().symbol();
+                    if (existingDbItems.containsKey(key)) {
+                        // Il nodo esiste già a DB: aggiorna solo tasso e discount factor (UPDATE)
+                        YieldCurveItem existingItem = existingDbItems.get(key);
+                        existingItem.setAsk(node.mq().rate());
+                        existingItem.setBid(node.mq().rate());
+                        updatedItems.add(existingItem);
+                    } else {
+                        // Il nodo è nuovo: crea una nuova entità (INSERT)
+                        YieldCurveItem newItem = new YieldCurveItem();
+                        newItem.setRic(node.mq().symbol());
+                        newItem.setYieldCurve(dbCurve.getIdYieldCurve());
+                        newItem.setOffsetValue((short) node.mq().tenorOffset().step());
+                        newItem.setOffsetType((short) node.mq().tenorOffset().offsetType().getId());
+                        newItem.setAsk(node.mq().rate());
+                        newItem.setBid(node.mq().rate());
+                        newItem.setDaycount(node.mq().daycount());
+                        newItem.setCompounding(node.mq().compounding());
+                        newItem.setNodeType(node.mq().nodeType());
+                        updatedItems.add(newItem);
+                    }
+                }
+            }
+
+            // 4. Applica la lista aggiornata per gestire le eventuali cancellazioni (Orphan Removal)
+            dbCurve.getItems().clear();
+            dbCurve.getItems().addAll(updatedItems);
+            yieldCurveDAO.saveOrUpdate(dbCurve);
+        }
+
+    }
+
+    public void loadCurveRates(String curveId) {
+        // Recupero yield curve
+        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
+        if (dbCurve != null && dbCurve.getItems() != null) {
+
+        }
+    }
+
+    private double calcZSpread(LocalDate officialDate, DiscountCurve curve, double cleanPrice, MasterData data) {
+        double zSpread = 0.;
+        if (data instanceof SecurityMasterData) {
+            SecurityMasterData smd = smdDAO.findByCodeWithCashFlowAndHolidays(data.getCode());
+            if (smd.getCashFlows().isEmpty()) {
+                System.out.println("Instrument: " + smd.getCode() + " has not cashflow!");
+                return zSpread;
+            }
+            if (!smd.getCurrency().getIsoCode().equals(curve.getCurrency().getCurrencyCode())) {
+                return zSpread;
+            }
+            if (curve != null) {
+                Calendar calendar = new Calendar(smd.getCurrency());
+                LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, smd.getBusinessDays());
+                double accrual = bondCalculator.getAccruals(smd, valuationDate);
+                double dirtyPrice = cleanPrice + accrual;
+                zSpread = bondCalculator.getZSpread(smd, dirtyPrice, valuationDate, curve);
+            }
+        }
+        return zSpread;
+    }
+
+    public List<RawZSpread> getZSpread(AbstractProvider provider, LocalDate officialDate, DiscountCurve curve) {
+        List<SecurityMasterData> dataList = smdDAO.findAllByAssetClass("XRB");
+
+        List<RawZSpread> rawSpreads = new ArrayList<>();
+        for (MasterData data : dataList) {
+            // Estraiamo in sicurezza i campi, gestendo i potenziali NullPointerException
+            Node node = provider.getMktQuote(data.getCode(), Market.BONDS);
+            double cleanPrice = node != null ? node.getData().bid() : 0.;
+            if (NumberUtils.isZero(cleanPrice)) {
+                continue;
+            }
+
+            // Gestione di date e numeri
+            LocalDate maturityDate = (data.getIssueDate() != null) ? data.getMaturityDate().toLocalDate() : null;
+            // Costruiamo la riga del CSV                   
+            double zSpread = calcZSpread(officialDate, curve, cleanPrice, data);
+            if (!NumberUtils.isZero(zSpread)) {
+                rawSpreads.add(new RawZSpread(maturityDate, zSpread));
+            }
+        }
+        return rawSpreads;
+    }
+}

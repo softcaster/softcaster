@@ -19,6 +19,8 @@ import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.curve.RawZSpread;
+import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.euronext.BorsaItalianaProvider;
@@ -50,6 +52,9 @@ public class ZSpreadBuilder implements CommandLineRunner {
     @Autowired
     @Qualifier("marketDataService") // Indica a Spring esattamente QUALE bean usare
     private MarketDataService marketDataService;
+    @Autowired
+    @Qualifier("yieldCurveBuilder")
+    private YieldCurveBuilder yieldCurveBuilder;
 
     public static void main(String[] args) {
         // Avvia l'applicazione tramite Spring Boot 
@@ -58,6 +63,25 @@ public class ZSpreadBuilder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+
+        testDiscountCurve("ECBYC");
+    }
+
+    private void testDiscountCurve(String idCurve) {
+        org.softcaster.engine.curve.DiscountCurve discountCurve = yieldCurveBuilder.buildDiscountCurve(idCurve, marketDataService.getOfficialDate());
+        BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
+        LocalDate officialDate = marketDataService.getOfficialDate();
+        
+        List<RawZSpread> rawSpreads = yieldCurveBuilder.getZSpread(provider, officialDate, discountCurve);
+        if(rawSpreads != null && !rawSpreads.isEmpty()) {
+            for(RawZSpread spread: rawSpreads) {
+                System.out.println("Maturity: " + spread.maturity() + "\t" + "Spread: " + spread.zSpread());
+            }
+        }
+        System.out.println(discountCurve.getDiscountFactor(marketDataService.getOfficialDate()));
+    }
+
+    private void exportZSpread(String idCurve) {
         List<SecurityMasterData> bonds = smdDAO.findAllByAssetClass("XRB");
         Path path = Paths.get(CSV_PATH + "/securities.csv");
 
@@ -148,7 +172,7 @@ public class ZSpreadBuilder implements CommandLineRunner {
             double zSpread = 0.;
             if (data instanceof SecurityMasterData) {
                 SecurityMasterData smd = smdDAO.findByCodeWithCashFlowAndHolidays(data.getCode());
-                if(smd.getCashFlows().isEmpty()){
+                if (smd.getCashFlows().isEmpty()) {
                     System.out.println("Instrument: " + smd.getCode() + " has not cashflow!");
                     return zSpread;
                 }

@@ -10,7 +10,7 @@ import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.cashflow.CashFlowHelper;
 import org.softcaster.engine.cashflow.EffectiveInterestScheduleGenerator;
-import org.softcaster.engine.curve.YieldCurve;
+import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.dto.FRBInputData;
 import org.softcaster.engine.dto.FRBOutputData;
 import org.softcaster.engine.dto.XRBInputData;
@@ -43,8 +43,8 @@ public class BondPricer extends AbstractFixedIncomePricer {
         return CashFlowHelper.calculatePrice(flows, ytm, valuationDate, dcb, compounding, frequency);
     }
 
-    public double calculatePrice(List<CashFlow> flows, YieldCurve yieldCurve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
-        return CashFlowHelper.calculatePrice(flows, yieldCurve, valuationDate, dcb, frequency);
+    public double calculatePrice(List<CashFlow> flows, DiscountCurve curve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
+        return CashFlowHelper.calculatePrice(flows, curve, valuationDate, dcb, frequency);
     }
 
     public double calculateMacaulayDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
@@ -332,7 +332,7 @@ public class BondPricer extends AbstractFixedIncomePricer {
             DaycountBasis dcb,
             Compounding compounding,
             Frequency frequency,
-            YieldCurve curve) {
+            DiscountCurve curve) {
         return CashFlowHelper.solveZSpread(cashflows,
                 dirtyPrice,
                 valuationDate,
