@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.commons.utils.NumberUtils;
+import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.YieldCurveDAO;
@@ -21,6 +23,9 @@ import org.softcaster.engine.curve.SpreadProfile;
 import org.softcaster.engine.curve.SpreadedCurve;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.enums.OffsetType;
+import org.softcaster.provider.bricks.AbstractProvider;
+import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -79,7 +84,7 @@ public class SpreadCurveCalibrator {
      * @param minBonds minimum bonds per bucket
      * @param minValidBuckets the calibration is rejected if fewer buckets are
      * valid (protects the stored data)
-     * @return 
+     * @return
      */
     @Transactional
     public Result calibrate(String spreadCurveCode, String baseCurveCode, Collection<String> bondCodes,
@@ -191,5 +196,56 @@ public class SpreadCurveCalibrator {
                 + points.size() + " bonds, " + rows.size() + " buckets, mean residual " + meanResidual
                 + ", max |residual| " + maxAbs + ", skipped " + skipped.size());
         return new Result(officialDate, buckets, skipped, meanResidual, maxAbs);
+    }
+
+    private SpreadBuckets.SpreadPoint calcZSpread(LocalDate officialDate, DiscountCurve curve, double cleanPrice, MasterData data) {
+        if (data instanceof SecurityMasterData) {
+            SecurityMasterData smd = smdDAO.findByCodeWithCashFlowAndHolidays(data.getCode());
+            if (smd.getCashFlows().isEmpty()) {
+                System.out.println("Instrument: " + smd.getCode() + " has not cashflow!");
+                return null;
+            }
+            if (!smd.getCurrency().getIsoCode().equals(curve.getCurrency().getCurrencyCode())) {
+                return null;
+            }
+            double t = ChronoUnit.DAYS.between(officialDate, data.getMaturityDate().toLocalDate()) / 365.0;
+            if (t < MIN_T || t > MAX_T) {
+                return null;
+            }
+            if (curve != null) {
+                org.softcaster.easy_pricer_mds_core.Calendar calendar = new org.softcaster.easy_pricer_mds_core.Calendar(smd.getCurrency());
+                LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, smd.getBusinessDays());
+                double accrual = bondCalculator.getAccruals(smd, valuationDate);
+                double dirtyPrice = cleanPrice + accrual;
+                double z = bondCalculator.getZSpread(smd, dirtyPrice, valuationDate, curve);
+                return new SpreadBuckets.SpreadPoint(data.getCode(), t, z);
+            }
+        }
+        return null;
+    }
+
+    public SpreadBuckets.Bucket[] calibrate(AbstractProvider provider, LocalDate officialDate, DiscountCurve curve,int[] bucketYears,int minBonds) {
+        List<SecurityMasterData> dataList = smdDAO.findAllByAssetClass("XRB");
+
+        List<SpreadBuckets.SpreadPoint> points = new ArrayList<>();
+        for (MasterData data : dataList) {
+            Node node = provider.getMktQuote(data.getCode(), Market.BONDS);
+            double cleanPrice = node != null ? node.getData().bid() : 0.;
+            if (NumberUtils.isZero(cleanPrice)) {
+                continue;
+            }
+
+            SpreadBuckets.SpreadPoint point = calcZSpread(officialDate, curve, cleanPrice, data);
+            if (point != null) {
+                points.add(point);
+            }
+        }
+        
+        // buckets
+        SpreadBuckets.Bucket[] template = Arrays.stream(bucketYears)
+                .mapToObj(SpreadBuckets.Bucket::empty).toArray(SpreadBuckets.Bucket[]::new);
+        SpreadBuckets.Bucket[] buckets = SpreadBuckets.compute(points, template, minBonds, MIN_T, MAX_T);
+
+        return buckets;
     }
 }

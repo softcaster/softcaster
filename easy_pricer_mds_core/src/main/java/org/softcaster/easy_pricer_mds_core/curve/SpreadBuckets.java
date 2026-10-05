@@ -90,6 +90,12 @@ public final class SpreadBuckets {
      * within T +/- window, where window = min(max(0.5, 0.2 * T), 2.0) years.
      * Buckets with fewer than minBonds bonds are returned with zSpread = null.
      * Returns a new array: the template is not modified.
+     * @param points
+     * @param template
+     * @param minBonds
+     * @param minT
+     * @param maxT
+     * @return 
      */
     public static Bucket[] compute(List<SpreadPoint> points, Bucket[] template,
             int minBonds, double minT, double maxT) {

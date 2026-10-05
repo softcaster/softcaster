@@ -19,7 +19,8 @@ import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
-import org.softcaster.easy_pricer_mds_core.curve.RawZSpread;
+import org.softcaster.easy_pricer_mds_core.curve.SpreadBuckets;
+import org.softcaster.easy_pricer_mds_core.curve.SpreadCurveCalibrator;
 import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
@@ -55,6 +56,9 @@ public class ZSpreadBuilder implements CommandLineRunner {
     @Autowired
     @Qualifier("yieldCurveBuilder")
     private YieldCurveBuilder yieldCurveBuilder;
+    @Autowired
+    @Qualifier("spreadCurveCalibrator")
+    private SpreadCurveCalibrator calibrator;
 
     public static void main(String[] args) {
         // Avvia l'applicazione tramite Spring Boot 
@@ -72,10 +76,12 @@ public class ZSpreadBuilder implements CommandLineRunner {
         BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
         LocalDate officialDate = marketDataService.getOfficialDate();
         
-        List<RawZSpread> rawSpreads = yieldCurveBuilder.getZSpread(provider, officialDate, discountCurve);
-        if(rawSpreads != null && !rawSpreads.isEmpty()) {
-            for(RawZSpread spread: rawSpreads) {
-                System.out.println("Maturity: " + spread.maturity() + "\t" + "Spread: " + spread.zSpread());
+        int[] bucketYears= {1,2,3,4,5,6,7,8,9,10,15,20,25};
+        int minBonds = 1;
+        SpreadBuckets.Bucket[] points = calibrator.calibrate(provider, officialDate, discountCurve, bucketYears, minBonds);
+        if(points != null && points.length >0) {
+            for(int i =0; i< points.length; i++) {
+                System.out.println("Years: " + points[i].years() + "\t" + "Spread: " + points[i].zSpread());
             }
         }
         System.out.println(discountCurve.getDiscountFactor(marketDataService.getOfficialDate()));

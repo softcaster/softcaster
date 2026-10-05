@@ -12,15 +12,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.softcaster.commons.utils.NumberUtils;
-import org.softcaster.core.data.MasterData;
-import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.YieldCurveDAO;
 import org.softcaster.core.data.YieldCurveItem;
 import org.softcaster.core.data.YieldCurveSpread;
 import org.softcaster.core.data.YieldCurveSpreadDAO;
-import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
@@ -34,10 +30,8 @@ import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.OffsetType;
-import org.softcaster.provider.bricks.AbstractProvider;
 import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.provider.bricks.Node;
-import org.softcaster.provider.enums.Market;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -256,50 +250,5 @@ public class YieldCurveBuilder {
         if (dbCurve != null && dbCurve.getItems() != null) {
 
         }
-    }
-
-    private double calcZSpread(LocalDate officialDate, DiscountCurve curve, double cleanPrice, MasterData data) {
-        double zSpread = 0.;
-        if (data instanceof SecurityMasterData) {
-            SecurityMasterData smd = smdDAO.findByCodeWithCashFlowAndHolidays(data.getCode());
-            if (smd.getCashFlows().isEmpty()) {
-                System.out.println("Instrument: " + smd.getCode() + " has not cashflow!");
-                return zSpread;
-            }
-            if (!smd.getCurrency().getIsoCode().equals(curve.getCurrency().getCurrencyCode())) {
-                return zSpread;
-            }
-            if (curve != null) {
-                Calendar calendar = new Calendar(smd.getCurrency());
-                LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, smd.getBusinessDays());
-                double accrual = bondCalculator.getAccruals(smd, valuationDate);
-                double dirtyPrice = cleanPrice + accrual;
-                zSpread = bondCalculator.getZSpread(smd, dirtyPrice, valuationDate, curve);
-            }
-        }
-        return zSpread;
-    }
-
-    public List<RawZSpread> getZSpread(AbstractProvider provider, LocalDate officialDate, DiscountCurve curve) {
-        List<SecurityMasterData> dataList = smdDAO.findAllByAssetClass("XRB");
-
-        List<RawZSpread> rawSpreads = new ArrayList<>();
-        for (MasterData data : dataList) {
-            // Estraiamo in sicurezza i campi, gestendo i potenziali NullPointerException
-            Node node = provider.getMktQuote(data.getCode(), Market.BONDS);
-            double cleanPrice = node != null ? node.getData().bid() : 0.;
-            if (NumberUtils.isZero(cleanPrice)) {
-                continue;
-            }
-
-            // Gestione di date e numeri
-            LocalDate maturityDate = (data.getIssueDate() != null) ? data.getMaturityDate().toLocalDate() : null;
-            // Costruiamo la riga del CSV                   
-            double zSpread = calcZSpread(officialDate, curve, cleanPrice, data);
-            if (!NumberUtils.isZero(zSpread)) {
-                rawSpreads.add(new RawZSpread(maturityDate, zSpread));
-            }
-        }
-        return rawSpreads;
     }
 }
