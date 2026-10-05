@@ -36,4 +36,12 @@ public final class SpreadedCurve implements DiscountCurve {
         else
             return null;
     }
+
+    @Override
+    public int[] getBucketYears() {
+         if(base != null)
+            return base.getBucketYears();
+        else
+            return null;
+   }
 }

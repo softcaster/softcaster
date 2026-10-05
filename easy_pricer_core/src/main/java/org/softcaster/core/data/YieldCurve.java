@@ -17,6 +17,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.softcaster.engine.enums.OffsetType;
 
 @Entity
 @Table(name = "yield_curve")
@@ -26,7 +27,7 @@ public class YieldCurve implements Serializable {
 
     @Id
     @SequenceGenerator(name = "yield_curve_seq", sequenceName = "yield_curve_s", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "yield_curve_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "yield_curve_seq")
     @Column(name = "id_yield_curve", columnDefinition = "INTEGER")
     private Integer idYieldCurve;
 
@@ -203,5 +204,26 @@ public class YieldCurve implements Serializable {
      */
     public void setMaxAgeDays(Integer maxAgeDays) {
         this.maxAgeDays = maxAgeDays;
+    }
+
+    public int[] getBucketYears() {
+        final short years = (short) OffsetType.YEARS.getId();     
+        final short months = (short) OffsetType.MONTHS.getId();
+
+        return items.stream()
+                .filter(it -> it.getOffsetType() != null && it.getOffsetValue() != null && it.getOffsetValue() > 0)
+                .mapToInt(it -> {
+                    if (it.getOffsetType() == years) {
+                        return it.getOffsetValue();
+                    }
+                    if (it.getOffsetType() == months && it.getOffsetValue() % 12 == 0) {
+                        return it.getOffsetValue() / 12;
+                    }
+                    return 0; // sub-year or non-integer tenors are not buckets
+                })
+                .filter(y -> y > 0)
+                .distinct()
+                .sorted()
+                .toArray();
     }
 }

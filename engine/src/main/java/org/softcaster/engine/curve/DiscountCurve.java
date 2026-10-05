@@ -12,8 +12,11 @@ import org.softcaster.engine.enums.DaycountBasis;
 public interface DiscountCurve {
 
     LocalDate getValuationDate();
-    Currency getCurrency() ;
- 
+
+    Currency getCurrency();
+
+    int[] getBucketYears();
+
     double getDiscountFactor(LocalDate date);
 
     default double getZeroRate(LocalDate date, DaycountBasis dc, Compounding c) {

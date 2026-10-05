@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.softcaster.engine.enums.OffsetType;
 
 /**
  * Immutable discount curve (the snapshot is replaced atomically).
@@ -208,5 +210,14 @@ public final class YieldCurve implements DiscountCurve {
         return snap.entrySet().stream()
                 .map(e -> new OrderedDiscountFactor(valuationDate.plusDays(e.getKey()), e.getValue().df(), e.getKey()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public int[] getBucketYears() {
+        final NavigableMap<Integer, CurveNode> snap = this.dfs;      // single read of the volatile field
+        int maxYears = snap.lastKey() / 365 + 1;
+        return IntStream.rangeClosed(1, maxYears)
+                .filter(y -> snap.containsKey((int) ChronoUnit.DAYS.between(valuationDate, valuationDate.plusYears(y))))
+                .toArray();
     }
 }

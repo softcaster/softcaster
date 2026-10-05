@@ -263,7 +263,7 @@ alter table currency add column decimal_places smallint NOT NULL DEFAULT 2;
 alter table master_data add column compounding integer NOT NULL DEFAULT 2;
 alter table master_data add CONSTRAINT fk_compounding FOREIGN KEY (compounding) REFERENCES compounding (id_compounding) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-ALTER TABLE yield_curve add column max_age_days integer not null default 0;
+ALTER TABLE yield_curve add column use_spreads boolean not null default false;
 
 
 ALTER TABLE yield_curve_item  ALTER COLUMN daycount TYPE integer;

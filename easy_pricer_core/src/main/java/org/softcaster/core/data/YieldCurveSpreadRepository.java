@@ -13,12 +13,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface YieldCurveSpreadRepository extends JpaRepository<YieldCurveSpread, Integer> {
 
-    @Query("select s from YieldCurveSpread s where s.yieldCurve.idYieldCurve = :id "
+    @Query("select s from YieldCurveSpread s where s.spreadCurveId = :id "
             + "and s.asOfDate = (select max(x.asOfDate) from YieldCurveSpread x "
-            + "where x.yieldCurve.idYieldCurve = :id and x.asOfDate <= :date)")
+            + "where x.spreadCurveId = :id and x.asOfDate <= :date)")
     List<YieldCurveSpread> findLatest(@Param("id") Integer id, @Param("date") LocalDate date);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("delete from YieldCurveSpread s where s.yieldCurve.idYieldCurve = :id and s.asOfDate = :date")
+    @Query("delete from YieldCurveSpread s where s.spreadCurveId = :id and s.asOfDate = :date")
     void deleteByCurveAndDate(@Param("id") Integer id, @Param("date") LocalDate date);
 }

@@ -19,9 +19,7 @@ import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
-import org.softcaster.easy_pricer_mds_core.curve.SpreadBuckets;
-import org.softcaster.easy_pricer_mds_core.curve.SpreadCurveCalibrator;
-import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
+import org.softcaster.easy_pricer_mds_core.curve.ZSpreadImporter;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.euronext.BorsaItalianaProvider;
@@ -50,15 +48,13 @@ public class ZSpreadBuilder implements CommandLineRunner {
     private SecurityMasterDataDAO smdDAO;
     @Autowired
     private BondCalculator bondCalculator;
+
     @Autowired
     @Qualifier("marketDataService") // Indica a Spring esattamente QUALE bean usare
     private MarketDataService marketDataService;
+
     @Autowired
-    @Qualifier("yieldCurveBuilder")
-    private YieldCurveBuilder yieldCurveBuilder;
-    @Autowired
-    @Qualifier("spreadCurveCalibrator")
-    private SpreadCurveCalibrator calibrator;
+    private ZSpreadImporter importer;
 
     public static void main(String[] args) {
         // Avvia l'applicazione tramite Spring Boot 
@@ -72,19 +68,7 @@ public class ZSpreadBuilder implements CommandLineRunner {
     }
 
     private void testDiscountCurve(String idCurve) {
-        org.softcaster.engine.curve.DiscountCurve discountCurve = yieldCurveBuilder.buildDiscountCurve(idCurve, marketDataService.getOfficialDate());
-        BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
-        LocalDate officialDate = marketDataService.getOfficialDate();
-        
-        int[] bucketYears= {1,2,3,4,5,6,7,8,9,10,15,20,25};
-        int minBonds = 1;
-        SpreadBuckets.Bucket[] points = calibrator.calibrate(provider, officialDate, discountCurve, bucketYears, minBonds);
-        if(points != null && points.length >0) {
-            for(int i =0; i< points.length; i++) {
-                System.out.println("Years: " + points[i].years() + "\t" + "Spread: " + points[i].zSpread());
-            }
-        }
-        System.out.println(discountCurve.getDiscountFactor(marketDataService.getOfficialDate()));
+        importer.importZSpread(idCurve);
     }
 
     private void exportZSpread(String idCurve) {

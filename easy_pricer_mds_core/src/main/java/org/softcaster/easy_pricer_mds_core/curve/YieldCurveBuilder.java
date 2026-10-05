@@ -39,11 +39,6 @@ import org.springframework.stereotype.Component;
 public class YieldCurveBuilder {
 
     @Autowired
-    private SecurityMasterDataDAO smdDAO;
-    @Autowired
-    private BondCalculator bondCalculator;
-
-    @Autowired
     YieldCurveDAO yieldCurveDAO;
 
     @Autowired

@@ -181,7 +181,7 @@ public class SpreadCurveCalibrator {
                 continue;                                                      // weak bucket: not stored
             }
             YieldCurveSpread r = new YieldCurveSpread();
-            r.setYieldCurve(dbCurve);
+            r.setSpreadCurveId(dbCurve.getIdYieldCurve());
             r.setAsOfDate(officialDate);
             r.setBaseCurveCode(baseCurveCode);
             r.setOffsetType((short) OffsetType.YEARS.getId());                                      // ADAPT: IdentifiableEnum API

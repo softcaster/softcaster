@@ -766,27 +766,54 @@ CREATE SEQUENCE yield_curve_item_s
 ALTER SEQUENCE yield_curve_item_s
     OWNER TO sofie;
 
--- yield_curve_spread Calibrated z-spreads, one row per (curve, calibration date, bucket tenor)
+-- A spread curve (e.g. ITA_SPREADED = ECB + calibrated z-spreads) is DEFINED by a base curve plus spreads.
+-- It owns no rows in yield_curve_item: its rates come from the base curve, its spreads from yield_curve_spread.
+-- PostgreSQL syntax: adapt to your DBMS.
+CREATE TABLE spread_curve (
+    id_spread_curve    INTEGER      NOT NULL,
+    code               VARCHAR(50)  NOT NULL,            -- e.g. ITA_SPREADED (must differ from every yield_curve.code)
+    description        VARCHAR(200),
+    base_curve         INTEGER      NOT NULL,            -- FK: spread-free curve (e.g. ECB)
+    max_age_days       INTEGER      NOT NULL DEFAULT 5,  -- reject spreads calibrated more than N days ago
+    min_bonds          INTEGER      NOT NULL DEFAULT 3,  -- calibration: minimum bonds per bucket
+    min_valid_buckets  INTEGER      NOT NULL DEFAULT 3,  -- calibration: reject if fewer valid buckets
+
+    CONSTRAINT pk_spread_curve PRIMARY KEY (id_spread_curve),
+    CONSTRAINT uq_spread_curve_code UNIQUE (code),
+    CONSTRAINT fk_sc_base_curve FOREIGN KEY (base_curve) REFERENCES yield_curve (id_yield_curve)
+);
+ALTER TABLE spread_curve OWNER TO sofie;
+
+CREATE SEQUENCE spread_curve_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE spread_curve_s OWNER TO sofie;
+
+
+-- ---------------------------------------------------------------------------------------------
+-- New installations: create yield_curve_spread directly in its final shape.
+-- ---------------------------------------------------------------------------------------------
 CREATE TABLE yield_curve_spread (
-    id_yield_curve_spread  INTEGER       NOT NULL,
-    yield_curve            INTEGER       NOT NULL,   -- FK: curve the spreads belong to (e.g. ITA, GER)
-    as_of_date             DATE          NOT NULL,   -- reference date of the prices / base curve used
-    base_curve_code        VARCHAR(50)   NOT NULL,   -- base curve the spreads were calibrated on (e.g. ECBYC)
-    offset_type            SMALLINT      NOT NULL,   -- same coding as yield_curve_item.offset_type
-    offset_value           SMALLINT      NOT NULL,   -- bucket tenor (e.g. 5 with offset_type YEARS)
-    z_spread               NUMERIC(14,10) NOT NULL,  -- continuous, ACT/365, decimal (0.0095 = 95 bp)
-    n_bonds                INTEGER,                  -- number of bonds used for the bucket (audit)
-    dispersion             NUMERIC(14,10),           -- e.g. median absolute deviation of the bucket (audit)
-    calibrated_at          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_yield_curve_spread  INTEGER        NOT NULL,
+    spread_curve           INTEGER        NOT NULL,   -- FK spread_curve
+    as_of_date             DATE           NOT NULL,   -- reference date of the prices / base curve used
+    base_curve_code        VARCHAR(50)    NOT NULL,   -- base curve the spreads were CALIBRATED on (audit + load-time check)
+    offset_type            SMALLINT       NOT NULL,   -- same coding as yield_curve_item.offset_type
+    offset_value           SMALLINT       NOT NULL,   -- bucket tenor (e.g. 5 with offset_type YEARS)
+    z_spread               NUMERIC(14,10) NOT NULL,   -- continuous, ACT/365, decimal (0.0095 = 95 bp)
+    n_bonds                INTEGER,                   -- bonds used for the bucket (audit)
+    dispersion             NUMERIC(14,10),            -- e.g. median absolute deviation (audit)
+    calibrated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT pk_yield_curve_spread PRIMARY KEY (id_yield_curve_spread),
-    CONSTRAINT fk_ycs_yield_curve FOREIGN KEY (yield_curve) REFERENCES yield_curve (id_yield_curve),
-    CONSTRAINT uq_ycs_bucket UNIQUE (yield_curve, as_of_date, offset_type, offset_value),
+    CONSTRAINT fk_ycs_spread_curve FOREIGN KEY (spread_curve) REFERENCES spread_curve (id_spread_curve),
+    CONSTRAINT uq_ycs_bucket UNIQUE (spread_curve, as_of_date, offset_type, offset_value),
     CONSTRAINT ck_ycs_offset_value CHECK (offset_value > 0)
 );
+CREATE INDEX ix_ycs_curve_date ON yield_curve_spread (spread_curve, as_of_date);
 ALTER TABLE yield_curve_spread OWNER TO sofie;
+
 CREATE SEQUENCE yield_curve_spread_s START WITH 1 INCREMENT BY 1;
-ALTER SEQUENCE yield_curve_item_s OWNER TO sofie;
+ALTER SEQUENCE yield_curve_spread_s OWNER TO sofie;
+
 
 -- ----------------------------------------------------------------------------
 -- settlement_type
@@ -799,7 +826,6 @@ CREATE TABLE settlement_type (
 );
 
 CREATE UNIQUE INDEX idx_settlement_type_code ON settlement_type (code);
-
 ALTER TABLE settlement_type OWNER TO sofie;
 
 -- Creo sequenza

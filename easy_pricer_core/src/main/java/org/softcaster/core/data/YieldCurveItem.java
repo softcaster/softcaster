@@ -26,7 +26,7 @@ public class YieldCurveItem implements Serializable {
 
     @Id
     @SequenceGenerator(name = "yield_curve_item_seq", sequenceName = "yield_curve_item_s", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "yield_curve_item_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "yield_curve_item_seq")
     @Column(name = "id_yield_curve_item", columnDefinition = "INTEGER")
     private Integer idYieldCurveItem;
 

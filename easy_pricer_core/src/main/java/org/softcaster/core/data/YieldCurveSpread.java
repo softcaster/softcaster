@@ -7,8 +7,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.JdbcTypeCode;
 
+import jakarta.persistence.*;        // use javax.persistence.* if your project is still on Java EE
+import java.io.Serializable;
+import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.JdbcTypeCode;
+
 /**
- * One calibrated z-spread bucket for a curve (e.g. ITA vs ECBYC at 5 years).
+ * One calibrated z-spread bucket of a spread curve (e.g. ITA_SPREADED at 5 years on a given date).
  * Getters and setters omitted: generate them as for your other entities.
  */
 @Entity
@@ -21,15 +28,14 @@ public class YieldCurveSpread implements Serializable {
     @Column(name = "id_yield_curve_spread", columnDefinition = "INTEGER")
     private Integer idYieldCurveSpread;
 
-    // Curve the spreads belong to (ITA, GER...). Fully qualified: it is the core entity, not the engine class.
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "yield_curve", nullable = false)
-    private org.softcaster.core.data.YieldCurve yieldCurve;
+    // Id of the spread curve (table spread_curve)
+    @Column(name = "spread_curve", nullable = false)
+    private Integer spreadCurveId;
 
     @Column(name = "as_of_date", nullable = false)
     private LocalDate asOfDate;
 
-    // Base curve the spreads were calibrated on: must match the base curve used at load time
+    // Base curve the spreads were CALIBRATED on: compared at load time with the configured base curve
     @Column(name = "base_curve_code", nullable = false, length = 50)
     private String baseCurveCode;
 
@@ -69,17 +75,17 @@ public class YieldCurveSpread implements Serializable {
     }
 
     /**
-     * @return the yieldCurve
+     * @return the spreadCurveId
      */
-    public org.softcaster.core.data.YieldCurve getYieldCurve() {
-        return yieldCurve;
+    public Integer getSpreadCurveId() {
+        return spreadCurveId;
     }
 
     /**
-     * @param yieldCurve the yieldCurve to set
+     * @param spreadCurveId the spreadCurveId to set
      */
-    public void setYieldCurve(org.softcaster.core.data.YieldCurve yieldCurve) {
-        this.yieldCurve = yieldCurve;
+    public void setSpreadCurveId(Integer spreadCurveId) {
+        this.spreadCurveId = spreadCurveId;
     }
 
     /**
@@ -196,20 +202,14 @@ public class YieldCurveSpread implements Serializable {
 }
 
 /*
- * DAO (Spring Data JPA): adapt to the style of your other DAOs.
+ * Repository queries (YieldCurveSpreadRepository):
  *
- * public interface YieldCurveSpreadDAO extends JpaRepository<YieldCurveSpread, Integer> {
+ *   @Query("select s from YieldCurveSpread s where s.spreadCurveId = :id "
+ *        + "and s.asOfDate = (select max(x.asOfDate) from YieldCurveSpread x "
+ *        + "where x.spreadCurveId = :id and x.asOfDate <= :date)")
+ *   List<YieldCurveSpread> findLatest(@Param("id") Integer id, @Param("date") LocalDate date);
  *
- *     // spread rows of the latest calibration on or before the given date
- *     @Query("select s from YieldCurveSpread s where s.yieldCurve.idYieldCurve = :id "
- *          + "and s.asOfDate = (select max(x.asOfDate) from YieldCurveSpread x "
- *          + "where x.yieldCurve.idYieldCurve = :id and x.asOfDate <= :date)")
- *     List<YieldCurveSpread> findLatest(@Param("id") Integer id, @Param("date") LocalDate date);
- *
- *     // used to make a re-calibration of the same day idempotent (unique constraint on the bucket)
- *     @Modifying
- *     @Transactional
- *     @Query("delete from YieldCurveSpread s where s.yieldCurve.idYieldCurve = :id and s.asOfDate = :date")
- *     void deleteByCurveAndDate(@Param("id") Integer id, @Param("date") LocalDate date);
- * }
+ *   @Modifying(clearAutomatically = true, flushAutomatically = true)
+ *   @Query("delete from YieldCurveSpread s where s.spreadCurveId = :id and s.asOfDate = :date")
+ *   void deleteByCurveAndDate(@Param("id") Integer id, @Param("date") LocalDate date);
  */
