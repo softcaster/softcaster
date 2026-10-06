@@ -6,8 +6,8 @@ package org.softcaster.easy_pricer_srv.controller.helper;
 
 import jakarta.transaction.Transactional;
 import java.util.List;
-import org.softcaster.core.data.YieldCurve;
-import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveEntity;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class ValuationInitializer {
 
     @Autowired
-    private YieldCurveDAO yieldCurveDAO;
+    private YieldCurveEntityDAO yieldCurveDAO;
 
     @Autowired
     @Qualifier("marketDataService")
@@ -26,9 +26,9 @@ public class ValuationInitializer {
     @Transactional
     public void init() {
 
-        List<YieldCurve> curves = yieldCurveDAO.findAll();
+        List<YieldCurveEntity> curves = yieldCurveDAO.findAll();
 
-        for (YieldCurve yieldCurve : curves) {
+        for (YieldCurveEntity yieldCurve : curves) {
             marketDataService.loadCurveCurveRates(
                     yieldCurve.getCode()
             );

@@ -26,7 +26,7 @@ import org.softcaster.core.data.RefRateIndexDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SettlementTypeDAO;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
-import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.core.data.account.GlAccountDAO;
 import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +79,7 @@ public class MasterDataFacade {
     @Autowired
     private AssetClassDAO assetClassDAO;
     @Autowired
-    private YieldCurveDAO yieldCurveDAO;
+    private YieldCurveEntityDAO yieldCurveDAO;
     @Autowired
     private BrokerInstrumentRulesDAO brokerInstrumentRulesDAO;
     @Autowired
@@ -142,7 +142,7 @@ public class MasterDataFacade {
     /**
      * @return the yieldCurveDAO
      */
-    public YieldCurveDAO getYieldCurveDAO() {
+    public YieldCurveEntityDAO getYieldCurveDAO() {
         return yieldCurveDAO;
     }
 

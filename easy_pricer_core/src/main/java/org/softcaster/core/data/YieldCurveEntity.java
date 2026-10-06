@@ -23,7 +23,7 @@ import org.softcaster.engine.enums.OffsetType;
 @Table(name = "yield_curve")
 @SuppressWarnings("PersistenceUnitPresent")
 
-public class YieldCurve implements Serializable {
+public class YieldCurveEntity implements Serializable {
 
     @Id
     @SequenceGenerator(name = "yield_curve_seq", sequenceName = "yield_curve_s", allocationSize = 1)
@@ -55,12 +55,6 @@ public class YieldCurve implements Serializable {
 
     @Column(name = "provider")
     private String provider;
-
-    @Column(name = "use_spreads", nullable = false)
-    private boolean useSpreads;
-
-    @Column(name = "max_age_days", nullable = false)
-    private Integer maxAgeDays;
 
     public Integer getIdYieldCurve() {
         return idYieldCurve;
@@ -94,7 +88,7 @@ public class YieldCurve implements Serializable {
         if (getIdYieldCurve() == null || obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        YieldCurve that = (YieldCurve) obj;
+        YieldCurveEntity that = (YieldCurveEntity) obj;
         return getIdYieldCurve().equals(that.getIdYieldCurve());
     }
 
@@ -176,34 +170,6 @@ public class YieldCurve implements Serializable {
      */
     public void setProvider(String provider) {
         this.provider = provider;
-    }
-
-    /**
-     * @return the useSpreads
-     */
-    public boolean isUseSpreads() {
-        return useSpreads;
-    }
-
-    /**
-     * @param useSpreads the useSpreads to set
-     */
-    public void setUseSpreads(boolean useSpreads) {
-        this.useSpreads = useSpreads;
-    }
-
-    /**
-     * @return the maxAgeDays
-     */
-    public Integer getMaxAgeDays() {
-        return maxAgeDays;
-    }
-
-    /**
-     * @param maxAgeDays the maxAgeDays to set
-     */
-    public void setMaxAgeDays(Integer maxAgeDays) {
-        this.maxAgeDays = maxAgeDays;
     }
 
     public int[] getBucketYears() {

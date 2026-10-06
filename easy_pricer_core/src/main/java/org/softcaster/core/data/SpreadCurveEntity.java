@@ -13,6 +13,14 @@ import java.io.Serializable;
  * spreads from YieldCurveSpread rows. Getters and setters omitted: generate
  * them as for your other entities.
  */
+import jakarta.persistence.*;        // use javax.persistence.* if your project is still on Java EE
+import java.io.Serializable;
+
+/**
+ * Definition of a spread curve (e.g. ITA_SPREADED = ECB + calibrated z-spreads).
+ * It has no yield curve items: rates come from the base curve, spreads from YieldCurveSpread rows.
+ * Getters and setters omitted: generate them as for your other entities.
+ */
 @Entity
 @Table(name = "spread_curve")
 public class SpreadCurveEntity implements Serializable {
@@ -30,9 +38,11 @@ public class SpreadCurveEntity implements Serializable {
     @Column(name = "description", length = 200)
     private String description;
 
-    // Id of the spread-free curve in yield_curve (e.g. ECB). Currency and calendar come from it.
-    @Column(name = "base_curve", nullable = false)
-    private Integer baseCurveId;
+    // Spread-free curve this one is derived from (e.g. ECB). Currency and calendar come from it.
+    // LAZY: access it inside a transaction, or load it with "join fetch" (see the repository note below).
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "base_curve", nullable = false)
+    private YieldCurveEntity baseCurve;
 
     @Column(name = "max_age_days", nullable = false)
     private Integer maxAgeDays = 5;
@@ -86,17 +96,17 @@ public class SpreadCurveEntity implements Serializable {
     }
 
     /**
-     * @return the baseCurveId
+     * @return the baseCurve
      */
-    public Integer getBaseCurveId() {
-        return baseCurveId;
+    public YieldCurveEntity getBaseCurve() {
+        return baseCurve;
     }
 
     /**
-     * @param baseCurveId the baseCurveId to set
+     * @param baseCurve the baseCurve to set
      */
-    public void setBaseCurveId(Integer baseCurveId) {
-        this.baseCurveId = baseCurveId;
+    public void setBaseCurve(YieldCurveEntity baseCurve) {
+        this.baseCurve = baseCurve;
     }
 
     /**
@@ -141,3 +151,10 @@ public class SpreadCurveEntity implements Serializable {
         this.minValidBuckets = minValidBuckets;
     }
 }
+
+/*
+ * Repository note: to read the definition together with its base curve outside a transaction:
+ *
+ *   @Query("select c from SpreadCurveEntity c join fetch c.baseCurve where c.code = :code")
+ *   SpreadCurveEntity findByCodeWithBase(@Param("code") String code);
+ */

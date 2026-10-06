@@ -12,12 +12,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.softcaster.core.data.SecurityMasterDataDAO;
-import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.SpreadCurveEntity;
+import org.softcaster.core.data.SpreadCurveEntityDAO;
+import org.softcaster.core.data.YieldCurveEntity;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveItem;
 import org.softcaster.core.data.YieldCurveSpread;
 import org.softcaster.core.data.YieldCurveSpreadDAO;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
@@ -39,45 +40,34 @@ import org.springframework.stereotype.Component;
 public class YieldCurveBuilder {
 
     @Autowired
-    YieldCurveDAO yieldCurveDAO;
+    YieldCurveEntityDAO yieldCurveEntityDAO;
+    @Autowired
+    SpreadCurveEntityDAO spreadCurveEntityDAO;
 
     @Autowired
     YieldCurveSpreadDAO yieldCurveSpreadDAO;
 
-    public DiscountCurve buildDiscountCurve(String idCurve, LocalDate officialDate) {
-        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
-        if (dbCurve == null) {
-            throw new IllegalArgumentException("Unknown curve: " + idCurve);
-        }
-        YieldCurve base = buildYieldCurve(dbCurve, officialDate);   // rates from the provider (ECB)
-        if (!dbCurve.isUseSpreads()) {
-            return base;
+    public YieldCurve buildYieldCurve(YieldCurveEntity dbCurve, LocalDate officialDate) {
+        if (dbCurve != null) {
+            List<MarketQuote> marketQuotes = getMarketQuotes(dbCurve);
+            Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
+            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, marketQuotes);
+            return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
         } else {
             return null;
         }
     }
-
-    public DiscountCurve buildDiscountCurve(String idCurve, List<MarketQuote> quotes,
-            LocalDate officialDate, boolean useSpreads, int maxAgeDays) {
-        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
-        if (dbCurve == null) {
-            throw new IllegalArgumentException("Unknown curve: " + idCurve);
-        }
-
-        YieldCurve base = buildYieldCurve(idCurve, quotes, officialDate);   // rates from the provider (ECB)
-        if (!dbCurve.isUseSpreads()) {
-            return base;
-        }
-
-        List<YieldCurveSpread> rows = yieldCurveSpreadDAO.findLatest(dbCurve.getIdYieldCurve(), officialDate);
+    
+    public SpreadedCurve buildSpreadCurve(SpreadCurveEntity dbCurve, LocalDate officialDate) {
+        List<YieldCurveSpread> rows = yieldCurveSpreadDAO.findLatest(dbCurve.getIdSpreadCurve(), officialDate);
         if (rows.isEmpty()) {
-            throw new IllegalStateException("Curve " + idCurve + " requires z-spreads but none found on or before " + officialDate);
+            throw new IllegalStateException("Curve " + dbCurve.getCode() + " requires z-spreads but none found on or before " + officialDate);
         }
         LocalDate asOf = rows.get(0).getAsOfDate();
-        if (ChronoUnit.DAYS.between(asOf, officialDate) > maxAgeDays) {
-            throw new IllegalStateException("Z-spreads for " + idCurve + " are stale: as of " + asOf);
+        if (ChronoUnit.DAYS.between(asOf, officialDate) > dbCurve.getMaxAgeDays()) {
+            throw new IllegalStateException("Z-spreads for " + dbCurve.getCode() + " are stale: as of " + asOf);
         }
-        String expectedBase = dbCurve.getProvider();                          // or the field that holds the base curve code
+        String expectedBase = dbCurve.getBaseCurve().getProvider();                          // or the field that holds the base curve code
         for (YieldCurveSpread r : rows) {
             if (!expectedBase.equals(r.getBaseCurveCode())) {
                 throw new IllegalStateException("Z-spreads calibrated on " + r.getBaseCurveCode() + ", expected " + expectedBase);
@@ -86,27 +76,33 @@ public class YieldCurveBuilder {
 
         Map<Offset, Double> buckets = new LinkedHashMap<>();
         for (YieldCurveSpread r : rows) {
-            buckets.put(new Offset(r.getOffsetValue(), /* OffsetType from r.getOffsetType() */ OffsetType.YEARS), r.getzSpread());
+            buckets.put(new Offset(r.getOffsetValue(), OffsetType.YEARS), r.getzSpread());
         }
-        return new SpreadedCurve(base, SpreadProfile.of(officialDate, buckets));
+        return new SpreadedCurve(buildYieldCurve(dbCurve.getBaseCurve(), officialDate), SpreadProfile.of(officialDate, buckets));
+    }
+
+    public DiscountCurve buildDiscountCurve(String code, LocalDate officialDate) {
+
+        SpreadCurveEntity sc = spreadCurveEntityDAO.findByCodeWithBase(code);
+        YieldCurveEntity yc = yieldCurveEntityDAO.findByCode(code);
+        if (sc != null && yc != null) {
+            throw new IllegalStateException("Curve code defined in both yield_curve and spread_curve: " + code);
+        }
+
+        if (sc != null) {
+            return buildSpreadCurve(sc, officialDate);
+        }
+        if (yc != null) {
+            return buildYieldCurve(yc, officialDate);
+        }
+        throw new IllegalArgumentException("Unknown curve: " + code);
     }
 
     public org.softcaster.engine.curve.YieldCurve buildYieldCurve(String idCurve, List<MarketQuote> newInputs, LocalDate officialDate) {
-        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(idCurve);
+        YieldCurveEntity dbCurve = yieldCurveEntityDAO.findByCode(idCurve);
         if (dbCurve != null) {
             Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
             List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, newInputs);
-            return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
-        } else {
-            return null;
-        }
-    }
-
-    public org.softcaster.engine.curve.YieldCurve buildYieldCurve(org.softcaster.core.data.YieldCurve dbCurve, LocalDate officialDate) {
-        if (dbCurve != null) {
-            List<MarketQuote> marketQuotes = getMarketQuotes(dbCurve);
-            Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
-            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, marketQuotes);
             return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
         } else {
             return null;
@@ -152,7 +148,7 @@ public class YieldCurveBuilder {
     public List<MarketQuote> getNewInput(String curveId) {
         List<MarketQuote> newInput = null;
         // Recupero yield curve
-        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
+        YieldCurveEntity dbCurve = yieldCurveEntityDAO.findByCode(curveId);
         if (dbCurve != null && dbCurve.getItems() != null) {
             List<YieldCurveItem> existingDbItems = dbCurve.getItems();
             newInput = new ArrayList<>();
@@ -167,7 +163,7 @@ public class YieldCurveBuilder {
         return newInput;
     }
 
-    public List<MarketQuote> getMarketQuotes(org.softcaster.core.data.YieldCurve dbCurve) {
+    public List<MarketQuote> getMarketQuotes(YieldCurveEntity dbCurve) {
         List<MarketQuote> newInput = null;
         // Recupero yield curve
         if (dbCurve != null && dbCurve.getItems() != null) {
@@ -191,7 +187,7 @@ public class YieldCurveBuilder {
         }
 
         // Recupero yield curve
-        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
+        YieldCurveEntity dbCurve = yieldCurveEntityDAO.findByCode(curveId);
         if (dbCurve != null && dbCurve.getItems() != null) {
 
             // Mappa gli item attualmente presenti sul DB per una ricerca veloce O(1)
@@ -234,16 +230,8 @@ public class YieldCurveBuilder {
             // 4. Applica la lista aggiornata per gestire le eventuali cancellazioni (Orphan Removal)
             dbCurve.getItems().clear();
             dbCurve.getItems().addAll(updatedItems);
-            yieldCurveDAO.saveOrUpdate(dbCurve);
+            yieldCurveEntityDAO.saveOrUpdate(dbCurve);
         }
 
-    }
-
-    public void loadCurveRates(String curveId) {
-        // Recupero yield curve
-        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(curveId);
-        if (dbCurve != null && dbCurve.getItems() != null) {
-
-        }
     }
 }

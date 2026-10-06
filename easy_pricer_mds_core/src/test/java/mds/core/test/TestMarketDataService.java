@@ -17,8 +17,8 @@ import org.softcaster.core.data.FltSecurityMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
-import org.softcaster.core.data.YieldCurve;
-import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveEntity;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
@@ -70,7 +70,7 @@ public class TestMarketDataService {
     private BondCalculator bondCalculator;
 
     @Autowired
-    YieldCurveDAO yieldCurveDAO;
+    YieldCurveEntityDAO yieldCurveDAO;
 
     @Autowired
     private SecurityMasterDataDAO smdDAO;
@@ -161,8 +161,8 @@ public class TestMarketDataService {
     }
 
     private void testDbAccess() {
-        List<YieldCurve> curves = yieldCurveDAO.findAll();
-        for (YieldCurve yc : curves) {
+        List<YieldCurveEntity> curves = yieldCurveDAO.findAll();
+        for (YieldCurveEntity yc : curves) {
             System.out.println(yc.getCode() + "\t" + yc.getCurrency().getIsoCode());
         }
     }

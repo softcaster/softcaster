@@ -64,7 +64,7 @@ public class ZSpreadBuilder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        testDiscountCurve("ECBYC");
+        testDiscountCurve("ITA_SPREADED");
     }
 
     private void testDiscountCurve(String idCurve) {

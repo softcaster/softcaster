@@ -10,7 +10,7 @@ import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.ForexMasterData;
-import org.softcaster.core.data.YieldCurve;
+import org.softcaster.core.data.YieldCurveEntity;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.DaycountBasis;
@@ -252,9 +252,9 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<Currency> cbBcy;
-    private javax.swing.JComboBox<YieldCurve> cbBcyYC;
+    private javax.swing.JComboBox<YieldCurveEntity> cbBcyYC;
     private javax.swing.JComboBox<Currency> cbCcy;
-    private javax.swing.JComboBox<YieldCurve> cbCcyYC;
+    private javax.swing.JComboBox<YieldCurveEntity> cbCcyYC;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
     private javax.swing.JLabel jLabel10;
@@ -273,7 +273,7 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
             isInsert = false;
             cbBcy.setSelectedItem(bean.getForexMasterData().getCurrency());
             cbCcy.setSelectedItem(bean.getForexMasterData().getCcy());
-            YieldCurve yc = masterDataFacade.getYieldCurveDAO().findByCode(bean.getForexMasterData().getBcyIrc());
+            YieldCurveEntity yc = masterDataFacade.getYieldCurveDAO().findByCode(bean.getForexMasterData().getBcyIrc());
             cbBcyYC.setSelectedItem(yc);
             yc = masterDataFacade.getYieldCurveDAO().findByCode(bean.getForexMasterData().getCcyIrc());
             cbCcyYC.setSelectedItem(yc);
@@ -292,13 +292,13 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
     }
 
     private void setUpYieldCurveCombo() {
-        List<YieldCurve> ycurves = masterDataFacade.getYieldCurveDAO().findAll();
+        List<YieldCurveEntity> ycurves = masterDataFacade.getYieldCurveDAO().findAll();
 
         // 2. Crea il modello partendo dalla lista
-        DefaultComboBoxModel<YieldCurve> model = new DefaultComboBoxModel<>(ycurves.toArray(YieldCurve[]::new));
+        DefaultComboBoxModel<YieldCurveEntity> model = new DefaultComboBoxModel<>(ycurves.toArray(YieldCurveEntity[]::new));
         cbBcyYC.setModel(model);
 
-        model = new DefaultComboBoxModel<>(ycurves.toArray(YieldCurve[]::new));
+        model = new DefaultComboBoxModel<>(ycurves.toArray(YieldCurveEntity[]::new));
         cbCcyYC.setModel(model);
     }
 
@@ -323,8 +323,8 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
             ForexMasterData fmd = bean.getForexMasterData();
             fmd.setBcy((Currency) cbBcy.getSelectedItem());
             fmd.setCcy((Currency) cbCcy.getSelectedItem());
-            fmd.setBcyIrc(((YieldCurve) cbBcyYC.getSelectedItem()).getCode());
-            fmd.setCcyIrc(((YieldCurve) cbCcyYC.getSelectedItem()).getCode());
+            fmd.setBcyIrc(((YieldCurveEntity) cbBcyYC.getSelectedItem()).getCode());
+            fmd.setCcyIrc(((YieldCurveEntity) cbCcyYC.getSelectedItem()).getCode());
             masterDataFacade.getForexMasterDataDAO().saveOrUpdate(fmd);
             return true;
         } catch (Exception ex) {

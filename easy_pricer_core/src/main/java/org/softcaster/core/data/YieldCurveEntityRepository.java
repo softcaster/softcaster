@@ -6,16 +6,16 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-public interface YieldCurveRepository extends JpaRepository<YieldCurve, Integer> {
+public interface YieldCurveEntityRepository extends JpaRepository<YieldCurveEntity, Integer> {
 
-    public YieldCurve findByIdYieldCurve(Integer idYieldCurve);
+    public YieldCurveEntity findByIdYieldCurve(Integer idYieldCurve);
 
     @EntityGraph(attributePaths = {
         "currency",
         "calendar",
         "items"
     })
-    public YieldCurve findByCode(String code);
+    public YieldCurveEntity findByCode(String code);
 
     // Caricamento batch di un gruppo di curve
     @EntityGraph(attributePaths = {
@@ -23,7 +23,7 @@ public interface YieldCurveRepository extends JpaRepository<YieldCurve, Integer>
         "calendar",
         "items"
     })
-    List<YieldCurve> findByCodeIn(Collection<String> codes);
+    List<YieldCurveEntity> findByCodeIn(Collection<String> codes);
 
     @Query(value = "SELECT code FROM yield_curve ORDER BY code", nativeQuery = true)
     public List<String> findNames();

@@ -8,36 +8,36 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Component("yieldCurveDAO")
-public class YieldCurveDAO {
+@Component("yieldCurveEntityDAO")
+public class YieldCurveEntityDAO {
 
     @Resource
-    private YieldCurveRepository repository;
+    private YieldCurveEntityRepository repository;
 
     private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
     @Transactional(readOnly = true)
-    public YieldCurve findByIdYieldCurve(Integer idYieldCurve) {
+    public YieldCurveEntity findByIdYieldCurve(Integer idYieldCurve) {
         return repository.findByIdYieldCurve(idYieldCurve);
     }
 
     @Transactional(readOnly = true)
-    public YieldCurve findByCode(String code) {
+    public YieldCurveEntity findByCode(String code) {
         return repository.findByCode(code);
     }
 
     @Transactional
-    public YieldCurve saveOrUpdate(YieldCurve yieldCurve) {
+    public YieldCurveEntity saveOrUpdate(YieldCurveEntity yieldCurve) {
         return repository.save(yieldCurve);
     }
 
     @Transactional
-    public void delete(YieldCurve yieldCurve) {
+    public void delete(YieldCurveEntity yieldCurve) {
         repository.delete(yieldCurve);
     }
 
     @Transactional(readOnly = true)
-    public List<YieldCurve> findAll() {
+    public List<YieldCurveEntity> findAll() {
         return repository.findAll(sortByCode);
     }
 
@@ -48,11 +48,11 @@ public class YieldCurveDAO {
 
     public List<YieldCurveDto> findAllDto() {
         List<YieldCurveDto> listDto = new ArrayList<>();
-        List<YieldCurve> list = findAll();
+        List<YieldCurveEntity> list = findAll();
 
         if (list != null && !list.isEmpty()) {
             YieldCurveDto dto;
-            for (YieldCurve yc : list) {
+            for (YieldCurveEntity yc : list) {
                 dto = new YieldCurveDto();
                 dto.setYieldCurveId(yc.getIdYieldCurve());
                 dto.setCode(yc.getCode());

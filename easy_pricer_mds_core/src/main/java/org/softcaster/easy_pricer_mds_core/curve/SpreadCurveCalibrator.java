@@ -12,7 +12,7 @@ import org.softcaster.commons.utils.NumberUtils;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
-import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveSpread;
 import org.softcaster.core.data.YieldCurveSpreadDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
@@ -57,7 +57,7 @@ public class SpreadCurveCalibrator {
     @Autowired
     MarketDataService marketDataService;          // ADAPT
     @Autowired
-    YieldCurveDAO yieldCurveDAO;
+    YieldCurveEntityDAO yieldCurveDAO;
     @Autowired
     YieldCurveSpreadDAO yieldCurveSpreadDAO;
 
@@ -95,7 +95,7 @@ public class SpreadCurveCalibrator {
         if (base == null) {
             throw new IllegalStateException("Base curve not loaded: " + baseCurveCode);
         }
-        org.softcaster.core.data.YieldCurve dbCurve = yieldCurveDAO.findByCode(spreadCurveCode);
+        org.softcaster.core.data.YieldCurveEntity dbCurve = yieldCurveDAO.findByCode(spreadCurveCode);
         if (dbCurve == null) {
             throw new IllegalArgumentException("Unknown curve: " + spreadCurveCode);
         }

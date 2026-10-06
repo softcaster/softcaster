@@ -300,3 +300,9 @@ alter table commodity_delivery_profile add CONSTRAINT fk_delivery_profile_mdp FO
 
 insert into market_quote_definition(market_quote_definition_id,code,description,id_country,data_source)
  values(nextval('market_quote_definition_s'), 'GME-POWER-M','GME-POWER-M',1,5);
+
+alter table yield_curve drop column use_spreads;
+alter table yield_curve drop column max_age_days;
+
+insert into spread_curve(id_spread_curve,code,description,base_curve,max_age_days,min_bonds,min_valid_buckets)
+    values(nextval('spread_curve_s'),'ITA_SPREADED','Ita Spreaded',(select id_yield_curve from yield_curve where code='ECBYC'),7,1,1);

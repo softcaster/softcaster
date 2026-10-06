@@ -1,8 +1,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.core.data.YieldCurve;
-import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveEntity;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.core.dto.YieldCurveDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class YieldCurveRestController {
 
     @Autowired
-    private YieldCurveDAO dao;
+    private YieldCurveEntityDAO dao;
 
     @GetMapping("/yield_curve/r01")
     public ResponseEntity findAll() {
-        List<YieldCurve> listaYieldCurve = dao.findAll();
+        List<YieldCurveEntity> listaYieldCurve = dao.findAll();
         if (listaYieldCurve == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
@@ -37,7 +37,7 @@ public class YieldCurveRestController {
 
     @GetMapping("/yield_curve/r1/{id}")
     public ResponseEntity findByIdYieldCurve(@PathVariable("id") Integer idYieldCurve) {
-        YieldCurve yieldCurve = dao.findByIdYieldCurve(idYieldCurve);
+        YieldCurveEntity yieldCurve = dao.findByIdYieldCurve(idYieldCurve);
         if (yieldCurve == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }
@@ -46,7 +46,7 @@ public class YieldCurveRestController {
 
     @GetMapping("/yield_curve/r2/{id}")
     public ResponseEntity findByCode(@PathVariable("id") String code) {
-        YieldCurve yieldCurve = dao.findByCode(code);
+        YieldCurveEntity yieldCurve = dao.findByCode(code);
         if (yieldCurve == null) {
             return new ResponseEntity(null, HttpStatus.NOT_FOUND);
         }

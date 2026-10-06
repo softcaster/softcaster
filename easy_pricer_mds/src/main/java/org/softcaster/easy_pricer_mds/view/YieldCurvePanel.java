@@ -14,7 +14,7 @@ import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.core.data.YieldCurveDAO;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;
 import org.softcaster.easy_pricer_mds.dialog.YieldCurveDlg;
@@ -101,7 +101,7 @@ public class YieldCurvePanel extends FndtAbstactPanel {
     @Override
     protected void refreshModel(FndtTableModel model) {
         yieldCurveBeanList.clear();
-        YieldCurveDAO dao = mDSFacade.getYieldCurveDAO();
+        YieldCurveEntityDAO dao = mDSFacade.getYieldCurveDAO();
         List<String> curves = dao.findNames();
         MarketDataService mds = mDSFacade.getMarketDataService();
         YieldCurveBean bean = null;

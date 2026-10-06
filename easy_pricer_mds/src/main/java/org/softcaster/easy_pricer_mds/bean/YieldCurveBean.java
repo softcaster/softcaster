@@ -5,7 +5,7 @@
 package org.softcaster.easy_pricer_mds.bean;
 
 import org.softcaster.commons.ui.model.IFndtModel;
-import org.softcaster.core.data.YieldCurve;
+import org.softcaster.core.data.YieldCurveEntity;
 
 /**
  *
@@ -13,9 +13,9 @@ import org.softcaster.core.data.YieldCurve;
  */
 public class YieldCurveBean implements IFndtModel {
 
-    private final YieldCurve yieldCurve;
+    private final YieldCurveEntity yieldCurve;
 
-    public YieldCurveBean(YieldCurve yieldCurve) {
+    public YieldCurveBean(YieldCurveEntity yieldCurve) {
         this.yieldCurve = yieldCurve;
     }
 
@@ -45,7 +45,7 @@ public class YieldCurveBean implements IFndtModel {
         return new String[]{"Description", "Code", "Currency", "Calendar", "Provider"};
     }
 
-    public YieldCurve getYieldCurve() {
+    public YieldCurveEntity getYieldCurve() {
         return yieldCurve;
     }
 }
