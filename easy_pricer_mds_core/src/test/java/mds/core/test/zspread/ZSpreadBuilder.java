@@ -57,9 +57,6 @@ public class ZSpreadBuilder implements CommandLineRunner {
 
     @Autowired
     YieldCurveBuilder yieldCurveBuilder;
-    
-    @Autowired
-    private ZSpreadImporter importer;
 
     public static void main(String[] args) {
         // Avvia l'applicazione tramite Spring Boot 
@@ -68,7 +65,6 @@ public class ZSpreadBuilder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
         testDiscountCurve("ITA_SPREADED");
     }
 

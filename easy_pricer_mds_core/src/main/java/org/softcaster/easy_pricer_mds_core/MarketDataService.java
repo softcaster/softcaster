@@ -18,6 +18,7 @@ import org.softcaster.core.data.SystemBusinessCalendar;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
+import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.provider.bricks.Node;
@@ -40,12 +41,26 @@ public class MarketDataService {
 
     @Autowired
     SystemBusinessCalendarDAO systemBusinessCalendarDAO;
-    
+
     private final ConcurrentHashMap<String, SpotPrice> spotPrices = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, YieldCurve> yieldCurves = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, DiscountCurve> discountCurves = new ConcurrentHashMap<>();
 
     public MarketDataService() {
+    }
 
+    public void addDiscountCurve(String code) {
+        try {
+            DiscountCurve discountCurve = yieldCurveBuilder.buildDiscountCurve(code, getOfficialDate());
+            if (discountCurve == null) {
+                throw new MarketDataNotFoundException("Can't create Discount Curve: " + code);
+            }
+            discountCurves.put(code, discountCurve);
+        } catch (Exception e) {
+            LoggerMgr.logError(e.getLocalizedMessage());
+            // Rilancia eccezione
+            throw new MarketDataNotFoundException("Can't create Discount Curve: " + code);
+        }
     }
 
     // Aggiorna l'ultimo prezzo di un asset (es. Forex)
@@ -221,7 +236,7 @@ public class MarketDataService {
         // Questo metodo svuota la cache, costringendo la chiamata successiva a getOfficialDate() a rifare la select
         // Nota che non serve implementare nulla nel corpo della funzione
     }
-    
+
     @Cacheable(value = "systemCurrency")
     public Currency getSystemCurrency() {
         SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);

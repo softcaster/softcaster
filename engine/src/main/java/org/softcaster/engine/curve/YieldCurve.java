@@ -18,7 +18,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.softcaster.engine.enums.OffsetType;
 
 /**
  * Immutable discount curve (the snapshot is replaced atomically).

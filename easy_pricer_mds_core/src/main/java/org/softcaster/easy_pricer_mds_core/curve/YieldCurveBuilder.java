@@ -43,7 +43,6 @@ public class YieldCurveBuilder {
     YieldCurveEntityDAO yieldCurveEntityDAO;
     @Autowired
     SpreadCurveEntityDAO spreadCurveEntityDAO;
-
     @Autowired
     YieldCurveSpreadDAO yieldCurveSpreadDAO;
 
