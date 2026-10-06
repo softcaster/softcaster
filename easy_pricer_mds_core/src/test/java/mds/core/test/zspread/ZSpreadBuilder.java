@@ -19,7 +19,9 @@ import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
 import org.softcaster.easy_pricer_mds_core.curve.ZSpreadImporter;
+import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.euronext.BorsaItalianaProvider;
@@ -54,6 +56,9 @@ public class ZSpreadBuilder implements CommandLineRunner {
     private MarketDataService marketDataService;
 
     @Autowired
+    YieldCurveBuilder yieldCurveBuilder;
+    
+    @Autowired
     private ZSpreadImporter importer;
 
     public static void main(String[] args) {
@@ -68,7 +73,11 @@ public class ZSpreadBuilder implements CommandLineRunner {
     }
 
     private void testDiscountCurve(String idCurve) {
-        importer.importZSpread(idCurve);
+        DiscountCurve discountCurve = yieldCurveBuilder.buildDiscountCurve(idCurve, marketDataService.getOfficialDate());
+        LocalDate t1 = marketDataService.getOfficialDate().plusMonths(1);
+        double df = discountCurve.getDiscountFactor(t1);
+        System.out.println(df);
+        //importer.importZSpread(idCurve);
     }
 
     private void exportZSpread(String idCurve) {

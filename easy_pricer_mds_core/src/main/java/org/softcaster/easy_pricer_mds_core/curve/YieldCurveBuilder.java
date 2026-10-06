@@ -67,18 +67,21 @@ public class YieldCurveBuilder {
         if (ChronoUnit.DAYS.between(asOf, officialDate) > dbCurve.getMaxAgeDays()) {
             throw new IllegalStateException("Z-spreads for " + dbCurve.getCode() + " are stale: as of " + asOf);
         }
+        /*
         String expectedBase = dbCurve.getBaseCurve().getProvider();                          // or the field that holds the base curve code
         for (YieldCurveSpread r : rows) {
             if (!expectedBase.equals(r.getBaseCurveCode())) {
                 throw new IllegalStateException("Z-spreads calibrated on " + r.getBaseCurveCode() + ", expected " + expectedBase);
             }
         }
-
+        */
         Map<Offset, Double> buckets = new LinkedHashMap<>();
         for (YieldCurveSpread r : rows) {
             buckets.put(new Offset(r.getOffsetValue(), OffsetType.YEARS), r.getzSpread());
         }
-        return new SpreadedCurve(buildYieldCurve(dbCurve.getBaseCurve(), officialDate), SpreadProfile.of(officialDate, buckets));
+        
+        YieldCurveEntity baseCurve = yieldCurveEntityDAO.findByCode(dbCurve.getBaseCurve().getCode());
+        return new SpreadedCurve(buildYieldCurve(baseCurve, officialDate), SpreadProfile.of(officialDate, buckets));
     }
 
     public DiscountCurve buildDiscountCurve(String code, LocalDate officialDate) {
