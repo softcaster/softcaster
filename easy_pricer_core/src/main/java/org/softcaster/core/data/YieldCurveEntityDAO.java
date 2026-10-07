@@ -62,4 +62,9 @@ public class YieldCurveEntityDAO {
         }
         return listDto;
     }
+
+    @Transactional(readOnly = true)
+    public boolean existsByCode(String code) {
+        return repository.existsByCode(code);
+    }
 }

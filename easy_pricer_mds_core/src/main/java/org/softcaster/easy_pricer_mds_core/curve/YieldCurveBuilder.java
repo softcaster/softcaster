@@ -11,6 +11,7 @@ import java.util.Currency;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.softcaster.core.data.SpreadCurveEntity;
 import org.softcaster.core.data.SpreadCurveEntityDAO;
@@ -28,6 +29,7 @@ import org.softcaster.engine.curve.SpreadProfile;
 import org.softcaster.engine.curve.SpreadedCurve;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveKind;
 import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.OffsetType;
@@ -46,17 +48,58 @@ public class YieldCurveBuilder {
     @Autowired
     YieldCurveSpreadDAO yieldCurveSpreadDAO;
 
-    public YieldCurve buildYieldCurve(YieldCurveEntity dbCurve, LocalDate officialDate) {
-        if (dbCurve != null) {
-            List<MarketQuote> marketQuotes = getMarketQuotes(dbCurve);
-            Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
-            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, marketQuotes);
-            return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
-        } else {
-            return null;
+    public CurveKind getCurveKind(String code) {
+        boolean spread = spreadCurveEntityDAO.existsByCode(code);
+        boolean plain = yieldCurveEntityDAO.existsByCode(code);
+        if (spread && plain) {
+            throw new IllegalStateException("Curve code defined in both yield_curve and spread_curve: " + code);
         }
+        if (!spread && !plain) {
+            throw new IllegalArgumentException("Unknown curve: " + code);
+        }
+        return spread ? CurveKind.SPREAD : CurveKind.YIELD;
     }
-    
+
+    public DiscountCurve buildSpreadCurve(String code, LocalDate officialDate,
+            Function<String, YieldCurve> yieldCurveResolver) {
+        SpreadCurveEntity sc = spreadCurveEntityDAO.findByCodeWithBase(code);
+        if (sc == null) {
+            throw new IllegalArgumentException("Unknown spread curve: " + code);
+        }
+        final String baseCode = sc.getBaseCurve().getCode();
+
+        YieldCurve base = yieldCurveResolver.apply(baseCode);
+        if (!base.getValuationDate().equals(officialDate)) {
+            // spreads are expressed on the time scale of the official date: base and spreads must share it
+            throw new IllegalStateException("Base curve " + baseCode + " is dated " + base.getValuationDate()
+                    + ", expected " + officialDate);
+        }
+
+        List<YieldCurveSpread> rows = yieldCurveSpreadDAO.findLatest(sc.getIdSpreadCurve(), officialDate);
+        if (rows.isEmpty()) {
+            throw new IllegalStateException("No z-spreads for " + code + " on or before " + officialDate);
+        }
+
+        LocalDate asOf = rows.get(0).getAsOfDate();
+        long ageDays = ChronoUnit.DAYS.between(asOf, officialDate);          // calendar days
+        if (ageDays > sc.getMaxAgeDays()) {
+            throw new IllegalStateException("Z-spreads for " + code + " are stale: as of " + asOf
+                    + " (" + ageDays + " days, max " + sc.getMaxAgeDays() + ")");
+        }
+
+        Map<Offset, Double> buckets = new LinkedHashMap<>();
+        for (YieldCurveSpread r : rows) {
+            if (!baseCode.equals(r.getBaseCurveCode())) {
+                throw new IllegalStateException("Z-spreads for " + code + " were calibrated on "
+                        + r.getBaseCurveCode() + ", but the configured base curve is " + baseCode);
+            }
+            OffsetType type = OffsetType.fromId(r.getOffsetType());           // ADAPT: IdentifiableEnum lookup
+            buckets.put(new Offset(r.getOffsetValue(), type), r.getzSpread());
+        }
+        // YieldCurve.addOffset must be public static: SpreadProfile.of uses it
+        return new SpreadedCurve(base, SpreadProfile.of(officialDate, buckets));
+    }
+
     public SpreadedCurve buildSpreadCurve(SpreadCurveEntity dbCurve, LocalDate officialDate) {
         List<YieldCurveSpread> rows = yieldCurveSpreadDAO.findLatest(dbCurve.getIdSpreadCurve(), officialDate);
         if (rows.isEmpty()) {
@@ -66,21 +109,25 @@ public class YieldCurveBuilder {
         if (ChronoUnit.DAYS.between(asOf, officialDate) > dbCurve.getMaxAgeDays()) {
             throw new IllegalStateException("Z-spreads for " + dbCurve.getCode() + " are stale: as of " + asOf);
         }
-        /*
-        String expectedBase = dbCurve.getBaseCurve().getProvider();                          // or the field that holds the base curve code
-        for (YieldCurveSpread r : rows) {
-            if (!expectedBase.equals(r.getBaseCurveCode())) {
-                throw new IllegalStateException("Z-spreads calibrated on " + r.getBaseCurveCode() + ", expected " + expectedBase);
-            }
-        }
-        */
+
         Map<Offset, Double> buckets = new LinkedHashMap<>();
         for (YieldCurveSpread r : rows) {
             buckets.put(new Offset(r.getOffsetValue(), OffsetType.YEARS), r.getzSpread());
         }
-        
+
         YieldCurveEntity baseCurve = yieldCurveEntityDAO.findByCode(dbCurve.getBaseCurve().getCode());
         return new SpreadedCurve(buildYieldCurve(baseCurve, officialDate), SpreadProfile.of(officialDate, buckets));
+    }
+
+    public YieldCurve buildYieldCurve(YieldCurveEntity dbCurve, LocalDate officialDate) {
+        if (dbCurve != null) {
+            List<MarketQuote> marketQuotes = getMarketQuotes(dbCurve);
+            Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
+            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, marketQuotes);
+            return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
+        } else {
+            return null;
+        }
     }
 
     public DiscountCurve buildDiscountCurve(String code, LocalDate officialDate) {

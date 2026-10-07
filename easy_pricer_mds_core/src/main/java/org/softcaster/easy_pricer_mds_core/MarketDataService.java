@@ -7,9 +7,11 @@ package org.softcaster.easy_pricer_mds_core;
 import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.InstrumentQuote;
@@ -43,10 +45,42 @@ public class MarketDataService {
     SystemBusinessCalendarDAO systemBusinessCalendarDAO;
 
     private final ConcurrentHashMap<String, SpotPrice> spotPrices = new ConcurrentHashMap<>();
+    // Curve di base senza spread, di tipo concreto
+    // Una base compare in entrambe le mappe, con la stessa istanza.
     private final ConcurrentHashMap<String, YieldCurve> yieldCurves = new ConcurrentHashMap<>();
+    // Quella che prezza, cioè una base oppure una curva spreaded costruita su una base.
     private final ConcurrentHashMap<String, DiscountCurve> discountCurves = new ConcurrentHashMap<>();
 
     public MarketDataService() {
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // -- Gestione curve
+    // --------------------------------------------------------------------------------------------
+    /**
+     * Spread-free curve, loaded on demand.
+     *
+     * @param code
+     * @return
+     */
+    public YieldCurve getYieldCurve(String code) {
+        YieldCurve c = yieldCurves.get(code);
+        if (c == null) {
+            c = buildBase(code, getOfficialDate());
+            yieldCurves.put(code, c);
+        }
+        return c;
+    }
+
+    // Loads the base curve from the database and builds it. 
+    private YieldCurve buildBase(String code, LocalDate officialDate) {
+
+        DiscountCurve c = yieldCurveBuilder.buildDiscountCurve(code, officialDate);
+        if (c != null && c instanceof YieldCurve yc) {
+            return yc;
+        } else {
+            throw new MarketDataNotFoundException("Unknown base curve: " + code);
+        }
     }
 
     public void addDiscountCurve(String code) {
@@ -62,6 +96,56 @@ public class MarketDataService {
             throw new MarketDataNotFoundException("Can't create Discount Curve: " + code);
         }
     }
+
+    /**
+     * Rebuilds the given curves and publishes them together at the end, so a
+     * failure leaves the previous curves untouched. Base curves are built once
+     * and shared with the spreaded curves that depend on them (same instance
+     * used by the calibrator and by the pricers).
+     *
+     * @param codes
+     */
+    public void reloadCurves(List<String> codes) {
+        final LocalDate officialDate = getOfficialDate();
+        final Map<String, YieldCurve> newBases = new HashMap<>();
+        final Map<String, DiscountCurve> newDiscounts = new HashMap<>();
+
+        // spread-free curve of a code: built at most once per reload, so every curve shares the same instance
+        final Function<String, YieldCurve> resolver
+                = baseCode -> newBases.computeIfAbsent(baseCode, c -> buildBase(c, officialDate));
+
+        for (String code : codes) {
+            try {
+                // a discount curve is either a plain YieldCurve or a SpreadedCurve built on a YieldCurve
+                DiscountCurve curve = switch (yieldCurveBuilder.getCurveKind(code)) {
+                    case YIELD ->
+                        // plain: built from its own quotes
+                        resolver.apply(code);                                                  
+                    case SPREAD ->
+                        // base + spreads
+                        yieldCurveBuilder.buildSpreadCurve(code, officialDate, resolver);     
+                };
+                if (curve == null) {
+                    throw new MarketDataNotFoundException("Can't create Discount Curve: " + code);
+                }
+                newDiscounts.put(code, curve);
+            } catch (MarketDataNotFoundException e) {
+                // already explicit: do not wrap twice
+                throw e;                                        
+            } catch (RuntimeException e) {
+                LoggerMgr.logError("Can't create discount curve " + code + ": " + e);
+                MarketDataNotFoundException ex
+                        = new MarketDataNotFoundException("Can't create Discount Curve: " + code + " - " + e.getMessage());
+                // keep the root cause (stale spreads, wrong base...)
+                ex.initCause(e);                                
+                throw ex;
+            }
+        }
+        // publish only if every curve was built
+        yieldCurves.putAll(newBases);
+        discountCurves.putAll(newDiscounts);
+    }
+    // --------------------------------------------------------------------------------------------
 
     // Aggiorna l'ultimo prezzo di un asset (es. Forex)
     private void updatePrice(String ticker, double bid, double ask, double middle) {
@@ -192,15 +276,6 @@ public class MarketDataService {
         if (provider != null && curveId != null && !curveId.isBlank()) {
             List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(provider, curveId);
             updateYieldCurveInCache(curveId, newInput);
-        }
-    }
-
-    public YieldCurve getYieldCurve(String curveId) {
-        YieldCurve yc = yieldCurves.get(curveId);
-        if (yc != null) {
-            return yc;
-        } else {
-            throw new MarketDataNotFoundException("Yield curve " + curveId + " not found");
         }
     }
 

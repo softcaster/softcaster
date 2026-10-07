@@ -19,4 +19,7 @@ public interface SpreadCurveEntityRepository extends JpaRepository<SpreadCurveEn
 
     @Query("select c from SpreadCurveEntity c join fetch c.baseCurve where c.idSpreadCurve= :id")
     public SpreadCurveEntity findByIdWithBase(@Param("id") Integer id);
+
+    @Query("select count(c) > 0 from SpreadCurveEntity c where c.code = :code")
+    boolean existsByCode(@Param("code") String code);
 }
