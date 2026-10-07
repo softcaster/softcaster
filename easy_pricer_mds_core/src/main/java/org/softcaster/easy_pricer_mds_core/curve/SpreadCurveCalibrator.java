@@ -91,7 +91,7 @@ public class SpreadCurveCalibrator {
             Set<String> excludedCodes, int[] bucketYears, int minBonds, int minValidBuckets) {
 
         LocalDate officialDate = marketDataService.getOfficialDate();
-        DiscountCurve base = marketDataService.getYieldCurve(baseCurveCode);              // ADAPT: must be the spread-free curve
+        DiscountCurve base = marketDataService.getYieldCurve(baseCurveCode);              
         if (base == null) {
             throw new IllegalStateException("Base curve not loaded: " + baseCurveCode);
         }

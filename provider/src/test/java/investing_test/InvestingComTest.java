@@ -6,6 +6,7 @@ package investing_test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +32,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import org.softcaster.provider.euronext.BorsaItalianaProvider;
+import org.softcaster.provider.investing.InvestingApiClient;
 
 class Root {
 
@@ -169,40 +171,46 @@ public class InvestingComTest {
 
     public static void main(String[] args) {
 
-        // Inizializzazione Logger
-        FileUtil.initializeLogger();
-
-        // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
-        FileUtil.initializePython();
-
-        /*
-        System.out.println("########## TwelvedataProvider ##########");
-        testCurrencyPairs();
-        */
-        //testEcbClient();
-        testEodhdFxApiClient();
-        //System.out.println("########## IT Yield Curve ##########");
-        // testItaYieldCurves();
-        /*
-        System.out.println("");
-        System.out.println("########## US Yield Curve ##########");
-        testUsaYieldCurves();
-         */
- /*
-        CnbcProvider provider = CnbcProvider.getInstance();
-        List<Node> nodes = provider.getYieldCurveNodes("USYIELD");
-        for(Node node:nodes) {
+        try {
+            // Inizializzazione Logger
+            FileUtil.initializeLogger();
+            
+            // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
+            FileUtil.initializePython();
+            
+            /*
+            System.out.println("########## TwelvedataProvider ##########");
+            testCurrencyPairs();
+            */
+            //testEcbClient();
+            InvestingApiClient apiClient = new InvestingApiClient();
+            String result = apiClient.connect("https://sbcharts.investing.com/bond_charts/bonds_chart_6.json");
+            System.out.println(result);
+            //System.out.println("########## IT Yield Curve ##########");
+            // testItaYieldCurves();
+            /*
+            System.out.println("");
+            System.out.println("########## US Yield Curve ##########");
+            testUsaYieldCurves();
+            */
+            /*
+            CnbcProvider provider = CnbcProvider.getInstance();
+            List<Node> nodes = provider.getYieldCurveNodes("USYIELD");
+            for(Node node:nodes) {
             System.out.println(node.getSymbol() + " " + node.getData().bid());
+            }
+            */
+            //testEcbClient();
+            //testCurrencyPairs();
+            //testEurexClient();
+            /*
+            System.out.println("########## YahooProvider ##########");
+            testYahooClient();
+            */
+            //testBIProvider();
+        } catch (IOException ex) {
+            System.getLogger(InvestingComTest.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
-         */
-        //testEcbClient();
-        //testCurrencyPairs();
-        //testEurexClient();
-        /*
-        System.out.println("########## YahooProvider ##########");
-        testYahooClient();
-        */
-        //testBIProvider();
     }
 
     private static void testEodhdFxApiClient() {

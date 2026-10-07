@@ -71,6 +71,47 @@ public class MarketDataService {
         }
         return c;
     }
+    
+    /**
+     * Aggiorna una curva di rendimento esistente nella cache con i nuovi dati
+     * dal provider.
+     *
+     * @param curveId Identificativo univoco della curva (es. "EUR_OIS")
+     * @param newInputs La nuova lista di nodi aggiornati ricevuta dal provider
+     * @return true se la curva è stata aggiornata, false se non era presente
+     * nella cache
+     */
+    public boolean updateYieldCurveInCache(String curveId, List<MarketQuote> newInputs) {
+        if (curveId == null || newInputs == null) {
+            throw new IllegalArgumentException("L'ID curva e i nuovi input non possono essere nulli.");
+        }
+
+        if (newInputs.isEmpty()) {
+            return false;
+        }
+        // compute viene eseguito SEMPRE, sia se la mappa è vuota sia se è piena computeIfPresent 
+        // usa una lamba function (->), quando esce existingCurve e' updateCurve
+        YieldCurve updatedCurve = this.yieldCurves.compute(curveId, (id, existingCurve) -> {
+            if (existingCurve == null) {
+                // Se la curva non c'è in cache, la creiamo ex-novo tramite il builder
+                return yieldCurveBuilder.buildYieldCurve(id, newInputs, getOfficialDate());
+            } else {
+                // Se esiste già, sfruttiamo il metodo synchronized esistente
+                existingCurve.update(CurveBootstrapper.bootstrap(getOfficialDate(), newInputs));
+                return existingCurve;
+            }
+        });
+        // Se updatedCurve non è null significa che la curva esisteva ed è stata modificata
+        return updatedCurve != null;
+    }
+
+    public void updateYieldCurve(String strProvider, String curveId) {
+        IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
+        if (provider != null && curveId != null && !curveId.isBlank()) {
+            List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(provider, curveId);
+            updateYieldCurveInCache(curveId, newInput);
+        }
+    }
 
     // Loads the base curve from the database and builds it. 
     private YieldCurve buildBase(String code, LocalDate officialDate) {
@@ -79,21 +120,16 @@ public class MarketDataService {
         if (c != null && c instanceof YieldCurve yc) {
             return yc;
         } else {
-            throw new MarketDataNotFoundException("Unknown base curve: " + code);
+            throw new MarketDataNotFoundException("Unknown Base Curve: " + code);
         }
     }
 
-    public void addDiscountCurve(String code) {
-        try {
-            DiscountCurve discountCurve = yieldCurveBuilder.buildDiscountCurve(code, getOfficialDate());
-            if (discountCurve == null) {
-                throw new MarketDataNotFoundException("Can't create Discount Curve: " + code);
-            }
-            discountCurves.put(code, discountCurve);
-        } catch (Exception e) {
-            LoggerMgr.logError(e.getLocalizedMessage());
-            // Rilancia eccezione
-            throw new MarketDataNotFoundException("Can't create Discount Curve: " + code);
+    public DiscountCurve getDiscountCurve(String code) {
+        DiscountCurve c = discountCurves.get(code);
+        if (c != null) {
+            return c;
+        } else {
+            throw new MarketDataNotFoundException("Unknown Discount Curve: " + code);
         }
     }
 
@@ -120,10 +156,10 @@ public class MarketDataService {
                 DiscountCurve curve = switch (yieldCurveBuilder.getCurveKind(code)) {
                     case YIELD ->
                         // plain: built from its own quotes
-                        resolver.apply(code);                                                  
+                        resolver.apply(code);
                     case SPREAD ->
                         // base + spreads
-                        yieldCurveBuilder.buildSpreadCurve(code, officialDate, resolver);     
+                        yieldCurveBuilder.buildSpreadCurve(code, officialDate, resolver);
                 };
                 if (curve == null) {
                     throw new MarketDataNotFoundException("Can't create Discount Curve: " + code);
@@ -131,13 +167,13 @@ public class MarketDataService {
                 newDiscounts.put(code, curve);
             } catch (MarketDataNotFoundException e) {
                 // already explicit: do not wrap twice
-                throw e;                                        
+                throw e;
             } catch (RuntimeException e) {
                 LoggerMgr.logError("Can't create discount curve " + code + ": " + e);
                 MarketDataNotFoundException ex
                         = new MarketDataNotFoundException("Can't create Discount Curve: " + code + " - " + e.getMessage());
                 // keep the root cause (stale spreads, wrong base...)
-                ex.initCause(e);                                
+                ex.initCause(e);
                 throw ex;
             }
         }
@@ -235,47 +271,6 @@ public class MarketDataService {
 
         for (InstrumentQuote quote : iqList) {
             updatePrice(quote.getCode(), quote.getBid(), quote.getAsk(), (quote.getBid() + quote.getAsk()) / 2.);
-        }
-    }
-
-    /**
-     * Aggiorna una curva di rendimento esistente nella cache con i nuovi dati
-     * dal provider.
-     *
-     * @param curveId Identificativo univoco della curva (es. "EUR_OIS")
-     * @param newInputs La nuova lista di nodi aggiornati ricevuta dal provider
-     * @return true se la curva è stata aggiornata, false se non era presente
-     * nella cache
-     */
-    public boolean updateYieldCurveInCache(String curveId, List<MarketQuote> newInputs) {
-        if (curveId == null || newInputs == null) {
-            throw new IllegalArgumentException("L'ID curva e i nuovi input non possono essere nulli.");
-        }
-
-        if (newInputs.isEmpty()) {
-            return false;
-        }
-        // compute viene eseguito SEMPRE, sia se la mappa è vuota sia se è piena computeIfPresent 
-        // usa una lamba function (->), quando esce existingCurve e' updateCurve
-        YieldCurve updatedCurve = this.yieldCurves.compute(curveId, (id, existingCurve) -> {
-            if (existingCurve == null) {
-                // Se la curva non c'è in cache, la creiamo ex-novo tramite il builder
-                return yieldCurveBuilder.buildYieldCurve(id, newInputs, getOfficialDate());
-            } else {
-                // Se esiste già, sfruttiamo il metodo synchronized esistente
-                existingCurve.update(CurveBootstrapper.bootstrap(getOfficialDate(), newInputs));
-                return existingCurve;
-            }
-        });
-        // Se updatedCurve non è null significa che la curva esisteva ed è stata modificata
-        return updatedCurve != null;
-    }
-
-    public void updateYieldCurve(String strProvider, String curveId) {
-        IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
-        if (provider != null && curveId != null && !curveId.isBlank()) {
-            List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(provider, curveId);
-            updateYieldCurveInCache(curveId, newInput);
         }
     }
 

@@ -4,6 +4,7 @@
  */
 package org.softcaster.core.data;
 
+import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,5 +30,9 @@ public class SpreadCurveEntityDAO {
     @Transactional(readOnly = true)
     public boolean existsByCode(String code) {
         return repository.existsByCode(code);
+    }
+    @Transactional(readOnly = true)
+    public List<String> findNames() {
+        return repository.findNames();
     }
 }

@@ -23,6 +23,7 @@ public class YieldCurveEntityDAO {
 
     @Transactional(readOnly = true)
     public YieldCurveEntity findByCode(String code) {
+        
         return repository.findByCode(code);
     }
 

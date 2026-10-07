@@ -16,6 +16,8 @@ import org.softcaster.commons.utils.NumberUtils;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
+import org.softcaster.core.data.SpreadCurveEntityDAO;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
@@ -57,6 +59,10 @@ public class ZSpreadBuilder implements CommandLineRunner {
 
     @Autowired
     YieldCurveBuilder yieldCurveBuilder;
+    @Autowired
+    YieldCurveEntityDAO yieldCurveEntityDAO;
+    @Autowired
+    SpreadCurveEntityDAO spreadCurveEntityDAO;
 
     public static void main(String[] args) {
         // Avvia l'applicazione tramite Spring Boot 
@@ -65,7 +71,19 @@ public class ZSpreadBuilder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        testDiscountCurve("ITA_SPREADED");
+        List<String> ycnames = yieldCurveEntityDAO.findNames();
+        List<String> scnames = spreadCurveEntityDAO.findNames();
+        ycnames.addAll(scnames);
+        marketDataService.reloadCurves(ycnames);
+
+        DiscountCurve c = marketDataService.getDiscountCurve("ITA_SPREADED");
+        LocalDate t1 = marketDataService.getOfficialDate().plusMonths(1);
+        double df = c.getDiscountFactor(t1);
+        System.out.println(df);
+
+        c = marketDataService.getDiscountCurve("ECBYC");
+        df = c.getDiscountFactor(t1);
+        System.out.println(df);
     }
 
     private void testDiscountCurve(String idCurve) {
