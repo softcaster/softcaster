@@ -14,10 +14,12 @@ import org.softcaster.commons.ui.ZebraTable;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.core.data.YieldCurveEntityDAO;
+import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.easy_pricer_mds.MDSFacade;
+import org.softcaster.easy_pricer_mds.bean.SpreadCurveBean;
 import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;
 import org.softcaster.easy_pricer_mds.dialog.YieldCurveDlg;
+import org.softcaster.easy_pricer_mds.ui.model.SpreadedCurveModel;
 import org.softcaster.easy_pricer_mds.ui.model.YieldCurveModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 
@@ -25,9 +27,9 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
  *
  * @author ep
  */
-public class YieldCurvePanel extends FndtAbstactPanel {
+public class SpreadedCurvePanel extends FndtAbstactPanel {
 
-    private final List<YieldCurveBean> yieldCurveBeanList = new ArrayList<>();
+    private final List<SpreadCurveBean> spreadCurveBeanList = new ArrayList<>();
     private MDSFacade mDSFacade = null;
 
     /**
@@ -35,10 +37,10 @@ public class YieldCurvePanel extends FndtAbstactPanel {
      *
      * @param mDSFacade
      */
-    public YieldCurvePanel(MDSFacade mDSFacade) {
+    public SpreadedCurvePanel(MDSFacade mDSFacade) {
         this.mDSFacade = mDSFacade;
         initComponents();
-        postInitComponents(ycTable);
+        postInitComponents(scTable);
     }
 
     /**
@@ -52,7 +54,7 @@ public class YieldCurvePanel extends FndtAbstactPanel {
 
         lblHeader = new javax.swing.JLabel();
         ycScrollPane = new javax.swing.JScrollPane();
-        ycTable = new ZebraTable();
+        scTable = new ZebraTable();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -61,11 +63,12 @@ public class YieldCurvePanel extends FndtAbstactPanel {
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("Yield Curves");
+        lblHeader.setText("Spreaded Curves");
+        lblHeader.setToolTipText("");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
-        ycTable.setModel(new javax.swing.table.DefaultTableModel(
+        scTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -76,23 +79,23 @@ public class YieldCurvePanel extends FndtAbstactPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        ycScrollPane.setViewportView(ycTable);
+        ycScrollPane.setViewportView(scTable);
 
         add(ycScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     @Override
     public void refreshAction() {
-        YieldCurveModel model = (YieldCurveModel) ycTable.getModel();
+        YieldCurveModel model = (YieldCurveModel) scTable.getModel();
         this.updateModel(model);
     }
 
     @Override
     protected void fillModelList() {
         // Crea e setta il model
-        YieldCurveBean prototype = new YieldCurveBean(null);
-        YieldCurveModel model = new YieldCurveModel(prototype);
-        ycTable.setModel(model);
+        SpreadCurveBean prototype = new SpreadCurveBean(null);
+        SpreadedCurveModel model = new SpreadedCurveModel(prototype);
+        scTable.setModel(model);
 
         // Popola il model
         refreshModel(model);
@@ -100,27 +103,21 @@ public class YieldCurvePanel extends FndtAbstactPanel {
 
     @Override
     protected void refreshModel(FndtTableModel model) {
-        yieldCurveBeanList.clear();
-        YieldCurveEntityDAO dao = mDSFacade.getYieldCurveDAO();
+        spreadCurveBeanList.clear();
+        SpreadCurveEntityDAO dao = mDSFacade.getSpreadCurveDAO();
         List<String> curves = dao.findNames();
         MarketDataService mds = mDSFacade.getMarketDataService();
-        YieldCurveBean bean = null;
+        SpreadCurveBean bean = null;
         for (String code : curves) {
-            bean = new YieldCurveBean(dao.findByCode(code));
-            mds.loadCurveCurveRates(code);
-            yieldCurveBeanList.add(bean);
+            bean = new SpreadCurveBean(dao.findByCode(code));
+            //mds.loadCurveCurveRates(code);
+            spreadCurveBeanList.add(bean);
         }
 
-        model.setData(yieldCurveBeanList);
+        model.setData(spreadCurveBeanList);
     }
 
     private void updateTable(FndtTableModel model) {
-        for (YieldCurveBean bean : yieldCurveBeanList) {
-            if (bean != null && bean.getYieldCurve() != null && !bean.getYieldCurve().getProvider().isBlank()) {
-                MarketDataService mds = mDSFacade.getMarketDataService();
-                mds.updateYieldCurve(bean.getYieldCurve().getProvider(), bean.getYieldCurve().getCode());
-            }
-        }
     }
 
     @Override
@@ -152,7 +149,7 @@ public class YieldCurvePanel extends FndtAbstactPanel {
                     //statusBarLabel.setText("Data retrieved successfully.");
                 } catch (InterruptedException | ExecutionException e) {
                     LoggerMgr.logError(e.getLocalizedMessage());
-                    java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(YieldCurvePanel.this);
+                    java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(SpreadedCurvePanel.this);
                     javax.swing.JOptionPane.showMessageDialog(parentWindow,
                             "Error during download: " + e.getLocalizedMessage(),
                             "Download Error", javax.swing.JOptionPane.ERROR_MESSAGE);
@@ -174,11 +171,11 @@ public class YieldCurvePanel extends FndtAbstactPanel {
 
     @Override
     protected void acModActionPerformed(ActionEvent evt) {
-        int rowIndex = ycTable.getSelectedRow();
+        int rowIndex = scTable.getSelectedRow();
         if (rowIndex != -1) {
             // 1. CONVERSIONE FONDAMENTALE
-            int modelRow = ycTable.convertRowIndexToModel(rowIndex);
-            YieldCurveModel model = (YieldCurveModel) ycTable.getModel();
+            int modelRow = scTable.convertRowIndexToModel(rowIndex);
+            YieldCurveModel model = (YieldCurveModel) scTable.getModel();
             YieldCurveBean bean = model.getElementAt(modelRow);
             java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
             java.awt.Frame parentFrame = null;
@@ -204,12 +201,6 @@ public class YieldCurvePanel extends FndtAbstactPanel {
 
     @Override
     public void downloadAction() {
-        for (YieldCurveBean bean : yieldCurveBeanList) {
-            if (bean != null && bean.getYieldCurve() != null && !bean.getYieldCurve().getProvider().isBlank()) {
-                MarketDataService mds = mDSFacade.getMarketDataService();
-                mds.saveOrUpdateCurveRates(bean.getYieldCurve().getCode());
-            }
-        }
     }
 
     @Override
@@ -219,12 +210,12 @@ public class YieldCurvePanel extends FndtAbstactPanel {
     @Override
     public void reloadAction() {
         // Popola il model
-        refreshModel((FndtTableModel) ycTable.getModel());
+        refreshModel((FndtTableModel) scTable.getModel());
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel lblHeader;
+    private javax.swing.JTable scTable;
     private javax.swing.JScrollPane ycScrollPane;
-    private javax.swing.JTable ycTable;
     // End of variables declaration//GEN-END:variables
 }

@@ -63,6 +63,8 @@ public class ZSpreadBuilder implements CommandLineRunner {
     YieldCurveEntityDAO yieldCurveEntityDAO;
     @Autowired
     SpreadCurveEntityDAO spreadCurveEntityDAO;
+    @Autowired
+    ZSpreadImporter importer;
 
     public static void main(String[] args) {
         // Avvia l'applicazione tramite Spring Boot 
@@ -71,6 +73,8 @@ public class ZSpreadBuilder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        importer.importZSpread("ITA_SPREADED");
+        /*
         List<String> ycnames = yieldCurveEntityDAO.findNames();
         List<String> scnames = spreadCurveEntityDAO.findNames();
         ycnames.addAll(scnames);
@@ -84,6 +88,7 @@ public class ZSpreadBuilder implements CommandLineRunner {
         c = marketDataService.getDiscountCurve("ECBYC");
         df = c.getDiscountFactor(t1);
         System.out.println(df);
+         */
     }
 
     private void testDiscountCurve(String idCurve) {

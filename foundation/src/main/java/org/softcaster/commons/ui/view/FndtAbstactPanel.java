@@ -166,4 +166,7 @@ public abstract class FndtAbstactPanel extends javax.swing.JPanel {
         dialog.setLocationRelativeTo(this); // Centra rispetto alla finestra principale
         return dialog;
     }
+
+    public void reloadAction() {
+    }
 }

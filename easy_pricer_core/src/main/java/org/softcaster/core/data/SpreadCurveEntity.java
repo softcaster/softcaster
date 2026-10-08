@@ -13,14 +13,6 @@ import java.io.Serializable;
  * spreads from YieldCurveSpread rows. Getters and setters omitted: generate
  * them as for your other entities.
  */
-import jakarta.persistence.*;        // use javax.persistence.* if your project is still on Java EE
-import java.io.Serializable;
-
-/**
- * Definition of a spread curve (e.g. ITA_SPREADED = ECB + calibrated z-spreads).
- * It has no yield curve items: rates come from the base curve, spreads from YieldCurveSpread rows.
- * Getters and setters omitted: generate them as for your other entities.
- */
 @Entity
 @Table(name = "spread_curve")
 public class SpreadCurveEntity implements Serializable {

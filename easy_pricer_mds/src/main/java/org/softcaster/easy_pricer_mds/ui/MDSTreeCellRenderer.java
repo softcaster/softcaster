@@ -41,7 +41,7 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
                         setIcon(forexIcon);
                     case BOND, EQUITY, FLT_BOND ->
                         setIcon(securityIcon);
-                    case YC_UPDATE, YC_DEFINE ->
+                    case YC_UPDATE, YC_DEFINE, SC_UPDATE, SC_DEFINE ->
                         setIcon(forexIcon);
                     case BOND_FUTURE, MM_FUTURE, FX_FUTURE, CMD_FUTURE ->
                         setIcon(futureIcon);

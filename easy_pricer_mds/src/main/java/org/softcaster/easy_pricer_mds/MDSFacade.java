@@ -21,6 +21,7 @@ import org.softcaster.core.data.PortfolioMasterDataDAO;
 import org.softcaster.core.data.PositionMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SettlementTypeDAO;
+import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
@@ -80,6 +81,8 @@ public class MDSFacade {
     private AssetClassDAO assetClassDAO;
     @Autowired
     private YieldCurveEntityDAO yieldCurveDAO;
+    @Autowired
+    private SpreadCurveEntityDAO spreadCurveDAO;
 
     @Autowired
     @Qualifier("bondPricer")
@@ -226,5 +229,12 @@ public class MDSFacade {
      */
     public FltSecurityMasterDataDAO getFltSecurityMasterDataDAO() {
         return fltSecurityMasterDataDAO;
+    }
+
+    /**
+     * @return the spreadCurveDAO
+     */
+    public SpreadCurveEntityDAO getSpreadCurveDAO() {
+        return spreadCurveDAO;
     }
 }

@@ -5,6 +5,7 @@
 package org.softcaster.core.data;
 
 import java.util.List;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,4 +27,12 @@ public interface SpreadCurveEntityRepository extends JpaRepository<SpreadCurveEn
 
     @Query(value = "SELECT code FROM spread_curve ORDER BY code", nativeQuery = true)
     public List<String> findNames();
+
+    @Query("SELECT sc FROM SpreadCurveEntity sc "
+            + "JOIN FETCH sc.baseCurve bc "
+            + "JOIN FETCH bc.currency c "
+            + "JOIN FETCH c.calendar "
+            + "WHERE sc.code = :code")
+    SpreadCurveEntity findByCode(@Param("code") String code);
+
 }

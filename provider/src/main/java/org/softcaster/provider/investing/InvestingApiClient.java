@@ -5,25 +5,15 @@
 package org.softcaster.provider.investing;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.microsoft.playwright.APIRequest;
-import com.microsoft.playwright.APIRequestContext;
-import com.microsoft.playwright.APIResponse;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
-import com.microsoft.playwright.options.WaitUntilState;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import org.softcaster.provider.bricks.ProviderInfo;
-import org.softcaster.provider.enums.Market;
-import static org.softcaster.provider.enums.Market.NONE;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -103,12 +93,11 @@ public class InvestingApiClient {
 
         String jsonResult = "";
 
-        try (Playwright playwright = Playwright.create()) {
+        try (Playwright playwright = Playwright.create(); // 1. Lanciamo il browser in modalità non-headless (visibile) per passare i controlli anti-bot
+                Browser browser = playwright.chromium().launch(
+                        new BrowserType.LaunchOptions().setHeadless(true)
+                )) {
 
-            // 1. Lanciamo il browser in modalità non-headless (visibile) per passare i controlli anti-bot
-            Browser browser = playwright.chromium().launch(
-                    new BrowserType.LaunchOptions().setHeadless(true)
-            );
 
             // 2. Creiamo il contesto con dimensioni standard e uno User-Agent credibile
             BrowserContext context = browser.newContext(
@@ -148,9 +137,9 @@ public class InvestingApiClient {
                 System.out.println("\n[Successo!] File JSON scaricato correttamente:");
                 System.out.println(jsonResult);
             }
-
             // Chiudiamo il browser al termine
             browser.close();
+
         }
         
         return jsonResult;

@@ -19,7 +19,7 @@ public class TreeModel {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Navigator");
 
         // Instrument
-        DefaultMutableTreeNode instruments = new DefaultMutableTreeNode("Price Update");
+        DefaultMutableTreeNode instruments = new DefaultMutableTreeNode("Instruments");
         DefaultMutableTreeNode securities = new DefaultMutableTreeNode("Securities");
         // Foglie
         securities.add(new DefaultMutableTreeNode(new FndtNode<>("Bonds", AppTreeItem.BOND)));
@@ -44,10 +44,17 @@ public class TreeModel {
         root.add(instruments);
 
         // YC
-        DefaultMutableTreeNode references = new DefaultMutableTreeNode("Yield Curve");
-        references.add(new DefaultMutableTreeNode(new FndtNode<>("Update",AppTreeItem.YC_UPDATE)));
-        references.add(new DefaultMutableTreeNode(new FndtNode<>("Define",AppTreeItem.YC_DEFINE)));
-        root.add(references);
+        DefaultMutableTreeNode discountCurve = new DefaultMutableTreeNode("Discount Curves");
+        DefaultMutableTreeNode ycurves = new DefaultMutableTreeNode("Yield Curves");
+        ycurves.add(new DefaultMutableTreeNode(new FndtNode<>("Update",AppTreeItem.YC_UPDATE)));
+        ycurves.add(new DefaultMutableTreeNode(new FndtNode<>("Define",AppTreeItem.YC_DEFINE)));
+        discountCurve.add(ycurves);
+        DefaultMutableTreeNode scurves = new DefaultMutableTreeNode("Spreaded Curves");
+        scurves.add(new DefaultMutableTreeNode(new FndtNode<>("Update",AppTreeItem.SC_UPDATE)));
+        scurves.add(new DefaultMutableTreeNode(new FndtNode<>("Define",AppTreeItem.SC_DEFINE)));
+        discountCurve.add(scurves);
+        
+        root.add(discountCurve);
 
         DefaultTreeModel model = new DefaultTreeModel(root);
         return model;

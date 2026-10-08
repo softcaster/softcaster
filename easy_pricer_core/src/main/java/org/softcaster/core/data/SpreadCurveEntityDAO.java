@@ -35,4 +35,9 @@ public class SpreadCurveEntityDAO {
     public List<String> findNames() {
         return repository.findNames();
     }
+
+    @Transactional(readOnly = true)
+    public SpreadCurveEntity findByCode(String code) {
+        return repository.findByCode(code);
+    }
 }

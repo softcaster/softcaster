@@ -4,34 +4,32 @@
  */
 package org.softcaster.provider.investing;
 
-import java.io.BufferedReader;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.text.ParseException;
-import java.time.Duration;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
-import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.provider.bricks.AbstractProvider;
 import org.softcaster.provider.bricks.Data;
 import org.softcaster.provider.bricks.Node;
+import org.softcaster.provider.bricks.Offset;
 import org.softcaster.provider.bricks.ProviderInfo;
 import org.softcaster.provider.bricks.RateKey;
 import org.softcaster.provider.bricks.Request;
 import org.softcaster.provider.enums.Market;
-import static org.softcaster.provider.enums.Market.BONDS;
-import static org.softcaster.provider.enums.Market.CURRENCIES;
 import static org.softcaster.provider.enums.Market.NONE;
 import static org.softcaster.provider.enums.Market.RATES;
+import org.softcaster.provider.enums.OffsetType;
 import org.softcaster.provider.exceptions.MarketDataProviderException;
-import org.softcaster.provider.interpreter.ProviderHelper;
 
 /**
  *
@@ -39,12 +37,7 @@ import org.softcaster.provider.interpreter.ProviderHelper;
  */
 public class InvestingComProvider extends AbstractProvider {
 
-    // https://www.widgets.investing.com/live-currency-cross-rates?cols=bid,ask,high,low&pairs=1,6,9,10,16,15
-    private final String baseUrl = "https://www.investing.com/";
-    //private final String currenciesUrl = baseUrl + "currencies/streaming-forex-rates-majors";
-    private final String currenciesUrl = "https://www.widgets.investing.com/live-currency-cross-rates?cols=bid,ask,high,low&pairs=1,6,9,10,16,15";
-    private final String itRatesUrl = baseUrl + "rates-bonds/italy-government-bonds";
-    private final String usRatesUrl = baseUrl + "rates-bonds/usa-government-bonds";
+    private final String curveUrl = "https://sbcharts.investing.com/bond_charts/";
 
     private static InvestingComProvider instance;
 
@@ -59,271 +52,129 @@ public class InvestingComProvider extends AbstractProvider {
         return instance;
     }
 
-    public List<Node> getItYieldCurve() {
-        try {
-            ProviderInfo info = new ProviderInfo();
-
-            Request request = new Request(baseUrl, NONE);
-            info.getRequests().add(request);
-            connect(info, NONE);
-
-            request = new Request(itRatesUrl, RATES);
-            info.getRequests().add(request);
-
-            info.getExtraParameters().clear();
-            info.getExtraParameters().add("ITA");
-
-            connect(info, RATES);
-
-            RateKey key = new RateKey("ITYIELD", RATES);
-            return getRates(key);
-        } catch (IOException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-            throw new MarketDataProviderException(ex.getLocalizedMessage());
-        }
+    private OffsetType getOffsetType(char c) {
+        return switch (c) {
+            case 'D' -> OffsetType.DAYS;
+            case 'M' -> OffsetType.MONTHS;
+            case 'Y' -> OffsetType.YEARS;
+            default -> OffsetType.NONE;
+        };
     }
-
-    public List<Node> getUsYieldCurve() {
-        try {
-            ProviderInfo info = new ProviderInfo();
-
-            Request request = new Request(baseUrl, NONE);
-            info.getRequests().add(request);
-
-            request = new Request(usRatesUrl, RATES);
-            info.getRequests().add(request);
-
-            info.getExtraParameters().clear();
-            info.getExtraParameters().add("USD");
-
-            connect(info, RATES);
-
-            RateKey key = new RateKey("USYIELD", RATES);
-            return getRates(key);
-        } catch (IOException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-            throw new MarketDataProviderException(ex.getLocalizedMessage());
-        }
-    }
-
-    private void parseYieldCurve(String keyStr) {
-        if (response == null || response.isEmpty()) {
-            return;
-        }
-        ProviderHelper helper = ProviderHelper.getInstance();
-        if (helper != null) {
-            List<Node> nodes = helper.getNodeList(keyStr);
-            if (nodes != null) {
-                double value = 0.;
-                RateKey key = new RateKey(keyStr, RATES);
-                Data data = null;
-                for (Node node : nodes) {
-                    String[] base = response.split(node.getSymbol());
-                    // Base deve essere un array di 2 elementi, se superiore
-                    // ricerco altro elemento
-                    int index = 1;
-                    if (base.length > 2) {
-                        index = 2;
-                    }
-                    String right[] = base[index].split("last\">");
-                    try {
-                        //Estraggo tasso corrispondente al token
-                        if (right[1] != null) {
-                            value = Converter.toDouble(right[1].substring(0, 5).trim(), false);
-                        }
-                    } catch (ParseException | NullPointerException ex) {
-                        LoggerMgr.logError(ex.getLocalizedMessage());
-                        value = 0.;
-                    }
-                    data = new Data(value / 100., value / 100.);
-                    node.setData(data);
-                    addRate(key, node);
-                }
-            }
-        }
-    }
-
-    private void parseUsYieldCurve() {
-        parseYieldCurve("USYIELD");
-    }
-
-    private void parseItaYieldCurve() {
-        parseYieldCurve("ITYIELD");
-    }
-
-    public Node getCurrencyQuote(String symbol) {
-
-        try {
-            if (isTimeElapsed()) {
-                ProviderInfo info = new ProviderInfo();
-                Request request = new Request(baseUrl, NONE);
-                info.getRequests().add(request);
-
-                request = new Request(currenciesUrl, CURRENCIES);
-                info.getRequests().add(request);
-
-                // Key del dato
-                info.getExtraParameters().add(symbol);
-                connect(info, CURRENCIES);
-            }
-            return getQuote(symbol, CURRENCIES);
-
-        } catch (IOException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-            throw new MarketDataProviderException(ex.getLocalizedMessage());
-        }
-    }
-
+    
     @Override
     protected void parseResponse(ProviderInfo info, Market market) {
-        switch (market) {
-            case CURRENCIES ->
-                parseResponseForex();
-            case RATES -> {
-                switch (info.getExtraParameters().get(0)) {
-                    case "USD" ->
-                        parseUsYieldCurve();
-                    case "ITA" ->
-                        parseItaYieldCurve();
-                    default ->
-                        throw new MarketDataProviderException("Yield Curve not supported!");
+        try {
+            ObjectMapper om = new ObjectMapper();
+            Root root = om.readValue(response, Root.class);
+            ArrayList current = root.current;
+            RateKey key = new RateKey(info.getExtraParameters().get(0), RATES);
+            for (Object item : current) {
+                if (item != null) {
+                    ArrayList elem = (ArrayList) item;
+                    //System.out.println(elem.get(0) + " : " + elem.get(1));
+                    // Espressione regolare: 
+                    // (\\d+) cattura uno o più numeri (Gruppo 1)
+                    // ([a-zA-Z]+) cattura una o più lettere (Gruppo 2)
+                    Pattern pattern = Pattern.compile("(\\d+)([a-zA-Z]+)");
+
+                    Matcher matcher = pattern.matcher((String) elem.get(0));
+
+                    if (matcher.matches()) {
+                        // Estrae la stringa di testo
+                        String text = matcher.group(2);
+                        Offset offset = new Offset(Integer.parseInt(matcher.group(1)), getOffsetType(text.charAt(0)));
+                        Data data = new Data((double) elem.get(1), (double) elem.get(1));
+                        Node node = new Node((String)elem.get(0), offset, data, "ACT_365", "COMPOUNDED", "PAR_YIELD");
+                        addRate(key, node);
+                    }
                 }
             }
-            //parseResponseYieldCurve("");
-            case BONDS, EQUITIES, FUTURES, COMMODITIES ->
-                throw new MarketDataProviderException("Market not supported!");
+        } catch (JsonProcessingException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
         }
     }
 
     @Override
     protected void customConnect(ProviderInfo info, Market market) throws MalformedURLException, IOException {
-        HttpURLConnection conn = getConnection(info, market);
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                (conn.getInputStream())))) {
-            Stream<String> lines = br.lines();
-            // Reset ultima richiesta
-            response = "";
-            // Impacca tutte le linee
-            Consumer<String> addElement = s -> {
-                response += s;
-            };
-            lines.forEach(addElement);
-            // Chiusura buffer
-            br.close();
-
-            parseResponse(info, market);
-        }
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////
-    // Forex
-    /////////////////////////////////////////////////////////////////////////////////////
-    private void addCurrencyPair2(String bcy, String ccy) {
-        try {
-            String ric = bcy + "/" + ccy;
-            String[] base = response.split(ric);
-
-            Pattern pattern = Pattern.compile(">(\\d+\\.\\d+)<");
-            Matcher matcher = pattern.matcher(base[1]);
-
-            // Estrazione dei valori trovati
-            String bid = "";
-            String ask = "";
-            int cnt = 0;
-            while (matcher.find() && cnt < 2) {
-                switch (cnt) {
-                    case 0 -> {
-                        bid = matcher.group(1);
-                        cnt++;
-                    }
-                    case 1 -> {
-                        ask = matcher.group(1);
-                        cnt++;
-                    }
-                    default -> {
-                    }
-                }
-            }
-            double bidValue = Converter.toDouble(bid, false);
-            double askValue = Converter.toDouble(ask, false);
-
-            Node node = new Node(bcy + ccy, null, new Data(bidValue, askValue), "", "", "");
-            addQuote(CURRENCIES, node);
-
-        } catch (ParseException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-        }
-    }
-
-    private void addCurrencyPair(String bcy, String ccy) {
-        try {
-            String ric = bcy + "/" + ccy;
-            String[] base = response.split("dir=\"ltr\">" + ric);
-            String right[] = base[1].split("span class=\"\">");
-
-            double bidValue = Converter.toDouble(right[1], false);
-            double askValue = Converter.toDouble(right[2], false);
-
-            Node node = new Node(bcy + ccy, null, new Data(bidValue, askValue), "", "", "");
-            addQuote(CURRENCIES, node);
-
-        } catch (ParseException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-        }
-    }
-
-    private void parseResponseForex() {
-
-        addCurrencyPair2("EUR", "USD");
-        addCurrencyPair2("EUR", "CHF");
-        addCurrencyPair2("EUR", "GBP");
-        addCurrencyPair2("EUR", "JPY");
-        addCurrencyPair2("EUR", "CAD");
-        addCurrencyPair2("EUR", "AUD");
     }
 
     @Override
-    protected void setTimer() {
-        timeElapsed = 300; // 5 min
-        lastUpdate = null;
-    }
+    public void connect(ProviderInfo info, Market market) throws MalformedURLException, IOException {
 
-    private boolean isTimeElapsed() {
-        // Prima richiesta
-        if (lastUpdate == null) {
-            lastUpdate = Instant.now();
-            return true;
-        } else {
-            Instant currentTime = Instant.now();
-            Duration duration = Duration.between(lastUpdate, currentTime);
-            if (duration.getSeconds() > timeElapsed) {
-                lastUpdate = currentTime;
-                return true;
-            } else {
-                return false;
+        String jsonResult = "";
+
+        try (Playwright playwright = Playwright.create(); // 1. Lanciamo il browser in modalità non-headless (visibile) per passare i controlli anti-bot
+                 Browser browser = playwright.chromium().launch(
+                        new BrowserType.LaunchOptions().setHeadless(true)
+                )) {
+
+            // 2. Creiamo il contesto con dimensioni standard e uno User-Agent credibile
+            BrowserContext context = browser.newContext(
+                    new Browser.NewContextOptions()
+                            .setViewportSize(1920, 1080)
+                            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            );
+
+            Page page = context.newPage();
+
+            // 3. Navighiamo prima sulla home o su una pagina dei bond per farci rilasciare i cookie di sessione
+            page.navigate("https://www.investing.com/rates-bonds/");
+
+            // Aspettiamo qualche secondo per assicurarci che la pagina e le protezioni siano caricate completamente
+            page.waitForTimeout(3000);
+            String fullUrl = curveUrl + info.getExtraParameters().get(0);
+            // 4. Eseguiamo la richiesta fetch direttamente dall'interno del browser autorizzato
+            response = (String) page.evaluate(
+                    "async () => {"
+                    + "  try {"
+                    + "    const response = await fetch('" + fullUrl + "');"
+                    + "    if (!response.ok) return 'Errore nella fetch interna: ' + response.status;"
+                    + "    const data = await response.json();"
+                    + "    return JSON.stringify(data);"
+                    + "  } catch (err) {"
+                    + "    return 'Eccezione JavaScript: ' + err.message;"
+                    + "  }"
+                    + "}"
+            );
+
+            // 5. Mostriamo il risultato o gestiamo l'output
+            if (jsonResult.startsWith("Errore") || jsonResult.startsWith("Eccezione")) {
+                LoggerMgr.logError("Error connecting to: ");
             }
+            // Chiudiamo il browser al termine
+            browser.close();
+
         }
+
+        parseResponse(info, market);
     }
 
     @Override
     public List<Node> getYieldCurveNodes(String idCurve) {
-        return switch (idCurve) {
-            case "ITYIELD" ->
-                getItYieldCurve();
-            case "USYIELD" ->
-                getUsYieldCurve();
-            default ->
-                null;
-        };
+        try {
+            ProviderInfo info = new ProviderInfo();
+
+            Request request = new Request("", NONE);
+            info.getRequests().add(request);
+
+            request = new Request("", RATES);
+            info.getRequests().add(request);
+
+            info.getExtraParameters().clear();
+            info.getExtraParameters().add(idCurve);
+
+            connect(info, RATES);
+
+            RateKey key = new RateKey(idCurve, RATES);
+            return getRates(key);
+        } catch (IOException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            throw new MarketDataProviderException(ex.getLocalizedMessage());
+        }
     }
 
     @Override
     public Node getMktQuote(String symbol, Market market) {
-        if (market == CURRENCIES) {
-            return getCurrencyQuote(symbol);
-        } else {
-            return null;
-        }
+        return null;
     }
 }

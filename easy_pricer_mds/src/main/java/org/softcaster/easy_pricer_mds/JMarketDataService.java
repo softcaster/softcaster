@@ -23,6 +23,7 @@ import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND_FUTURE;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.CURR_PAIR;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.FX_FUTURE;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.YC_DEFINE;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.YC_UPDATE;
 import org.softcaster.easy_pricer_mds.ui.model.TreeModel;
 import org.softcaster.easy_pricer_mds.ui.MDSTreeCellRenderer;
 import org.softcaster.easy_pricer_mds.view.BondFutPanel;
@@ -33,6 +34,7 @@ import org.softcaster.easy_pricer_mds.view.FltBondPanel;
 import org.softcaster.easy_pricer_mds.view.FxFutPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
 import org.softcaster.easy_pricer_mds.view.MmFutPanel;
+import org.softcaster.easy_pricer_mds.view.SpreadedCurvePanel;
 import org.softcaster.easy_pricer_mds.view.YieldCurveDefPanel;
 import org.softcaster.easy_pricer_mds.view.YieldCurvePanel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
@@ -142,6 +144,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                                 cl.show(mainPanel, AppCard.YC_UPDATE_CARD.name());
                                 currentCard = AppCard.YC_UPDATE_CARD;
                             }
+                            case SC_UPDATE -> {
+                                cl.show(mainPanel, AppCard.SC_UPDATE_CARD.name());
+                                currentCard = AppCard.SC_UPDATE_CARD;
+                            }
                             default -> {
                                 cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
                                 currentCard = AppCard.DEFAULT_CARD;
@@ -190,6 +196,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JToolBar.Separator();
         btnRefresh = new javax.swing.JButton();
         btnSave = new javax.swing.JButton();
+        btnReload = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JToolBar.Separator();
         btnCalc = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
@@ -257,6 +264,18 @@ public class JMarketDataService extends javax.swing.JFrame {
             }
         });
         toolBar.add(btnSave);
+
+        btnReload.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/download_16dp.png"))); // NOI18N
+        btnReload.setToolTipText("Save");
+        btnReload.setFocusable(false);
+        btnReload.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnReload.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnReload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReloadActionPerformed(evt);
+            }
+        });
+        toolBar.add(btnReload);
         toolBar.add(jSeparator3);
 
         btnCalc.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/analytics_16dp.png"))); // NOI18N
@@ -323,10 +342,15 @@ public class JMarketDataService extends javax.swing.JFrame {
         saveAction();
     }//GEN-LAST:event_btnSaveActionPerformed
 
+    private void btnReloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReloadActionPerformed
+        reloadAction();
+    }//GEN-LAST:event_btnReloadActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCalc;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnRefresh;
+    private javax.swing.JButton btnReload;
     private javax.swing.JButton btnSave;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem itemExit;
@@ -376,6 +400,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.YC_DEFINE_CARD, ycPanel);
         JPanel ycUpdatePanel = new YieldCurvePanel(mDSFacade);
         cardMap.put(AppCard.YC_UPDATE_CARD, ycUpdatePanel);
+        JPanel scUpdatePanel = new SpreadedCurvePanel(mDSFacade);
+        cardMap.put(AppCard.SC_UPDATE_CARD, scUpdatePanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
@@ -388,6 +414,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(fltBondPanel, AppCard.FLT_BOND_CARD.name());
         mainPanel.add(ycPanel, AppCard.YC_DEFINE_CARD.name());
         mainPanel.add(ycUpdatePanel, AppCard.YC_UPDATE_CARD.name());
+        mainPanel.add(scUpdatePanel, AppCard.SC_UPDATE_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();
@@ -424,6 +451,13 @@ public class JMarketDataService extends javax.swing.JFrame {
         FndtAbstactPanel activePanel = getActiveCard();
         if (activePanel != null) {
             activePanel.downloadAction();
+        }
+    }
+
+    private void reloadAction() {
+        FndtAbstactPanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.reloadAction();
         }
     }
 

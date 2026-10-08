@@ -93,4 +93,9 @@ public class Node {
     public String getNodeType() {
         return nodeType;
     }
+    
+    @Override
+    public String toString() {
+        return symbol + " : " + data.bid();
+    }
 }

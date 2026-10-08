@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.provider.bricks.Node;
-import org.softcaster.provider.cnbc.CnbcProvider;
 import org.softcaster.provider.ecb.ECBProvider;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.eodhd.EodhdFxApiClient;
@@ -32,7 +31,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import org.softcaster.provider.euronext.BorsaItalianaProvider;
-import org.softcaster.provider.investing.InvestingApiClient;
 
 class Root {
 
@@ -151,24 +149,6 @@ public class InvestingComTest {
         System.out.println(node.getData().bid());
     }
 
-    private static void testItaYieldCurves() {
-        InvestingComProvider provider = InvestingComProvider.getInstance();
-
-        List<Node> nodes = provider.getItYieldCurve();
-        for (Node n : nodes) {
-            System.out.println(n.getSymbol() + "\t" + n.getData().bid());
-        }
-    }
-
-    private static void testUsaYieldCurves() {
-        InvestingComProvider provider = InvestingComProvider.getInstance();
-
-        List<Node> nodes = provider.getUsYieldCurve();
-        for (Node n : nodes) {
-            System.out.println(n.getSymbol() + "\t" + n.getData().bid());
-        }
-    }
-
     public static void main(String[] args) {
 
         try {
@@ -183,9 +163,16 @@ public class InvestingComTest {
             testCurrencyPairs();
             */
             //testEcbClient();
+            /*
             InvestingApiClient apiClient = new InvestingApiClient();
             String result = apiClient.connect("https://sbcharts.investing.com/bond_charts/bonds_chart_6.json");
             System.out.println(result);
+            */
+            InvestingComProvider provider = InvestingComProvider.getInstance();
+            List<Node> nodes = provider.getYieldCurveNodes("bonds_chart_6.json");
+            for(Node node: nodes) {
+                System.out.println(node);
+            }
             //System.out.println("########## IT Yield Curve ##########");
             // testItaYieldCurves();
             /*
@@ -208,7 +195,7 @@ public class InvestingComTest {
             testYahooClient();
             */
             //testBIProvider();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             System.getLogger(InvestingComTest.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
     }
