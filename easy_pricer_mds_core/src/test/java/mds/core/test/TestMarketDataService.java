@@ -241,7 +241,7 @@ public class TestMarketDataService {
     }
 
     private void testBondPricer() {
-        SecurityMasterData smd = smdDAO.findByIsin("IT0005240350").orElse(null);
+        SecurityMasterData smd = smdDAO.findByIsin("IT0005676504").orElse(null);
         if (smd != null) {
             // FMIRS ITAYIELD TERMESTR
             List<String> names = new ArrayList<>();
