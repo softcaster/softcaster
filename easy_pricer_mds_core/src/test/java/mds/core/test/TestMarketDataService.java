@@ -31,9 +31,12 @@ import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.cashflow.AmortizedCostPeriod;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
+import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
 import org.softcaster.engine.dto.ForwardBaseInputData;
+import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.ecb.ECBProvider;
 import org.softcaster.provider.enums.Market;
@@ -238,13 +241,15 @@ public class TestMarketDataService {
     }
 
     private void testBondPricer() {
-        SecurityMasterData smd = smdDAO.findByIsin("IT0004532559").orElse(null);
+        SecurityMasterData smd = smdDAO.findByIsin("IT0005240350").orElse(null);
         if (smd != null) {
             // FMIRS ITAYIELD TERMESTR
-            marketDataService.loadCurveCurveRates("EcbYiedCurve");
-            org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("EcbYiedCurve");
-            if (yieldCurve != null) {
-                double price = bondCalculator.calculatePrice(smd, marketDataService.getOfficialDate(), yieldCurve);
+            List<String> names = new ArrayList<>();
+            names.add("ITA_SPREADED");
+            marketDataService.reloadCurves(names);
+            DiscountCurve discountCurve = marketDataService.getDiscountCurve("ITA_SPREADED");
+            if (discountCurve != null) {
+                double price = bondCalculator.calculatePrice(smd, marketDataService.getOfficialDate(), discountCurve);
                 System.out.println(price);
                 System.out.println(marketDataService.getSpotPrice("IT0004532559", RequestType.BID));
             }
@@ -271,7 +276,26 @@ public class TestMarketDataService {
         // testRunner.testBondPricer();
         //testRunner.testFltBondPricer();
         //testRunner.testFltBondPricer2();
-        testRunner.testZSpread();
+        //testRunner.testZSpread();
+        testRunner.testBondPricer();
+    }
+
+    private void testSwapYieldCurve() {
+        org.softcaster.engine.curve.YieldCurve yieldCurve = marketDataService.getYieldCurve("FMIRS");
+        LocalDate today = marketDataService.getOfficialDate();
+
+        LocalDate oneYear = today.plusYears(1);
+        LocalDate oneYear6Months = oneYear.plusMonths(6);
+        double fwdRate = yieldCurve.getForwardRate(oneYear, oneYear6Months, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        System.out.println(fwdRate);
+
+        LocalDate twoYears = oneYear6Months.plusYears(2);
+        fwdRate = yieldCurve.getForwardRate(oneYear6Months, twoYears, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        System.out.println(fwdRate);
+        
+        LocalDate twoYears6Months = twoYears.plusYears(2);
+        fwdRate = yieldCurve.getForwardRate(twoYears, twoYears6Months, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
+        System.out.println(fwdRate);
     }
 
     // Ricava i DF per una serie di date passate in input (ipotetiche scadenze
@@ -317,7 +341,7 @@ public class TestMarketDataService {
                 dirtyPrice += accrual;
                 System.out.println(dirtyPrice);
                 zSpread = bondCalculator.getZSpread(smd, dirtyPrice, valuationDate, yieldCurve);
-                System.out.println("Z Spread theoretical price: "+zSpread);
+                System.out.println("Z Spread theoretical price: " + zSpread);
             }
         }
     }

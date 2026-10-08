@@ -13,7 +13,7 @@ public interface SecurityMasterDataRepository extends BaseMasterDataRepository<S
         FROM SecurityMasterData smd
         WHERE smd.isin = :isin
         """)
-    @EntityGraph("MasterData.fullGraph")
+    @EntityGraph("SecurityMasterData.fullGraphWithCashFlow")
     public Optional<SecurityMasterData> findByIsin(@Param("isin") String isin);
     
     @Query("""

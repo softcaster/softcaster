@@ -10,6 +10,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import org.softcaster.core.data.converters.DaycountConverter;
@@ -18,7 +22,22 @@ import org.softcaster.engine.enums.DaycountBasis;
 @Entity
 @Table(name = "currency")
 @SuppressWarnings("PersistenceUnitPresent")
-
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+        name = "Currency.calendarWithHolidays",
+        attributeNodes = {
+            @NamedAttributeNode(value = "calendar", subgraph = "calendarGraph")
+        },
+        subgraphs = {
+            @NamedSubgraph(
+                name = "calendarGraph",
+                attributeNodes = {
+                    @NamedAttributeNode("holidays")
+                }
+            )
+        }
+    )
+})
 public class Currency implements Serializable {
 
     @Id

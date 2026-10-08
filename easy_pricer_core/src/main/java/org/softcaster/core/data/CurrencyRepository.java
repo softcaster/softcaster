@@ -9,6 +9,7 @@ public interface CurrencyRepository extends JpaRepository<Currency, Integer> {
 
     public Currency findByIdCurrency(Integer idCurrency);
 
+    @EntityGraph(value = "Currency.calendarWithHolidays", type = EntityGraph.EntityGraphType.LOAD)
     public Currency findByIsoCode(String oCode);
 
     @EntityGraph(attributePaths = {"calendar"})

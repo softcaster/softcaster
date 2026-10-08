@@ -6,6 +6,8 @@ package org.softcaster.easy_pricer_mds_core.calc;
  */
 import java.time.LocalDate;
 import java.util.List;
+import org.softcaster.core.data.Currency;
+import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
@@ -14,7 +16,6 @@ import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.DiscountCurve;
-import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.FRBInputData;
 import org.softcaster.engine.dto.FRBOutputData;
 import org.softcaster.engine.dto.XRBInputData;
@@ -32,6 +33,8 @@ public class BondCalculator {
 
     @Autowired
     private SecurityMasterDataDAO smdDAO;
+    @Autowired
+    private CurrencyDAO currencyDAO;
     @Autowired
     @Qualifier("bondPricer")
     private BondPricer bondPricer;
@@ -136,12 +139,13 @@ public class BondCalculator {
         return newPrice;
     }
 
-    public double calculatePrice(SecurityMasterData securityMasterData, LocalDate officialDate, YieldCurve yieldCurve) {
+    public double calculatePrice(SecurityMasterData securityMasterData, LocalDate officialDate, DiscountCurve discountCurve) {
 
-        Calendar calendar = new Calendar(securityMasterData.getCurrency());
+        Currency currency = currencyDAO.findByIsoCode(securityMasterData.getCurrency().getIsoCode());
+        Calendar calendar = new Calendar(currency);
         LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, securityMasterData.getBusinessDays());
 
-        double newPrice = bondPricer.calculatePrice(Utils.convertCashFlow(securityMasterData.getCashFlows()), yieldCurve, valuationDate,
+        double newPrice = bondPricer.calculatePrice(Utils.convertCashFlow(securityMasterData.getCashFlows()), discountCurve, valuationDate,
                 securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
 
         return newPrice;
