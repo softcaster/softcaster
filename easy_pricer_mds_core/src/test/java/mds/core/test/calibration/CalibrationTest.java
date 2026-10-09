@@ -24,6 +24,10 @@ import org.softcaster.commons.utils.NumberUtils;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
+import org.softcaster.core.data.SpreadCurveEntity;
+import org.softcaster.core.data.SpreadCurveEntityDAO;
+import org.softcaster.core.data.YieldCurveEntity;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.easy_pricer_mds_core.curve.ZSpreadImporter;
@@ -58,6 +62,10 @@ public class CalibrationTest implements CommandLineRunner {
     private MarketDataService marketDataService;
     @Autowired
     private BondCalculator bondCalculator;
+    @Autowired
+    YieldCurveEntityDAO yieldCurveEntityDAO;
+    @Autowired
+    SpreadCurveEntityDAO spreadCurveEntityDAO;
 
     private record PricingResult(String code, LocalDate maturity, double coupon, double mktPrice, double thPrice) {
 
@@ -82,9 +90,14 @@ public class CalibrationTest implements CommandLineRunner {
         log.info("===  Reading Market Prices ... ===\n");
         List<InstrumentMktData> list = getInstrumentMktDataList(provider);
 
-        log.info("===  Saving ZSpreads ... ===\n");
-        saveZspreads(list);
+        log.info("===  Updating Discount Curve ... ===\n");
+        boolean isSpreadedCurve = updateYieldCurve("ITA_SPREADED");
 
+        if (isSpreadedCurve) {
+            log.info("===  Updating ZSpreads ... ===\n");
+            updateZspreads(list);
+        }
+        
         log.info("===  Pricing Instruments ... ===\n");
         List<PricingResult> resultList = priceIntruments(list);
 
@@ -104,7 +117,7 @@ public class CalibrationTest implements CommandLineRunner {
         List<SecurityMasterData> dataList = smdDAO.findAllByAssetClass("XRB");
 
         for (MasterData data : dataList) {
-            if(!isPlainFixedBtp(data.getDescription(),data.getInterestRate())) {
+            if (!isPlainFixedBtp(data.getDescription(), data.getInterestRate())) {
                 continue;
             }
             Node node = provider.getMktQuote(data.getCode(), Market.BONDS);
@@ -114,11 +127,6 @@ public class CalibrationTest implements CommandLineRunner {
             }
         }
         return list;
-    }
-
-    private boolean saveZspreads(List<InstrumentMktData> list) {
-        importer.importZSpread("ITA_SPREADED", list);
-        return true;
     }
 
     private List<PricingResult> priceIntruments(List<InstrumentMktData> list) {
@@ -182,4 +190,31 @@ public class CalibrationTest implements CommandLineRunner {
                 && !d.contains("ITALIA/TV") && !d.contains("EI") /* inflation-linked, adapt */
                 && couponRate > 0.0;
     }
+
+    // Update curva base
+    boolean updateYieldCurve(String discountCurveCode) {
+        String code;
+        String provider;
+        boolean isSpreadedCurve = false;
+        SpreadCurveEntity sc = spreadCurveEntityDAO.findByCodeWithBase(discountCurveCode);
+        if (sc != null) {
+            code = sc.getBaseCurve().getCode();
+            isSpreadedCurve = true;
+            provider = sc.getBaseCurve().getProvider();
+        } else {
+            YieldCurveEntity yc = yieldCurveEntityDAO.findByCode(discountCurveCode);
+            code = yc.getCode();
+            provider = yc.getProvider();
+        }
+        marketDataService.updateYieldCurve(provider, code);
+        marketDataService.saveOrUpdateCurveRates(code);
+
+        return isSpreadedCurve;
+    }
+
+    private boolean updateZspreads(List<InstrumentMktData> list) {
+        importer.importZSpread("ITA_SPREADED", list);
+        return true;
+    }
+
 }
