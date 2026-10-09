@@ -91,7 +91,7 @@ public class SpreadCurveCalibrator {
             Set<String> excludedCodes, int[] bucketYears, int minBonds, int minValidBuckets) {
 
         LocalDate officialDate = marketDataService.getOfficialDate();
-        DiscountCurve base = marketDataService.getYieldCurve(baseCurveCode);              
+        DiscountCurve base = marketDataService.getYieldCurve(baseCurveCode);
         if (base == null) {
             throw new IllegalStateException("Base curve not loaded: " + baseCurveCode);
         }
@@ -224,7 +224,7 @@ public class SpreadCurveCalibrator {
         return null;
     }
 
-    public SpreadBuckets.Bucket[] calibrate(AbstractProvider provider, LocalDate officialDate, DiscountCurve curve,int[] bucketYears,int minBonds) {
+    public SpreadBuckets.Bucket[] calibrate(AbstractProvider provider, LocalDate officialDate, DiscountCurve curve, int[] bucketYears, int minBonds) {
         List<SecurityMasterData> dataList = smdDAO.findAllByAssetClass("XRB");
 
         List<SpreadBuckets.SpreadPoint> points = new ArrayList<>();
@@ -240,7 +240,27 @@ public class SpreadCurveCalibrator {
                 points.add(point);
             }
         }
-        
+
+        // buckets
+        SpreadBuckets.Bucket[] template = Arrays.stream(bucketYears)
+                .mapToObj(SpreadBuckets.Bucket::empty).toArray(SpreadBuckets.Bucket[]::new);
+        SpreadBuckets.Bucket[] buckets = SpreadBuckets.compute(points, template, minBonds, MIN_T, MAX_T);
+
+        return buckets;
+    }
+
+    public SpreadBuckets.Bucket[] calibrate(List<InstrumentMktData> instruments, LocalDate officialDate, DiscountCurve curve, int[] bucketYears, int minBonds) {
+
+        List<SpreadBuckets.SpreadPoint> points = new ArrayList<>();
+        SecurityMasterData data;
+        for (InstrumentMktData instrument : instruments) {
+            data = smdDAO.findByCodeWithCashFlowAndHolidays(instrument.code());
+            SpreadBuckets.SpreadPoint point = calcZSpread(officialDate, curve, instrument.mktPrice(), data);
+            if (point != null) {
+                points.add(point);
+            }
+        }
+
         // buckets
         SpreadBuckets.Bucket[] template = Arrays.stream(bucketYears)
                 .mapToObj(SpreadBuckets.Bucket::empty).toArray(SpreadBuckets.Bucket[]::new);
