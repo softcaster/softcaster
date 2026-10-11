@@ -764,6 +764,46 @@ CREATE SEQUENCE yield_curve_item_s
 ALTER SEQUENCE yield_curve_item_s
     OWNER TO sofie;
 
+-- ----------------------------------------------------------------------------
+-- calibration_profile
+-- ----------------------------------------------------------------------------
+CREATE TABLE calibration_profile (
+    calibration_profile_id INTEGER NOT NULL,
+    code VARCHAR(25),  
+    description VARCHAR(200),  
+    currency INTEGER NOT NULL,
+    yield_curve INTEGER NOT NULL,   -- base curve the spreads were CALIBRATED on (audit + load-time check)
+    last_update DATE NOT NULL, -- reference date of the calibration
+    CONSTRAINT pk_calibration_profile PRIMARY KEY (calibration_profile_id),
+    CONSTRAINT uq_calibration_profile_code UNIQUE (code),
+    CONSTRAINT fk_cpi_currency FOREIGN KEY (currency) REFERENCES currency (id_currency),
+    CONSTRAINT fk_cpi_yield_curve FOREIGN KEY (yield_curve) REFERENCES yield_curve (id_yield_curve)
+);
+ALTER TABLE calibration_profile OWNER TO sofie;
+CREATE SEQUENCE calibration_profile_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE calibration_profile_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- calibration_profile_item
+-- ----------------------------------------------------------------------------
+CREATE TABLE calibration_profile_item (
+    calibration_profile_item_id INTEGER NOT NULL,
+    calibration_profile INTEGER NOT NULL,
+    master_data INTEGER NOT NULL,
+    instrument_quote INTEGER NOT NULL,
+    code VARCHAR(25)  NOT NULL,            
+    bid numeric(18,10) NOT NULL,
+    ask numeric(18,10) NOT NULL,
+    CONSTRAINT pk_calibration_profile_item PRIMARY KEY (calibration_profile_item_id),
+    CONSTRAINT uq_item_cp_md UNIQUE (calibration_profile,master_data),
+    CONSTRAINT fk_cpi_calibration_profile FOREIGN KEY (calibration_profile) REFERENCES calibration_profile (calibration_profile_id),
+    CONSTRAINT fk_cpi_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data),
+    CONSTRAINT fk_cpi_instrument_quote FOREIGN KEY (instrument_quote) REFERENCES instrument_quote (id_instrument_quote)
+);
+ALTER TABLE calibration_profile_item OWNER TO sofie;
+CREATE SEQUENCE calibration_profile_item_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE calibration_profile_item_s OWNER TO sofie;
+
 -- A spread curve (e.g. ITA_SPREADED = ECB + calibrated z-spreads) is DEFINED by a base curve plus spreads.
 -- It owns no rows in yield_curve_item: its rates come from the base curve, its spreads from yield_curve_spread.
 -- PostgreSQL syntax: adapt to your DBMS.
@@ -775,10 +815,11 @@ CREATE TABLE spread_curve (
     max_age_days       INTEGER      NOT NULL DEFAULT 5,  -- reject spreads calibrated more than N days ago
     min_bonds          INTEGER      NOT NULL DEFAULT 3,  -- calibration: minimum bonds per bucket
     min_valid_buckets  INTEGER      NOT NULL DEFAULT 3,  -- calibration: reject if fewer valid buckets
-
+    calibration_profile INTEGER      NOT NULL, 
     CONSTRAINT pk_spread_curve PRIMARY KEY (id_spread_curve),
     CONSTRAINT uq_spread_curve_code UNIQUE (code),
-    CONSTRAINT fk_sc_base_curve FOREIGN KEY (base_curve) REFERENCES yield_curve (id_yield_curve)
+    CONSTRAINT fk_sc_base_curve FOREIGN KEY (base_curve) REFERENCES yield_curve (id_yield_curve),
+    CONSTRAINT fk_sc_profile FOREIGN KEY (calibration_profile) REFERENCES calibration_profile (calibration_profile_id)
 );
 ALTER TABLE spread_curve OWNER TO sofie;
 
@@ -811,7 +852,6 @@ ALTER TABLE yield_curve_spread OWNER TO sofie;
 
 CREATE SEQUENCE yield_curve_spread_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE yield_curve_spread_s OWNER TO sofie;
-
 
 -- ----------------------------------------------------------------------------
 -- settlement_type

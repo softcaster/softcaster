@@ -55,6 +55,7 @@ public interface BaseMasterDataRepository<E extends MasterData>
     @Query("""
         SELECT md
         FROM MasterData md
+        JOIN FETCH md.currency
         WHERE md.assetClass.code = :code
         ORDER BY md.maturityDate ASC
         """)

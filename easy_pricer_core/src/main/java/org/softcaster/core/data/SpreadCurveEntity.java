@@ -15,6 +15,25 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "spread_curve")
+
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+            name = "SpreadCurveEntity.fullGraph",
+            attributeNodes = {
+                @NamedAttributeNode(
+                        value = "calibrationProfile",
+                        subgraph = "profileGraph"
+                ),
+                @NamedAttributeNode("baseCurve"),},
+            subgraphs = {
+                @NamedSubgraph(
+                        name = "profileGraph",
+                        attributeNodes = {
+                            @NamedAttributeNode("items")
+                        }
+                ),}
+    )
+})
 public class SpreadCurveEntity implements Serializable {
 
     @Id
@@ -35,6 +54,10 @@ public class SpreadCurveEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "base_curve", nullable = false)
     private YieldCurveEntity baseCurve;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "calibration_profile", nullable = false)
+    private CalibrationProfile calibrationProfile;
 
     @Column(name = "max_age_days", nullable = false)
     private Integer maxAgeDays = 5;
@@ -141,6 +164,20 @@ public class SpreadCurveEntity implements Serializable {
      */
     public void setMinValidBuckets(Integer minValidBuckets) {
         this.minValidBuckets = minValidBuckets;
+    }
+
+    /**
+     * @return the calibrationProfile
+     */
+    public CalibrationProfile getCalibrationProfile() {
+        return calibrationProfile;
+    }
+
+    /**
+     * @param calibrationProfile the calibrationProfile to set
+     */
+    public void setCalibrationProfile(CalibrationProfile calibrationProfile) {
+        this.calibrationProfile = calibrationProfile;
     }
 }
 

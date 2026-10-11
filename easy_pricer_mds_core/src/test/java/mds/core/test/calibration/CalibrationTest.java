@@ -83,7 +83,7 @@ public class CalibrationTest implements CommandLineRunner {
 
     private void startCalibrationTest() {
         long start = System.nanoTime();
-
+        /*
         log.info("===  Starting calibration ... ===\n");
         BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
 
@@ -91,13 +91,20 @@ public class CalibrationTest implements CommandLineRunner {
         List<InstrumentMktData> list = getInstrumentMktDataList(provider);
 
         log.info("===  Updating Discount Curve ... ===\n");
-        boolean isSpreadedCurve = updateYieldCurve("ITA_SPREADED");
+        boolean isSpreadedCurve = updateYieldCurve("ITAYIELD");
 
         if (isSpreadedCurve) {
             log.info("===  Updating ZSpreads ... ===\n");
             updateZspreads(list);
         }
         
+         */
+        log.info("===  Starting calibration ... ===\n");
+        BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
+
+        log.info("===  Reading Market Prices ... ===\n");
+        List<InstrumentMktData> list = getInstrumentMktDataList(provider);
+
         log.info("===  Pricing Instruments ... ===\n");
         List<PricingResult> resultList = priceIntruments(list);
 

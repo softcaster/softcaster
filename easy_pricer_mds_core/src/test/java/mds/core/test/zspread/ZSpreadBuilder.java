@@ -7,12 +7,21 @@ package mds.core.test.zspread;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import org.softcaster.commons.imports.CsvImport;
+import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.commons.utils.NumberUtils;
+import org.softcaster.core.data.CalibrationProfile;
+import org.softcaster.core.data.CalibrationProfileDAO;
+import org.softcaster.core.data.CalibrationProfileItem;
+import org.softcaster.core.data.InstrumentQuote;
+import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
@@ -20,6 +29,7 @@ import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.batches.ZSpreadHelper;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
 import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
 import org.softcaster.easy_pricer_mds_core.curve.ZSpreadImporter;
@@ -66,6 +76,15 @@ public class ZSpreadBuilder implements CommandLineRunner {
     @Autowired
     ZSpreadImporter importer;
 
+    @Autowired
+    ZSpreadHelper zSpreadHelper;
+
+    @Autowired
+    InstrumentQuoteDAO instrumentQuoteDAO;
+
+    @Autowired
+    CalibrationProfileDAO calibrationProfileDAO;
+
     public static void main(String[] args) {
         // Avvia l'applicazione tramite Spring Boot 
         SpringApplication.run(ZSpreadBuilder.class, args);
@@ -73,8 +92,12 @@ public class ZSpreadBuilder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        importer.importZSpread("ITA_SPREADED");
-        /*
+
+        //updateCalibrationItems("ECBYC_BTP", "calibration.csv");
+        //updateQuotes();
+        //calibrator.updateCalibrationItems("ECBYC_BTP");
+        //zSpreadHelper.calibrateZSpread("ITA_SPREADED");
+        
         List<String> ycnames = yieldCurveEntityDAO.findNames();
         List<String> scnames = spreadCurveEntityDAO.findNames();
         ycnames.addAll(scnames);
@@ -88,7 +111,7 @@ public class ZSpreadBuilder implements CommandLineRunner {
         c = marketDataService.getDiscountCurve("ECBYC");
         df = c.getDiscountFactor(t1);
         System.out.println(df);
-         */
+        
     }
 
     private void testDiscountCurve(String idCurve) {
@@ -212,6 +235,75 @@ public class ZSpreadBuilder implements CommandLineRunner {
             return !d.contains("FUTURA") && !d.contains("BTP PIU")
                     && !d.contains("ITALIA/TV") && !d.contains("EI") /* inflation-linked, adapt */
                     && couponRate > 0.0;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Update calibration items
+    // ------------------------------------------------------------------------
+    private List<String> getInstrumentCodes(String fileName) {
+        try {
+            List<String> codes = new ArrayList<>();
+
+            CsvImport csvImport = new CsvImport();
+            Path path = Paths.get(CSV_PATH + "/" + fileName);
+
+            ImportConfig config = new ImportConfig();
+            config.setSeparator(';');
+            config.setFilePath(path);
+            config.setStartData(0);
+            config.setCharset(StandardCharsets.UTF_8);
+            csvImport.startImport(config);
+
+            List<String[]> rows = csvImport.getBuffer();
+            for (String[] s : rows) {
+                codes.add(s[0].trim());
+            }
+
+            return codes;
+        } catch (Exception ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    private void updateCalibrationItems(String profileCode, String fileName) {
+        CalibrationProfile profile = calibrationProfileDAO.findByCalibrationProfileCode(profileCode);
+        if (profile != null) {
+            String message = String.format(" Updating Profile %s - %s", profile.getDescription(), profile.getCurrency().getIsoCode());
+            System.out.println(message);
+        }
+
+        MasterData data;
+        CalibrationProfileItem item;
+        List<String> codes = getInstrumentCodes(fileName);
+        for (String code : codes) {
+            data = smdDAO.findByCode(code);
+            if (data != null) {
+                item = new CalibrationProfileItem();
+                item.setMasterData(data.getIdMasterData());
+                profile.addItem(item);
+            }
+        }
+        calibrationProfileDAO.saveOrUpdate(profile);
+    }
+
+    private void updateQuotes() {
+        List<SecurityMasterData> securities = smdDAO.findAllByAssetClass("XRB");
+        InstrumentQuote quote;
+        for (SecurityMasterData security : securities) {
+            if (security.getCurrency().getIsoCode().equals("EUR")) {
+                quote = instrumentQuoteDAO.findByMasterDataCode(security.getCode());
+                if (quote == null) {
+                    quote = new InstrumentQuote();
+                    quote.setMasterData(security);
+                    quote.setAsk(0.);
+                    quote.setBid(0.);
+                    quote.setProvider("BorsaItalianaProvider");
+                    quote.setCode(security.getCode());
+                    instrumentQuoteDAO.saveOrUpdate(quote);
+                }
+            }
         }
     }
 }

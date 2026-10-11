@@ -15,6 +15,7 @@ import org.softcaster.provider.ecb.ECBProvider;
 import org.softcaster.provider.eex.EexProvider;
 import org.softcaster.provider.euronext.BorsaItalianaProvider;
 import org.softcaster.provider.euronext.EuroNextProvider;
+import org.softcaster.provider.investing.InvestingComProvider;
 import org.softcaster.provider.sole24h.Sole24hProvider;
 import org.softcaster.provider.twelvedata.TwelvedataProvider;
 /**
@@ -37,6 +38,7 @@ public class ProviderFactory {
         REGISTRY.put("ECBProvider", ECBProvider::getInstance);
         REGISTRY.put("BorsaItalianaProvider", BorsaItalianaProvider::getInstance);
         REGISTRY.put("CsvProvider", CsvProvider::getInstance);
+        REGISTRY.put("InvestingComProvider", InvestingComProvider::getInstance);
     }
 
     // Metodo statico per ottenere l'istanza

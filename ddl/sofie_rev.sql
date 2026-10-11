@@ -203,7 +203,7 @@ VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code =
     (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
 INSERT INTO gl_accounts (account_id, parent, code, description, is_postable, currency, statement_type, nature, balance)
 VALUES(nextval('gl_accounts_s'),(SELECT account_id FROM gl_accounts WHERE code = '13'), '630035', 'Realized Loss on Futures -EUR', TRUE, 
-    (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), 
+        (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), 
     (SELECT statement_type_id FROM financial_statement_types WHERE code = 'BALANCE_SHEET'), 
     (SELECT nature_id FROM account_natures WHERE code = 'ASSET'), 
     (SELECT balance_id FROM normal_balances WHERE code = 'DEBIT'));
@@ -306,3 +306,24 @@ alter table yield_curve drop column max_age_days;
 
 insert into spread_curve(id_spread_curve,code,description,base_curve,max_age_days,min_bonds,min_valid_buckets)
     values(nextval('spread_curve_s'),'ITA_SPREADED','Ita Spreaded',(select id_yield_curve from yield_curve where code='ECBYC'),7,1,1);
+
+insert into calibration_profile(calibration_profile_id,code,description,currency,yield_curve,last_update)
+    values(
+        nextval('calibration_profile_s'),'ECBYC_BTP','ECBYC_BTP',
+        (SELECT id_currency FROM currency WHERE iso_code = 'EUR'),
+        (SELECT id_yield_curve FROM yield_curve WHERE code = 'ECBYC'),
+        now());
+
+alter table calibration_profile_item add column bid numeric(18,10) NOT NULL default 0;
+alter table calibration_profile_item add column ask numeric(18,10) NOT NULL default 0;
+alter table calibration_profile_item add column instrument_quote INTEGER NOT NULL;
+alter table calibration_profile_item add CONSTRAINT fk_cpi_instrument_quote FOREIGN KEY (instrument_quote) REFERENCES instrument_quote (id_instrument_quote);
+
+alter table calibration_profile drop constraint fk_cpi_yield_curve;
+alter table calibration_profile drop column yield_curve;
+alter table spread_curve add column calibration_profile INTEGER NOT NULL DEFAULT 1;
+alter table spread_curve add constraint fk_sc_profile FOREIGN KEY (calibration_profile) REFERENCES calibration_profile (calibration_profile_id);
+
+alter table calibration_profile_item add column code VARCHAR(25);
+update calibration_profile_item cpi set code=(select code from master_data md where md.id_master_data=cpi.master_data);
+alter table calibration_profile_item alter column code set not null;

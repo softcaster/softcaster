@@ -16,7 +16,9 @@ import org.springframework.data.repository.query.Param;
  */
 public interface SpreadCurveEntityRepository extends JpaRepository<SpreadCurveEntity, Integer> {
 
-    @Query("select c from SpreadCurveEntity c join fetch c.baseCurve where c.code = :code")
+    //@Query("select c from SpreadCurveEntity c join fetch c.baseCurve join fetch c.calibrationProfile where c.code = :code")
+    @Query("select sc from SpreadCurveEntity sc where sc.code = :code")
+    @EntityGraph("SpreadCurveEntity.fullGraph")
     SpreadCurveEntity findByCodeWithBase(@Param("code") String code);
 
     @Query("select c from SpreadCurveEntity c join fetch c.baseCurve where c.idSpreadCurve= :id")

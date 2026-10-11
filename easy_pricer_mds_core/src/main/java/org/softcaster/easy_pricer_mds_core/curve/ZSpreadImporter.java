@@ -34,8 +34,8 @@ public class ZSpreadImporter {
     @Qualifier("yieldCurveBuilder")
     private YieldCurveBuilder yieldCurveBuilder;
     @Autowired
-    @Qualifier("spreadCurveCalibrator")
-    private SpreadCurveCalibrator calibrator;
+    @Qualifier("spreadCurveCalibrator2")
+    private SpreadCurveCalibrator2 calibrator;
     @Autowired
     private YieldCurveSpreadDAO yieldCurveSpreadDAO;
     @Autowired

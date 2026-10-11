@@ -59,14 +59,14 @@ public final class YieldCurve implements DiscountCurve {
     }
 
     private static NavigableMap<Integer, CurveNode> build(List<CurveNode> nodes) {
-        if (nodes == null || nodes.isEmpty()) {
-            throw new IllegalArgumentException("No nodes provided for the curve.");
-        }
+        // Al minimo costruisco curva con nodo ad oggi (non sconta nulla)
         TreeMap<Integer, CurveNode> m = new TreeMap<>();
         m.put(0, new CurveNode(0, 1, null));
-        for (CurveNode n : nodes) {
-            if (m.put(n.days(), n) != null) {
-                throw new IllegalArgumentException("Duplicate maturity at " + n.days() + " days");
+        if (nodes != null && !nodes.isEmpty()) {
+            for (CurveNode n : nodes) {
+                if (m.put(n.days(), n) != null) {
+                    throw new IllegalArgumentException("Duplicate maturity at " + n.days() + " days");
+                }
             }
         }
         return Collections.unmodifiableNavigableMap(m);

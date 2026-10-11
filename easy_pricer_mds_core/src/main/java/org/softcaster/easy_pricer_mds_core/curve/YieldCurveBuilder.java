@@ -121,9 +121,12 @@ public class YieldCurveBuilder {
 
     public YieldCurve buildYieldCurve(YieldCurveEntity dbCurve, LocalDate officialDate) {
         if (dbCurve != null) {
-            List<MarketQuote> marketQuotes = getMarketQuotes(dbCurve);
             Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
-            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, marketQuotes);
+            List<CurveNode> nodes = null;
+            List<MarketQuote> marketQuotes = getMarketQuotes(dbCurve);
+            if (marketQuotes != null && !marketQuotes.isEmpty()) {
+                nodes = CurveBootstrapper.bootstrap(officialDate, marketQuotes);
+            }
             return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
         } else {
             return null;

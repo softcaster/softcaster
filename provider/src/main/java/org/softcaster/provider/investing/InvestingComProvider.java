@@ -54,13 +54,17 @@ public class InvestingComProvider extends AbstractProvider {
 
     private OffsetType getOffsetType(char c) {
         return switch (c) {
-            case 'D' -> OffsetType.DAYS;
-            case 'M' -> OffsetType.MONTHS;
-            case 'Y' -> OffsetType.YEARS;
-            default -> OffsetType.NONE;
+            case 'D' ->
+                OffsetType.DAYS;
+            case 'M' ->
+                OffsetType.MONTHS;
+            case 'Y' ->
+                OffsetType.YEARS;
+            default ->
+                OffsetType.NONE;
         };
     }
-    
+
     @Override
     protected void parseResponse(ProviderInfo info, Market market) {
         try {
@@ -83,8 +87,8 @@ public class InvestingComProvider extends AbstractProvider {
                         // Estrae la stringa di testo
                         String text = matcher.group(2);
                         Offset offset = new Offset(Integer.parseInt(matcher.group(1)), getOffsetType(text.charAt(0)));
-                        Data data = new Data((double) elem.get(1), (double) elem.get(1));
-                        Node node = new Node((String)elem.get(0), offset, data, "ACT_365", "COMPOUNDED", "PAR_YIELD");
+                        Data data = new Data((double) elem.get(1) / 100., (double) elem.get(1) / 100.);
+                        Node node = new Node((String) elem.get(0), offset, data, "ACT_365", "COMPOUNDED", "ZERO_RATES");
                         addRate(key, node);
                     }
                 }
@@ -122,7 +126,7 @@ public class InvestingComProvider extends AbstractProvider {
 
             // Aspettiamo qualche secondo per assicurarci che la pagina e le protezioni siano caricate completamente
             page.waitForTimeout(3000);
-            String fullUrl = curveUrl + info.getExtraParameters().get(0);
+            String fullUrl = curveUrl + info.getExtraParameters().get(1);
             // 4. Eseguiamo la richiesta fetch direttamente dall'interno del browser autorizzato
             response = (String) page.evaluate(
                     "async () => {"
@@ -149,8 +153,7 @@ public class InvestingComProvider extends AbstractProvider {
         parseResponse(info, market);
     }
 
-    @Override
-    public List<Node> getYieldCurveNodes(String idCurve) {
+    private List<Node> getNodes(String idCurve, String defString) {
         try {
             ProviderInfo info = new ProviderInfo();
 
@@ -162,6 +165,7 @@ public class InvestingComProvider extends AbstractProvider {
 
             info.getExtraParameters().clear();
             info.getExtraParameters().add(idCurve);
+            info.getExtraParameters().add(defString);
 
             connect(info, RATES);
 
@@ -171,6 +175,21 @@ public class InvestingComProvider extends AbstractProvider {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new MarketDataProviderException(ex.getLocalizedMessage());
         }
+    }
+
+    @Override
+    public List<Node> getYieldCurveNodes(String idCurve) {
+        String defString = idCurve.substring(0, 3);
+        return switch (defString) {
+            case "ITA" ->
+                getNodes(idCurve, "bonds_chart_6.json");
+            case "USA" ->
+                getNodes(idCurve, "bonds_chart_1.json");
+            case "CHF" ->
+                getNodes(idCurve, "bonds_chart_5.json");
+            default ->
+                null;
+        };
     }
 
     @Override
