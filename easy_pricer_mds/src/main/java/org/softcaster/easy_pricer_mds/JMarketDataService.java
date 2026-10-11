@@ -241,7 +241,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         toolBar.add(btnExit);
         toolBar.add(jSeparator1);
 
-        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/file_open_16dp.png"))); // NOI18N
+        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/refresh_16dp.png"))); // NOI18N
         btnRefresh.setToolTipText("Refresh");
         btnRefresh.setFocusable(false);
         btnRefresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -266,7 +266,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         toolBar.add(btnSave);
 
         btnReload.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/download_16dp.png"))); // NOI18N
-        btnReload.setToolTipText("Save");
+        btnReload.setToolTipText("Reload");
         btnReload.setFocusable(false);
         btnReload.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnReload.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);

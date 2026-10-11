@@ -11,6 +11,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.easy_pricer_mds.AppTreeItem;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND_FUTURE;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.CMD_FUTURE;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.FX_FUTURE;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.MM_FUTURE;
 
 /**
  *
@@ -21,6 +25,7 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
     ImageIcon securityIcon = new ImageIcon(getClass().getResource("/images/angular/post_add_16dp.png"));
     ImageIcon forexIcon = new ImageIcon(getClass().getResource("/images/angular/euro_16dp.png"));
     ImageIcon futureIcon = new ImageIcon(getClass().getResource("/images/angular/loyalty_16dp.png"));
+    ImageIcon batchIcon = new ImageIcon(getClass().getResource("/images/angular/calendar_today_16dp.png"));
 
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -45,6 +50,8 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
                         setIcon(forexIcon);
                     case BOND_FUTURE, MM_FUTURE, FX_FUTURE, CMD_FUTURE ->
                         setIcon(futureIcon);
+                    case BATCH_ZSPREAD ->
+                        setIcon(batchIcon);
                     default -> {
                         setIcon(getDefaultLeafIcon()); // Torna al "pallino" o icona di default
                     }
