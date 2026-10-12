@@ -45,4 +45,6 @@ public interface PositionTxnLinksRepository extends JpaRepository<PositionTxnLin
     double sumQuantityByPhase(
             @Param("positionDetailId") Integer positionDetailId,
             @Param("phase") AccountingPhase phase);
+    
+    public boolean existsByFinancialTxn(Integer financialTxn);
 }

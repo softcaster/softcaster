@@ -86,5 +86,4 @@ public interface PositionDetailRepository extends JpaRepository<PositionDetail, 
             + "ORDER BY pd.idPositionDetail ASC")
     public List<PositionDetail> getAndLockByPositionMasterData(
             @Param("pmdId") Integer pmdId);
-
 }

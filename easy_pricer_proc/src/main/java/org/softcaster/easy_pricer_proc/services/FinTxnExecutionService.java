@@ -77,6 +77,24 @@ public class FinTxnExecutionService {
     public void elabFinancialTxn(Integer txnId) {
         FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
 
+        // Un deal e' "eseguito" se ha un link con il detail (insertLink e' chiamato solo per EXECUTED)
+        if (!wasExecuted(txn)) {
+            switch (txn.getTxnStatusPreElab()) {
+                case TO_CANCEL -> {
+                    // Mai entrato nei totali: niente da stornare, niente evento contabile
+                    updateStatus(txn, TxnStatus.CANCELLED);
+                    log.info("Cancelled never-executed transaction: " + txnId);
+                    return;
+                }
+                case TO_AMEND ->
+                    // I dati sono gia' quelli nuovi e il deal non e' mai stato applicato:
+                    // lo tratto come prima esecuzione (nessuna inversione di quantita')
+                    txn.setTxnStatusPreElab(TxnStatus.PENDING);
+                default -> {
+                }
+            }
+        }
+
         // Determino nuovo stato "potenziale"
         TxnStatus newStatus = TxnStatus.REJECTED;
         switch (txn.getTxnStatusPreElab()) {
@@ -236,5 +254,9 @@ public class FinTxnExecutionService {
             log.error("Invalid ITxnProcessor");
             throw new TxnProcessingException("Invalid ITxnProcessor");
         }
+    }
+
+    private boolean wasExecuted(FinancialTxn txn) {
+        return positionTxnLinksDAO.existsByFinancialTxn(txn.getIdFinancialTxn());
     }
 }

@@ -51,5 +51,8 @@ public class PositionTxnLinksDAO {
     public double sumQuantityByPhase(Integer positionDetailId, AccountingPhase phase) {
         return repository.sumQuantityByPhase(positionDetailId, phase);
     }
-
+    
+    public boolean existsByFinancialTxn(Integer financialTxn) {
+        return repository.existsByFinancialTxn(financialTxn);
+    }
 }
