@@ -5,6 +5,8 @@
 package org.softcaster.easy_pricer_proc.processors;
 
 import org.softcaster.core.data.PositionDetail;
+import org.softcaster.easy_pricer_mds_core.PnlCalc;
+import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.engine.enums.TxnStatus;
 
 /**
@@ -15,81 +17,53 @@ public abstract class AbstractTxnProcessor {
 
     protected abstract boolean shortSellEnabled();
 
-    public void process(ProcInputData input, PositionDetail position) {
+    public void process(ProcInputData input, PositionDetail p) {
         double quantity = input.getQuantity();
-        // Se transazione cancellata o modificata, inverto quantita, mantenendo pero il side
-        if (input.getStatus() == TxnStatus.TO_CANCEL
-                || input.getStatus() == TxnStatus.TO_AMEND) {
-            quantity = quantity * (-1.);
+        // Cancel/amend: inverto la quantita', mantengo il side
+        if (input.getStatus() == TxnStatus.TO_CANCEL || input.getStatus() == TxnStatus.TO_AMEND) {
+            quantity = -quantity;
         }
-        double notionalValue = input.getPrice() * quantity;
+        double notional = input.getPrice() * quantity;
+
+        // f(prima)
+        double realizedBefore = realizedOf(p);
+
         switch (input.getSide()) {
             case BUY -> {
-                position.setBuyQty(position.getBuyQty() + quantity);
-                position.setNotionalValueBuy(position.getNotionalValueBuy() + notionalValue);
+                p.setBuyQty(p.getBuyQty() + quantity);
+                p.setNotionalValueBuy(p.getNotionalValueBuy() + notional);
             }
             case SELL -> {
-                position.setSellQty(position.getSellQty() + quantity);
-                position.setNotionalValueSell(position.getNotionalValueSell() + notionalValue);
+                p.setSellQty(p.getSellQty() + quantity);
+                p.setNotionalValueSell(p.getNotionalValueSell() + notional);
             }
         }
 
-        // Calcolo realized P&L
-        calcRealizedPnL(position);
+        // Guard: un cancel/amend su un ciclo gia' azzerato porterebbe quantita' negative
+        if (p.getBuyQty() < -PnlCalc.QTY_EPS || p.getSellQty() < -PnlCalc.QTY_EPS) {
+            throw new TxnProcessingException("Quantita' negative: cancel/amend su ciclo gia' chiuso, gestire come rettifica");
+        }
 
-        // Calcolo unrealized P&L
-        calcUnRealizedPnL(input, position);
+        if (shortSellEnabled()) {
+            // f(dopo) - f(prima): realizedPnl e' un cumulato, mai sovrascritto
+            double realizedAfter = realizedOf(p);
+            double current = p.getRealizedPnl() == null ? 0. : p.getRealizedPnl();
+            p.setRealizedPnl(current + realizedAfter - realizedBefore);
+        }
+
+        // Mark: market price se disponibile, altrimenti prezzo del deal
+        double mark = (p.getMarketPrice() != null && p.getMarketPrice() > 0.) ? p.getMarketPrice() : input.getPrice();
+        p.setUnrealizedPnl(PnlCalc.unrealized(p.getBuyQty(), p.getSellQty(),
+                p.getNotionalValueBuy(), p.getNotionalValueSell(), mark));
+
+        // Flat: il realized e' gia' fissato nel cumulato, azzero i totali del ciclo
+        if (shortSellEnabled() && PnlCalc.isFlat(p.getBuyQty(), p.getSellQty())) {
+            p.resetCycleTotals();
+        }
     }
 
-    protected void calcRealizedPnL(PositionDetail position) {
-
-        // Controllo se abilitato short selling
-        if (!shortSellEnabled()) {
-            return;
-        }
-
-        // Se quantità sell o buy pari a zero non ho realizes
-        if (Double.compare(position.getBuyQty(), 0.) == 0 || Double.compare(position.getSellQty(), 0.) == 0) {
-            return;
-        }
-
-        // calcolo capacity
-        double capacity = 0;
-        // Se acquisti > vendite calcolo realized su tutta la quantita venduta
-        if (position.getBuyQty() > position.getSellQty()) {
-            capacity = position.getSellQty();
-        } // se vendite > acquisti calcolo realized su parte utilizzata dalla vendita
-        else {
-            capacity = position.getBuyQty();
-        }
-
-        double avgBuyPrice = 0.;
-        if (position.getBuyQty() > 0) {
-            avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
-        }
-
-        double avgSellPrice = 0.;
-        if (position.getSellQty() > 0) {
-            avgSellPrice = position.getNotionalValueSell() / position.getSellQty();
-        }
-
-        double realizedPnL = (avgSellPrice - avgBuyPrice) * capacity;
-        position.setRealizedPnl(realizedPnL);
+    private static double realizedOf(PositionDetail p) {
+        return PnlCalc.realized(p.getBuyQty(), p.getSellQty(),
+                p.getNotionalValueBuy(), p.getNotionalValueSell());
     }
-
-    protected void calcUnRealizedPnL(ProcInputData input, PositionDetail position) {
-        // Calcolo solo su qty buy rimanente o potenziale
-        double capacity = position.getBuyQty() - position.getSellQty();
-        if (capacity < 0.) {
-            capacity *= (-1.);
-        }
-
-        double avgBuyPrice = 0.;
-        if (position.getBuyQty() > 0) {
-            avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
-        }
-        double unrealizedPnL = (input.getPrice() - avgBuyPrice) * capacity;
-        position.setUnrealizedPnl(unrealizedPnL);
-    }
-
 }

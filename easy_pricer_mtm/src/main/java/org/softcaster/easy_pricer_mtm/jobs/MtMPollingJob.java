@@ -103,7 +103,6 @@ public class MtMPollingJob implements IMtmDataHelper {
 
     private void refreshSpotPrice() {
         marketDataService.loadSpotPrice();
-        mtmService.resetFlagCalculated();
     }
     
     public boolean executeJob() {

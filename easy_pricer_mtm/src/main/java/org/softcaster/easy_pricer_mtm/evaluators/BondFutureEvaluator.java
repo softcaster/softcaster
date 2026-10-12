@@ -60,36 +60,34 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
                 currentValuation.setInstrumentValuationId(masterData.getIdMasterData());
                 masterData.setInstrumentValuation(currentValuation); // Aggiorna il lato inverso
             }
+            List<Currency> currencies = masterData.getCurrencyList();
+            Calendar calendar = new Calendar(currencies);
+            LocalDate valuationDate = calendar.getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays());
+            double mktPrice = mtmHelper.getSpotPrice(masterData.getIdMasterData(), RequestType.BID);
+            currentValuation.setTheoreticalPrice(mktPrice);
+            currentValuation.setMarketPrice(mktPrice);
+            currentValuation.setYtm(0.);
+            currentValuation.setDuration(0.);
+            currentValuation.setModDuration(0.);
+            currentValuation.setAccruedInterest(0.);
+            currentValuation.setValuationDate(valuationDate);
+
+            XRBForwardInputData input = new XRBForwardInputData();
+            input.setCode(masterData.getCode());
+            input.setReferencePrice(mktPrice);
+            input.setReferenceDate(mtmHelper.getOfficialDate());
+            input.setDomesticRate(0.02182);
+            CTDData cTDData = bondForwardCalculator.getCTD(input);
+            double dv01 = calcDV01(cTDData, mtmHelper.getOfficialDate());
+            currentValuation.setDv01(dv01);
+
             return currentValuation;
         });
 
-        List<Currency> currencies = masterData.getCurrencyList();
-        Calendar calendar = new Calendar(currencies);
-        LocalDate valuationDate = calendar.getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays());
-        double mktPrice = mtmHelper.getSpotPrice(masterData.getIdMasterData(), RequestType.BID);
-        valuation.setTheoreticalPrice(mktPrice);
-        valuation.setMarketPrice(mktPrice);
-        valuation.setYtm(0.);
-        valuation.setDuration(0.);
-        valuation.setModDuration(0.);
-        valuation.setAccruedInterest(0.);
-        valuation.setValuationDate(valuationDate);
-        setCalculated(true);
-
-        XRBForwardInputData input = new XRBForwardInputData();
-        input.setCode(masterData.getCode());
-        input.setReferencePrice(mktPrice);
-        input.setReferenceDate(mtmHelper.getOfficialDate());
-        input.setDomesticRate(0.02182);
-        CTDData cTDData = bondForwardCalculator.getCTD(input);
-        double dv01 = calcDV01(cTDData, mtmHelper.getOfficialDate());
-        valuation.setDv01(dv01);
-        
-        
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
         position.setMarketPrice(valuation.getMarketPrice());
         position.setTheoreticalPrice(valuation.getTheoreticalPrice());
-        
+
         // Calcola il P&L non realizzato (questo è specifico della singola posizione!)
         double unrealized = calcUnrealizedPL(valuation.getMarketPrice() * masterData.getMultiplier(), position);
         position.setUnrealizedPnl(unrealized);

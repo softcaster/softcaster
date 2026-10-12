@@ -317,8 +317,9 @@ public class PositionDetail implements Serializable {
     }
 
     public void initializeMtmFields() {
-            marketPrice = unrealizedPnl = ytm = duration = modDuration = timeToMaturity = theoreticalPrice = 0.;
-    }    
+        marketPrice = unrealizedPnl = ytm = duration = modDuration = timeToMaturity = theoreticalPrice = 0.;
+    }
+
     /**
      * @return the ytm
      */
@@ -443,5 +444,12 @@ public class PositionDetail implements Serializable {
      */
     public void setLastMtmExecuted(LocalDateTime lastMtmExecuted) {
         this.lastMtmExecuted = lastMtmExecuted;
-    } 
+    }
+
+    public void resetCycleTotals() {
+        buyQty = sellQty = notionalValueBuy = notionalValueSell = 0.;
+        buyFees = sellFees = buyTaxes = sellTaxes = 0.;   // controllare se le fees vanno cumulate
+        unrealizedPnl = 0.;
+        // realizedPnl NON toccato
+    }
 }

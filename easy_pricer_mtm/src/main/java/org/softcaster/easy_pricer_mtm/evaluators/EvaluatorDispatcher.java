@@ -29,12 +29,4 @@ public class EvaluatorDispatcher {
 
         return valuator;
     }
-
-    public void resetFlagCalculated() {
-        for (IPositionEvaluator value : valuetorMap.values()) {
-            // Esegui un metodo dell'interfaccia/classe
-            value.setCalculated(false);
-        }
-    }
-
 }

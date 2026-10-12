@@ -22,10 +22,11 @@ public class FxSpotEvaluator extends AbstractEvaluator implements IPositionEvalu
     @Override
     public void evaluate(PositionDetail position, MasterData masterData, IMtmDataHelper mtmHelper, ValuationContext context) {
         position.initializeMtmFields();
-        Integer masterDataId = masterData.getIdMasterData();
 
         // Chiamata thread-safe personalizzata
-        InstrumentValuation valuation = context.computeIfAbsentThreadSafe(masterDataId, () -> {
+        // Il supplier gira una sola volta per strumento e per ciclo (context per ciclo):
+        // prezzo e valuationDate si calcolano qui, senza flag di istanza.
+        InstrumentValuation valuation = context.computeIfAbsentThreadSafe(masterData.getIdMasterData(), () -> {
 
             // Controlliamo se MasterData ha già una valutazione caricata dal database
             InstrumentValuation currentValuation = masterData.getInstrumentValuation();
@@ -38,32 +39,24 @@ public class FxSpotEvaluator extends AbstractEvaluator implements IPositionEvalu
                 currentValuation.setInstrumentValuationId(masterData.getIdMasterData());
                 masterData.setInstrumentValuation(currentValuation); // Aggiorna il lato inverso
             }
-
+            double px = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID); // uniforme e documentato
+            currentValuation.setTheoreticalPrice(px);
+            currentValuation.setMarketPrice(px);
+            currentValuation.setYtm(0.);
+            currentValuation.setDuration(0.);
+            currentValuation.setModDuration(0.);
+            currentValuation.setAccruedInterest(0.);
+            currentValuation.setValuationDate(new Calendar(masterData.getCurrencyList())
+                    .getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays()));
             return currentValuation;
         });
-
-        List<Currency> currencies = masterData.getCurrencyList();
-        Calendar calendar = new Calendar(currencies);
-        LocalDate valuationDate = calendar.getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays());
-        if (!isCalculated()) {
-            double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
-            valuation.setTheoreticalPrice(mktPrice);
-            valuation.setMarketPrice(mktPrice);
-            valuation.setYtm(0.);
-            valuation.setDuration(0.);
-            valuation.setModDuration(0.);
-            valuation.setAccruedInterest(0.);
-            setCalculated(true);
-        }
-        valuation.setValuationDate(valuationDate);
 
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
         position.setMarketPrice(valuation.getMarketPrice());
         position.setTheoreticalPrice(valuation.getTheoreticalPrice());
 
         // Calcola il P&L non realizzato (questo è specifico della singola posizione!)
-        double unrealized = calcUnrealizedPL(valuation.getMarketPrice() * masterData.getMultiplier(), position);
-        position.setUnrealizedPnl(unrealized);
+        position.setUnrealizedPnl(calcUnrealizedPL(valuation.getMarketPrice() * masterData.getMultiplier(), position));
 
         // Aggiorna il legame bidirezionale nell'anagrafica (opzionale, utile per JPA)
         masterData.setInstrumentValuation(valuation);

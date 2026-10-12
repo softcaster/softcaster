@@ -72,26 +72,23 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
                         currentValuation.setInstrumentValuationId(smd.getIdMasterData());
                         masterData.setInstrumentValuation(currentValuation); // Aggiorna il lato inverso
                     }
-
-                    return currentValuation;
-                });
-
-                if (!isCalculated()) {
                     double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
 
                     XRBOutputData output = calculate(smd, mktPrice, mtmHelper.getOfficialDate());
                     if (output != null) {
-                        valuation.setMarketPrice(output.getMktPrice());
-                        valuation.setYtm(output.getYtm());
-                        valuation.setDuration(output.getDuration());
-                        valuation.setModDuration(output.getModifiedDuration());
-                        valuation.setAccruedInterest(output.getAccruedInterest());
-                        valuation.setTheoreticalPrice(output.getMktPrice());
-                        valuation.setValuationDate(output.getValuationDate());
-                        valuation.setDv01(output.getDv01());
+                        currentValuation.setMarketPrice(output.getMktPrice());
+                        currentValuation.setYtm(output.getYtm());
+                        currentValuation.setDuration(output.getDuration());
+                        currentValuation.setModDuration(output.getModifiedDuration());
+                        currentValuation.setAccruedInterest(output.getAccruedInterest());
+                        currentValuation.setTheoreticalPrice(output.getMktPrice());
+                        currentValuation.setValuationDate(output.getValuationDate());
+                        currentValuation.setDv01(output.getDv01());
                     }
-                    setCalculated(true);
-                }
+  
+                    return currentValuation;
+                });
+
                 //double priceYieldUp = bondCalculator.repriceBondForYieldShift(smd, mtmHelper.getOfficialDate(), output.getYtm(), 1.);
 
                 // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso

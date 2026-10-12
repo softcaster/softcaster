@@ -37,23 +37,21 @@ public class CmdFutureEvaluator extends AbstractEvaluator implements IPositionEv
                 currentValuation.setInstrumentValuationId(masterData.getIdMasterData());
                 masterData.setInstrumentValuation(currentValuation); // Aggiorna il lato inverso
             }
+
+            List<Currency> currencies = masterData.getCurrencyList();
+            Calendar calendar = new Calendar(currencies);
+            LocalDate valuationDate = calendar.getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays());
+            double mktPrice = mtmHelper.getSpotPrice(masterData.getIdMasterData(), RequestType.BID);
+            currentValuation.setTheoreticalPrice(mktPrice);
+            currentValuation.setMarketPrice(mktPrice);
+            currentValuation.setYtm(0.);
+            currentValuation.setDuration(0.);
+            currentValuation.setModDuration(0.);
+            currentValuation.setAccruedInterest(0.);
+            currentValuation.setValuationDate(valuationDate);
+
             return currentValuation;
         });
-
-        List<Currency> currencies = masterData.getCurrencyList();
-        Calendar calendar = new Calendar(currencies);
-        LocalDate valuationDate = calendar.getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays());
-        if (!isCalculated()) {
-            double mktPrice = mtmHelper.getSpotPrice(masterData.getIdMasterData(), RequestType.BID);
-            valuation.setTheoreticalPrice(mktPrice);
-            valuation.setMarketPrice(mktPrice);
-            valuation.setYtm(0.);
-            valuation.setDuration(0.);
-            valuation.setModDuration(0.);
-            valuation.setAccruedInterest(0.);
-            setCalculated(true);
-        }
-        valuation.setValuationDate(valuationDate);
 
         // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
         position.setMarketPrice(valuation.getMarketPrice());

@@ -53,8 +53,4 @@ public class MtmService {
             throw new MtmException("Invalid evaluator");
         }
     }
-
-    public void resetFlagCalculated() {
-        evaluatorDispatcher.resetFlagCalculated();
-    }
 }
