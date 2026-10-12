@@ -180,10 +180,3 @@ public class SpreadCurveEntity implements Serializable {
         this.calibrationProfile = calibrationProfile;
     }
 }
-
-/*
- * Repository note: to read the definition together with its base curve outside a transaction:
- *
- *   @Query("select c from SpreadCurveEntity c join fetch c.baseCurve where c.code = :code")
- *   SpreadCurveEntity findByCodeWithBase(@Param("code") String code);
- */

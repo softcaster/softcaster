@@ -95,9 +95,10 @@ public class ZSpreadBuilder implements CommandLineRunner {
 
         //updateCalibrationItems("ECBYC_BTP", "calibration.csv");
         //updateQuotes();
-        //calibrator.updateCalibrationItems("ECBYC_BTP");
+        zSpreadHelper.updateCalibrationItems("ECBYC_BTP");
+        zSpreadHelper.calibrateZSpread("ITA_SPREADED");
         //zSpreadHelper.calibrateZSpread("ITA_SPREADED");
-        
+        /*
         List<String> ycnames = yieldCurveEntityDAO.findNames();
         List<String> scnames = spreadCurveEntityDAO.findNames();
         ycnames.addAll(scnames);
@@ -111,7 +112,7 @@ public class ZSpreadBuilder implements CommandLineRunner {
         c = marketDataService.getDiscountCurve("ECBYC");
         df = c.getDiscountFactor(t1);
         System.out.println(df);
-        
+        */
     }
 
     private void testDiscountCurve(String idCurve) {

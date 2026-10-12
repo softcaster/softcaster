@@ -23,7 +23,7 @@ import org.softcaster.easy_pricer_mds_core.curve.SpreadCurveCalibrator.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service("zSpreadCalibrator")
+@Service("zSpreadHelper")
 public class ZSpreadHelper {
 
     @Autowired
@@ -37,10 +37,10 @@ public class ZSpreadHelper {
 
     private static final Logger log = LoggerFactory.getLogger(ZSpreadHelper.class);
 
-    public void calibrateZSpread(String profileCode) {
+    public void calibrateZSpread(String spreadCurve) {
         log.info("===  Starting z-spread calibration ... ===\n");
-        Result result = calibrator.calibrate(profileCode);  
-        log.info("===  Starting z-spread calibration ... ===\n");
+        Result result = calibrator.calibrate(spreadCurve);  
+        log.info("=== {} ===\n", result.message());
 }
     
     public void updateCalibrationItems(String profileCode) {

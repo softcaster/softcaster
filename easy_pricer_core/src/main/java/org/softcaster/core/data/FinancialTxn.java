@@ -36,8 +36,8 @@ public class FinancialTxn implements Serializable {
 
     @Id
     @SequenceGenerator(name = "financial_txn_seq", sequenceName = "financial_txn_s", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "financial_txn_seq")
-    @Column(name = "id_financial_txn", columnDefinition = "INTEGER")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "financial_txn_seq")
+    @Column(name = "id_financial_txn")
     private Integer idFinancialTxn;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -73,10 +73,6 @@ public class FinancialTxn implements Serializable {
     @JoinColumn(name = "financial_txn", nullable = false) // FK in child table holiday
     private List<FinancialTxnComponent> components = new ArrayList<>();
 
-    public void addTxnComponent(FinancialTxnComponent component) {
-        components.add(component);
-    }
-    
     @Column(name = "ref_id")
     private Integer refId;
 
@@ -334,4 +330,8 @@ public class FinancialTxn implements Serializable {
     public void setTxnAcctPhase(AccountingPhase txnAcctPhase) {
         this.txnAcctPhase = txnAcctPhase;
     }
+    
+    public void addTxnComponent(FinancialTxnComponent component) {
+        components.add(component);
+    }    
 }

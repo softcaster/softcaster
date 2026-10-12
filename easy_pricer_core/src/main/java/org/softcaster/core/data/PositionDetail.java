@@ -311,7 +311,7 @@ public class PositionDetail implements Serializable {
 
     public void initialize() {
         marketPrice = realizedPnl = unrealizedPnl = buyQty = notionalValueBuy = buyFees = buyTaxes
-                = sellQty = notionalValueSell = sellFees = sellTaxes = marketPrice
+                = sellQty = notionalValueSell = sellFees = sellTaxes
                 = buyAccrual = sellAccrual = ytm = duration = modDuration = timeToMaturity
                 = theoreticalPrice = 0.;
     }
