@@ -33,7 +33,7 @@ import org.softcaster.engine.enums.FixingDayType;
     @NamedEntityGraph(
             name = "FltSecurityMasterData.indexGraph",
             attributeNodes = {
-                @NamedAttributeNode("refRateIndex")
+                @NamedAttributeNode("projectionIndex")
             })
 })
 public class FltSecurityMasterData extends SecurityMasterData {
@@ -51,7 +51,7 @@ public class FltSecurityMasterData extends SecurityMasterData {
     private RefRateIndex projectionIndex;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "projection_index", nullable = true)
+    @JoinColumn(name = "projection_curve", nullable = true)
     private YieldCurveEntity yieldCurve;
 
     @Convert(converter = CouponProjectionMethodConverter.class)

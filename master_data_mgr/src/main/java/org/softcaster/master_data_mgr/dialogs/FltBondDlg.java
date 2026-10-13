@@ -24,7 +24,7 @@ import org.softcaster.master_data_mgr.models.beans.FltSecurityBean;
  *
  * @author ep
  */
-public class FltBondDlg extends BondDlg {
+public final class FltBondDlg extends BondDlg {
 
     private LocalDate systemDate = null;
     private FltSecurityBean fltSecurityBean = null;
@@ -41,11 +41,11 @@ public class FltBondDlg extends BondDlg {
         if (bean != null) {
             if (bean instanceof FltSecurityBean fltBean) {
                 fltSecurityBean = fltBean;
-                cfRefIndex.setSelectedItem(fltSecurityBean.getSecurityMasterData().getRefRateIndex());
+                cfRefIndex.setSelectedItem(fltSecurityBean.getSecurityMasterData().getProjectionIndex());
                 txtSpread.setText(Converter.fromDouble(fltSecurityBean.getSecurityMasterData().getSpread()));
                 cbProjectiooMethod.setSelectedItem(fltSecurityBean.getSecurityMasterData().getCouponPm());
                 cfFixingDayType.setSelectedItem(fltSecurityBean.getSecurityMasterData().getFixingDayType());
-                spinnerDaysB.setValue(fltSecurityBean.getSecurityMasterData().getFixingDaysBefore());
+                spinnerDaysB.setValue(fltSecurityBean.getSecurityMasterData().getFixingLagDays());
             }
         }
         cbToi.setSelectedItem(TypeOfInterest.FLOATING);
@@ -122,7 +122,7 @@ public class FltBondDlg extends BondDlg {
             }
 
             RefRateIndex index = (RefRateIndex) cfRefIndex.getSelectedItem();
-            smd.setRefRateIndex(index);
+            smd.setProjectionIndex(index);
             smd.setSpread(Converter.toDouble(txtSpread.getText(), false));
             smd.setCouponPm((CouponProjectionMethod) cbProjectiooMethod.getSelectedItem());
 
