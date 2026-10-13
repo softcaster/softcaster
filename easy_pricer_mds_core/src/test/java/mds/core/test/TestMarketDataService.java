@@ -34,6 +34,7 @@ import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
+import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
@@ -121,32 +122,27 @@ public class TestMarketDataService {
         if(item != null) {
             System.out.println(item.getRefRateIndex().getCode() + " - " + item.getRefRateIndex().getDescription());
         }
-         */
+        
         List<CmdFutureMasterData> pairs = cmdFutureMasterDataDAO2.findAll();
         for (CmdFutureMasterData pair : pairs) {
             System.out.println(pair.getCode() + " - " + pair.getDescription() + " - " + pair.getCurrency().getIsoCode() + " - " + pair.getAssetClass().getCode());
         }
+*/
     }
 
     private void testYieldCurve() {
 
-        marketDataService.loadCurveCurveRates("TERMSOFR");
-        marketDataService.loadCurveCurveRates("TERMESTR");
-        marketDataService.loadSpotPrice();
-
-        org.softcaster.engine.curve.YieldCurve domesticYC = marketDataService.getYieldCurve("TERMSOFR");
-        org.softcaster.engine.curve.YieldCurve foreignYC = marketDataService.getYieldCurve("TERMESTR");
-
-        ForwardBaseInputData input = new ForwardBaseInputData();
-        input.setForeignRateCurve(foreignYC);
-        input.setDomesticRateCurve(domesticYC);
-        input.setUnderlyingReferencePrice(marketDataService.getSpotPrice("EURUSD", RequestType.BID));
-        input.setValuationDate(LocalDate.now());
-        input.setMaturityDate(LocalDate.of(2026, 10, 05));
-
-        FxForwardPricer pricer = new FxForwardPricer();
-        double f = pricer.forwardPrice2(input);
-        System.out.println(f);
+        List<String> names = new ArrayList<>();
+        names.add("ITA_PROJECTION");
+        marketDataService.reloadCurves(names);
+        YieldCurve projectionCurve = marketDataService.getYieldCurve("ITA_PROJECTION");
+        
+        LocalDate officialDate = marketDataService.getOfficialDate();
+        LocalDate plus1Year = officialDate.plusYears(1);
+        LocalDate plus1Year6Months = plus1Year.plusMonths(6);
+        
+        double fwdRate = projectionCurve.getForwardRate(plus1Year, plus1Year6Months, DaycountBasis.ACT_360, Compounding.SIMPLE);
+        System.out.println(fwdRate);
     }
 
     private void testUpdateBondPrice() {
@@ -277,7 +273,9 @@ public class TestMarketDataService {
         //testRunner.testFltBondPricer();
         //testRunner.testFltBondPricer2();
         //testRunner.testZSpread();
-        testRunner.testBondPricer();
+
+        testRunner.testYieldCurve();
+        //testRunner.testBondPricer();
     }
 
     private void testSwapYieldCurve() {

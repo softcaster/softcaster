@@ -327,3 +327,17 @@ alter table spread_curve add constraint fk_sc_profile FOREIGN KEY (calibration_p
 alter table calibration_profile_item add column code VARCHAR(25);
 update calibration_profile_item cpi set code=(select code from master_data md where md.id_master_data=cpi.master_data);
 alter table calibration_profile_item alter column code set not null;
+
+insert into yield_curve(id_yield_curve,code,description,currency,calendar,compounding,provider) values (
+    nextval('yield_curve_s'),
+    'ITA_PROJECTION',
+    'Ita Projection (Cct)',
+    (select id_currency from currency where iso_code='EUR'),
+    (select id_calendar from calendar where code='EUR'),
+    (select id_compounding from compounding where code='SIMPLE_THEN_COMPOUNDED'),
+    ''
+);
+
+alter table security_master_data add column projection_method integer NOT NULL DEFAULT 3;
+alter table security_master_data add column projection_id integer;
+alter table security_master_data add CONSTRAINT fk_projection_method FOREIGN KEY (projection_method) REFERENCES projection_method (projection_method_id) ON DELETE NO ACTION ON UPDATE NO ACTION;

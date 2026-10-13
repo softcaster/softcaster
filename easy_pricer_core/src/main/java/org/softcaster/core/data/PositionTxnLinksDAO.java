@@ -52,6 +52,7 @@ public class PositionTxnLinksDAO {
         return repository.sumQuantityByPhase(positionDetailId, phase);
     }
     
+    @Transactional(readOnly = true)
     public boolean existsByFinancialTxn(Integer financialTxn) {
         return repository.existsByFinancialTxn(financialTxn);
     }

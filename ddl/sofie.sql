@@ -484,8 +484,16 @@ CREATE TABLE loan_master_data (
     tax_charges numeric(23, 10) NOT NULL DEFAULT 0, -- Imposta sostitutiva
     PRIMARY KEY (id_master_data)
 );
-
 ALTER TABLE loan_master_data OWNER TO sofie;
+
+CREATE TABLE projection_method (
+    projection_method_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(255) NOT NULL,
+    PRIMARY KEY (projection_method_id)
+);
+ALTER TABLE projection_method OWNER TO sofie;
+CREATE UNIQUE INDEX idx_projection_method_code ON projection_method (code);
 
 -- ----------------------------------------------------------------------------
 -- security_master_data - anagrafica titoli di stato
@@ -500,7 +508,10 @@ CREATE TABLE security_master_data (
     nominal_value numeric(23, 10) NOT NULL,
     first_coupon_rate numeric(23, 10) NOT NULL,
     first_coupon_payment_date date NOT NULL,
+    projection_method integer NOT NULL DEFAULT 3,
+    projection_id integer,
     CONSTRAINT fk_issuer FOREIGN KEY (issuer) REFERENCES issuer (id_issuer) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_projection_method FOREIGN KEY (projection_method) REFERENCES projection_method (projection_method_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     PRIMARY KEY (id_master_data)
 );
 CREATE UNIQUE INDEX idx_security_master_data_isin ON security_master_data (isin);

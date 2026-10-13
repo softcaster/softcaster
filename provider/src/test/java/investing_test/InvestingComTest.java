@@ -30,6 +30,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import org.softcaster.provider.euronext.BorsaItalianaProvider;
+import org.softcaster.provider.mutuionline.MutuiOnlineProvider;
 
 class Root {
 
@@ -151,22 +152,16 @@ public class InvestingComTest {
     public static void main(String[] args) {
 
         try {
+            
+            MutuiOnlineProvider provider = MutuiOnlineProvider.getInstance();
+            provider.getYieldCurveNodes("");
+            /*
             // Inizializzazione Logger
             FileUtil.initializeLogger();
 
             // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
             FileUtil.initializePython();
 
-            /*
-            System.out.println("########## TwelvedataProvider ##########");
-            testCurrencyPairs();
-             */
-            //testEcbClient();
-            /*
-            InvestingApiClient apiClient = new InvestingApiClient();
-            String result = apiClient.connect("https://sbcharts.investing.com/bond_charts/bonds_chart_6.json");
-            System.out.println(result);
-             */
             InvestingComProvider provider = InvestingComProvider.getInstance();
             List<Node> nodes = provider.getYieldCurveNodes("ITAYIELD");
             for (Node node : nodes) {
@@ -176,28 +171,7 @@ public class InvestingComTest {
             for (Node node : nodes) {
                 System.out.println(node);
             }
-            //System.out.println("########## IT Yield Curve ##########");
-            // testItaYieldCurves();
-            /*
-            System.out.println("");
-            System.out.println("########## US Yield Curve ##########");
-            testUsaYieldCurves();
-             */
- /*
-            CnbcProvider provider = CnbcProvider.getInstance();
-            List<Node> nodes = provider.getYieldCurveNodes("USYIELD");
-            for(Node node:nodes) {
-            System.out.println(node.getSymbol() + " " + node.getData().bid());
-            }
-             */
-            //testEcbClient();
-            //testCurrencyPairs();
-            //testEurexClient();
-            /*
-            System.out.println("########## YahooProvider ##########");
-            testYahooClient();
-             */
-            //testBIProvider();
+            */
         } catch (Exception ex) {
             System.getLogger(InvestingComTest.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }

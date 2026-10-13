@@ -448,4 +448,9 @@ INSERT INTO market_data_source VALUES (3, 'VENDOR', 'Vendor');
 INSERT INTO market_data_source VALUES (4, 'INTERNAL', 'Internal');
 INSERT INTO market_data_source VALUES (5, 'GME', 'Gestore Mercati Energetici');
 
+INSERT INTO projection_method VALUES (1, 'YIELD_CURVE', 'Yield Curve');
+INSERT INTO projection_method VALUES (2, 'INDEX', 'Index');
+INSERT INTO projection_method VALUES (3, 'NONE', 'None');
+
+
 
