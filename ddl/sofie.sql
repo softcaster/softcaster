@@ -622,12 +622,16 @@ CREATE UNIQUE INDEX coupon_FDT_code ON fixing_day_type (code);
 CREATE TABLE flt_security_master_data (
     id_master_data integer NOT NULL,
     spread numeric(23, 10) NOT NULL,
-    ref_rate_index INTEGER,
+    floor numeric(18,10),
+    fixing_lag_days smallint not null default 2,
+    index_months smallint not null default 6,
     coupon_pm integer NOT NULL,
-    fixing_days_before INTEGER NOT NULL DEFAULT 2,
+    projection_index INTEGER,
+    projection_curve  integer,
     fixing_day_type INTEGER NOT NULL,
     CONSTRAINT fk_coupon_pm FOREIGN KEY (coupon_pm) REFERENCES coupon_pm (coupon_pm_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_ref_rate_index FOREIGN KEY (ref_rate_index) REFERENCES ref_rate_index (ref_rate_index_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_projection_index FOREIGN KEY (projection_index) REFERENCES ref_rate_index (ref_rate_index_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_projection_curve FOREIGN KEY (projection_curve) REFERENCES yield_curve (id_yield_curve) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_fixing_day_type FOREIGN KEY (fixing_day_type) REFERENCES fixing_day_type(fixing_day_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     PRIMARY KEY (id_master_data)
 );

@@ -42,16 +42,27 @@ public class FltSecurityMasterData extends SecurityMasterData {
     @Column(name = "spread")
     private Double spread;
 
+    @JdbcTypeCode(Types.NUMERIC)
+    @Column(name = "floor")
+    private Double floor;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ref_rate_index", nullable = true)
-    private RefRateIndex refRateIndex;
+    @JoinColumn(name = "projection_index", nullable = true)
+    private RefRateIndex projectionIndex;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "projection_index", nullable = true)
+    private YieldCurveEntity yieldCurve;
 
     @Convert(converter = CouponProjectionMethodConverter.class)
     @Column(name = "coupon_pm")
     private CouponProjectionMethod couponPm;
 
-    @Column(name = "fixing_days_before")
-    private Integer fixingDaysBefore;
+    @Column(name = "fixing_lag_days")
+    private Integer fixingLagDays;
+
+    @Column(name = "index_months")
+    private Integer indexMonths;
     
     @Convert(converter = FixingDayTypeConverter.class)
     @Column(name = "fixing_day_type")
@@ -80,34 +91,6 @@ public class FltSecurityMasterData extends SecurityMasterData {
     }
 
     /**
-     * @return the refRateIndex
-     */
-    public RefRateIndex getRefRateIndex() {
-        return refRateIndex;
-    }
-
-    /**
-     * @param refRateIndex the refRateIndex to set
-     */
-    public void setRefRateIndex(RefRateIndex refRateIndex) {
-        this.refRateIndex = refRateIndex;
-    }
-
-    /**
-     * @return the fixingDaysBefore
-     */
-    public Integer getFixingDaysBefore() {
-        return fixingDaysBefore;
-    }
-
-    /**
-     * @param fixingDaysBefore the fixingDaysBefore to set
-     */
-    public void setFixingDaysBefore(Integer fixingDaysBefore) {
-        this.fixingDaysBefore = fixingDaysBefore;
-    }
-
-    /**
      * @return the fixingDayType
      */
     public FixingDayType getFixingDayType() {
@@ -120,4 +103,76 @@ public class FltSecurityMasterData extends SecurityMasterData {
     public void setFixingDayType(FixingDayType fixingDayType) {
         this.fixingDayType = fixingDayType;
     }
+
+    /**
+     * @return the floor
+     */
+    public Double getFloor() {
+        return floor;
+    }
+
+    /**
+     * @param floor the floor to set
+     */
+    public void setFloor(Double floor) {
+        this.floor = floor;
+    }
+
+    /**
+     * @return the projectionIndex
+     */
+    public RefRateIndex getProjectionIndex() {
+        return projectionIndex;
+    }
+
+    /**
+     * @param projectionIndex the projectionIndex to set
+     */
+    public void setProjectionIndex(RefRateIndex projectionIndex) {
+        this.projectionIndex = projectionIndex;
+    }
+
+    /**
+     * @return the yieldCurve
+     */
+    public YieldCurveEntity getYieldCurve() {
+        return yieldCurve;
+    }
+
+    /**
+     * @param yieldCurve the yieldCurve to set
+     */
+    public void setYieldCurve(YieldCurveEntity yieldCurve) {
+        this.yieldCurve = yieldCurve;
+    }
+
+    /**
+     * @return the fixingLagDays
+     */
+    public Integer getFixingLagDays() {
+        return fixingLagDays;
+    }
+
+    /**
+     * @param fixingLagDays the fixingLagDays to set
+     */
+    public void setFixingLagDays(Integer fixingLagDays) {
+        this.fixingLagDays = fixingLagDays;
+    }
+
+    /**
+     * @return the indexMonths
+     */
+    public Integer getIndexMonths() {
+        return indexMonths;
+    }
+
+    /**
+     * @param indexMonths the indexMonths to set
+     */
+    public void setIndexMonths(Integer indexMonths) {
+        this.indexMonths = indexMonths;
+    }
+
+    
 }

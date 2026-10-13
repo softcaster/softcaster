@@ -341,3 +341,14 @@ insert into yield_curve(id_yield_curve,code,description,currency,calendar,compou
 alter table security_master_data add column projection_method integer NOT NULL DEFAULT 3;
 alter table security_master_data add column projection_id integer;
 alter table security_master_data add CONSTRAINT fk_projection_method FOREIGN KEY (projection_method) REFERENCES projection_method (projection_method_id) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+alter table flt_security_master_data add column floor numeric(18,10);
+alter table flt_security_master_data add column index_months smallint not null default 6;
+alter table flt_security_master_data add column projection_curve integer;
+
+    floor numeric(18,10),
+    fixing_lag_days smallint not null default 2,
+    index_months smallint not null default 6,
+    coupon_pm integer NOT NULL,
+    projection_index INTEGER,
+    projection_curve  integer,

@@ -12,7 +12,8 @@ public enum CouponProjectionMethod implements IdentifiableEnum {
 
     LAST_COUPON(1, "LAST_COUPON", "Last Coupon"),
     FORWARD_CURVE(2, "FORWARD_CURVE", "Forward Curve"),
-    SHORT_BOND(3, "SHORT_BOND", "Short Bond");
+    HIST_SERIE(3, "HIST_SERIE", "Historical Serie"),
+    NONE(4, "NONE", "None");
 
     private final int id;
     private final String code;
