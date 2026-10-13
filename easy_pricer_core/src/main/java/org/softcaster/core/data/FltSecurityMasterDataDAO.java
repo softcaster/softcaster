@@ -14,4 +14,8 @@ public class FltSecurityMasterDataDAO extends AbstractMasterDataDAO<FltSecurityM
     public Optional<FltSecurityMasterData> findByIdWithRefRateIndex(Integer id) {
         return repository.findByIdWithRefRateIndex(id);
     }
+    
+    public FltSecurityMasterData findByCodeWithCashFlow(String code) {
+        return repository.findByCodeWithCashFlow(code);
+    }
 }

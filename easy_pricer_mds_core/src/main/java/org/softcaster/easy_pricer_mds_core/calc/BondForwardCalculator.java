@@ -154,7 +154,7 @@ public class BondForwardCalculator {
                         bfmd.getMaturityDate().toLocalDate(),
                         input.getDomesticRate(),
                         fwdDaycount,
-                        Utils.convertCompounding("COMPOUNDED"),
+                        Compounding.COMPOUNDED,
                         frequency);
 
                 // NET BASIS esatta
@@ -269,7 +269,7 @@ public class BondForwardCalculator {
                         bfmd.getMaturityDate().toLocalDate(),
                         request.domesticRate,
                         fwdDaycount,
-                        Utils.convertCompounding("COMPOUNDED"),
+                        Compounding.COMPOUNDED,
                         frequency);
 
                 // NET BASIS esatta

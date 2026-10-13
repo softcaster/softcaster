@@ -14,4 +14,13 @@ public interface FltSecurityMasterDataRepository extends BaseMasterDataRepositor
         """)
     @EntityGraph("FltSecurityMasterData.indexGraph")
     Optional<FltSecurityMasterData> findByIdWithRefRateIndex(@Param("id") Integer id);
+    
+        @Query("""
+        SELECT fsmd
+        FROM FltSecurityMasterData fsmd
+        WHERE fsmd.code = :code
+        """)
+    @EntityGraph("SecurityMasterData.fullGraphWithCashFlow")
+    FltSecurityMasterData findByCodeWithCashFlow(@Param("code") String code);
+
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
@@ -63,21 +64,23 @@ public final class FloatingCouponProjector {
      * @param projectionCurve
      * @param valuationDate
      * @param terms
+     * @param outstandingBalance
      * @param shiftBusinessDays
      * @return
      */
     public static List<CashFlow> project(List<CashFlow> flows, DiscountCurve projectionCurve,
-            LocalDate valuationDate, Terms terms,
+            LocalDate valuationDate, Terms terms, double outstandingBalance,
             BiFunction<LocalDate, Integer, LocalDate> shiftBusinessDays) {
         List<CashFlow> out = new ArrayList<>(flows.size());
         for (CashFlow cf : flows) {
             // shiftBusinessDays(date, n): date moved by n business days (negative = earlier). ADAPT: your TARGET calendar
             LocalDate fixingDate = shiftBusinessDays.apply(cf.accrualStart(), -terms.fixingLagDays());
-            if (!fixingDate.isAfter(valuationDate)) {
-                out.add(cf);                                   // index already fixed: the stored interest is the actual coupon
+            if (!fixingDate.isAfter(valuationDate) || cf.cashFlowStatus() != CashFlowStatus.ESTIMATED) {
+                out.add(cf);                                   
                 continue;
             }
-            LocalDate indexStart = cf.accrualStart();          // Euribor spot = fixing + 2 business days = accrual start
+            
+            LocalDate indexStart = cf.accrualStart();          
             LocalDate indexEnd = indexStart.plusMonths(terms.indexMonths());
 
             // Euribor is a simple rate ACT/360 over its own tenor, whatever the bond day count is
@@ -88,7 +91,7 @@ public final class FloatingCouponProjector {
                 rate = Math.max(rate, terms.floor());
             }
             double yearFraction = terms.accrualDaycount().calculate(cf.accrualStart(), cf.accrualEnd(), terms.frequency());
-            double interest = cf.outstandingBalance() * rate * yearFraction;                       // ADAPT: balance during the period
+            double interest = outstandingBalance * rate * yearFraction;                       // ADAPT: balance during the period
 
             out.add(new CashFlow(cf.accrualStart(), cf.accrualEnd(), cf.paymentDate(),
                     cf.principal(), interest, cf.outstandingBalance(), cf.cashFlowStatus()));       // ADAPT: status of a projected flow

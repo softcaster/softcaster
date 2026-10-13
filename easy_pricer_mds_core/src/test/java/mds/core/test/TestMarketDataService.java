@@ -6,13 +6,16 @@ package mds.core.test;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
+import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.CmdFutureMasterData;
 import org.softcaster.core.data.CmdFutureMasterDataDAO;
+import org.softcaster.core.data.Currency;
+import org.softcaster.core.data.CurrencyDAO;
+import org.softcaster.core.data.FltSecurityMasterData;
 import org.softcaster.core.data.FltSecurityMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterData;
@@ -24,20 +27,25 @@ import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
 import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.Utils;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.cashflow.AmortizedCostPeriod;
+import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
+import org.softcaster.engine.curve.FloatingCouponProjector;
+import org.softcaster.engine.curve.FloatingCouponProjector.Terms;
 import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.Frequency;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.ecb.ECBProvider;
 import org.softcaster.provider.enums.Market;
@@ -94,6 +102,9 @@ public class TestMarketDataService {
 
     @Autowired
     private CmdFutureMasterDataDAO cmdFutureMasterDataDAO2;
+    
+    @Autowired
+    CurrencyDAO currencyDAO;
 
     private void testMasterData2() {
         /*
@@ -127,7 +138,7 @@ public class TestMarketDataService {
         for (CmdFutureMasterData pair : pairs) {
             System.out.println(pair.getCode() + " - " + pair.getDescription() + " - " + pair.getCurrency().getIsoCode() + " - " + pair.getAssetClass().getCode());
         }
-*/
+         */
     }
 
     private void testYieldCurve() {
@@ -136,13 +147,28 @@ public class TestMarketDataService {
         names.add("ITA_PROJECTION");
         marketDataService.reloadCurves(names);
         YieldCurve projectionCurve = marketDataService.getYieldCurve("ITA_PROJECTION");
-        
-        LocalDate officialDate = marketDataService.getOfficialDate();
-        LocalDate plus1Year = officialDate.plusYears(1);
-        LocalDate plus1Year6Months = plus1Year.plusMonths(6);
-        
-        double fwdRate = projectionCurve.getForwardRate(plus1Year, plus1Year6Months, DaycountBasis.ACT_360, Compounding.SIMPLE);
-        System.out.println(fwdRate);
+        if (projectionCurve != null) {
+            LocalDate officialDate = marketDataService.getOfficialDate();
+            LocalDate plus1Year = officialDate.plusYears(1);
+            LocalDate plus1Year6Months = plus1Year.plusMonths(6);
+
+            double fwdRate = projectionCurve.getForwardRate(plus1Year, plus1Year6Months, DaycountBasis.ACT_360, Compounding.SIMPLE);
+            System.out.println(fwdRate);
+
+            // IT0005491250
+            FltSecurityMasterData fsmd = fltSecurityMasterDataDAO2.findByCodeWithCashFlow("IT0005491250");
+            if (fsmd != null) {
+                List<CashFlow> cashFlows = Utils.convertCashFlow(fsmd.getCashFlows());
+                Terms terms = new Terms(0.005, 0., 6, 2, DaycountBasis.ACT_360, Frequency.SEMI_ANNUAL);
+                Currency ccy = currencyDAO.findByIsoCode(fsmd.getCurrency().getIsoCode());
+                Calendar calendar = new Calendar(ccy);
+                double outstandingBalance = fsmd.getRedempionPrice();
+                List<CashFlow> estimatedCashFlows = FloatingCouponProjector.project(cashFlows, projectionCurve, officialDate, terms, outstandingBalance, (date, n) -> calendar.getNextBusinessDate(date, n));
+                for (CashFlow flow : estimatedCashFlows) {
+                    System.out.println(flow.accrualStart() + "\t" + flow.accrualEnd() + "\t" + (flow.interest() + flow.principal()));
+                }
+            }
+        }
     }
 
     private void testUpdateBondPrice() {
@@ -273,7 +299,6 @@ public class TestMarketDataService {
         //testRunner.testFltBondPricer();
         //testRunner.testFltBondPricer2();
         //testRunner.testZSpread();
-
         testRunner.testYieldCurve();
         //testRunner.testBondPricer();
     }
@@ -290,7 +315,7 @@ public class TestMarketDataService {
         LocalDate twoYears = oneYear6Months.plusYears(2);
         fwdRate = yieldCurve.getForwardRate(oneYear6Months, twoYears, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
         System.out.println(fwdRate);
-        
+
         LocalDate twoYears6Months = twoYears.plusYears(2);
         fwdRate = yieldCurve.getForwardRate(twoYears, twoYears6Months, DaycountBasis.ACT_365, Compounding.COMPOUNDED);
         System.out.println(fwdRate);
@@ -352,7 +377,7 @@ public class TestMarketDataService {
         List<MarketQuote> rawNodes = YieldCurveHelper.getMarketList(nodes);
         LocalDate officialDate = marketDataService.getOfficialDate();
         List<CurveNode> curveNodes = CurveBootstrapper.bootstrap(officialDate, rawNodes);
-        org.softcaster.engine.curve.YieldCurve yc = org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, Currency.getInstance("EUR"), curveNodes);
+        org.softcaster.engine.curve.YieldCurve yc = org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, java.util.Currency.getInstance("EUR"), curveNodes);
 
         List<OrderedDiscountFactor> dfs = yc.getOrderedDiscountFactors();
         for (OrderedDiscountFactor odf : dfs) {
