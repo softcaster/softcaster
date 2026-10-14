@@ -31,6 +31,7 @@ import org.softcaster.easy_pricer_mds_core.calc.Utils;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.cashflow.AmortizedCostPeriod;
 import org.softcaster.engine.cashflow.CashFlow;
@@ -102,9 +103,12 @@ public class TestMarketDataService {
 
     @Autowired
     private CmdFutureMasterDataDAO cmdFutureMasterDataDAO2;
-    
+
     @Autowired
     CurrencyDAO currencyDAO;
+
+    @Autowired
+    FltSecurityMasterDataHelper fltHelper;
 
     private void testMasterData2() {
         /*
@@ -142,31 +146,21 @@ public class TestMarketDataService {
     }
 
     private void testYieldCurve() {
+  
+        List<CashFlow> estimatedCashFlows = null;
+        SecurityMasterData securityMasterData = smdDAO.findByCodeWithCashFlowAndHolidays("IT0005491250");
+        if(securityMasterData instanceof FltSecurityMasterData f) {
+            System.out.println(f.getDescription());
+        }
+        // IT0005491250
+        FltSecurityMasterData fsmd = fltSecurityMasterDataDAO2.findByCodeWithCashFlow("IT0005491250");
+        if (fsmd != null) {
+            estimatedCashFlows = fltHelper.completeFltSecurityCashFlow(fsmd);
+        }
 
-        List<String> names = new ArrayList<>();
-        names.add("ITA_PROJECTION");
-        marketDataService.reloadCurves(names);
-        YieldCurve projectionCurve = marketDataService.getYieldCurve("ITA_PROJECTION");
-        if (projectionCurve != null) {
-            LocalDate officialDate = marketDataService.getOfficialDate();
-            LocalDate plus1Year = officialDate.plusYears(1);
-            LocalDate plus1Year6Months = plus1Year.plusMonths(6);
-
-            double fwdRate = projectionCurve.getForwardRate(plus1Year, plus1Year6Months, DaycountBasis.ACT_360, Compounding.SIMPLE);
-            System.out.println(fwdRate);
-
-            // IT0005491250
-            FltSecurityMasterData fsmd = fltSecurityMasterDataDAO2.findByCodeWithCashFlow("IT0005491250");
-            if (fsmd != null) {
-                List<CashFlow> cashFlows = Utils.convertCashFlow(fsmd.getCashFlows());
-                Terms terms = new Terms(0.005, 0., 6, 2, DaycountBasis.ACT_360, Frequency.SEMI_ANNUAL);
-                Currency ccy = currencyDAO.findByIsoCode(fsmd.getCurrency().getIsoCode());
-                Calendar calendar = new Calendar(ccy);
-                double outstandingBalance = fsmd.getRedempionPrice();
-                List<CashFlow> estimatedCashFlows = FloatingCouponProjector.project(cashFlows, projectionCurve, officialDate, terms, outstandingBalance, (date, n) -> calendar.getNextBusinessDate(date, n));
-                for (CashFlow flow : estimatedCashFlows) {
-                    System.out.println(flow.accrualStart() + "\t" + flow.accrualEnd() + "\t" + (flow.interest() + flow.principal()));
-                }
+        if (estimatedCashFlows != null) {
+            for (CashFlow flow : estimatedCashFlows) {
+                System.out.println(flow.accrualStart() + "\t" + flow.accrualEnd() + "\t" + (flow.interest() + flow.principal()));
             }
         }
     }

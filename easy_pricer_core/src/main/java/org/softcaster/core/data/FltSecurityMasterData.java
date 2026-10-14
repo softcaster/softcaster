@@ -50,9 +50,8 @@ public class FltSecurityMasterData extends SecurityMasterData {
     @JoinColumn(name = "projection_index", nullable = true)
     private RefRateIndex projectionIndex;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "projection_curve", nullable = true)
-    private YieldCurveEntity yieldCurve;
+    @Column(name = "projection_curve")
+    private Integer projectionCurveId;
 
     @Convert(converter = CouponProjectionMethodConverter.class)
     @Column(name = "coupon_pm")
@@ -133,20 +132,6 @@ public class FltSecurityMasterData extends SecurityMasterData {
     }
 
     /**
-     * @return the yieldCurve
-     */
-    public YieldCurveEntity getYieldCurve() {
-        return yieldCurve;
-    }
-
-    /**
-     * @param yieldCurve the yieldCurve to set
-     */
-    public void setYieldCurve(YieldCurveEntity yieldCurve) {
-        this.yieldCurve = yieldCurve;
-    }
-
-    /**
      * @return the fixingLagDays
      */
     public Integer getFixingLagDays() {
@@ -174,5 +159,18 @@ public class FltSecurityMasterData extends SecurityMasterData {
         this.indexMonths = indexMonths;
     }
 
-    
+    /**
+     * @return the projectionCurveId
+     */
+    public Integer getProjectionCurveId() {
+        return projectionCurveId;
+    }
+
+    /**
+     * @param projectionCurveId the projectionCurveId to set
+     */
+    public void setProjectionCurveId(Integer projectionCurveId) {
+        this.projectionCurveId = projectionCurveId;
+    }
+
 }

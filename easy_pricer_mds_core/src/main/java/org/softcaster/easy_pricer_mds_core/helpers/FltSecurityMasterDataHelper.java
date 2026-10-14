@@ -8,6 +8,7 @@ import java.util.List;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.FltSecurityMasterData;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.Utils;
@@ -30,14 +31,17 @@ public class FltSecurityMasterDataHelper {
     @Autowired
     CurrencyDAO currencyDAO;
     
+    @Autowired
+    YieldCurveEntityDAO yieldCurveEntityDAO;
+    
     public List<CashFlow>  completeFltSecurityCashFlow(FltSecurityMasterData fsmd) {
         List<CashFlow> cashFlows = null;
         if(fsmd.getCashFlows() != null && !fsmd.getCashFlows().isEmpty())
         {
             switch(fsmd.getCouponPm()) {
-                case LAST_COUPON -> completeFromLastCoupon(fsmd);
-                case FORWARD_CURVE -> completeFromForwardCurve(fsmd);
-                case HIST_SERIE -> completeFromHistoricalSerie(fsmd);
+                case LAST_COUPON -> cashFlows = completeFromLastCoupon(fsmd);
+                case FORWARD_CURVE -> cashFlows = completeFromForwardCurve(fsmd);
+                case HIST_SERIE -> cashFlows = completeFromHistoricalSerie(fsmd);
                 default -> {
                 }
             }
@@ -50,10 +54,11 @@ public class FltSecurityMasterDataHelper {
     }
 
     private List<CashFlow>  completeFromForwardCurve(FltSecurityMasterData fsmd) {
-        if(fsmd.getYieldCurve() != null) {
-            YieldCurve projectionCurve = marketDataService.getYieldCurve(fsmd.getYieldCurve().getCode());
+        if(fsmd.getProjectionCurveId()!= null) {
+            String code = yieldCurveEntityDAO.getCodeFromId(fsmd.getProjectionCurveId());
+            YieldCurve projectionCurve = marketDataService.getYieldCurve(code);
             if (projectionCurve == null) {
-                String message = "No Projection Curve: " + fsmd.getYieldCurve().getCode() + " found";
+                String message = "No Projection Curve: " + code + " found";
                 throw new IllegalArgumentException(message);
             }
 

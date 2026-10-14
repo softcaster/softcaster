@@ -31,4 +31,7 @@ public interface YieldCurveEntityRepository extends JpaRepository<YieldCurveEnti
 
     @Query("select count(c) > 0 from YieldCurveEntity c where c.code = :code")
     boolean existsByCode(@Param("code") String code);
+
+    @Query(value = "select code from yield_curve where id_yield_curve = :id", nativeQuery = true)
+    public String getCodeFromId(@Param("id") Integer id);
 }
