@@ -7,7 +7,7 @@ package org.softcaster.easy_pricer_srv.controller;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.FxFutureCalculator;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ValuationRestController {
 
     @Autowired
-    private BondCalculator bondCalculator;
+    private CashFlowInstrumentCalculator bondCalculator;
     @Autowired
     private BondForwardCalculator bondForwardCalculator;
     @Autowired

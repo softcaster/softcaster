@@ -34,7 +34,7 @@ public class EffectiveInterestScheduleGenerator {
             CashFlow cf = futureFlows.get(i);
             boolean isFirstPeriod = (i == 0);
 
-            // FIX: il primo periodo parte da valuationDate, non da cf.accrualStart(),
+            // Il primo periodo parte da valuationDate, non da cf.accrualStart(),
             // per restare coerente con il "t" usato da solveInternalRateOfReturn
             LocalDate periodStart = isFirstPeriod ? valuationDate : cf.accrualStart();
             double periodYearFraction = dcb.calculate(periodStart, cf.accrualEnd(), frequency);

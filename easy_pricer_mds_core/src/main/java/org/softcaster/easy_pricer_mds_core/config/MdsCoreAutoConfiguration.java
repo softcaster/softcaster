@@ -6,7 +6,7 @@ package org.softcaster.easy_pricer_mds_core.config;
 
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.FxFutureCalculator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -44,10 +44,10 @@ public class MdsCoreAutoConfiguration {
         return new FxFutureCalculator();
     }
     
-    @Bean(name = "bondCalculator")
+    @Bean(name = "cashFlowInstrumentCalculator")
     @ConditionalOnMissingBean 
-    public BondCalculator bondCalculator() {
-        return new BondCalculator();
+    public CashFlowInstrumentCalculator bondCalculator() {
+        return new CashFlowInstrumentCalculator();
     }
     
     @Bean(name = "YieldCurveBuilder")

@@ -29,7 +29,7 @@ import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntity;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.curve.ZSpreadImporter;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.provider.bricks.AbstractProvider;
@@ -61,7 +61,7 @@ public class CalibrationTest implements CommandLineRunner {
     @Qualifier("marketDataService")
     private MarketDataService marketDataService;
     @Autowired
-    private BondCalculator bondCalculator;
+    private CashFlowInstrumentCalculator bondCalculator;
     @Autowired
     YieldCurveEntityDAO yieldCurveEntityDAO;
     @Autowired

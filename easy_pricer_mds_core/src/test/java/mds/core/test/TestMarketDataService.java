@@ -26,7 +26,7 @@ import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.Utils;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
@@ -43,10 +43,11 @@ import org.softcaster.engine.curve.FloatingCouponProjector.Terms;
 import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
 import org.softcaster.engine.curve.YieldCurve;
+import org.softcaster.engine.dto.FRBInputData;
+import org.softcaster.engine.dto.FRBOutputData;
 import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
-import org.softcaster.engine.enums.Frequency;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.ecb.ECBProvider;
 import org.softcaster.provider.enums.Market;
@@ -80,7 +81,7 @@ public class TestMarketDataService {
     private MarketDataService marketDataService;
 
     @Autowired
-    private BondCalculator bondCalculator;
+    private CashFlowInstrumentCalculator bondCalculator;
 
     @Autowired
     YieldCurveEntityDAO yieldCurveDAO;
@@ -149,20 +150,20 @@ public class TestMarketDataService {
   
         List<CashFlow> estimatedCashFlows = null;
         SecurityMasterData securityMasterData = smdDAO.findByCodeWithCashFlowAndHolidays("IT0005491250");
-        if(securityMasterData instanceof FltSecurityMasterData f) {
-            System.out.println(f.getDescription());
-        }
-        // IT0005491250
-        FltSecurityMasterData fsmd = fltSecurityMasterDataDAO2.findByCodeWithCashFlow("IT0005491250");
-        if (fsmd != null) {
-            estimatedCashFlows = fltHelper.completeFltSecurityCashFlow(fsmd);
-        }
 
-        if (estimatedCashFlows != null) {
-            for (CashFlow flow : estimatedCashFlows) {
-                System.out.println(flow.accrualStart() + "\t" + flow.accrualEnd() + "\t" + (flow.interest() + flow.principal()));
-            }
-        }
+
+        FRBInputData input = new FRBInputData();
+        input.setCode("IT0005491250");
+        input.setCompounding(securityMasterData.getCompounding());
+        input.setDaycount(securityMasterData.getAccrualDaycount());
+        input.setFrequency(securityMasterData.getFrequency());
+        input.setRedemptionPrice(securityMasterData.getRedempionPrice());
+        input.setReferenceDate(marketDataService.getOfficialDate());
+        input.setValuationDate(marketDataService.getOfficialDate());
+        input.setReferencePrice(100.92);
+        
+        FRBOutputData output = bondCalculator.floatingRateValuation(input, securityMasterData);
+        System.out.println(output.getYtm());
     }
 
     private void testUpdateBondPrice() {

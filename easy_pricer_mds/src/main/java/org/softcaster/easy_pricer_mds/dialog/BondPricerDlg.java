@@ -11,7 +11,7 @@ import org.softcaster.commons.utils.Converter;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
 import org.softcaster.easy_pricer_mds.bean.FltBondBean;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.engine.utils.DateParser;
@@ -446,7 +446,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
             request.referencePrice = Converter.toDouble(txtRefPrice.getText(), false);
             request.referenceDate = Date.valueOf(DateParser.parse(txtRefDate.getText()));
 
-            BondCalculator calculator = mDSFacade.getBondCalculator();
+            CashFlowInstrumentCalculator calculator = mDSFacade.getBondCalculator();
             BondPricingResponse response = calculator.bondValuation(request);
 
             txtAccrued.setText(Converter.fromDouble(response.accruedInterest));

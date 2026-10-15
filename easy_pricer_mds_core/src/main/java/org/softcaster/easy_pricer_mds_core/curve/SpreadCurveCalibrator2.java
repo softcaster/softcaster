@@ -16,7 +16,7 @@ import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveSpread;
 import org.softcaster.core.data.YieldCurveSpreadDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.curve.Offset;
 import org.softcaster.engine.curve.SpreadProfile;
@@ -53,7 +53,7 @@ public class SpreadCurveCalibrator2 {
     @Autowired
     SecurityMasterDataDAO smdDAO;                 // ADAPT: type of your smdDAO
     @Autowired
-    BondCalculator bondCalculator;                // ADAPT
+    CashFlowInstrumentCalculator bondCalculator;                // ADAPT
     @Autowired
     MarketDataService marketDataService;          // ADAPT
     @Autowired

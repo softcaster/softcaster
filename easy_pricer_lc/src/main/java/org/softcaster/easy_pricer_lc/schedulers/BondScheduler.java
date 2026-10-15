@@ -15,7 +15,7 @@ import org.softcaster.core.data.PositionTxnLinksDAO;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventAccruals;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.EventSourceType;
@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 public class BondScheduler implements IScheduler {
 
     @Autowired
-    private BondCalculator bondCalculator;
+    private CashFlowInstrumentCalculator bondCalculator;
     @Autowired
     PositionTxnLinksDAO positionTxnLinksDAO;
 

@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.*;
-import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.CalibrationProfile;
 import org.softcaster.core.data.CalibrationProfileItem;
 import org.softcaster.core.data.SecurityMasterData;
@@ -18,7 +17,7 @@ import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveSpread;
 import org.softcaster.core.data.YieldCurveSpreadDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.curve.Offset;
 import org.softcaster.engine.curve.SpreadProfile;
@@ -66,7 +65,7 @@ public class SpreadCurveCalibrator {
     @Autowired
     SecurityMasterDataDAO smdDAO;                 // ADAPT: type of your smdDAO
     @Autowired
-    BondCalculator bondCalculator;                // ADAPT
+    CashFlowInstrumentCalculator bondCalculator;                // ADAPT
     @Autowired
     MarketDataService marketDataService;          // ADAPT
     @Autowired

@@ -13,7 +13,7 @@ import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
@@ -27,8 +27,8 @@ import org.springframework.stereotype.Component;
 public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluator {
 
     @Autowired
-    @Qualifier("bondCalculator")
-    private BondCalculator bondCalculator;
+    @Qualifier("cashFlowInstrumentCalculator")
+    private CashFlowInstrumentCalculator bondCalculator;
 
     private XRBOutputData calculate(SecurityMasterData smd, double mktPrice, LocalDate officialDate) {
         XRBOutputData output = null;
@@ -44,7 +44,7 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
             input.setFrequency(Frequency.fromCode(smd.getFrequency().getCode()));
             input.setDaycount(smd.getAccrualDaycount());
             input.setCompounding(smd.getCompounding());
-            output = bondCalculator.bondValuation(input, smd);
+            output = bondCalculator.fixedIncomeValuation(input, smd);
         }
         return output;
     }

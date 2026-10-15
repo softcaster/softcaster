@@ -5,7 +5,7 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import java.util.List;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.easy_pricer_srv.util.CommonData;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelperController {
 
     @Autowired
-    private BondCalculator bondCalculator;
+    private CashFlowInstrumentCalculator bondCalculator;
     
     //
     // Bond

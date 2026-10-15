@@ -30,7 +30,7 @@ import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.batches.ZSpreadHelper;
-import org.softcaster.easy_pricer_mds_core.calc.BondCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
 import org.softcaster.easy_pricer_mds_core.curve.ZSpreadImporter;
 import org.softcaster.engine.curve.DiscountCurve;
@@ -61,7 +61,7 @@ public class ZSpreadBuilder implements CommandLineRunner {
     @Autowired
     private SecurityMasterDataDAO smdDAO;
     @Autowired
-    private BondCalculator bondCalculator;
+    private CashFlowInstrumentCalculator bondCalculator;
 
     @Autowired
     @Qualifier("marketDataService") // Indica a Spring esattamente QUALE bean usare

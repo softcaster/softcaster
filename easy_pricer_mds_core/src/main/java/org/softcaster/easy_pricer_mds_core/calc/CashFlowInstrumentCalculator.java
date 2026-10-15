@@ -8,11 +8,14 @@ import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.CurrencyDAO;
+import org.softcaster.core.data.FltSecurityMasterData;
+import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.DiscountCurve;
@@ -28,8 +31,8 @@ import org.springframework.stereotype.Service;
  *
  * @author ep
  */
-@Service("bondCalculator")
-public class BondCalculator {
+@Service("cashFlowInstrumentCalculator")
+public class CashFlowInstrumentCalculator {
 
     @Autowired
     private SecurityMasterDataDAO smdDAO;
@@ -38,8 +41,11 @@ public class BondCalculator {
     @Autowired
     @Qualifier("bondPricer")
     private BondPricer bondPricer;
+    @Autowired
+    @Qualifier("fltSecurityMasterDataHelper")
+    private FltSecurityMasterDataHelper fltHelper;
 
-    public XRBOutputData bondValuation(XRBInputData input, SecurityMasterData securityMasterData) {
+    public XRBOutputData fixedIncomeValuation(XRBInputData input, SecurityMasterData securityMasterData) {
         XRBOutputData output = null;
         if (securityMasterData != null) {
             if (!securityMasterData.getCashFlows().isEmpty()) {
@@ -53,18 +59,18 @@ public class BondCalculator {
         return output;
     }
 
-    public FRBOutputData bondValuation(FRBInputData input, SecurityMasterData securityMasterData) {
-        FRBOutputData output = null;
-        if (securityMasterData != null) {
-            if (!securityMasterData.getCashFlows().isEmpty()) {
-                List<CashFlow> flows = Utils.convertCashFlow(securityMasterData.getCashFlows());
+    public FRBOutputData floatingRateValuation(FRBInputData input, MasterData masterData) {
+        if (masterData instanceof FltSecurityMasterData fsmd) {
+            FRBOutputData output = null;
+            if (fsmd != null && fsmd.getCashFlows() != null && !fsmd.getCashFlows().isEmpty()) {
+                List<CashFlow> flows = fltHelper.completeFltSecurityCashFlow(fsmd);
                 input.setFlows(flows);
+                output = bondPricer.calculate(input);
             }
-
-            output = bondPricer.calculate(input);
+            return output;
+        } else {
+            throw new IllegalArgumentException("Invalid Master Data");
         }
-
-        return output;
     }
 
     public BondPricingResponse bondValuation(BondPricingRequest request) {
@@ -83,7 +89,7 @@ public class BondCalculator {
                 input.setDaycount(securityMasterData.getAccrualDaycount());
                 input.setCompounding(securityMasterData.getCompounding());
 
-                FRBOutputData output = bondValuation(input, securityMasterData);
+                XRBOutputData output = fixedIncomeValuation(input, securityMasterData);
                 if (output != null) {
                     response = new BondPricingResponse();
                     response.accruedInterest = output.getAccruedInterest();
@@ -94,9 +100,9 @@ public class BondCalculator {
                     response.convexity = 0.;
                     response.presentValue = 0.;
                     response.yieldToMaturityPV = 0.;
-                    response.discountMargin = output.getDiscountMargin();
-                    response.shortBondYield = output.getShortBondYield();
-                    response.marginDuration = output.getMarginDuration();
+                    //response.discountMargin = output.getDiscountMargin();
+                    //response.shortBondYield = output.getShortBondYield();
+                    //response.marginDuration = output.getMarginDuration();
                     response.acpList = output.getAcpList();
                 }
             }
@@ -116,12 +122,12 @@ public class BondCalculator {
             double dirtyPrice,
             LocalDate valuationDate,
             DiscountCurve curve) {
-        
+
         double zSpread = 0.;
         List<CashFlow> cashflows = Utils.convertCashFlow(securityMasterData.getCashFlows());
-        zSpread = bondPricer.calculateZSpread(cashflows, dirtyPrice, valuationDate, securityMasterData.getAccrualDaycount(), 
+        zSpread = bondPricer.calculateZSpread(cashflows, dirtyPrice, valuationDate, securityMasterData.getAccrualDaycount(),
                 securityMasterData.getCompounding(), securityMasterData.getFrequency(), curve);
-        
+
         return zSpread;
     }
 
