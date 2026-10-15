@@ -10,12 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
-import org.softcaster.core.data.CashFlowItem;
-import org.softcaster.core.data.CmdFutureMasterData;
 import org.softcaster.core.data.CmdFutureMasterDataDAO;
-import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.CurrencyDAO;
-import org.softcaster.core.data.FltSecurityMasterData;
 import org.softcaster.core.data.FltSecurityMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterData;
@@ -27,25 +23,18 @@ import org.softcaster.easy_pricer_mds_core.DiscountFactorNode;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
-import org.softcaster.easy_pricer_mds_core.calc.Utils;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
-import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.cashflow.AmortizedCostPeriod;
-import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
-import org.softcaster.engine.curve.FloatingCouponProjector;
-import org.softcaster.engine.curve.FloatingCouponProjector.Terms;
 import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
-import org.softcaster.engine.curve.YieldCurve;
-import org.softcaster.engine.dto.FRBInputData;
-import org.softcaster.engine.dto.FRBOutputData;
-import org.softcaster.engine.dto.ForwardBaseInputData;
+import org.softcaster.engine.dto.CashFlowInputData;
+import org.softcaster.engine.dto.CashFlowOutputData;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.provider.bricks.Node;
@@ -147,22 +136,13 @@ public class TestMarketDataService {
     }
 
     private void testYieldCurve() {
-  
-        List<CashFlow> estimatedCashFlows = null;
-        SecurityMasterData securityMasterData = smdDAO.findByCodeWithCashFlowAndHolidays("IT0005491250");
 
-
-        FRBInputData input = new FRBInputData();
+        CashFlowInputData input = new CashFlowInputData();
         input.setCode("IT0005491250");
-        input.setCompounding(securityMasterData.getCompounding());
-        input.setDaycount(securityMasterData.getAccrualDaycount());
-        input.setFrequency(securityMasterData.getFrequency());
-        input.setRedemptionPrice(securityMasterData.getRedempionPrice());
         input.setReferenceDate(marketDataService.getOfficialDate());
-        input.setValuationDate(marketDataService.getOfficialDate());
         input.setReferencePrice(100.92);
-        
-        FRBOutputData output = bondCalculator.floatingRateValuation(input, securityMasterData);
+
+        CashFlowOutputData output = bondCalculator.cashFlowValuation(input, null);
         System.out.println(output.getYtm());
     }
 
