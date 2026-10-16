@@ -13,12 +13,15 @@ import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
+import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
 import org.softcaster.engine.analytics.BondPricer;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.DiscountCurve;
+import org.softcaster.engine.dto.CashFlowInputData;
+import org.softcaster.engine.dto.CashFlowOutputData;
 import org.softcaster.engine.dto.FRBInputData;
 import org.softcaster.engine.dto.FRBOutputData;
 import org.softcaster.engine.dto.XRBInputData;
@@ -27,10 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-/**
- *
- * @author ep
- */
 @Service("cashFlowInstrumentCalculator")
 public class CashFlowInstrumentCalculator {
 
@@ -44,6 +43,9 @@ public class CashFlowInstrumentCalculator {
     @Autowired
     @Qualifier("fltSecurityMasterDataHelper")
     private FltSecurityMasterDataHelper fltHelper;
+    @Autowired
+    @Qualifier("marketDataService")
+    private MarketDataService marketDataService;
 
     public XRBOutputData fixedIncomeValuation(XRBInputData input, SecurityMasterData securityMasterData) {
         XRBOutputData output = null;
@@ -73,6 +75,38 @@ public class CashFlowInstrumentCalculator {
         }
     }
 
+    public CashFlowOutputData cashFlowValuation(CashFlowInputData input, MasterData masterData) {
+        if (masterData == null) {
+            if (input.getCode() == null || input.getCode().isEmpty()) {
+                throw new IllegalArgumentException("Invalid Master Data");
+            }
+
+            masterData = smdDAO.findByCodeWithCashFlowAndHolidays(input.getCode());
+            if (masterData == null) {
+                throw new IllegalArgumentException("Invalid Master Data");
+            }
+        }
+        input.setCompounding(masterData.getCompounding());
+        input.setDaycount(masterData.getAccrualDaycount());
+        input.setFrequency(masterData.getFrequency());
+        input.setRedemptionPrice(masterData.getRedempionPrice());
+        input.setCode(masterData.getCode());
+        Calendar calendar = new Calendar(masterData.getCurrency());
+        input.setValuationDate(calendar.getNextBusinessDate(marketDataService.getOfficialDate(), masterData.getBusinessDays()));
+
+        CashFlowOutputData output = null;
+        if (masterData instanceof FltSecurityMasterData fsmd) {
+            input.setProjectionMethod(fsmd.getCouponPm());
+            FRBOutputData frbo = floatingRateValuation(input, fsmd);
+            output = getCashFlowOutputData(frbo);
+        } else if (masterData instanceof SecurityMasterData smd) {
+            XRBOutputData xrbo = fixedIncomeValuation(input, smd);
+            output = getCashFlowOutputData(xrbo);
+        }
+
+        return output;
+    }
+
     public BondPricingResponse bondValuation(BondPricingRequest request) {
         BondPricingResponse response = null;
         if (smdDAO != null) {
@@ -100,9 +134,6 @@ public class CashFlowInstrumentCalculator {
                     response.convexity = 0.;
                     response.presentValue = 0.;
                     response.yieldToMaturityPV = 0.;
-                    //response.discountMargin = output.getDiscountMargin();
-                    //response.shortBondYield = output.getShortBondYield();
-                    //response.marginDuration = output.getMarginDuration();
                     response.acpList = output.getAcpList();
                 }
             }
@@ -155,5 +186,36 @@ public class CashFlowInstrumentCalculator {
                 securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
 
         return newPrice;
+    }
+
+    private CashFlowOutputData getCashFlowOutputData(FRBOutputData frbo) {
+        CashFlowOutputData output = new CashFlowOutputData();
+        output.setAccruedInterest(frbo.getAccruedInterest());
+        output.setAcpList(frbo.getAcpList());
+        output.setDiscountMargin(frbo.getDiscountMargin());
+        output.setDuration(frbo.getDuration());
+        output.setDv01(frbo.getDv01());
+        output.setMarginDuration(frbo.getMacaulayDuration());
+        output.setMarginDuration(frbo.getMarginDuration());
+        output.setModifiedDuration(frbo.getModifiedDuration());
+        output.setPrice(frbo.getPrice());
+        output.setShortBondYield(frbo.getShortBondYield());
+        output.setValuationDate(frbo.getValuationDate());
+        output.setYtm(frbo.getYtm());
+        return output;
+    }
+    
+    private CashFlowOutputData getCashFlowOutputData(XRBOutputData xrbo) {
+        CashFlowOutputData output = new CashFlowOutputData();
+        output.setAccruedInterest(xrbo.getAccruedInterest());
+        output.setAcpList(xrbo.getAcpList());
+        output.setDuration(xrbo.getDuration());
+        output.setDv01(xrbo.getDv01());
+        output.setMarginDuration(xrbo.getMacaulayDuration());
+        output.setModifiedDuration(xrbo.getModifiedDuration());
+        output.setPrice(xrbo.getPrice());
+        output.setValuationDate(xrbo.getValuationDate());
+        output.setYtm(xrbo.getYtm());
+        return output;
     }
 }
