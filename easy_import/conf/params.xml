@@ -29,7 +29,7 @@
         <value>FDBY,DEBY,ESPY</value>
     </param>
     <param>
-        <name>GME_MKT_QUOTES</name>
+        <name>GME_POWER_SPOT</name>
         <value>20230101_20261001_PUN.csv</value>
     </param>
 </params>

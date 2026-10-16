@@ -4,46 +4,11 @@
  */
 package org.softcaster.engine.dto;
 
-import java.util.List;
-import org.softcaster.engine.cashflow.CashFlow;
-import org.softcaster.engine.enums.Frequency;
+import java.time.LocalDate;
 
-/**
- *
- * @author ep
- */
-public class XRBInputData extends MarketInputData {
+public record XRBInputData(String isin,
+        LocalDate valuationDate,
+        CashFlowSchedule schedule,
+        double cleanPrice) implements PricingInput {
 
-    private List<CashFlow> flows;
-    private Frequency frequency;
-
-    /**
-     * @return the frequency
-     */
-    @Override
-    public Frequency getFrequency() {
-        return frequency;
-    }
-
-    /**
-     * @param frequency the frequency to set
-     */
-    @Override
-    public void setFrequency(Frequency frequency) {
-        this.frequency = frequency;
-    }
-
-    /**
-     * @return the flows
-     */
-    public List<CashFlow> getFlows() {
-        return flows;
-    }
-
-    /**
-     * @param flows the flows to set
-     */
-    public void setFlows(List<CashFlow> flows) {
-        this.flows = flows;
-    }
 }

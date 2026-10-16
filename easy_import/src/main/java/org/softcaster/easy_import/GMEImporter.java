@@ -21,9 +21,9 @@ import org.softcaster.commons.types.DateParser;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.commons.xml.ParamsMgr;
-import org.softcaster.core.data.MarketQuote;
-import org.softcaster.core.data.MarketQuoteDefinition;
-import org.softcaster.core.data.MarketQuoteDefinitionDAO;
+import org.softcaster.core.data.PowerSpotPrice;
+import org.softcaster.core.data.PowerSpotPriceDefinition;
+import org.softcaster.core.data.PowerSpotPriceDefinitionDAO;
 import static org.softcaster.easy_import.IImportMgr.IMPORT_PATH;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,15 +32,12 @@ import org.springframework.stereotype.Service;
 public class GMEImporter implements IImportMgr {
 
     @Autowired
-    private MarketQuoteDefinitionDAO marketQuoteDefinitionDAO;
-
-    private final Map<String, List<MarketQuoteRecord>> marketQuotes = new HashMap<>();
-    private MarketQuoteDefinition marketQuoteDefinition = null;
+    private PowerSpotPriceDefinitionDAO powerSpotPriceDefinitionDAO;
 
     @Override
     public void start(IProgressInfo progressInfo) {
         ParamsMgr paramsMgr = ParamsMgr.getInstance();
-        String fileName = paramsMgr.getParamValue("GME_MKT_QUOTES");
+        String fileName = paramsMgr.getParamValue("GME_POWER_SPOT");
         Path path = Paths.get(IMPORT_PATH + "/" + fileName);
 
         CsvImport csvImport = new CsvImport();
@@ -51,6 +48,8 @@ public class GMEImporter implements IImportMgr {
         config.setCharset(StandardCharsets.UTF_8); // utf-8
 
         try {
+            Map<String, List<PowerSpotRecord>> powerSpotMap = new HashMap<>();
+            
             csvImport.startImport(config);
             DateParser parser = null;
             Date dt = null;
@@ -74,12 +73,12 @@ public class GMEImporter implements IImportMgr {
                 price = Converter.toDouble(s[2].trim(), false);
 
                 // Se cambia la chiava crea una nuova lista. Ala fine aggiunge l'elemento alla lista
-                marketQuotes.computeIfAbsent(mqDefinition, k -> new ArrayList<>())
-                        .add(new MarketQuoteRecord(dt.sqlDate().toLocalDate(), price));
+                powerSpotMap.computeIfAbsent(mqDefinition, k -> new ArrayList<>())
+                        .add(new PowerSpotRecord(dt.sqlDate().toLocalDate(), price));
                 cnt++;
             }
 
-            insertOrUpdateMarketQuote(marketQuotes);
+            insertOrUpdatePowerSpot(powerSpotMap);
             progressInfo.updateProgress("Terminated", 100);
         } catch (Exception ex) {
             String error = ex.getLocalizedMessage();
@@ -94,37 +93,47 @@ public class GMEImporter implements IImportMgr {
     public void terminate() {
     }
 
-    private void insertOrUpdateMarketQuote(Map<String, List<MarketQuoteRecord>> marketQuotes) {
+    private void insertOrUpdatePowerSpot(Map<String, List<PowerSpotRecord>> powerSpotMap) {
 
-        marketQuotes.forEach((ticker, listaRecord) -> {
-            for (MarketQuoteRecord record : listaRecord) {
-                if (marketQuoteDefinition == null) {
-                    marketQuoteDefinition = marketQuoteDefinitionDAO.findByCodeWithQuotes(ticker);
-                }
-                if (marketQuoteDefinition != null) {
+        powerSpotMap.forEach((ticker, powerSpotList) -> {
 
-                    final LocalDate businessDate = record.businessDate(); // Variabile finale per la lambda
-                    Optional<MarketQuote> quoteEsistente = marketQuoteDefinition.getQuotes().stream()
-                            .filter(q -> q.getBusinessDate().equals(businessDate))
-                            .findFirst();
+            PowerSpotPriceDefinition definition = powerSpotPriceDefinitionDAO.findByCodeWithQuotes(ticker);
 
-                    if (quoteEsistente.isPresent()) {
-                        // SE ESISTE: Aggiorno solo il prezzo (Hibernate farà un UPDATE)
-                        quoteEsistente.get().setPrice(BigDecimal.valueOf(record.price()));
-                    } else {
-                        // SE NON ESISTE: Creo un nuovo record (Hibernate farà un INSERT)
-                        MarketQuote newQuote = new MarketQuote();
-                        newQuote.setBusinessDate(businessDate);
-                        newQuote.setPrice(BigDecimal.valueOf(record.price()));
+            if (definition == null) {
+                throw new IllegalArgumentException("Power spot definition not found: " + ticker);
+            }
 
-                        marketQuoteDefinition.getQuotes().add(newQuote);
-                    }
+            for (PowerSpotRecord record : powerSpotList) {
+
+                LocalDate deliveryDate = record.deliveryDate();
+
+                Optional<PowerSpotPrice> existing
+                        = definition.getPrices().stream()
+                                .filter(p -> deliveryDate.equals(
+                                p.getDeliveryDate()))
+                                .findFirst();
+
+                if (existing.isPresent()) {
+
+                    existing.get().setPrice(
+                            BigDecimal.valueOf(record.price()));
+
+                } else {
+
+                    PowerSpotPrice newPrice = new PowerSpotPrice();
+                    newPrice.setDeliveryDate(deliveryDate);
+                    newPrice.setPrice(
+                            BigDecimal.valueOf(record.price()));
+
+                    definition.getPrices().add(newPrice);
                 }
             }
-            marketQuoteDefinitionDAO.saveOrUpdate(marketQuoteDefinition);
+
+            powerSpotPriceDefinitionDAO.saveOrUpdate(definition);
         });
     }
 
-    private record MarketQuoteRecord(LocalDate businessDate, double price) {
+    private record PowerSpotRecord(LocalDate deliveryDate, double price) {
+
     }
 }

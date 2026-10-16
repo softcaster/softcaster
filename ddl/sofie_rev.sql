@@ -352,3 +352,7 @@ alter table flt_security_master_data add column projection_curve integer;
     coupon_pm integer NOT NULL,
     projection_index INTEGER,
     projection_curve  integer,
+
+
+insert into power_spot_price_definition(spot_price_definition_id,code,description,id_country,load_type,data_source)
+ values(nextval('power_spot_price_definition_s'), 'GME-POWER','Gestore Mercati Elettrici',1,1,5);

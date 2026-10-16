@@ -14,6 +14,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -42,13 +45,31 @@ import org.softcaster.engine.enums.MarketDataSource;
             )
         }
 )
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+            name = "PowerSpotPriceDefinition.fullWithCountry",
+            attributeNodes = {
+                @NamedAttributeNode("country")}
+    ),
+    @NamedEntityGraph(
+            name = "PowerSpotPriceDefinition.fullWithQuotes",
+            attributeNodes = {
+                @NamedAttributeNode("prices")}
+    )
+})
 public class PowerSpotPriceDefinition implements Serializable {
 
     @Id
     @SequenceGenerator(name = "spot_price_definition_seq", sequenceName = "power_spot_price_definition_s", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "spot_price_definition_seq")
     @Column(name = "spot_price_definition_id")
-    private Integer idSpotPriceDefinition;
+    private Integer spotPriceDefinitionId;
+
+    @Column(name = "code")
+    private String code;
+
+    @Column(name = "description")
+    private String description;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
@@ -57,6 +78,10 @@ public class PowerSpotPriceDefinition implements Serializable {
     )
     private Country country;
 
+    // Distinguere quale profilo di consumo/consegna rappresenta la serie di prezzi spot
+    // Es.
+    // Country  LoadType    Serie Spot
+    // Italia	BASE        PUN giornaliero
     @Convert(converter = LoadTypeConverter.class)
     private LoadType loadType;
 
@@ -69,20 +94,6 @@ public class PowerSpotPriceDefinition implements Serializable {
     private List<PowerSpotPrice> prices = new ArrayList<>();
 
     // getter/setter
-
-    /**
-     * @return the idSpotPriceDefinition
-     */
-    public Integer getIdSpotPriceDefinition() {
-        return idSpotPriceDefinition;
-    }
-
-    /**
-     * @param idSpotPriceDefinition the idSpotPriceDefinition to set
-     */
-    public void setIdSpotPriceDefinition(Integer idSpotPriceDefinition) {
-        this.idSpotPriceDefinition = idSpotPriceDefinition;
-    }
 
     /**
      * @return the country
@@ -138,5 +149,47 @@ public class PowerSpotPriceDefinition implements Serializable {
      */
     public void setPrices(List<PowerSpotPrice> prices) {
         this.prices = prices;
+    }
+
+    /**
+     * @return the spotPriceDefinitionId
+     */
+    public Integer getSpotPriceDefinitionId() {
+        return spotPriceDefinitionId;
+    }
+
+    /**
+     * @param spotPriceDefinitionId the spotPriceDefinitionId to set
+     */
+    public void setSpotPriceDefinitionId(Integer spotPriceDefinitionId) {
+        this.spotPriceDefinitionId = spotPriceDefinitionId;
+    }
+
+    /**
+     * @return the code
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * @param code the code to set
+     */
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

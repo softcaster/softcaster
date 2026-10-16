@@ -13,6 +13,7 @@ import org.softcaster.engine.cashflow.EffectiveInterestScheduleGenerator;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.dto.FRBInputData;
 import org.softcaster.engine.dto.FRBOutputData;
+import org.softcaster.engine.dto.PricingResult;
 import org.softcaster.engine.dto.XRBInputData;
 import org.softcaster.engine.dto.XRBOutputData;
 import org.softcaster.engine.enums.Compounding;
@@ -21,16 +22,14 @@ import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.math.MathUtil;
 
 public class BondPricer extends AbstractFixedIncomePricer {
-
-    /**
-     * Calcola il Rateo (Accrued Interest) alla data di valutazione.
-     *
-     * @param flows
-     * @param valuationDate
-     * @param dcb
-     * @param freq
-     * @return
-     */
+    
+    public PricingResult calculate(XRBInputData input) {
+        return null;
+    }
+    public PricingResult calculate(FRBInputData input) {
+        return null;
+    }
+    
     public double calculateAccruedInterest(List<CashFlow> flows, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
         return CashFlowHelper.calculateAccruedInterest(flows, valuationDate, dcb, freq);
     }

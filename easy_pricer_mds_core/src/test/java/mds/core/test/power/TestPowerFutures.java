@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import org.softcaster.core.data.MarketQuote;
-import org.softcaster.core.data.MarketQuoteDefinition;
-import org.softcaster.core.data.MarketQuoteDefinitionDAO;
+import org.softcaster.core.data.PowerSpotPrice;
+import org.softcaster.core.data.PowerSpotPriceDefinition;
+import org.softcaster.core.data.PowerSpotPriceDefinitionDAO;
 import org.softcaster.engine.enums.ShapeGranularity;
 import org.softcaster.engine.shape.ShapeCalculationInput;
 import org.softcaster.engine.shape.ShapeCalculationResult;
@@ -37,7 +37,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class TestPowerFutures implements CommandLineRunner {
 
     @Autowired
-    private MarketQuoteDefinitionDAO marketQuoteDefinitionDAO;
+    private PowerSpotPriceDefinitionDAO powerSpotPriceDefinitionDAO;
 
     public static void main(String[] args) {
         // Avvia l'applicazione tramite Spring Boot (NON fare "new DatabaseHelper()")
@@ -55,19 +55,19 @@ public class TestPowerFutures implements CommandLineRunner {
     }
 
     private void runShapeTest() {
-        String mqd = "GME-POWER-M";
-        MarketQuoteDefinition marketQuoteDefinition = marketQuoteDefinitionDAO.findByCodeWithQuotes(mqd);
-        if (marketQuoteDefinition != null) {
+        String mqd = "GME-POWER";
+        PowerSpotPriceDefinition powerSpotPriceDefinition = powerSpotPriceDefinitionDAO.findByCodeWithQuotes(mqd);
+        if (powerSpotPriceDefinition != null) {
             /*
                     .filter(quote -> (quote.getBusinessDate().getMonth() == Month.JANUARY || quote.getBusinessDate().getMonth() == Month.FEBRUARY))
                     .collect(Collectors.toList());
 */
-            List<MarketQuote> januaryQuotes = marketQuoteDefinition.getQuotes();
+            List<PowerSpotPrice> januaryQuotes = powerSpotPriceDefinition.getPrices();
 
             if (januaryQuotes != null && !januaryQuotes.isEmpty()) {
                 List<SpotObservation> observations = new ArrayList<>();
-                for (MarketQuote quote : januaryQuotes) {
-                    SpotObservation observation = new SpotObservation(quote.getBusinessDate(), quote.getPrice().doubleValue());
+                for (PowerSpotPrice quote : januaryQuotes) {
+                    SpotObservation observation = new SpotObservation(quote.getDeliveryDate(), quote.getPrice().doubleValue());
                     observations.add(observation);
                 }
                 LocalDate today = LocalDate.now();
