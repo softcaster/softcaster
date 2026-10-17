@@ -7,16 +7,23 @@ package org.softcaster.engine.analytics;
 import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.dto.XRBInput;
+import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 
-public class LoanPricer extends AbstractFixedIncomePricer {
+public class LoanPricer extends AbstractFixedIncomePricer<XRBInput, XRBResult>  {
 
     // Il TAEG usa il solutore della classe base ma con il netto erogato
     public double calculateTaeg(List<CashFlow> flows, double nominal, double fees,
             LocalDate settlementDate, DaycountBasis dcb, Compounding compounding, Frequency frequency) {
         double netDisbursed = nominal - fees;
         return solveInternalRateOfReturn(flows, netDisbursed, settlementDate, dcb, compounding, frequency);
+    }
+
+    @Override
+    public XRBResult calculate(XRBInput input) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

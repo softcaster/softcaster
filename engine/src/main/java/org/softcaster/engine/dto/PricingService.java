@@ -5,29 +5,29 @@
 package org.softcaster.engine.dto;
 
 import java.util.Objects;
-import org.softcaster.engine.analytics.BondPricer;
+import org.softcaster.engine.analytics.XRBPricer;
 
 public final class PricingService {
 
-    private final BondPricer xrbPricer;
-    private final BondPricer frbPricer;
+    private final XRBPricer xrbPricer;
+    private final XRBPricer frbPricer;
 
     // uso normale: nessuna configurazione richiesta
     public PricingService() {
-        this(new BondPricer(), new BondPricer()/*FRBPricer()*/);
+        this(new XRBPricer(), new XRBPricer()/*FRBPricer()*/);
     }
 
     // per test o configurazioni particolari
-    public PricingService(BondPricer xrbPricer, BondPricer /*FRBPricer*/ frbPricer) {
+    public PricingService(XRBPricer xrbPricer, XRBPricer /*FRBPricer*/ frbPricer) {
         this.xrbPricer = Objects.requireNonNull(xrbPricer);
         this.frbPricer = Objects.requireNonNull(frbPricer);
     }
 
     public PricingResult price(PricingInput input) {
-        if (input instanceof XRBInputData x) {
+        if (input instanceof XRBInput x) {
             return xrbPricer.calculate(x);
         }
-        if (input instanceof FRBInputData f) {
+        if (input instanceof FRBInput f) {
             return frbPricer.calculate(f);
         }
         throw new IllegalArgumentException(

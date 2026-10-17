@@ -4,5 +4,10 @@
  */
 package org.softcaster.engine.dto;
 
-public class CashFlowOutputData extends FRBOutputData{    
+import java.time.LocalDate;
+
+public record XRBInput (String code,
+        LocalDate valuationDate,
+        double cleanPrice,
+        CashFlowSchedule schedule) implements CashFlowInput {
 }

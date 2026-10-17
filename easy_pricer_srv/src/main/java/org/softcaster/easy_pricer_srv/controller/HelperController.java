@@ -4,12 +4,10 @@
  */
 package org.softcaster.easy_pricer_srv.controller;
 
-import java.util.List;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.easy_pricer_srv.util.CommonData;
-import org.softcaster.engine.dto.XRBOutputData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +26,7 @@ public class HelperController {
 
     @Autowired
     private CashFlowInstrumentCalculator bondCalculator;
-    
+
     //
     // Bond
     //
@@ -64,15 +62,6 @@ public class HelperController {
     @GetMapping(value = "helper/bond/requests")
     @SuppressWarnings("unchecked")
     public ResponseEntity getBondsData() {
-        if (bondCalculator != null) {
-            List<XRBOutputData> output = null;//bondCalculator.bondsValuation();
-            if (output != null) {
-                return new ResponseEntity(output, HttpStatus.OK);
-            } else {
-                return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
-            }
-        } else {
-            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
-        }
+        return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
     }
 }

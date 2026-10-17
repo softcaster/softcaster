@@ -5,19 +5,15 @@
 package org.softcaster.easy_pricer_mtm.evaluators;
 
 import java.time.LocalDate;
-import java.util.List;
-import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.InstrumentValuation;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.SecurityMasterData;
-import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
-import org.softcaster.engine.dto.XRBInputData;
-import org.softcaster.engine.dto.XRBOutputData;
-import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.dto.XRBInput;
+import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,23 +26,9 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
     @Qualifier("cashFlowInstrumentCalculator")
     private CashFlowInstrumentCalculator bondCalculator;
 
-    private XRBOutputData calculate(SecurityMasterData smd, double mktPrice, LocalDate officialDate) {
-        XRBOutputData output = null;
-        List<Currency> currencies = smd.getCurrencyList();
-        if (currencies != null && !currencies.isEmpty()) {
-            LocalDate valuationDate = null;
-            Calendar calendar = new Calendar(currencies);
-            valuationDate = calendar.getNextBusinessDate(officialDate, smd.getBusinessDays());
-
-            XRBInputData input = new XRBInputData();
-            input.setValuationDate(valuationDate);
-            input.setReferencePrice(mktPrice);
-            input.setFrequency(Frequency.fromCode(smd.getFrequency().getCode()));
-            input.setDaycount(smd.getAccrualDaycount());
-            input.setCompounding(smd.getCompounding());
-            output = bondCalculator.fixedIncomeValuation(input, smd);
-        }
-        return output;
+    private XRBResult calculate(SecurityMasterData smd, double mktPrice, LocalDate officialDate) {
+        XRBInput bondInputData = bondCalculator.getXRBInput(officialDate, mktPrice, smd);
+        return bondCalculator.fixedIncomeValuation(bondInputData);
     }
 
     @Override
@@ -74,23 +56,22 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
                     }
                     double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
 
-                    XRBOutputData output = calculate(smd, mktPrice, mtmHelper.getOfficialDate());
+                    XRBResult output = calculate(smd, mktPrice, mtmHelper.getOfficialDate());
                     if (output != null) {
-                        currentValuation.setMarketPrice(output.getMktPrice());
-                        currentValuation.setYtm(output.getYtm());
-                        currentValuation.setDuration(output.getDuration());
-                        currentValuation.setModDuration(output.getModifiedDuration());
-                        currentValuation.setAccruedInterest(output.getAccruedInterest());
-                        currentValuation.setTheoreticalPrice(output.getMktPrice());
-                        currentValuation.setValuationDate(output.getValuationDate());
-                        currentValuation.setDv01(output.getDv01());
+                        currentValuation.setMarketPrice(output.analytics().dirtyPrice());
+                        currentValuation.setYtm(output.analytics().yield());
+                        currentValuation.setDuration(output.analytics().modifiedDuration());
+                        currentValuation.setModDuration(output.analytics().modifiedDuration());
+                        currentValuation.setAccruedInterest(output.analytics().accruedInterest());
+                        currentValuation.setTheoreticalPrice(output.analytics().dirtyPrice());
+                        currentValuation.setValuationDate(output.valuationDate());
+                        currentValuation.setDv01(output.analytics().dv01());
                     }
-  
+
                     return currentValuation;
                 });
 
                 //double priceYieldUp = bondCalculator.repriceBondForYieldShift(smd, mtmHelper.getOfficialDate(), output.getYtm(), 1.);
-
                 // Allinea i campi della singola posizione leggendoli dall'oggetto condiviso
                 position.setMarketPrice(valuation.getMarketPrice());
                 position.setTheoreticalPrice(valuation.getMarketPrice());

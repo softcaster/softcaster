@@ -1,9 +1,12 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Record.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Enum.java to edit this template
  */
 package org.softcaster.engine.dto;
 
-public record PricingResult() {
+import java.time.LocalDate;
 
+public sealed interface PricingResult permits CashFlowResult /*, FxResult, OptionResult */ {
+    String instrumentId();
+    LocalDate valuationDate();
 }

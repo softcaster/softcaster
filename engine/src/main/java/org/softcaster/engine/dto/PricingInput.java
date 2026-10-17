@@ -4,6 +4,5 @@
  */
 package org.softcaster.engine.dto;
 
-public sealed interface PricingInput permits XRBInputData, FRBInputData {
-
+public sealed interface PricingInput permits CashFlowInput {
 }

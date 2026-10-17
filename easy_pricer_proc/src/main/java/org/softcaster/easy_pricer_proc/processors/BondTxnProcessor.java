@@ -11,11 +11,12 @@ import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_mds_core.Calendar;
+import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.Utils;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
-import org.softcaster.engine.analytics.BondPricer;
-import org.softcaster.engine.dto.XRBInputData;
-import org.softcaster.engine.dto.XRBOutputData;
+import org.softcaster.engine.analytics.XRBPricer;
+import org.softcaster.engine.dto.XRBInput;
+import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.engine.enums.TxnComponentType;
 import static org.softcaster.engine.enums.TxnSide.BUY;
 import static org.softcaster.engine.enums.TxnSide.SELL;
@@ -31,8 +32,12 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
 
     @Autowired
     @Qualifier("bondPricer")
-    private BondPricer bondPricer;
+    private XRBPricer bondPricer;
 
+    @Autowired
+    @Qualifier("cashFlowInstrumentCalculator")
+    CashFlowInstrumentCalculator calculator;
+    
     @Override
     public void process(FinancialTxn txn, PositionDetail position) {
 
@@ -56,18 +61,21 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
         // trasformo prezzo di mercato in base unitaria per calcolo utili unrealized
         super.process(input, position);
 
+        XRBInput bondInputData = calculator.getXRBInput(txn.getTradeDate().toLocalDate(), txn.getPrice(), smd); 
+        XRBResult bondOutputData = calculator.fixedIncomeValuation(bondInputData); 
+        /*
         Calendar calendar = new Calendar(smd.getCurrency());
         LocalDate valuationDate = calendar.getNextBusinessDate(txn.getTradeDate().toLocalDate(), smd.getBusinessDays());
-        XRBInputData bondInputData = new XRBInputData();
+        XRBInput(smd.getCode(),smd);
         bondInputData.setReferencePrice(txn.getPrice());
         bondInputData.setValuationDate(valuationDate);
         bondInputData.setCompounding(smd.getCompounding());
         bondInputData.setDaycount(smd.getAccrualDaycount());
         bondInputData.setFrequency(smd.getFrequency());
         bondInputData.setFlows(Utils.convertCashFlow(smd.getCashFlows()));
-        XRBOutputData bondOutputData = bondPricer.calculate(bondInputData);
-        
-        double effectiveInterestRate = bondOutputData.getYtm();
+        XRBOutputData2 bondOutputData = bondPricer.calculate(bondInputData);
+        */
+        double effectiveInterestRate = bondOutputData.analytics().yield();
 
         // Per accrual stessa gestione di quantity e notionalValue
         // Se transazione cancellata o modificata, inverto quantita, 
@@ -77,7 +85,7 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
                 || input.getStatus() == TxnStatus.TO_AMEND) {
             quantity = quantity * (-1.);
         }
-        double accruals = bondOutputData.getAccruedInterest() * quantity * smd.getMultiplier();
+        double accruals = bondOutputData.analytics().accruedInterest()* quantity * smd.getMultiplier();
         switch (input.getSide()) {
             case BUY -> {
                 position.setBuyAccrual(position.getBuyAccrual() + accruals);
@@ -105,13 +113,13 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
             txn.addTxnComponent(component);
         }
         
-        position.setYtm(bondOutputData.getYtm());
-        position.setModDuration(bondOutputData.getModifiedDuration());
-        position.setDuration(bondOutputData.getModifiedDuration());
+        position.setYtm(bondOutputData.analytics().yield());
+        position.setModDuration(bondOutputData.analytics().modifiedDuration());
+        position.setDuration(bondOutputData.analytics().modifiedDuration());
         LocalDate maturity = smd.getMaturityDate().toLocalDate();
-        double timeToMaturity = smd.getDaycount().calculate(valuationDate, maturity, smd.getFrequency());
+        double timeToMaturity = smd.getDaycount().calculate(bondOutputData.valuationDate(), maturity, smd.getFrequency());
         position.setTimeToMaturity(timeToMaturity);
-        position.setTheoreticalPrice(txn.getPrice() + bondOutputData.getAccruedInterest());
+        position.setTheoreticalPrice(txn.getPrice() + bondOutputData.analytics().accruedInterest());
         // sulla posizione tengo market price normalizzato a base 100
         position.setMarketPrice(txn.getPrice());
     }

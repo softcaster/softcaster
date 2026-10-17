@@ -7,8 +7,9 @@ package org.softcaster.engine.config;
 import org.softcaster.engine.analytics.Black76Pricer;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
 import org.softcaster.engine.analytics.BondForwardPricer;
-import org.softcaster.engine.analytics.BondPricer;
+import org.softcaster.engine.analytics.XRBPricer;
 import org.softcaster.engine.analytics.CRRBinomialPricer;
+import org.softcaster.engine.analytics.FRBPricer;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
 import org.softcaster.engine.analytics.LoanPricer;
@@ -32,10 +33,16 @@ public class EngineAutoConfiguration {
         return new BackwardScheduleGenerator();
     }
 
-    @Bean(name = "bondPricer")
+    @Bean(name = "xRBPricer")
     @ConditionalOnMissingBean 
-    public BondPricer bondPricer() {
-        return new BondPricer();
+    public XRBPricer xRBPricer() {
+        return new XRBPricer();
+    }
+    
+    @Bean(name = "fRBPricer")
+    @ConditionalOnMissingBean 
+    public FRBPricer fRBPricer() {
+        return new FRBPricer();
     }
 
     @Bean(name = "bondFwdPricer")

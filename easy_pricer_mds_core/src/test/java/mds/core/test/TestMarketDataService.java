@@ -33,8 +33,8 @@ import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.engine.curve.OrderedDiscountFactor;
-import org.softcaster.engine.dto.CashFlowInputData;
-import org.softcaster.engine.dto.CashFlowOutputData;
+import org.softcaster.engine.dto.XRBInput;
+import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.provider.bricks.Node;
@@ -137,13 +137,9 @@ public class TestMarketDataService {
 
     private void testYieldCurve() {
 
-        CashFlowInputData input = new CashFlowInputData();
-        input.setCode("IT0005491250");
-        input.setReferenceDate(marketDataService.getOfficialDate());
-        input.setReferencePrice(100.92);
-
-        CashFlowOutputData output = bondCalculator.cashFlowValuation(input, null);
-        System.out.println(output.getYtm());
+        XRBInput input = bondCalculator.getXRBInput("IT0005491250", marketDataService.getOfficialDate(), 100.92);
+        XRBResult result = bondCalculator.fixedIncomeValuation(input);
+        System.out.println(result.analytics().yield());
     }
 
     private void testUpdateBondPrice() {
@@ -176,9 +172,9 @@ public class TestMarketDataService {
         request.fullCalc = false;
         request.yieldCurve = "";
 
-        BondPricingResponse response = bondCalculator.bondValuation(request);
-        System.out.println(response.accruedInterest);
-        System.out.println(response.yieldToMaturity);
+        //BondPricingResponse response = bondCalculator.bondValuation(request);
+        //System.out.println(response.accruedInterest);
+        //System.out.println(response.yieldToMaturity);
     }
 
     private void testFltBondPricer2() {
@@ -190,12 +186,13 @@ public class TestMarketDataService {
         request.fullCalc = false;
         request.yieldCurve = "";
 
-        BondPricingResponse response = bondCalculator.bondValuation(request);
+        //BondPricingResponse response = bondCalculator.bondValuation(request);
         System.out.println("Reference Date:" + "\t" + request.referenceDate);
         System.out.println("Clean Price:" + "\t" + request.referencePrice);
-        System.out.println("Accrued Interest:" + "\t" + response.accruedInterest);
-        System.out.println("Yield To Maturity:" + "\t" + response.yieldToMaturity);
+        //System.out.println("Accrued Interest:" + "\t" + response.accruedInterest);
+        //System.out.println("Yield To Maturity:" + "\t" + response.yieldToMaturity);
 
+        /*
         if (response.acpList != null && !response.acpList.isEmpty()) {
             // Definiamo una stringa di formato: 
             // %-12s  -> Stringa allineata a sinistra, larga 12 caratteri (per le date)
@@ -221,6 +218,7 @@ public class TestMarketDataService {
             System.out.println("-".repeat(112));
 
             // 2. Stampa dei dati (DecimalFormat non serve più, fa tutto printf)
+            
             for (AmortizedCostPeriod acp : response.acpList) {
                 System.out.printf(formatoDati,
                         acp.accrualStart(),
@@ -235,6 +233,7 @@ public class TestMarketDataService {
             }
             System.out.println(totalDiscountAccretion);
         }
+         */
     }
 
     private void testBondPricer() {

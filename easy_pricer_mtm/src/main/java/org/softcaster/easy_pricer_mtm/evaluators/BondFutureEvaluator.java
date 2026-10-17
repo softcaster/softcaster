@@ -21,7 +21,7 @@ import org.softcaster.easy_pricer_mds_core.calc.CTDData;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.easy_pricer_mtm.services.MtmService;
 import org.softcaster.engine.dto.XRBForwardInputData;
-import org.softcaster.engine.dto.XRBOutputData;
+import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -101,8 +101,10 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
         MasterData masterData = masterDataDAO.findByCode(cTDData.underlyingIsin);
         if (masterData != null) {
             if (masterData instanceof SecurityMasterData smd) {
-                XRBOutputData xrbOutput = evaluatorHelper.calculateXRB(smd, cTDData.cleanSpotPrice, officialDate);
-                dv01 = xrbOutput.getDv01() / cTDData.cf;
+                XRBResult result = evaluatorHelper.calculateXRB(smd, cTDData.cleanSpotPrice, officialDate);
+                if (result != null) {
+                    dv01 = result.analytics().dv01() / cTDData.cf;
+                }
             }
         }
 

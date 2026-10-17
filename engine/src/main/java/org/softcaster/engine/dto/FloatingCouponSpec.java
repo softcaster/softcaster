@@ -6,7 +6,7 @@ package org.softcaster.engine.dto;
 
 import org.softcaster.engine.enums.CouponProjectionMethod;
 
-public record FloatingCouponSpec(double referenceRate, CouponProjectionMethod projectionMethod,
+public record FloatingCouponSpec(double referenceRate, double spread, CouponProjectionMethod projectionMethod,
         String projectionCurve, String projectionIndex) {
 
 }

@@ -7,12 +7,44 @@ package org.softcaster.engine.analytics;
 import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.cashflow.CashFlowHelper;
+import org.softcaster.engine.curve.DiscountCurve;
+import org.softcaster.engine.dto.CashFlowInput;
+import org.softcaster.engine.dto.CashFlowResult;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.math.MathUtil;
 
-public abstract class AbstractFixedIncomePricer {
+public abstract class AbstractFixedIncomePricer<I extends CashFlowInput, O extends CashFlowResult>
+        implements Pricer<I, O> {
+
+    protected double pvFlatModel(List<CashFlow> flows, LocalDate valuationDate, DaycountBasis dcb,
+            Compounding compounding, Frequency frequency,
+            double currentRate, double spread, double dm,
+            double euriborShift, double dmShift) {
+
+        List<CashFlow> future = CashFlowHelper.futureFlows(flows, valuationDate);
+        double freqValue = frequency.getYearFraction();          // check: coupon = 100 * rate / freqValue, as in your code
+
+        double euribor = currentRate + euriborShift;
+        double discountRate = euribor + dm + dmShift;
+
+        double pv = 0.0;
+        for (int i = 0; i < future.size(); i++) {
+            CashFlow cf = future.get(i);
+            double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
+
+            // the first future coupon is the current one, already fixed: it does not move with the Euribor shock
+            double amount = (i == 0) ? cf.interest() : 100.0 * ((euribor + spread) / freqValue);
+
+            if (i == future.size() - 1) {
+                amount += 100.0;                                  // redemption (remove if the list already has a principal flow)
+            }
+            pv += amount * MathUtil.getDiscountFactor(compounding, discountRate, t);
+        }
+        return pv;
+    }
 
     // Metodo universale per calcolare il Valore Attuale (NPV)
     protected double calculateNpv(List<CashFlow> flows, double rate,
@@ -64,8 +96,8 @@ public abstract class AbstractFixedIncomePricer {
             DaycountBasis dcb,
             Compounding compounding,
             Frequency frequency,
-            double currentRate // es. Euribor 6M noto (0.0262)
-    ) {
+            double currentRate, // Euribor 6M corrente
+            double spread) {      // spread contrattuale del titolo
 
         MathUtil.Function1 dmFunction = new MathUtil.Function1() {
             @Override
@@ -74,46 +106,73 @@ public abstract class AbstractFixedIncomePricer {
             }
 
             @Override
-            public double f(double dm, Compounding compounding) {
-                double pv = 0.0;
-                double freqValue = frequency.getYearFraction(); // es. 2.0 per semestrale
-
-                for (int i = 0; i < cashflows.size(); i++) {
-                    CashFlow cf = cashflows.get(i);
-
-                    // 1. Calcoliamo il tempo residuo per lo sconto
-                    double t = dcb.calculate(valuationDate, cf.paymentDate(), frequency);
-
-                    // 2. STIMA DEL FLUSSO FUTURO (Indicizzazione costante all'Euribor attuale)
-                    // Ricostruiamo la cedola teorica del CCT: (Euribor + Spread del Titolo) * FrazioneAnnoPeriodo
-                    // Lo spread del titolo (0,75%) è fisso. Per ricavarlo dinamicamente dal flusso corrente:
-                    // Tasso Cedola Corrente = (Cedola Semestrale * Frequenza) / 100 -> es. (1.5935 * 2) / 100 = 3.187%
-                    // Spread Titolo = Tasso Cedola Corrente - currentRate -> 3.187% - 2.62% = 0.567% (o 0.75% a seconda della cedola)
-                    // NOTA: Se l'oggetto CashFlow ha già incorporato lo spread corretto all'emissione,
-                    // le cedole future stimate all'Euribor attuale avranno tasso annuo pari a (currentRate + spread)
-                    double cctSpread = 0.0075; // Lo spread dello 0,75% del tuo CCT-Eu Ot30
-
-                    double estimatedCouponRate = currentRate + cctSpread;
-                    double estimatedInterest = 100.0 * (estimatedCouponRate / freqValue);
-
-                    double expectedFlowAmount = estimatedInterest;
-
-                    // Se è l'ultimo flusso (scadenza), aggiungiamo il rimborso del capitale a 100
-                    if (i == cashflows.size() - 1) {
-                        expectedFlowAmount += 100.0;
-                    }
-
-                    // 3. ATTUALIZZAZIONE (Euribor + DM)
-                    double totalDiscountRate = currentRate + dm;
-                    double df = MathUtil.getDiscountFactor(compounding, totalDiscountRate, t);
-
-                    pv += expectedFlowAmount * df;
-                }
-
-                return pv - dirtyPrice;
+            public double f(double dm, Compounding c) {
+                return pvFlatModel(cashflows, valuationDate, dcb, c, frequency,
+                        currentRate, spread, dm, 0.0, 0.0) - dirtyPrice;
             }
         };
-
         return MathUtil.rootNewton(dmFunction, 0.005, compounding);
+    }
+
+    public double calculateZSpread(
+            List<CashFlow> cashflows,
+            double dirtyPrice,
+            LocalDate valuationDate,
+            DaycountBasis dcb,
+            Compounding compounding,
+            Frequency frequency,
+            DiscountCurve curve) {
+        return CashFlowHelper.solveZSpread(cashflows,
+                dirtyPrice,
+                valuationDate,
+                dcb,
+                compounding,
+                frequency,
+                curve);
+
+    }
+
+    public double calculateYtm(List<CashFlow> flows, double cleanPrice, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency) {
+        return CashFlowHelper.calculateYtm(flows, cleanPrice, valuationDate, dcb, compounding, frequency);
+    }
+
+    public double calculateAccruedInterest(List<CashFlow> flows, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
+        return CashFlowHelper.calculateAccruedInterest(flows, valuationDate, dcb, freq);
+    }
+
+    public double calculateMacaulayDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
+        return CashFlowHelper.calculateMacaulayDuration(flows, ytm, valuationDate, dcb, freq);
+    }
+
+    public double calculateModifiedDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
+        return CashFlowHelper.calculateModifiedDuration(flows, ytm, valuationDate, dcb, freq);
+    }
+
+    // Mentre la Duration ci dice quanto il prezzo varia in modo lineare, 
+    // la Convexity corregge l'errore di questa approssimazione quando i tassi si muovono molto   
+    public double calculateConvexity(List<CashFlow> flows, double ytm, double dirtyPrice, LocalDate valDate, DaycountBasis dcb, Compounding compounding) {
+        double weightedSum = 0.0;
+
+        for (CashFlow cf : flows) {
+            if (cf.paymentDate().isAfter(valDate)) {
+                double t = dcb.calculate(valDate, cf.paymentDate(), null);
+                // PV del flusso scontato allo YTM
+                double pv = cf.getTotalAmount() * MathUtil.getDiscountFactor(compounding, ytm, t);
+
+                // Termine della sommatoria: t * (t + 1) * PV
+                weightedSum += t * (t + 1) * pv;
+            }
+        }
+
+        // Convexity = Sommatoria / (Prezzo * (1 + y)^2)
+        return weightedSum / (dirtyPrice * Math.pow(1 + ytm, 2));
+    }
+
+    public double calculatePrice(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency frequency) {
+        return CashFlowHelper.calculatePrice(flows, ytm, valuationDate, dcb, compounding, frequency);
+    }
+
+    public double calculatePrice(List<CashFlow> flows, DiscountCurve curve, LocalDate valuationDate, DaycountBasis dcb, Frequency frequency) {
+        return CashFlowHelper.calculatePrice(flows, curve, valuationDate, dcb, frequency);
     }
 }

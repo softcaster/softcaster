@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Currency;
 import java.util.List;
-import static org.softcaster.engine.Test.BOND;
 import static org.softcaster.engine.Test.CRR;
 import static org.softcaster.engine.Test.CURR;
 import static org.softcaster.engine.Test.DATE;
@@ -17,12 +16,10 @@ import static org.softcaster.engine.Test.LOAN;
 import static org.softcaster.engine.Test.YCURVE;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
 import org.softcaster.engine.analytics.BondForwardPricer;
-import org.softcaster.engine.analytics.BondPricer;
+import org.softcaster.engine.analytics.XRBPricer;
 import org.softcaster.engine.analytics.CRRBinomialPricer;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
-import org.softcaster.engine.cashflow.BackwardScheduleGenerator;
-import org.softcaster.engine.cashflow.BulletAmortizationStrategy;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.cashflow.ForwardScheduleGenerator;
 import org.softcaster.engine.cashflow.FrenchAmortizationStrategy;
@@ -67,10 +64,6 @@ enum Test {
 @SpringBootApplication
 @Import(EngineAutoConfiguration.class)
 public class Engine {
-
-    @Autowired
-    @Qualifier("bondPricer") // Indica a Spring esattamente QUALE bean usare
-    private BondPricer bondPricer;
 
     @Autowired
     @Qualifier("bondFwdPricer")
@@ -158,32 +151,6 @@ public class Engine {
         System.out.println(dt);
     }
 
-    private void testBondPricer() {
-        BackwardScheduleGenerator bsg = new BackwardScheduleGenerator();
-        LocalDate effectiveDate = LocalDate.of(2002, 1, 1);
-        LocalDate terminationDate = LocalDate.of(2033, 1, 2);
-        Frequency freq = Frequency.fromId(2);
-
-        BusinessDayConvention bdc = BusinessDayConvention.fromId(3);
-        DaycountBasis daycount = DaycountBasis.fromId(5);
-
-        DummyCaLendar dummy = new DummyCaLendar();
-        List<PaymentPeriod> periods = bsg.generate(effectiveDate, terminationDate, freq, bdc, daycount, dummy);
-        BulletAmortizationStrategy bas = new BulletAmortizationStrategy();
-        List<CashFlow> flows = bas.generateCashFlows(100., 0.06, periods, DaycountBasis.ACT_ACT_ICMA);
-
-        LocalDate valuationDate = LocalDate.of(2026, 5, 13);
-
-        double irr = bondPricer.calculateYtm(flows, 114.08, valuationDate, DaycountBasis.ACT_365, Compounding.COMPOUNDED, freq);
-        System.out.println(irr);
-        double accruedInterest = bondPricer.calculateAccruedInterest(flows, valuationDate, DaycountBasis.ACT_365, freq);
-        System.out.println(accruedInterest);
-        double modifiedDuration = bondPricer.calculateModifiedDuration(flows, irr, valuationDate, daycount, freq);
-        System.out.println(modifiedDuration);
-        double convexity = bondPricer.calculateConvexity(flows, irr, 113.34, valuationDate, daycount, Compounding.COMPOUNDED);
-        System.out.println(convexity);
-    }
-
     private void testFrenchAmortizationStrategy() {
         LocalDate effectiveDate = LocalDate.of(2026, 5, 8);
         LocalDate terminationDate = LocalDate.of(2027, 5, 8);
@@ -252,9 +219,7 @@ public class Engine {
 
     private void runTest(Test test) {
         switch (test) {
-            case BOND ->
-                testBondPricer();
-            case BAS ->
+             case BAS ->
                 testBlackAndScholesPricer();
             case GAK ->
                 testGarmanKohlhagenPricer();
