@@ -6,13 +6,13 @@ package org.softcaster.easy_pricer_mds_core.calc;
  */
 import java.time.LocalDate;
 import java.util.List;
-import org.softcaster.core.data.Currency;
-import org.softcaster.core.data.CurrencyDAO;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import org.softcaster.core.data.FltSecurityMasterData;
+import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
-import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
 import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
@@ -20,237 +20,197 @@ import org.softcaster.engine.analytics.FRBPricer;
 import org.softcaster.engine.analytics.XRBPricer;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.curve.DiscountCurve;
+import org.softcaster.engine.dto.CashFlowAnalytics;
 import org.softcaster.engine.dto.CashFlowSchedule;
 import org.softcaster.engine.dto.FRBInput;
 import org.softcaster.engine.dto.FRBResult;
 import org.softcaster.engine.dto.FloatingCouponSpec;
 import org.softcaster.engine.dto.XRBInput;
 import org.softcaster.engine.dto.XRBResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+// package e import come nel file originale
+// + import java.util.List;
+// + import java.util.NoSuchElementException;
+// + import java.util.Objects;
+/**
+ * Costruisce gli input dei pricer a partire dall'anagrafica titoli e invoca i
+ * pricer dell'engine per gli strumenti con cash flow.
+ *
+ * Errori: - NoSuchElementException -> titolo non trovato (REST: 404) -
+ * IllegalArgumentException -> dati di input non validi o tipo di titolo errato
+ * (REST: 400)
+ */
 @Service("cashFlowInstrumentCalculator")
 public class CashFlowInstrumentCalculator {
 
-    @Autowired
-    private SecurityMasterDataDAO smdDAO;
-    private CurrencyDAO currencyDAO;
-    @Autowired
-    @Qualifier("xRBPricer")
-    private XRBPricer xRBPricer;
-    @Autowired
-    @Qualifier("fRBPricer")
-    private FRBPricer fRBPricer;
-    @Autowired
-    @Qualifier("fltSecurityMasterDataHelper")
-    private FltSecurityMasterDataHelper fltHelper;
+    /**
+     * Valore di 1 basis point nell'unita' in cui sono espressi i yield. 0.01 se
+     * il yield e' in percentuale (4.25), 0.0001 se e' in decimale (0.0425).
+     * VERIFICARE contro l'unita' restituita da XRBResult.analytics().yield().
+     */
+    private static final double ONE_BP = 0.01;
+
+    private final SecurityMasterDataDAO smdDAO;
+    private final XRBPricer xrbPricer;
+    private final FRBPricer frbPricer;
+    private final FltSecurityMasterDataHelper fltHelper;
+
+    public CashFlowInstrumentCalculator(SecurityMasterDataDAO smdDAO,
+            XRBPricer xrbPricer,
+            FRBPricer frbPricer,
+            FltSecurityMasterDataHelper fltHelper) {
+        this.smdDAO = Objects.requireNonNull(smdDAO);
+        this.xrbPricer = Objects.requireNonNull(xrbPricer);
+        this.frbPricer = Objects.requireNonNull(frbPricer);
+        this.fltHelper = Objects.requireNonNull(fltHelper);
+    }
 
     // ------------------------------------------------------------------------
     // -- Fixed Rate Bond
     // ------------------------------------------------------------------------
-    public XRBInput getXRBInput(LocalDate officialDate, double cleanPrice, SecurityMasterData securityMasterData) {
-        if (securityMasterData == null || securityMasterData.getCashFlows().isEmpty()) {
-            return null;
-        }
-        // creazioni dati schedule
-        List<CashFlow> flows = Utils.convertCashFlow(securityMasterData.getCashFlows());
-        CashFlowSchedule schedule = new CashFlowSchedule(flows, securityMasterData.getAccrualDaycount(),
-                securityMasterData.getFrequency(), securityMasterData.getCompounding());
-        // Calcolo valuationDate
-        Calendar calendar = new Calendar(securityMasterData.getCurrencyList());
-        LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, securityMasterData.getBusinessDays());
-        XRBInput input = new XRBInput(securityMasterData.getCode(), valuationDate, cleanPrice, schedule);
-        return input;
+    public XRBInput getXRBInput(String code, LocalDate officialDate, double cleanPrice) {
+        return getXRBInput(officialDate, cleanPrice, loadSecurity(code));
     }
 
-    public XRBInput getXRBInput(String code, LocalDate officialDate, double cleanPrice) {
-        if (code == null || code.isBlank()) {
-            return null;
-        }
-
-        SecurityMasterData securityMasterData = smdDAO.findByCodeWithCashFlowAndHolidays(code);
-        return getXRBInput(officialDate, cleanPrice, securityMasterData);
+    public XRBInput getXRBInput(LocalDate officialDate, double cleanPrice, SecurityMasterData smd) {
+        CashFlowSchedule schedule = fixedSchedule(smd);
+        return new XRBInput(smd.getCode(), valuationDate(smd, officialDate), cleanPrice, schedule);
     }
 
     public XRBResult fixedIncomeValuation(XRBInput input) {
-        if (input == null) {
-            return null;
-        }
-        return xRBPricer.calculate(input);
+        return xrbPricer.calculate(Objects.requireNonNull(input, "input"));
     }
 
     // ------------------------------------------------------------------------
     // -- Floating Rate Bond
     // ------------------------------------------------------------------------
-    public FRBInput getFRBInput(LocalDate officialDate, double cleanPrice, FloatingCouponSpec spec, FltSecurityMasterData fltSecurityMasterData) {
-        if (fltSecurityMasterData == null || fltSecurityMasterData.getCashFlows().isEmpty()) {
-            return null;
+    public FRBInput getFRBInput(String code, LocalDate officialDate, double cleanPrice, FloatingCouponSpec spec) {
+        SecurityMasterData smd = loadSecurity(code);
+        if (!(smd instanceof FltSecurityMasterData flt)) {
+            throw new IllegalArgumentException("Il titolo " + code + " non e' un floating rate bond");
         }
-        // creazioni dati schedule
-        List<CashFlow> flows = fltHelper.completeFltSecurityCashFlow(fltSecurityMasterData);
-        CashFlowSchedule schedule = new CashFlowSchedule(flows, fltSecurityMasterData.getAccrualDaycount(),
-                fltSecurityMasterData.getFrequency(), fltSecurityMasterData.getCompounding());
-        // Calcolo valuationDate
-        Calendar calendar = new Calendar(fltSecurityMasterData.getCurrencyList());
-        LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, fltSecurityMasterData.getBusinessDays());
-        FRBInput input = new FRBInput(fltSecurityMasterData.getCode(), valuationDate, cleanPrice, schedule, spec);
-        return input;
+        return getFRBInput(officialDate, cleanPrice, spec, flt);
     }
 
-    public FRBInput getFRBInput(String code, LocalDate officialDate, double cleanPrice, FloatingCouponSpec spec) {
-        if (code == null || code.isBlank()) {
-            return null;
-        }
-
-        SecurityMasterData securityMasterData = smdDAO.findByCodeWithCashFlowAndHolidays(code);
-        if (securityMasterData instanceof FltSecurityMasterData fltSecurityMasterData) {
-            return getFRBInput(officialDate, cleanPrice, spec, fltSecurityMasterData);
-        }
-
-        return null;
+    public FRBInput getFRBInput(LocalDate officialDate, double cleanPrice, FloatingCouponSpec spec,
+            FltSecurityMasterData flt) {
+        Objects.requireNonNull(flt, "securityMasterData");
+        requireCashFlows(flt);
+        // le cedole future vengono proiettate qui (mds_core), l'engine riceve flussi completi
+        List<CashFlow> flows = fltHelper.completeFltSecurityCashFlow(flt);
+        CashFlowSchedule schedule = new CashFlowSchedule(flows, flt.getAccrualDaycount(),
+                flt.getFrequency(), flt.getCompounding());
+        return new FRBInput(flt.getCode(), valuationDate(flt, officialDate), cleanPrice, schedule, spec);
     }
 
     public FRBResult fltIncomeValuation(FRBInput input) {
-        if (input == null) {
-            return null;
-        }
-        return fRBPricer.calculate(input);
+        return frbPricer.calculate(Objects.requireNonNull(input, "input"));
     }
 
-    public double getAccruals(SecurityMasterData securityMasterData, LocalDate accrualDate) {
-        double accruals = 0.;
-        List<CashFlow> flows = Utils.convertCashFlow(securityMasterData.getCashFlows());
-        accruals = xRBPricer.calculateAccruedInterest(flows, accrualDate, securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
-        return accruals;
+    // ------------------------------------------------------------------------
+    // -- Calcoli di supporto
+    // ------------------------------------------------------------------------
+    public double getAccruals(SecurityMasterData smd, LocalDate accrualDate) {
+        CashFlowSchedule s = fixedSchedule(smd);
+        return xrbPricer.calculateAccruedInterest(s.flows(), accrualDate, s.daycount(), s.frequency());
     }
 
-    public double getZSpread(SecurityMasterData securityMasterData,
-            double dirtyPrice,
-            LocalDate valuationDate,
-            DiscountCurve curve) {
-
-        double zSpread = 0.;
-        List<CashFlow> cashflows = Utils.convertCashFlow(securityMasterData.getCashFlows());
-        zSpread = xRBPricer.calculateZSpread(cashflows, dirtyPrice, valuationDate, securityMasterData.getAccrualDaycount(),
-                securityMasterData.getCompounding(), securityMasterData.getFrequency(), curve);
-
-        return zSpread;
+    public double getZSpread(SecurityMasterData smd, double dirtyPrice,
+            LocalDate valuationDate, DiscountCurve curve) {
+        Objects.requireNonNull(curve, "curve");
+        CashFlowSchedule s = fixedSchedule(smd);
+        return xrbPricer.calculateZSpread(s.flows(), dirtyPrice, valuationDate,
+                s.daycount(), s.compounding(), s.frequency(), curve);
     }
 
-    public double repriceBondForYieldShift(SecurityMasterData securityMasterData, LocalDate officialDate, double ytm, double basisPoints) {
-
-        double yieldShift = basisPoints / 100.;
-        ytm += yieldShift;
-
-        Calendar calendar = new Calendar(securityMasterData.getCurrency());
-        LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, securityMasterData.getBusinessDays());
-
-        double newPrice = xRBPricer.calculatePrice(Utils.convertCashFlow(securityMasterData.getCashFlows()), ytm, valuationDate,
-                securityMasterData.getAccrualDaycount(), securityMasterData.getCompounding(), securityMasterData.getFrequency());
-
-        return newPrice;
-    }
-
-    public double calculatePrice(SecurityMasterData securityMasterData, LocalDate officialDate, DiscountCurve discountCurve) {
-
-        Currency currency = currencyDAO.findByIsoCode(securityMasterData.getCurrency().getIsoCode());
-        Calendar calendar = new Calendar(currency);
-        LocalDate valuationDate = calendar.getNextBusinessDate(officialDate, securityMasterData.getBusinessDays());
-
-        double newPrice = xRBPricer.calculatePrice(Utils.convertCashFlow(securityMasterData.getCashFlows()), discountCurve, valuationDate,
-                securityMasterData.getAccrualDaycount(), securityMasterData.getFrequency());
-
-        return newPrice;
-    }
-
-    /*
-    private CashFlowOutputData getCashFlowOutputData(FRBOutputData2 frbo) {
-        CashFlowOutputData output = new CashFlowOutputData();
-        output.setAccruedInterest(frbo.getAccruedInterest());
-        output.setAcpList(frbo.getAcpList());
-        output.setDiscountMargin(frbo.getDiscountMargin());
-        output.setDuration(frbo.getDuration());
-        output.setDv01(frbo.getDv01());
-        output.setMarginDuration(frbo.getMacaulayDuration());
-        output.setMarginDuration(frbo.getMarginDuration());
-        output.setModifiedDuration(frbo.getModifiedDuration());
-        output.setPrice(frbo.getPrice());
-        output.setShortBondYield(frbo.getShortBondYield());
-        output.setValuationDate(frbo.getValuationDate());
-        output.setYtm(frbo.getYtm());
-        return output;
-    }
-    
-    private CashFlowOutputData getCashFlowOutputData(XRBOutputData2 xrbo) {
-        CashFlowOutputData output = new CashFlowOutputData();
-        output.setAccruedInterest(xrbo.getAccruedInterest());
-        output.setAcpList(xrbo.getAcpList());
-        output.setDuration(xrbo.getDuration());
-        output.setDv01(xrbo.getDv01());
-        output.setMarginDuration(xrbo.getMacaulayDuration());
-        output.setModifiedDuration(xrbo.getModifiedDuration());
-        output.setPrice(xrbo.getPrice());
-        output.setValuationDate(xrbo.getValuationDate());
-        output.setYtm(xrbo.getYtm());
-        return output;
-    }
-    
-    public BondPricingResponse bondValuation(BondPricingRequest request) {
-        BondPricingResponse response = null;
-        if (smdDAO != null) {
-            SecurityMasterData securityMasterData = smdDAO.findByCodeWithCashFlowAndHolidays(request.isin);
-            if (securityMasterData != null) {
-                FRBInput input = new FRBInput();
-                Calendar calendar = new Calendar(securityMasterData.getCurrency());
-                LocalDate valuationDate = calendar.getNextBusinessDate(request.referenceDate, securityMasterData.getBusinessDays());
-                input.setValuationDate(valuationDate);
-                input.setReferencePrice(request.referencePrice);
-                input.setReferenceRate(request.referenceRate);
-                input.setRedemptionPrice(securityMasterData.getRedempionPrice());
-                input.setFrequency(securityMasterData.getFrequency());
-                input.setDaycount(securityMasterData.getAccrualDaycount());
-                input.setCompounding(securityMasterData.getCompounding());
-
-                XRBOutputData2 output = fixedIncomeValuation(input, securityMasterData);
-                if (output != null) {
-                    response = new BondPricingResponse();
-                    response.accruedInterest = output.getAccruedInterest();
-                    response.macaulayDuration = 0.;
-                    response.yieldToMaturity = output.getYtm();
-                    response.modifiedDuration = output.getModifiedDuration();
-                    response.dv01 = output.getDv01();
-                    response.convexity = 0.;
-                    response.presentValue = 0.;
-                    response.yieldToMaturityPV = 0.;
-                    response.acpList = output.getAcpList();
-                }
-            }
-        }
-
-        return response;
-    }
-    
+    /**
+     * Riprezza il titolo con il yield spostato di {@code basisPoints}.
+     * {@code ytm} deve essere nella stessa unita' usata da ONE_BP.
+     * @param smd
+     * @param officialDate
+     * @param ytm
+     * @param basisPoints
+     * @return 
      */
+    public double repriceBondForYieldShift(SecurityMasterData smd, LocalDate officialDate,
+            double ytm, double basisPoints) {
+        CashFlowSchedule s = fixedSchedule(smd);
+        double shiftedYield = ytm + basisPoints * ONE_BP;
+        return xrbPricer.calculatePrice(s.flows(), shiftedYield, valuationDate(smd, officialDate),
+                s.daycount(), s.compounding(), s.frequency());
+    }
+
+    public double calculatePrice(SecurityMasterData smd, LocalDate officialDate, DiscountCurve curve) {
+        Objects.requireNonNull(curve, "curve");
+        CashFlowSchedule s = fixedSchedule(smd);
+        return xrbPricer.calculatePrice(s.flows(), curve, valuationDate(smd, officialDate),
+                s.daycount(), s.frequency());
+    }
+
+    // ------------------------------------------------------------------------
+    // -- Entry point REST
+    // ------------------------------------------------------------------------
     public BondPricingResponse bondValuation(BondPricingRequest request) {
+        Objects.requireNonNull(request, "request");
         XRBInput input = getXRBInput(request.isin, request.referenceDate.toLocalDate(), request.referencePrice);
         XRBResult result = fixedIncomeValuation(input);
-        if (result == null) {
-            return null;
-        }
+        CashFlowAnalytics a = result.analytics();
+
         BondPricingResponse response = new BondPricingResponse();
-        response.accruedInterest = result.analytics().accruedInterest();
-        response.convexity = result.analytics().convexity();
-        response.discountMargin = 0.;
-        response.dv01 = result.analytics().dv01();
-        response.macaulayDuration = result.analytics().modifiedDuration();
-        response.marginDuration = 0.;
-        response.modifiedDuration = result.analytics().modifiedDuration();
-        response.presentValue = 0.;
-        response.shortBondYield = 0.;
-        response.yieldToMaturity = result.analytics().yield();
-        response.yieldToMaturityPV = 0.;
-        
+        response.accruedInterest = a.accruedInterest();
+        response.convexity = a.convexity();
+        response.dv01 = a.dv01();
+        response.modifiedDuration = a.modifiedDuration();
+        response.yieldToMaturity = a.yield();
+        // Non valorizzati perche' non calcolati per un fixed rate bond:
+        // macaulayDuration, discountMargin, marginDuration, presentValue,
+        // shortBondYield, yieldToMaturityPV.
+        // Se i campi di BondPricingResponse sono Double restano null nel JSON;
+        // se sono double primitivi conviene convertirli in Double.
         return response;
+    }
+
+    // ------------------------------------------------------------------------
+    // -- Helper privati
+    // ------------------------------------------------------------------------
+    private SecurityMasterData loadSecurity(String code) {
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("Codice titolo mancante");
+        }
+        SecurityMasterData smd = smdDAO.findByCodeWithCashFlowAndHolidays(code);
+        if (smd == null) {
+            throw new NoSuchElementException("Titolo non trovato: " + code);
+        }
+        return smd;
+    }
+
+    private static void requireCashFlows(SecurityMasterData smd) {
+        if (smd.getCashFlows() == null || smd.getCashFlows().isEmpty()) {
+            throw new IllegalArgumentException("Il titolo " + smd.getCode() + " non ha cash flow");
+        }
+    }
+
+    /**
+     * Unico punto in cui si costruisce lo schedule di un titolo a tasso fisso.
+     */
+    private static CashFlowSchedule fixedSchedule(SecurityMasterData smd) {
+        Objects.requireNonNull(smd, "securityMasterData");
+        requireCashFlows(smd);
+        List<CashFlow> flows = Utils.convertCashFlow(smd.getCashFlows());
+        return new CashFlowSchedule(flows, smd.getAccrualDaycount(),
+                smd.getFrequency(), smd.getCompounding());
+    }
+
+    /**
+     * Unico punto in cui si calcola la valuation date.
+     * @param smd
+     * @param officialDate
+     * @return 
+     */
+    public static LocalDate valuationDate(MasterData smd, LocalDate officialDate) {
+        Objects.requireNonNull(officialDate, "officialDate");
+        Calendar calendar = new Calendar(smd.getCurrencyList());
+        return calendar.getNextBusinessDate(officialDate, smd.getBusinessDays());
     }
 }

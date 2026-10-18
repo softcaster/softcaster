@@ -85,7 +85,7 @@ public class MDSFacade {
     private SpreadCurveEntityDAO spreadCurveDAO;
 
     @Autowired
-    @Qualifier("bondPricer")
+    @Qualifier("xRBPricer")
     private XRBPricer bondPricer;
     @Autowired
     @Qualifier("marketDataService") 

@@ -17,6 +17,7 @@ import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
+import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Form;
 import org.softcaster.engine.enums.Frequency;
@@ -702,6 +703,7 @@ public class FxFutureDlg extends javax.swing.JDialog {
             ffmd.setAccrualDaycount(DaycountBasis.ACT_360);
             ffmd.setUnderlying((ForexMasterData) cbUnderlying.getSelectedItem());
             ffmd.setMaintenanceMargin(Converter.toDouble(txtMainMant.getText(), false));
+            ffmd.setCompounding(Compounding.COMPOUNDED);
             masterDataFacade.getFxFutureMasterDataDAO().saveOrUpdate(ffmd);
             return true;
         } catch (Exception ex) {

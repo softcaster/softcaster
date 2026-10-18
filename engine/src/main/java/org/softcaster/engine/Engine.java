@@ -177,24 +177,6 @@ public class Engine {
     }
 
     private void testFxForwardPricer() {
-
-        ForwardBaseInputData input = new ForwardBaseInputData();
-
-        LocalDate settlement = LocalDate.of(2026, 5, 11);
-        input.setValuationDate(settlement);
-
-        LocalDate maturity = LocalDate.of(2027, 5, 11);
-        input.setMaturityDate(maturity);
-
-        input.setDomesticRate(0.05);
-        input.setForeignRate(0.03);
-        input.setUnderlyingReferencePrice(1.1);
-        input.setDaycount(DaycountBasis.ACT_365);
-        input.setCompounding(Compounding.SIMPLE);
-
-        double F = fxForwardPricer.forwardPrice(input);
-        System.out.println(F);
-        System.out.println((F - input.getUnderlyingReferencePrice()) * 10000);
     }
 
     private void testBondForwardPricer() {

@@ -4,5 +4,5 @@
  */
 package org.softcaster.engine.dto;
 
-public sealed interface PricingInput permits CashFlowInput {
+public sealed interface PricingInput permits CashFlowInput, ForwardInput {
 }

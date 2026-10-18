@@ -31,10 +31,6 @@ import org.springframework.stereotype.Component;
 public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
 
     @Autowired
-    @Qualifier("bondPricer")
-    private XRBPricer bondPricer;
-
-    @Autowired
     @Qualifier("cashFlowInstrumentCalculator")
     CashFlowInstrumentCalculator calculator;
     

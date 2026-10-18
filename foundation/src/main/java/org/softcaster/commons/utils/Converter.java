@@ -38,7 +38,7 @@ public abstract class Converter {
 
     public static Short toShort(String value) throws ParseException {
         if (value == null || value.length() <= 0) {
-            return null;
+            return 0;
         }
 
         Number number = null;
@@ -52,7 +52,7 @@ public abstract class Converter {
 
     public static Integer toInt(String value) throws ParseException {
         if (value == null || value.length() <= 0) {
-            return null;
+            return 0;
         }
 
         int intValue = 0;
@@ -65,7 +65,7 @@ public abstract class Converter {
 
     public static Double toDouble(String value, boolean rounded) throws ParseException {
         if (value == null || value.length() <= 0) {
-            return null;
+            return 0.;
         }
 
         double doubleValue = 0.0;
