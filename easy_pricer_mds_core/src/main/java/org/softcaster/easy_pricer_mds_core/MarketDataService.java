@@ -181,6 +181,18 @@ public class MarketDataService {
         yieldCurves.putAll(newBases);
         discountCurves.putAll(newDiscounts);
     }
+    
+   public void saveOrUpdateCurveRates(String curveId) {
+        YieldCurve yc = yieldCurves.get(curveId);
+
+        List<CurveNode> newInputs = new ArrayList<>(yc.getNodes());
+        yieldCurveBuilder.saveOrUpdateCurve(curveId, newInputs);
+    }
+
+    public void loadCurveCurveRates(String curveId) {
+        List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(curveId);
+        updateYieldCurveInCache(curveId, newInput);
+    }    
     // --------------------------------------------------------------------------------------------
 
     // Aggiorna l'ultimo prezzo di un asset (es. Forex)
@@ -272,22 +284,6 @@ public class MarketDataService {
         for (InstrumentQuote quote : iqList) {
             updatePrice(quote.getCode(), quote.getBid(), quote.getAsk(), (quote.getBid() + quote.getAsk()) / 2.);
         }
-    }
-
-    public double getYieldCurveRate(String curveName, LocalDate settlement) {
-        return yieldCurves.get(curveName).getDiscountFactor(settlement);
-    }
-
-    public void saveOrUpdateCurveRates(String curveId) {
-        YieldCurve yc = yieldCurves.get(curveId);
-
-        List<CurveNode> newInputs = new ArrayList<>(yc.getNodes());
-        yieldCurveBuilder.saveOrUpdateCurve(curveId, newInputs);
-    }
-
-    public void loadCurveCurveRates(String curveId) {
-        List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(curveId);
-        updateYieldCurveInCache(curveId, newInput);
     }
 
     // Il risultato viene salvato nella cache chiamata "businessCalendar"

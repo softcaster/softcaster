@@ -24,7 +24,7 @@ public class XRBPricer extends AbstractFixedIncomePricer<XRBInput, XRBResult> {
 
         // mod duration
         double modifiedDuration = calculateModifiedDuration(input.schedule().flows(), ytm, input.valuationDate(),
-                input.schedule().daycount(), input.schedule().frequency());
+                input.schedule().daycount(), input.schedule().compounding(), input.schedule().frequency());
 
         // dv01
         double dv01 = input.cleanPrice() + accruedInterest * modifiedDuration * 0.0001;
@@ -33,7 +33,7 @@ public class XRBPricer extends AbstractFixedIncomePricer<XRBInput, XRBResult> {
         CashFlowAnalytics analytics = new CashFlowAnalytics(
                 input.cleanPrice() + accruedInterest, accruedInterest,
                 ytm, modifiedDuration, 0., dv01, null);
-        
+
         XRBResult result = new XRBResult(input.code(), input.valuationDate(), analytics);
         return result;
     }

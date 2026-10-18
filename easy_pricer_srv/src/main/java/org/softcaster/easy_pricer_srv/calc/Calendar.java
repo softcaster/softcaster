@@ -5,7 +5,7 @@
 package org.softcaster.easy_pricer_srv.calc;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.Holiday;
 import org.softcaster.engine.cashflow.HolidayCalendar;
@@ -16,7 +16,7 @@ import org.softcaster.engine.cashflow.HolidayCalendar;
  */
 public class Calendar implements HolidayCalendar {
 
-    private List<Holiday> holidays = null;
+    private Set<Holiday> holidays = null;
 
     public Calendar(Currency currency) {
         holidays = currency.getCalendar().getHolidays();

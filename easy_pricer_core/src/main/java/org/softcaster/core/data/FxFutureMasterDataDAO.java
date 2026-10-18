@@ -1,6 +1,7 @@
 package org.softcaster.core.data;
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,5 +19,10 @@ public class FxFutureMasterDataDAO extends AbstractMasterDataDAO<FxFutureMasterD
     @Override
     public List<FxFutureMasterData> findAll() {
         return repository.findAll(sortByCode);
+    }
+    
+    @Transactional(readOnly = true)
+    public Optional<FxFutureMasterData> findByCodeWithUnderlying(String code) {
+        return repository.findByCodeWithUnderlying(code);
     }
 }

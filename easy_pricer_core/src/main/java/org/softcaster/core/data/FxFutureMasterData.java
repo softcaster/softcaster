@@ -5,6 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import java.util.List;
@@ -13,7 +17,24 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Entity
 @Table(name = "fx_future_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
-
+@NamedEntityGraph(
+        name = "FxFutureMasterData.fullGraph",
+        attributeNodes = {
+            @NamedAttributeNode(value = "underlying", subgraph = "underlying")
+        },
+        subgraphs = {
+            @NamedSubgraph(name = "underlying", attributeNodes = {
+        @NamedAttributeNode(value = "bcy", subgraph = "currency"),
+        @NamedAttributeNode(value = "ccy", subgraph = "currency")
+    }),
+            @NamedSubgraph(name = "currency", attributeNodes = {
+        @NamedAttributeNode(value = "calendar", subgraph = "calendar")
+    }),
+            @NamedSubgraph(name = "calendar", attributeNodes = {
+        @NamedAttributeNode("holidays")
+    })
+        }
+)
 public class FxFutureMasterData extends FutureMasterData {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -85,7 +106,7 @@ public class FxFutureMasterData extends FutureMasterData {
     @Override
     public String toString() {
         return getCode();
-    }    
+    }
 
     @Override
     public List<Currency> getCurrencyList() {
@@ -96,12 +117,12 @@ public class FxFutureMasterData extends FutureMasterData {
 
         return currencies;
     }
-    
+
     @Override
     public Currency getSettlementCcy() {
         return getCurrency();
     }
-    
+
     @Override
     public Currency getMasterDataCcy() {
         return underlying.getBcy();

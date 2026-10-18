@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import java.util.Objects;
 
 @Entity
 @Table(name = "holiday")
@@ -58,20 +59,21 @@ public class Holiday implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (getIdHoliday() == null || obj == null || getClass() != obj.getClass()) {
+        if (!(o instanceof Holiday h)) {
             return false;
         }
-        Holiday that = (Holiday) obj;
-        return getIdHoliday().equals(that.getIdHoliday());
+        return Objects.equals(calendar, h.calendar)
+                && Objects.equals(holidayDay, h.holidayDay)
+                && Objects.equals(holidayMonth, h.holidayMonth);
     }
 
     @Override
     public int hashCode() {
-        return getIdHoliday() == null ? 0 : idHoliday.hashCode();
+        return Objects.hash(calendar, holidayDay, holidayMonth);
     }
 
     /**

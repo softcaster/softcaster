@@ -118,16 +118,10 @@ public abstract class AbstractFixedIncomePricer<I extends CashFlowInput, O exten
             List<CashFlow> cashflows,
             double dirtyPrice,
             LocalDate valuationDate,
-            DaycountBasis dcb,
-            Compounding compounding,
-            Frequency frequency,
             DiscountCurve curve) {
         return CashFlowHelper.solveZSpread(cashflows,
                 dirtyPrice,
                 valuationDate,
-                dcb,
-                compounding,
-                frequency,
                 curve);
 
     }
@@ -140,12 +134,12 @@ public abstract class AbstractFixedIncomePricer<I extends CashFlowInput, O exten
         return CashFlowHelper.calculateAccruedInterest(flows, valuationDate, dcb, freq);
     }
 
-    public double calculateMacaulayDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
-        return CashFlowHelper.calculateMacaulayDuration(flows, ytm, valuationDate, dcb, freq);
+    public double calculateMacaulayDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency freq) {
+        return CashFlowHelper.calculateMacaulayDuration(flows, ytm, valuationDate, dcb, compounding, freq);
     }
 
-    public double calculateModifiedDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Frequency freq) {
-        return CashFlowHelper.calculateModifiedDuration(flows, ytm, valuationDate, dcb, freq);
+    public double calculateModifiedDuration(List<CashFlow> flows, double ytm, LocalDate valuationDate, DaycountBasis dcb, Compounding compounding, Frequency freq) {
+        return CashFlowHelper.calculateModifiedDuration(flows, ytm, valuationDate, dcb, compounding, freq);
     }
 
     // Mentre la Duration ci dice quanto il prezzo varia in modo lineare, 

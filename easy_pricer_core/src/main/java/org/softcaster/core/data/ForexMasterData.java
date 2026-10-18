@@ -8,6 +8,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,16 +16,21 @@ import java.util.List;
 @Entity
 @Table(name = "forex_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
-
-@NamedEntityGraphs({
-    @NamedEntityGraph(
-            name = "ForexMasterData.currenciesGraph",
-            attributeNodes = {
-                @NamedAttributeNode("bcy"),
-                @NamedAttributeNode("ccy")
-            }
-    )
-})
+@NamedEntityGraph(
+        name = "ForexMasterData.currenciesGraph",
+        attributeNodes = {
+            @NamedAttributeNode(value = "bcy", subgraph = "currency"),
+            @NamedAttributeNode(value = "ccy", subgraph = "currency")
+        },
+        subgraphs = {
+            @NamedSubgraph(name = "currency", attributeNodes = {
+        @NamedAttributeNode(value = "calendar", subgraph = "calendar")
+    }),
+            @NamedSubgraph(name = "calendar", attributeNodes = {
+        @NamedAttributeNode("holidays")
+    })
+        }
+)
 public class ForexMasterData extends MasterData {
 
     @ManyToOne(fetch = FetchType.LAZY)

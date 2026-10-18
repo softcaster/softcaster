@@ -112,13 +112,16 @@ public class FxForwardCalculator {
                                             String domesticCurveCode, String foreignCurveCode,
                                             FxForwardInput.FxContract contract) {
         FxFutureMasterData fmd = loadFuture(code);
+        
         LocalDate valuationDate = CashFlowInstrumentCalculator.valuationDate(fmd, officialDate);
-
+        
+        if(domesticCurveCode == null || domesticCurveCode.isBlank())
+            domesticCurveCode = fmd.getUnderlying().getCcyIrc();
+        if(foreignCurveCode == null || foreignCurveCode.isBlank())
+            foreignCurveCode = fmd.getUnderlying().getBcyIrc();
         DiscountCurve domesticCurve = loadCurve(domesticCurveCode, valuationDate);
         DiscountCurve foreignCurve = loadCurve(foreignCurveCode, valuationDate);
 
-        // VERIFICARE: per il CME 6E la consegna e' il terzo mercoledi' del mese;
-        // se getMaturityDate() restituisce l'ultimo giorno di negoziazione, usare la data di consegna.
         LocalDate deliveryDate = fmd.getMaturityDate().toLocalDate();
 
         return new FxForwardInput(code, valuationDate, deliveryDate,
@@ -153,7 +156,7 @@ public class FxForwardCalculator {
         if (code == null || code.isBlank()) {
             throw new IllegalArgumentException("Codice strumento mancante");
         }
-        FxFutureMasterData fmd = fxFutureMasterDataDAO.findByCode(code);
+        FxFutureMasterData fmd = fxFutureMasterDataDAO.findByCodeWithUnderlying(code).orElse(null);
         if (fmd == null) {
             throw new NoSuchElementException("Future non trovato: " + code);
         }

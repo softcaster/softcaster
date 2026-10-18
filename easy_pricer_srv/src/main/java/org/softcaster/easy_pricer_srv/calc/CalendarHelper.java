@@ -5,6 +5,7 @@
 package org.softcaster.easy_pricer_srv.calc;
 
 import java.util.List;
+import java.util.Set;
 import org.softcaster.core.data.Calendar;
 import org.softcaster.core.data.Holiday;
 
@@ -15,7 +16,7 @@ import org.softcaster.core.data.Holiday;
 public class CalendarHelper {
 
     private static boolean isHoliday(org.softcaster.commons.types.Date _date, Calendar calendar) {
-        List<Holiday> holidays = calendar.getHolidays();
+        Set<Holiday> holidays = calendar.getHolidays();
         for (Holiday holiday : holidays) {
             if ((holiday.getHolidayDay() == _date.getDay() && holiday.getHolidayMonth() == _date.getMonth()) || _date.isWeekEnd()) {
                 return true;

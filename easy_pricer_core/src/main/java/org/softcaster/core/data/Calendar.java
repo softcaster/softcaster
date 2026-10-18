@@ -2,8 +2,6 @@ package org.softcaster.core.data;
 
 import jakarta.persistence.CascadeType;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,6 +12,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import java.util.HashSet;
+import java.util.Set;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -37,7 +37,7 @@ public class Calendar implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "calendar", nullable = false) // FK in child table holiday
-    private List<Holiday> holidays = new ArrayList<>();    
+    private Set<Holiday> holidays = new HashSet<>();    
     
     public Integer getIdCalendar() {
         return idCalendar;
@@ -80,22 +80,23 @@ public class Calendar implements Serializable {
         return getIdCalendar() == null ? 0 : idCalendar.hashCode();
     }
 
+    
+    @Override
+    public String toString() {
+        return code;
+    }   
+
     /**
      * @return the holidays
      */
-    public List<Holiday> getHolidays() {
+    public Set<Holiday> getHolidays() {
         return holidays;
     }
 
     /**
      * @param holidays the holidays to set
      */
-    public void setHolidays(List<Holiday> holidays) {
+    public void setHolidays(Set<Holiday> holidays) {
         this.holidays = holidays;
     }
-    
-    @Override
-    public String toString() {
-        return code;
-    }   
 }

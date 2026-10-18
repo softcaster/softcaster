@@ -120,18 +120,18 @@ public class CashFlowInstrumentCalculator {
             LocalDate valuationDate, DiscountCurve curve) {
         Objects.requireNonNull(curve, "curve");
         CashFlowSchedule s = fixedSchedule(smd);
-        return xrbPricer.calculateZSpread(s.flows(), dirtyPrice, valuationDate,
-                s.daycount(), s.compounding(), s.frequency(), curve);
+        return xrbPricer.calculateZSpread(s.flows(), dirtyPrice, valuationDate, curve);
     }
 
     /**
      * Riprezza il titolo con il yield spostato di {@code basisPoints}.
      * {@code ytm} deve essere nella stessa unita' usata da ONE_BP.
+     *
      * @param smd
      * @param officialDate
      * @param ytm
      * @param basisPoints
-     * @return 
+     * @return
      */
     public double repriceBondForYieldShift(SecurityMasterData smd, LocalDate officialDate,
             double ytm, double basisPoints) {
@@ -204,9 +204,10 @@ public class CashFlowInstrumentCalculator {
 
     /**
      * Unico punto in cui si calcola la valuation date.
+     *
      * @param smd
      * @param officialDate
-     * @return 
+     * @return
      */
     public static LocalDate valuationDate(MasterData smd, LocalDate officialDate) {
         Objects.requireNonNull(officialDate, "officialDate");

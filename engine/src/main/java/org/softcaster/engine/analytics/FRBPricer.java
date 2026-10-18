@@ -29,7 +29,7 @@ public class FRBPricer extends AbstractFixedIncomePricer<FRBInput, FRBResult> {
 
         // mod duration
         double modifiedDuration = calculateModifiedDuration(input.schedule().flows(), ytm, input.valuationDate(),
-                input.schedule().daycount(), input.schedule().frequency());
+                input.schedule().daycount(), input.schedule().compounding(), input.schedule().frequency());
 
         // dv01
         double dv01 = (input.cleanPrice() + accruedInterest) * modifiedDuration * 0.0001;
