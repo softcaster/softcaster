@@ -5,6 +5,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.sql.Types;
@@ -17,7 +20,23 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Entity
 @Table(name = "bond_future_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
-
+@NamedEntityGraph(
+        name = "BondFutureMasterData.fullGraphWithDeliverables",
+        attributeNodes = {
+            @NamedAttributeNode(value = "currency", subgraph = "currencyGraph"),
+            @NamedAttributeNode("assetClass"),
+            @NamedAttributeNode("instrumentValuation"),
+            @NamedAttributeNode("deliverables")
+        },
+        subgraphs = {
+            @NamedSubgraph(name = "currencyGraph", attributeNodes = {
+        @NamedAttributeNode(value = "calendar", subgraph = "calendarGraph")
+    }),
+            @NamedSubgraph(name = "calendarGraph", attributeNodes = {
+        @NamedAttributeNode("holidays")
+    })
+        }
+)
 public class BondFutureMasterData extends FutureMasterData {
 
     @JdbcTypeCode(Types.NUMERIC)
@@ -64,7 +83,7 @@ public class BondFutureMasterData extends FutureMasterData {
     @Override
     public String toString() {
         return getCode();
-    }    
+    }
 
     /**
      * @return the deliverables

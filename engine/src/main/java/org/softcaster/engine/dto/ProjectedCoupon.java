@@ -4,10 +4,5 @@
  */
 package org.softcaster.engine.dto;
 
-/**
- *
- * @author softc
- */
 public record ProjectedCoupon() {
-
 }

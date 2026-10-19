@@ -13,7 +13,7 @@ import org.softcaster.engine.enums.OptionType;
  *
  * @author softc
  */
-public class FxOptionInputData extends ForwardBaseInputData implements IOptionInputData{
+public class FxOptionInputData implements IOptionInputData{
 
     private OptionData optionData;
     // Caso Bermudan

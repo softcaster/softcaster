@@ -8,7 +8,6 @@ import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.curve.DiscountCurve;
-import org.softcaster.engine.dto.ForwardBaseOutputData;
 import org.softcaster.engine.dto.FxForwardInput;
 import org.softcaster.engine.dto.FxForwardResult;
 
@@ -134,18 +133,6 @@ public class FxForwardCalculator {
 
     public FxForwardResult fxFwdValuation(FxForwardInput input) {
         return fxForwardPricer.calculate(Objects.requireNonNull(input, "input"));
-    }
-
-    /**
-     * Conversione verso il DTO esistente, finche' lo strato REST lo usa.
-     * @param result
-     * @return 
-     */
-    public ForwardBaseOutputData toOutput(FxForwardResult result) {
-        ForwardBaseOutputData output = new ForwardBaseOutputData();
-        output.setPrice(result.forwardRate());
-        output.setBasis(result.forwardPoints());
-        return output;
     }
 
     // ------------------------------------------------------------------------

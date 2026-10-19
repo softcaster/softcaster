@@ -8,94 +8,110 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
-import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.BondFutureMasterData;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.DeliverableBonds;
-import org.softcaster.core.data.MasterData;
-import org.softcaster.core.data.MasterDataDAO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
+/**
+ * Import del paniere consegnabile dei bond future da deliverable_bonds.csv.
+ *
+ * Colonne (separatore ';', prima riga di intestazione): [1] codice future [2]
+ * scadenza future (yyyyMMdd) [3] ISIN titolo [4] cedola [5] scadenza titolo
+ * (yyyyMMdd) [6] fattore di conversione
+ *
+ * Le righe sono raggruppate per future: ogni future viene caricato una volta
+ * sola (con il paniere, tramite entity graph) e aggiornato in una propria
+ * transazione. Un errore su un future non blocca l'import degli altri.
+ */
 @Service("Deliverables")
 public class DeliverableBondsImportMgr implements IImportMgr {
 
-    @Autowired
-    MasterDataDAO masterDataDAO;
-    @Autowired
-    BondFutureMasterDataDAO bondFutureMasterDataDAO;
+    private static final int COL_FUTURE = 1;
+    private static final int COL_EXPIRY = 2;
+    private static final int COL_ISIN = 3;
+    private static final int COL_COUPON = 4;
+    private static final int COL_MATURITY = 5;
+    private static final int COL_CF = 6;
+    private static final int MIN_COLUMNS = 7;
 
-    public DeliverableBondsImportMgr() {
-    }
+    /**
+     * true: il file contiene il paniere completo, i titoli non presenti nel
+     * file vengono rimossi. false: si aggiungono solo i titoli nuovi, quelli
+     * esistenti restano invariati.
+     */
+    private static final boolean REPLACE_BASKET = false;
 
-    private java.sql.Date decodeDate(String date) {
+    private final BondFutureMasterDataDAO bondFutureMasterDataDAO;
+    private final TransactionTemplate transactionTemplate;
 
-        java.sql.Date sqlDate = null;
-        try {
-            int year = Converter.toInt(date.substring(0, 4));
-            int month = Converter.toInt(date.substring(4, 6));
-            int day = Converter.toInt(date.substring(6, 8));
-            Date dt = new Date(year, month, day);
-            return dt.sqlDate();
-        } catch (ParseException ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-        }
-        return sqlDate;
+    public DeliverableBondsImportMgr(BondFutureMasterDataDAO bondFutureMasterDataDAO,
+            PlatformTransactionManager transactionManager) {
+        this.bondFutureMasterDataDAO = bondFutureMasterDataDAO;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
     @Override
     public void start(IProgressInfo progressInfo) {
-        CsvImport csvImport = new CsvImport();
         Path path = Paths.get(IMPORT_PATH + "/deliverable_bonds.csv");
 
         ImportConfig config = new ImportConfig();
-        config.setSeparator(',');
+        config.setSeparator(';');
         config.setFilePath(path);
         config.setStartData(0);
-        config.setCharset(StandardCharsets.UTF_8); // utf-8
+        config.setCharset(StandardCharsets.UTF_8);
+
         try {
+            CsvImport csvImport = new CsvImport();
             csvImport.startImport(config);
-            List<String[]> rows = csvImport.getBuffer();
-            int total = rows.size();
+            Map<String, List<String[]>> rowsByFuture = groupByFuture(csvImport.getBuffer());
+
+            int total = rowsByFuture.size();
             int current = 0;
+            List<String> errors = new ArrayList<>();
 
-            int idMasterData = 0;
-            for (String[] s : rows) {
-                if (s[1].isEmpty()) {
-                    System.out.println("Error reading line ");
-                    continue;
-                }
-
-                MasterData md = masterDataDAO.findByCode(s[1].trim());
-                if (md instanceof BondFutureMasterData bfmd) {
-                    DeliverableBonds deliverable = new DeliverableBonds();
-                    deliverable.setMasterData(idMasterData);
-                    deliverable.setBondCf(Converter.toDouble(s[6].trim(), false));
-                    deliverable.setExpirationDate(decodeDate(s[2].trim()));
-                    deliverable.setIsin(s[3].trim());
-                    deliverable.setCouponRate(Converter.toDouble(s[4].trim(), false));
-                    deliverable.setBondMaturity(decodeDate(s[5].trim()));
-                    bfmd.getDeliverables().add(deliverable);
-                    bondFutureMasterDataDAO.saveOrUpdate(bfmd);
-                }
-
-                // 2. Aggiorna il progresso ogni X righe o calcola la percentuale
-                int percent = (int) ((current / (double) total) * 100);
-                progressInfo.updateProgress("Importing " + s[3].trim() + " (" + current + "/" + total + ")", percent);
+            for (Map.Entry<String, List<String[]>> entry : rowsByFuture.entrySet()) {
+                String futureCode = entry.getKey();
                 current++;
+                progressInfo.updateProgress("Importing " + futureCode + " (" + current + "/" + total + ")",
+                        (int) (current * 100.0 / total));
+                try {
+                    // una transazione per future: la sessione resta aperta mentre si modifica il paniere
+                    transactionTemplate.executeWithoutResult(status
+                            -> importFuture(futureCode, entry.getValue()));
+                } catch (RuntimeException ex) {
+                    String error = futureCode + ": " + ex.getLocalizedMessage();
+                    LoggerMgr.logError("Error importing deliverables of " + error);
+                    errors.add(error);
+                }
+            }
+
+            if (errors.isEmpty()) {
+                progressInfo.updateProgress("Import terminated successfully", 100);
+            } else {
+                progressInfo.showError("Import terminated with " + errors.size() + " errors: " + errors);
             }
 
         } catch (Exception ex) {
-            String error = "Error importing Future: " + " [" + ex.getLocalizedMessage() + "]";
+            String error = "Error importing deliverable bonds [" + ex.getLocalizedMessage() + "]";
             LoggerMgr.logError(error);
             progressInfo.showError(error);
         } finally {
-            progressInfo.updateProgress("Import terminated successfully", 100);
             terminate();
         }
     }
@@ -104,4 +120,73 @@ public class DeliverableBondsImportMgr implements IImportMgr {
     public void terminate() {
     }
 
+    // ------------------------------------------------------------------------
+    // -- Import di un singolo future (eseguito dentro la transazione)
+    // ------------------------------------------------------------------------
+    private void importFuture(String futureCode, List<String[]> rows) {
+        BondFutureMasterData bfmd = bondFutureMasterDataDAO.findByCode(futureCode);
+        if (bfmd == null) {
+            return;
+        }
+
+        if (REPLACE_BASKET) {
+            bfmd.getDeliverables().clear();          // orphanRemoval cancella le righe vecchie
+        }
+
+        Set<String> existing = new HashSet<>();
+        bfmd.getDeliverables().forEach(d -> existing.add(d.getIsin()));
+
+        for (String[] s : rows) {
+            try {
+                String isin = s[COL_ISIN].trim();
+                if (!existing.add(isin)) {
+                    continue;                            // gia' nel paniere
+                }
+                DeliverableBonds deliverable = new DeliverableBonds();
+                // la FK master_data e' valorizzata da Hibernate tramite il @JoinColumn del future
+                deliverable.setIsin(isin);
+                deliverable.setBondCf(Converter.toDouble(s[COL_CF].trim(), false));
+                deliverable.setExpirationDate(decodeDate(s[COL_EXPIRY].trim()));
+                deliverable.setCouponRate(Converter.toDouble(s[COL_COUPON].trim(), false));
+                deliverable.setBondMaturity(decodeDate(s[COL_MATURITY].trim()));
+                bfmd.getDeliverables().add(deliverable);
+            }
+            // nessun save esplicito: l'entity e' gestita e le modifiche vengono scritte al commit
+            catch (ParseException ex) {
+                System.getLogger(DeliverableBondsImportMgr.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // -- Helper
+    // ------------------------------------------------------------------------
+    /**
+     * Salta l'intestazione e le righe incomplete, raggruppa per codice future
+     * mantenendo l'ordine del file.
+     */
+    private static Map<String, List<String[]>> groupByFuture(List<String[]> rows) {
+        Map<String, List<String[]>> result = new LinkedHashMap<>();
+        for (int i = 1; i < rows.size(); i++) {      // riga 0 = intestazione
+            String[] s = rows.get(i);
+            if (s.length < MIN_COLUMNS || s[COL_FUTURE].isBlank() || s[COL_ISIN].isBlank()) {
+                LoggerMgr.logError("deliverable_bonds.csv: riga " + (i + 1) + " incompleta, ignorata");
+                continue;
+            }
+            result.computeIfAbsent(s[COL_FUTURE].trim(), k -> new ArrayList<>()).add(s);
+        }
+        return result;
+    }
+
+    /**
+     * Data nel formato yyyyMMdd; un valore non valido interrompe l'import del
+     * future.
+     */
+    private static java.sql.Date decodeDate(String date) {
+        try {
+            return java.sql.Date.valueOf(LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE));
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException("data non valida '" + date + "'", ex);
+        }
+    }
 }

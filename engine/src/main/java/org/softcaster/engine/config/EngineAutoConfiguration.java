@@ -6,7 +6,7 @@ package org.softcaster.engine.config;
  */
 import org.softcaster.engine.analytics.Black76Pricer;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
-import org.softcaster.engine.analytics.BondForwardPricer;
+import org.softcaster.engine.analytics.XRBForwardPricer;
 import org.softcaster.engine.analytics.XRBPricer;
 import org.softcaster.engine.analytics.CRRBinomialPricer;
 import org.softcaster.engine.analytics.FRBPricer;
@@ -45,10 +45,10 @@ public class EngineAutoConfiguration {
         return new FRBPricer();
     }
 
-    @Bean(name = "bondFwdPricer")
+    @Bean(name = "xRBForwardPricer")
     @ConditionalOnMissingBean 
-    public BondForwardPricer bondForwardPricer() {
-        return new BondForwardPricer();
+    public XRBForwardPricer bondForwardPricer() {
+        return new XRBForwardPricer();
     }
 
     @Bean(name = "loanPricer")

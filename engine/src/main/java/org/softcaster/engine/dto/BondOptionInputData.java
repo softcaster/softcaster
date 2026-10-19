@@ -11,7 +11,7 @@ import org.softcaster.engine.enums.OptionType;
  *
  * @author softc
  */
-public class BondOptionInputData extends XRBForwardInputData implements IOptionInputData {
+public class BondOptionInputData implements IOptionInputData {
     
     private OptionData optionData;
 

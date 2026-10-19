@@ -22,10 +22,11 @@ public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData>
     @Override
     public OptionOutputData priceCall(BondOptionInputData input) {
         OptionOutputData output = new OptionOutputData();
-        double t = OptionUtil.getTimeToMaturity(input);
-        double s = input.getUnderlyingReferencePrice();
+        // TO_DO
+        double t = OptionUtil.getTimeToMaturity(null/*input*/);
+        double s = 1.;//input.getUnderlyingReferencePrice();
         double k = input.getStrike();
-        double r = input.getDomesticRate();
+        double r = 1.;//input.getDomesticRate();
         double vol = input.getVolatility();
 
         // se t è zero, il prezzo dell'opzione è semplicemente il suo valore intrinseco
@@ -58,10 +59,11 @@ public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData>
         // 1. Calcoliamo la Call (che popola Prezzo e Greche della Call)
         OptionOutputData output = priceCall(input);
 
-        double t = OptionUtil.getTimeToMaturity(input);
-        double r = input.getDomesticRate();
+        double t = OptionUtil.getTimeToMaturity(null/*input*/);
+        // TO_DO
+        double r = 1.;//input.getDomesticRate();
         double k = input.getStrike();
-        double s = input.getUnderlyingReferencePrice();
+        double s = 1.;//input.getUnderlyingReferencePrice();
 
         if (t <= 0) {
             output.setPrice((k - s > 0 ? (k - s) : 0));
@@ -91,7 +93,8 @@ public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData>
     public double calculateImpliedVolatility(BondOptionInputData input, double targetPrice, OptionType type) {
 
         //double t = OptionUtil.getTimeToMaturity(input);
-        double s = input.getUnderlyingReferencePrice();
+        // TO_DO
+        double s = 1.;//input.getUnderlyingReferencePrice();
         double k = input.getStrike();
         // 1. Validazione finanziaria preventiva
         double intrinsicValue = type == OptionType.CALL ? Math.max(0, s - k) : Math.max(0, k - s);
@@ -144,12 +147,15 @@ public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData>
     // Metodo di supporto per il cloning dei dati di input
     private BondOptionInputData cloneInput(BondOptionInputData src) {
         BondOptionInputData dest = new BondOptionInputData();
+        // TO_DO
+        /*
         dest.setUnderlyingReferencePrice(src.getUnderlyingReferencePrice());
         dest.setOptionData(src.getOptionData());
         dest.setDomesticRate(src.getDomesticRate());
         dest.setValuationDate(src.getValuationDate());
         dest.setMaturityDate(src.getMaturityDate());
         dest.setDaycount(src.getDaycount());
+*/
         return dest;
     }
 }

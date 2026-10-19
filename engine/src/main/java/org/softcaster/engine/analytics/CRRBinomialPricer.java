@@ -32,12 +32,13 @@ public class CRRBinomialPricer implements IOptionPricer<FxOptionInputData> {
 
     private double price(FxOptionInputData input) {
 
-        double S = input.getUnderlyingReferencePrice();
+        // TO_DO
+        double S = 1.;//input.getUnderlyingReferencePrice();
         double K = input.getStrike();
-        double T = OptionUtil.getTimeToMaturity(input);
+        double T = OptionUtil.getTimeToMaturity(null/*input*/);
 
-        double r = input.getDomesticRate();
-        double q = input.getForeignRate(); //rf (o dividend yield)
+        double r = 1.;//input.getDomesticRate();
+        double q =1.;// input.getForeignRate(); //rf (o dividend yield)
 
         double sigma = input.getVolatility();
 
@@ -177,10 +178,11 @@ public class CRRBinomialPricer implements IOptionPricer<FxOptionInputData> {
 
     private Set<Integer> mapExerciseDatesToSteps(FxOptionInputData input) {
 
+        // TO_DO
         long totalDays
                 = ChronoUnit.DAYS.between(
-                        input.getValuationDate(),
-                        input.getMaturityDate()
+                        null/*input.getValuationDate()*/,
+                        null /*input.getMaturityDate()*/
                 );
 
         Set<Integer> result = new HashSet<>();
@@ -188,7 +190,7 @@ public class CRRBinomialPricer implements IOptionPricer<FxOptionInputData> {
         for (LocalDate date : input.getExerciseDates()) {
 
             long days = ChronoUnit.DAYS.between(
-                    input.getValuationDate(),
+                    null /*input.getValuationDate()*/,
                     date
             );
 

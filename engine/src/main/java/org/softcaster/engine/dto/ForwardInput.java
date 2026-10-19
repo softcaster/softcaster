@@ -7,7 +7,7 @@ package org.softcaster.engine.dto;
 import java.time.LocalDate;
 
 public sealed interface ForwardInput extends PricingInput
-        permits BondForwardInput, FxForwardInput {
+        permits XRBForwardInput, FxForwardInput {
 
     LocalDate deliveryDate();
 }

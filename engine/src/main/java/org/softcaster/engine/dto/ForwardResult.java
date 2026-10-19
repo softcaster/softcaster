@@ -5,6 +5,6 @@
 package org.softcaster.engine.dto;
 
 public sealed interface ForwardResult extends PricingResult
-        permits FxForwardResult /*, BondForwardResult */ {
+        permits FxForwardResult, XRBForwardResult {
     double forwardRate();
 }

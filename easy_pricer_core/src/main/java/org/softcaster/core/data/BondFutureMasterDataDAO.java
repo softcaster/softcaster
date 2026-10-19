@@ -21,8 +21,8 @@ public class BondFutureMasterDataDAO extends AbstractMasterDataDAO<BondFutureMas
         return repository.findAll(sortByCode);
     }
 
+    @Transactional(readOnly = true)
     public Optional<BondFutureMasterData> findByIsin(String isin) {
         return repository.findByIsin(isin);
     }    
-
 }

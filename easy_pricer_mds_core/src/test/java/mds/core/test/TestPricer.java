@@ -4,23 +4,21 @@
  */
 package mds.core.test;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import org.softcaster.core.data.CmdFutureMasterDataDAO;
 import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.FltSecurityMasterDataDAO;
-import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.FxForwardCalculator;
 import org.softcaster.engine.dto.FxForwardInput;
 import org.softcaster.engine.dto.FxForwardResult;
+import org.softcaster.engine.dto.XRBForwardInput;
+import org.softcaster.engine.dto.XRBForwardResult;
 import org.softcaster.engine.dto.XRBInput;
 import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.provider.enums.RequestType;
@@ -52,6 +50,8 @@ public class TestPricer implements CommandLineRunner {
     CashFlowInstrumentCalculator cfCalculator;
     @Autowired
     private FxForwardCalculator fxForwardCalculator;
+    @Autowired
+    BondForwardCalculator bndfwdCalculator;
 
     @Autowired
     YieldCurveEntityDAO yieldCurveEntityDAO;
@@ -76,7 +76,9 @@ public class TestPricer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Allinea curve e prezzi
         startUp();
-        testCashFlowInstrumentCalculator();
+        //testCashFlowInstrumentCalculator();
+        //testFxForwardCalculator();
+        testBondForwardCalculator();
     }
 
     private void startUp() {
@@ -104,6 +106,19 @@ public class TestPricer implements CommandLineRunner {
         if (result != null) {
             System.out.println(result.forwardRate());
             System.out.println(result.forwardPoints());
+        }
+    }
+
+    private void testBondForwardCalculator() {
+        double price = 111.;
+        XRBForwardInput input = bndfwdCalculator.getBondForwardInput("IT0026145778", marketDataService.getOfficialDate(), "TERMESTR", price);
+        XRBForwardResult result = bndfwdCalculator.bondFwdValuation(input);
+        if (result != null) {
+            System.out.println("fwd rate:    " + result.forwardRate());
+            System.out.println("ctd isin:    " + result.ctd().isin());
+            System.out.println("term repo:    " + result.termRepoRate());
+            System.out.println("implied repo: " + result.ctd().impliedRepo());
+            System.out.println("net basis:    " + result.ctd().netBasis());
         }
     }
 }

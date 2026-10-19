@@ -15,6 +15,7 @@ import org.softcaster.core.data.Currency;
 import org.softcaster.engine.enums.SettlementType;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
+import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Form;
 import org.softcaster.engine.enums.Frequency;
@@ -632,6 +633,7 @@ public class BondFutureDlg extends javax.swing.JDialog {
             bfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
             bfmd.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
             bfmd.setAccrualDaycount(DaycountBasis.ACT_365);
+            bfmd.setCompounding(Compounding.COMPOUNDED);
             masterDataFacade.getBondFutureMasterDataDAO().saveOrUpdate(bfmd);
             return true;
         } catch (Exception ex) {

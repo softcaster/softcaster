@@ -4,7 +4,8 @@
  */
 package org.softcaster.engine.math;
 
-import org.softcaster.engine.dto.ForwardBaseInputData;
+import org.softcaster.engine.dto.XRBForwardInput;
+import org.softcaster.engine.enums.DaycountBasis;
 
 /**
  *
@@ -12,7 +13,7 @@ import org.softcaster.engine.dto.ForwardBaseInputData;
  */
 public class OptionUtil {
 
-    public static double getTimeToMaturity(ForwardBaseInputData input) {
-        return input.getDaycount().calculate(input.getValuationDate(), input.getMaturityDate(), null);
+    public static double getTimeToMaturity(XRBForwardInput input) {
+        return DaycountBasis.ACT_360.calculate(input.valuationDate(), input.deliveryDate(), null);
     }
 }

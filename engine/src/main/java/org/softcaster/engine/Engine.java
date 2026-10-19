@@ -15,8 +15,7 @@ import static org.softcaster.engine.Test.GAK;
 import static org.softcaster.engine.Test.LOAN;
 import static org.softcaster.engine.Test.YCURVE;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
-import org.softcaster.engine.analytics.BondForwardPricer;
-import org.softcaster.engine.analytics.XRBPricer;
+import org.softcaster.engine.analytics.XRBForwardPricer;
 import org.softcaster.engine.analytics.CRRBinomialPricer;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
@@ -27,12 +26,10 @@ import org.softcaster.engine.cashflow.HolidayCalendar;
 import org.softcaster.engine.cashflow.PaymentPeriod;
 import org.softcaster.engine.config.EngineAutoConfiguration;
 import org.softcaster.engine.dto.BondOptionInputData;
-import org.softcaster.engine.dto.ForwardBaseInputData;
 import org.softcaster.engine.dto.FxOptionInputData;
 import org.softcaster.engine.dto.OptionData;
 import org.softcaster.engine.dto.OptionOutputData;
 import org.softcaster.engine.enums.BusinessDayConvention;
-import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.Frequency;
 import org.softcaster.engine.enums.OptionStyle;
@@ -66,8 +63,8 @@ enum Test {
 public class Engine {
 
     @Autowired
-    @Qualifier("bondFwdPricer")
-    private BondForwardPricer bondForwardPricer;
+    @Qualifier("xRBForwardPricer")
+    private XRBForwardPricer xRBForwardPricer;
 
     @Autowired
     @Qualifier("basPricer")
@@ -86,6 +83,7 @@ public class Engine {
     private FxForwardPricer fxForwardPricer;
 
     private void testGarmanKohlhagenPricer() {
+        /*
         FxOptionInputData input = new FxOptionInputData();
 
         LocalDate settlement = LocalDate.of(2026, 5, 11);
@@ -105,9 +103,11 @@ public class Engine {
         System.out.println(output.getDelta());
         double impliedVol = garmanKohlhagenPricer.calculateImpliedVolatility(input, output.getPrice());
         System.out.println(impliedVol);
+*/
     }
 
     private void testCRRBinomialPricer() {
+        /*
         FxOptionInputData input = new FxOptionInputData();
 
         LocalDate settlement = LocalDate.of(2026, 5, 11);
@@ -124,9 +124,11 @@ public class Engine {
         input.setOptionData(od);
         OptionOutputData output = cRRBinomialPricer.priceCall(input);
         System.out.println(output.getPrice());
+*/
     }
 
     private void testBlackAndScholesPricer() {
+        /*
         BondOptionInputData input = new BondOptionInputData();
 
         LocalDate settlement = LocalDate.of(2026, 5, 11);
@@ -143,6 +145,7 @@ public class Engine {
         System.out.println(output.getDelta());
         double impliedVol = blackAndScholesPricer.calculateImpliedVolatility(input, output.getPrice(), OptionType.CALL);
         System.out.println(impliedVol);
+*/
     }
 
     private void testDateParser() {

@@ -23,11 +23,12 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
     @Override
     public OptionOutputData priceCall(FxOptionInputData input) {
         OptionOutputData output = new OptionOutputData();
-        double t = OptionUtil.getTimeToMaturity(input);
-        double s = input.getUnderlyingReferencePrice();
+        // TO_DO
+        double t = OptionUtil.getTimeToMaturity(null /*input*/);
+        double s = 1.;//input.getUnderlyingReferencePrice();
         double k = input.getStrike();
-        double rd = input.getDomesticRate(); // Domestic
-        double rf = input.getForeignRate(); // Foreign
+        double rd = 1.;//input.getDomesticRate(); // Domestic
+        double rf = 1.;//input.getForeignRate(); // Foreign
         double vol = input.getVolatility();
         double sqrtT = Math.sqrt(t);
 
@@ -44,7 +45,7 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
 
         // Greeks
         //output.setDelta(dfForeign * Gaussian.cdf(d1));
-        output.setDelta(Math.exp(-input.getForeignRate() * t) * Gaussian.cdf(d1));
+        output.setDelta(Math.exp(-1./*-input.getForeignRate()*/ * t) * Gaussian.cdf(d1));
         output.setGamma((nd1 * dfForeign) / (s * vol * sqrtT));
         output.setVega(s * dfForeign * sqrtT * nd1 / 100.0); // Diviso 100 per 1% vol
 
@@ -61,11 +62,12 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
     public OptionOutputData pricePut(FxOptionInputData input) {
         OptionOutputData output = new OptionOutputData();
 
-        double t = OptionUtil.getTimeToMaturity(input);
-        double s = input.getUnderlyingReferencePrice();
+        // TO_DO
+        double t = OptionUtil.getTimeToMaturity(null/*input*/);
+        double s = 1.;//input.getUnderlyingReferencePrice();
         double k = input.getStrike();
-        double rd = input.getDomesticRate(); // Domestic Rate (es. USD)
-        double rf = input.getForeignRate(); // Foreign Rate (es. EUR)
+        double rd = 1.;//input.getDomesticRate(); // Domestic Rate (es. USD)
+        double rf = 1.;//input.getForeignRate(); // Foreign Rate (es. EUR)
         double vol = input.getVolatility();
         double sqrtT = Math.sqrt(t);
 
@@ -151,6 +153,8 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
     // Metodo di supporto per il cloning dei dati di input
     private FxOptionInputData cloneInput(FxOptionInputData src) {
         FxOptionInputData dest = new FxOptionInputData();
+        // TO_DO
+        /*
         dest.setUnderlyingReferencePrice(src.getUnderlyingReferencePrice());
         dest.setOptionData(src.getOptionData());
         dest.setDomesticRate(src.getDomesticRate()); // Domestic
@@ -158,6 +162,7 @@ public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
         dest.setValuationDate(src.getValuationDate());
         dest.setMaturityDate(src.getMaturityDate());
         dest.setDaycount(src.getDaycount());
+*/
         return dest;
     }
 }
