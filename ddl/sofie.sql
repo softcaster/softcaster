@@ -1931,3 +1931,40 @@ ALTER TABLE commodity_delivery_profile OWNER TO sofie;
 CREATE SEQUENCE IF NOT EXISTS commodity_delivery_profile_s START WITH 1 INCREMENT BY 1;
 ALTER SEQUENCE commodity_delivery_profile_s OWNER TO sofie;
 
+-- ============================================================
+-- ac_dc_bcy_link
+-- ============================================================
+CREATE TABLE curve_role (
+    curve_role_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(50) NOT NULL,
+    PRIMARY KEY (curve_role_id)
+);
+CREATE UNIQUE INDEX idx_curve_role_code ON curve_role (code);
+ALTER TABLE curve_role OWNER TO sofie;
+
+-- ============================================================
+-- ac_dc_bcy_link
+-- ============================================================
+CREATE TABLE ac_dc_bcy_link (
+    ac_dc_bcy_link_id INTEGER NOT NULL,   
+    asset_class INTEGER NOT NULL,   
+    currency INTEGER NOT NULL,   
+    curve_role INTEGER NOT NULL,   
+    yield_curve INTEGER,   
+    spread_curve INTEGER,   
+    CONSTRAINT pk_ac_dc_bcy_link PRIMARY KEY (ac_dc_bcy_link_id),
+    CONSTRAINT fk_ac_dc_bcy_asset_class
+        FOREIGN KEY (asset_class) REFERENCES asset_class (id_asset_class),
+    CONSTRAINT fk_ac_dc_bcy_curve_role
+        FOREIGN KEY (curve_role) REFERENCES curve_role (curve_role_id),
+    CONSTRAINT fk_ac_dc_bcy_currency
+        FOREIGN KEY (currency) REFERENCES currency (id_currency),
+    CONSTRAINT fk_ac_dc_bcy_yield_curve  FOREIGN KEY (yield_curve)  REFERENCES yield_curve (id_yield_curve),
+    CONSTRAINT fk_ac_dc_bcy_spread_curve FOREIGN KEY (spread_curve) REFERENCES spread_curve (id_spread_curve),
+    CONSTRAINT ck_ac_dc_bcy_one_curve    CHECK (num_nonnulls(yield_curve, spread_curve) = 1),    CONSTRAINT uq_ac_dc_bcy_natural_key
+        UNIQUE (asset_class, curve_role, currency)
+);
+ALTER TABLE ac_dc_bcy_link OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS ac_dc_bcy_link_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE ac_dc_bcy_link_s OWNER TO sofie;

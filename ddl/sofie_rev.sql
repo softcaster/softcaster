@@ -356,3 +356,11 @@ alter table flt_security_master_data add column projection_curve integer;
 
 insert into power_spot_price_definition(spot_price_definition_id,code,description,id_country,load_type,data_source)
  values(nextval('power_spot_price_definition_s'), 'GME-POWER','Gestore Mercati Elettrici',1,1,5);
+
+insert into ac_dc_bcy_link(ac_dc_bcy_link_id,asset_class,currency,curve_role,yield_curve)
+    values(nextval('ac_dc_bcy_link_s'), 
+    (select id_asset_class from asset_class where code='BFU'),
+    (select id_currency from currency where iso_code='EUR'),
+    (select curve_role_id from curve_role where code='DISCOUNT'),
+    (select id_yield_curve from yield_curve where code='TERMESTR'));
+    

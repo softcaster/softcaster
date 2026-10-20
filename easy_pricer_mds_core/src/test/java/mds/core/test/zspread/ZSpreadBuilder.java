@@ -32,7 +32,6 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.batches.ZSpreadHelper;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
-import org.softcaster.easy_pricer_mds_core.curve.ZSpreadImporter;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.enums.Market;
@@ -73,8 +72,6 @@ public class ZSpreadBuilder implements CommandLineRunner {
     YieldCurveEntityDAO yieldCurveEntityDAO;
     @Autowired
     SpreadCurveEntityDAO spreadCurveEntityDAO;
-    @Autowired
-    ZSpreadImporter importer;
 
     @Autowired
     ZSpreadHelper zSpreadHelper;

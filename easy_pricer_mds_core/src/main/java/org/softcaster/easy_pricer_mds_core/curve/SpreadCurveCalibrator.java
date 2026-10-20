@@ -63,11 +63,11 @@ public class SpreadCurveCalibrator {
     private static final double FIT_TOLERANCE_BP = 0.01;
 
     @Autowired
-    SecurityMasterDataDAO smdDAO;                 // ADAPT: type of your smdDAO
+    SecurityMasterDataDAO smdDAO;                 
     @Autowired
-    CashFlowInstrumentCalculator bondCalculator;                // ADAPT
+    CashFlowInstrumentCalculator bondCalculator;  
     @Autowired
-    MarketDataService marketDataService;          // ADAPT
+    MarketDataService marketDataService;          
     @Autowired
     SpreadCurveEntityDAO spreadCurveDAO;
     @Autowired
@@ -84,7 +84,7 @@ public class SpreadCurveCalibrator {
 
     private record Priced(String code, SecurityMasterData smd, double cleanMarket) {
 
-    }    // ADAPT: SecurityMasterData type
+    }    
 
     /**
      * @param spreadCurveCode code in spread_curve (e.g. "ITA_SPREADED"): base

@@ -30,7 +30,6 @@ import org.softcaster.core.data.YieldCurveEntity;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
-import org.softcaster.easy_pricer_mds_core.curve.ZSpreadImporter;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.provider.bricks.AbstractProvider;
 import org.softcaster.provider.bricks.Node;
@@ -55,8 +54,6 @@ public class CalibrationTest implements CommandLineRunner {
 
     @Autowired
     SecurityMasterDataDAO smdDAO;
-    @Autowired
-    ZSpreadImporter importer;
     @Autowired
     @Qualifier("marketDataService")
     private MarketDataService marketDataService;
@@ -220,7 +217,6 @@ public class CalibrationTest implements CommandLineRunner {
     }
 
     private boolean updateZspreads(List<InstrumentMktData> list) {
-        importer.importZSpread("ITA_SPREADED", list);
         return true;
     }
 

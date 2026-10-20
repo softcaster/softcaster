@@ -448,5 +448,8 @@ INSERT INTO projection_method VALUES (1, 'YIELD_CURVE', 'Yield Curve');
 INSERT INTO projection_method VALUES (2, 'INDEX', 'Index');
 INSERT INTO projection_method VALUES (3, 'NONE', 'None');
 
+INSERT INTO curve_role VALUES (1, 'DISCOUNT', 'Discount');
+INSERT INTO curve_role VALUES (2, 'PROJECTION', 'Projection');
+INSERT INTO curve_role VALUES (3, 'REPO', 'Repo');
 
 
