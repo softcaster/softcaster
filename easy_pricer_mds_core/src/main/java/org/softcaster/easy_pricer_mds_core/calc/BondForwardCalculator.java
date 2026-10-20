@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.softcaster.core.data.AcDcBcyLinkDAO;
 import org.softcaster.core.data.BondFutureMasterData;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.DeliverableBonds;
@@ -33,24 +34,26 @@ import org.softcaster.engine.dto.XRBForwardInput;
 import org.softcaster.engine.dto.XRBForwardResult;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Costruisce l'input del BondForwardPricer per un bond future (es. Mini BTP 10y):
- * carica anagrafica del future, paniere consegnabile, prezzi a pronti dei titoli,
- * curva repo, e calcola le date di regolamento.
+ * Costruisce l'input del BondForwardPricer per un bond future (es. Mini BTP
+ * 10y): carica anagrafica del future, paniere consegnabile, prezzi a pronti dei
+ * titoli, curva repo, e calcola le date di regolamento.
  *
  * Creato come @Bean in MdsCoreAutoConfiguration: nessuna annotazione @Service.
  *
- * Errori:
- *  - NoSuchElementException   -> future o curva non trovati (REST: 404)
- *  - IllegalArgumentException -> dati non validi (REST: 400)
- *  - IllegalStateException    -> nessun titolo del paniere utilizzabile
+ * Errori: - NoSuchElementException -> future o curva non trovati (REST: 404) -
+ * IllegalArgumentException -> dati non validi (REST: 400) -
+ * IllegalStateException -> nessun titolo del paniere utilizzabile
  */
 public class BondForwardCalculator {
 
     private static final Logger log = LoggerFactory.getLogger(BondForwardCalculator.class);
 
-    /** Convenzione repo EUR. */
+    /**
+     * Convenzione repo EUR.
+     */
     private static final DaycountBasis REPO_DAYCOUNT = DaycountBasis.ACT_360;
 
     private final BondFutureMasterDataDAO bondFutureMasterDataDAO;
@@ -60,10 +63,10 @@ public class BondForwardCalculator {
     private final XRBForwardPricer bondForwardPricer;
 
     public BondForwardCalculator(BondFutureMasterDataDAO bondFutureMasterDataDAO,
-                                 SecurityMasterDataDAO smdDAO,
-                                 InstrumentQuoteDAO instrumentQuoteDAO,
-                                 MarketDataService marketDataService,
-                                 XRBForwardPricer bondForwardPricer) {
+            SecurityMasterDataDAO smdDAO,
+            InstrumentQuoteDAO instrumentQuoteDAO,
+            MarketDataService marketDataService,
+            XRBForwardPricer bondForwardPricer) {
         this.bondFutureMasterDataDAO = Objects.requireNonNull(bondFutureMasterDataDAO);
         this.smdDAO = Objects.requireNonNull(smdDAO);
         this.instrumentQuoteDAO = Objects.requireNonNull(instrumentQuoteDAO);
@@ -74,34 +77,41 @@ public class BondForwardCalculator {
     // ------------------------------------------------------------------------
     // -- Costruzione input
     // ------------------------------------------------------------------------
-
     /**
      * Input con la curva repo recuperata dal MarketDataService.
      *
-     * @param futureIsin        codice del future in anagrafica
-     * @param officialDate      data di riferimento (oggi)
-     * @param repoCurveCode     codice della curva repo
-     * @param quotedFuturePrice prezzo quotato del future, oppure null per il solo prezzo teorico
-     * @return 
+     * @param futureIsin codice del future in anagrafica
+     * @param officialDate data di riferimento (oggi)
+     * @param repoCurveCode codice della curva repo
+     * @param quotedFuturePrice prezzo quotato del future, oppure null per il
+     * solo prezzo teorico
+     * @return
      */
     public XRBForwardInput getBondForwardInput(String futureIsin, LocalDate officialDate,
-                                                String repoCurveCode, Double quotedFuturePrice) {
+            String repoCurveCode, Double quotedFuturePrice) {
         Basket basket = loadBasket(futureIsin, officialDate);
         DiscountCurve repoCurve = loadCurve(repoCurveCode, basket.valuationDate());
+        return toInput(futureIsin, basket, repoCurve, quotedFuturePrice);
+    }
+
+    public XRBForwardInput getBondForwardInput(String futureIsin, LocalDate officialDate, Double quotedFuturePrice) {
+        Basket basket = loadBasket(futureIsin, officialDate);
+        DiscountCurve repoCurve = loadCurve("", basket.valuationDate());
         return toInput(futureIsin, basket, repoCurve, quotedFuturePrice);
     }
 
     /**
      * Input con un tasso repo singolo (DECIMALE, interesse semplice ACT/360),
      * trasformato in una curva a un nodo alla deliveryDate.
+     *
      * @param futureIsin
      * @param officialDate
      * @param repoRate
      * @param quotedFuturePrice
-     * @return 
+     * @return
      */
     public XRBForwardInput getBondForwardInput(String futureIsin, LocalDate officialDate,
-                                                double repoRate, Double quotedFuturePrice) {
+            double repoRate, Double quotedFuturePrice) {
         Basket basket = loadBasket(futureIsin, officialDate);
         DiscountCurve repoCurve = singleRateCurve(repoRate, basket);
         return toInput(futureIsin, basket, repoCurve, quotedFuturePrice);
@@ -110,14 +120,17 @@ public class BondForwardCalculator {
     // ------------------------------------------------------------------------
     // -- Valutazione
     // ------------------------------------------------------------------------
-
     public XRBForwardResult bondFwdValuation(XRBForwardInput input) {
         return bondForwardPricer.calculate(Objects.requireNonNull(input, "input"));
     }
 
-    /** Entry point REST: per ora la request porta un tasso repo singolo (domesticRate).
+    /**
+     * Entry point REST: per ora la request porta un tasso repo singolo
+     * (domesticRate).
+     *
      * @param request
-     * @return  */
+     * @return
+     */
     public ForwardPricingResponse bondFwdValuation(ForwardPricingRequest request) {
         Objects.requireNonNull(request, "request");
         Double quoted = request.referencePrice > 0 ? request.referencePrice : null;
@@ -137,17 +150,19 @@ public class BondForwardCalculator {
     // ------------------------------------------------------------------------
     // -- Helper privati
     // ------------------------------------------------------------------------
-
-    /** Paniere e date, indipendenti dalla curva. */
+    /**
+     * Paniere e date, indipendenti dalla curva.
+     */
     private record Basket(org.softcaster.core.data.Currency currency, LocalDate valuationDate, LocalDate deliveryDate,
-                          List<DeliverableBond> deliverables) { }
+            List<DeliverableBond> deliverables) {
+    }
 
     private Basket loadBasket(String futureIsin, LocalDate officialDate) {
         Objects.requireNonNull(officialDate, "officialDate");
         BondFutureMasterData bfmd = loadFuture(futureIsin);
         Calendar calendar = new Calendar(bfmd.getCurrency());
 
-        // VERIFICARE: getMaturityDate() deve essere l'expiry day del future
+        // getMaturityDate() expiry day del future
         // (due giorni di borsa prima del 10 del mese di contratto per il MBTP).
         LocalDate expiryDate = bfmd.getMaturityDate().toLocalDate();
 
@@ -199,16 +214,17 @@ public class BondForwardCalculator {
     }
 
     private static XRBForwardInput toInput(String futureIsin, Basket b, DiscountCurve repoCurve,
-                                            Double quotedFuturePrice) {
+            Double quotedFuturePrice) {
         return new XRBForwardInput(futureIsin, b.valuationDate(), b.deliveryDate(),
                 repoCurve, REPO_DAYCOUNT, b.deliverables(), quotedFuturePrice);
     }
 
     /**
-     * Curva a un nodo che riproduce esattamente il tasso repo semplice alla deliveryDate:
-     * DF = 1 alla valuationDate, DF = 1 / (1 + r * t) alla deliveryDate.
-     * Tra le due date YieldCurve interpola log-linearmente (cedole intermedie capitalizzate
-     * al tasso continuo equivalente: differenza trascurabile rispetto all'interesse semplice).
+     * Curva a un nodo che riproduce esattamente il tasso repo semplice alla
+     * deliveryDate: DF = 1 alla valuationDate, DF = 1 / (1 + r * t) alla
+     * deliveryDate. Tra le due date YieldCurve interpola log-linearmente
+     * (cedole intermedie capitalizzate al tasso continuo equivalente:
+     * differenza trascurabile rispetto all'interesse semplice).
      */
     private static DiscountCurve singleRateCurve(double repoRate, Basket b) {
         double tau = YieldCurve.yearFraction(b.valuationDate(), b.deliveryDate(), REPO_DAYCOUNT);
@@ -243,10 +259,10 @@ public class BondForwardCalculator {
     }
 
     /**
-     * Prezzo secco a pronti del titolo.
-     * Per una strategia cash-and-carry (compro il titolo, vendo il future) il prezzo
-     * realistico e' l'ASK; per un prezzo teorico "equo" e' il MID. Si mantiene il BID
-     * per coerenza con l'implementazione precedente: da rivedere.
+     * Prezzo secco a pronti del titolo. Per una strategia cash-and-carry
+     * (compro il titolo, vendo il future) il prezzo realistico e' l'ASK; per un
+     * prezzo teorico "equo" e' il MID. Si mantiene il BID per coerenza con
+     * l'implementazione precedente: da rivedere.
      */
     private static double spotCleanPrice(InstrumentQuote quote) {
         return quote.getBid();

@@ -5,11 +5,19 @@
 package mds.core.test;
 
 import java.util.List;
+import java.util.Optional;
+import org.softcaster.core.data.AcDcBcyLink;
+import org.softcaster.core.data.AcDcBcyLinkDAO;
+import org.softcaster.core.data.AssetClass;
+import org.softcaster.core.data.AssetClassDAO;
+import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.FltSecurityMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
+import org.softcaster.core.data.SpreadCurveEntity;
 import org.softcaster.core.data.SpreadCurveEntityDAO;
+import org.softcaster.core.data.YieldCurveEntity;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
@@ -21,6 +29,7 @@ import org.softcaster.engine.dto.XRBForwardInput;
 import org.softcaster.engine.dto.XRBForwardResult;
 import org.softcaster.engine.dto.XRBInput;
 import org.softcaster.engine.dto.XRBResult;
+import org.softcaster.engine.enums.CurveRole;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -57,16 +66,17 @@ public class TestPricer implements CommandLineRunner {
     YieldCurveEntityDAO yieldCurveEntityDAO;
     @Autowired
     SpreadCurveEntityDAO spreadCurveEntityDAO;
+    @Autowired
+    AcDcBcyLinkDAO acDcBcyLinkDAO;
 
     @Autowired
-    private SecurityMasterDataDAO smdDAO;
+    private YieldCurveEntityDAO ycDAO;
     @Autowired
-    private FltSecurityMasterDataDAO fltSecurityMasterDataDAO;
-    @Autowired
-    private FxFutureMasterDataDAO fxFutureMasterDataDAO;
-
+    private SpreadCurveEntityDAO scDAO;
     @Autowired
     CurrencyDAO currencyDAO;
+    @Autowired
+    AssetClassDAO assetClassDAO;
 
     public static void main(String[] args) {
         SpringApplication.run(TestPricer.class, args);
@@ -111,7 +121,23 @@ public class TestPricer implements CommandLineRunner {
 
     private void testBondForwardCalculator() {
         double price = 111.;
-        XRBForwardInput input = bndfwdCalculator.getBondForwardInput("IT0026145778", marketDataService.getOfficialDate(), "TERMESTR", price);
+        Currency currency = currencyDAO.findByIsoCode("EUR");
+        AssetClass assetClass = assetClassDAO.findByCode("BFU");
+        AcDcBcyLink link = acDcBcyLinkDAO.find(assetClass.getIdAssetClass(),
+                currency.getIdCurrency(), CurveRole.DISCOUNT).orElse(null);
+        if (link == null) {
+            System.out.println("No Discount Curve... aborting");
+            return;
+        }
+        String discountCurveName = "";
+        if (link.isSpreadCurve()) {
+            SpreadCurveEntity sc = scDAO.findByIdWithBase(link.getSpreadCurve());
+            discountCurveName = sc.getCode();
+        } else {
+            YieldCurveEntity yc = ycDAO.findByIdYieldCurve(link.getCurveId());
+            discountCurveName = yc.getCode();
+        }
+        XRBForwardInput input = bndfwdCalculator.getBondForwardInput("IT0026145778", marketDataService.getOfficialDate(), discountCurveName, price);
         XRBForwardResult result = bndfwdCalculator.bondFwdValuation(input);
         if (result != null) {
             System.out.println("fwd rate:    " + result.forwardRate());

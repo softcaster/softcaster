@@ -8,20 +8,29 @@ import java.time.LocalDate;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.softcaster.core.data.AcDcBcyLink;
+import org.softcaster.core.data.AcDcBcyLinkDAO;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.InstrumentValuation;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.core.data.SpreadCurveEntity;
+import org.softcaster.core.data.SpreadCurveEntityDAO;
+import org.softcaster.core.data.YieldCurveEntity;
+import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.CTDData;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
+import org.softcaster.easy_pricer_mtm.exceptions.MtmException;
 import org.softcaster.easy_pricer_mtm.services.MtmService;
-import org.softcaster.engine.dto.XRBForwardInputData;
+import org.softcaster.engine.dto.XRBForwardInput;
+import org.softcaster.engine.dto.XRBForwardResult;
 import org.softcaster.engine.dto.XRBResult;
+import org.softcaster.engine.enums.CurveRole;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -41,6 +50,15 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
 
     @Autowired
     EvaluatorHelper evaluatorHelper;
+
+    @Autowired
+    YieldCurveEntityDAO yieldCurveEntityDAO;
+
+    @Autowired
+    SpreadCurveEntityDAO spreadCurveEntityDAO;
+
+    @Autowired
+    AcDcBcyLinkDAO acDcBcyLinkDAO;
 
     @Override
     public void evaluate(PositionDetail position, MasterData masterData, IMtmDataHelper mtmHelper, ValuationContext context) {
@@ -72,13 +90,22 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
             currentValuation.setAccruedInterest(0.);
             currentValuation.setValuationDate(valuationDate);
 
-            XRBForwardInputData input = new XRBForwardInputData();
-            input.setCode(masterData.getCode());
-            input.setReferencePrice(mktPrice);
-            input.setReferenceDate(mtmHelper.getOfficialDate());
-            input.setDomesticRate(0.02182);
-            CTDData cTDData = bondForwardCalculator.getCTD(input);
-            double dv01 = calcDV01(cTDData, mtmHelper.getOfficialDate());
+            AcDcBcyLink link = acDcBcyLinkDAO.find(masterData.getAssetClass().getIdAssetClass(), masterData.getCurrency().getIdCurrency(), CurveRole.DISCOUNT).orElse(null);
+            if (link == null) {
+                throw new MtmException("Inalid link");
+            }
+            String discountCurveName = "";
+            if (link.isSpreadCurve()) {
+                SpreadCurveEntity sc = spreadCurveEntityDAO.findByIdWithBase(link.getSpreadCurve());
+                discountCurveName = sc.getCode();
+            } else {
+                YieldCurveEntity yc = yieldCurveEntityDAO.findByIdYieldCurve(link.getCurveId());
+                discountCurveName = yc.getCode();
+            }
+            XRBForwardInput input = bondForwardCalculator.getBondForwardInput(masterData.getCode(), mtmHelper.getOfficialDate(), discountCurveName, mktPrice);
+            XRBForwardResult result = bondForwardCalculator.bondFwdValuation(input);
+            // TO_DO
+            double dv01 = calcDV01(result.ctdIsin(), 100.,1.,mtmHelper.getOfficialDate());
             currentValuation.setDv01(dv01);
 
             return currentValuation;
@@ -96,14 +123,14 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
         masterData.setInstrumentValuation(valuation);
     }
 
-    private double calcDV01(CTDData cTDData, LocalDate officialDate) {
+    private double calcDV01(String ctdIsin, double ctdPrice, double ctdCf, LocalDate officialDate) {
         double dv01 = 0;
-        MasterData masterData = masterDataDAO.findByCode(cTDData.underlyingIsin);
+        MasterData masterData = masterDataDAO.findByCode(ctdIsin);
         if (masterData != null) {
             if (masterData instanceof SecurityMasterData smd) {
-                XRBResult result = evaluatorHelper.calculateXRB(smd, cTDData.cleanSpotPrice, officialDate);
+                XRBResult result = evaluatorHelper.calculateXRB(smd, ctdPrice, officialDate);
                 if (result != null) {
-                    dv01 = result.analytics().dv01() / cTDData.cf;
+                    dv01 = result.analytics().dv01() / ctdCf;
                 }
             }
         }

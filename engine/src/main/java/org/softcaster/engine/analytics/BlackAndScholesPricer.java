@@ -4,158 +4,100 @@
  */
 package org.softcaster.engine.analytics;
 
-import org.softcaster.engine.dto.BondOptionInputData;
-import org.softcaster.engine.dto.OptionData;
-import org.softcaster.engine.dto.OptionOutputData;
-import org.softcaster.engine.enums.Compounding;
-import org.softcaster.engine.enums.OptionType;
+import org.softcaster.engine.dto.EquityOptionInput;
+import org.softcaster.engine.enums.ExerciseStyle;
+import org.softcaster.engine.dto.Greeks;
+import org.softcaster.engine.dto.OptionContract;
+import org.softcaster.engine.dto.OptionResult;
 import org.softcaster.engine.math.Gaussian;
-import org.softcaster.engine.math.MathUtil;
-import org.softcaster.engine.math.OptionUtil;
+// + import di Gaussian dal suo package
 
 /**
+ * Black-Scholes-Merton per opzioni europee su azioni e indici, con dividend
+ * yield continuo.
  *
- * @author ep
+ * T = giorni / 365, DF = DF_curva(valuation -> expiry), r = -ln(DF) / T F = S
+ * e^{-qT} / DF d1 = (ln(F/K) + sigma^2 T / 2) / (sigma sqrt T), d2 = d1 - sigma
+ * sqrt T call = DF (F N(d1) - K N(d2)) put = DF (K N(-d2) - F N(-d1))
+ *
+ * Le opzioni americane vanno prezzate con CRRBinomialPricer: qui vengono
+ * rifiutate.
  */
-public class BlackAndScholesPricer implements IOptionPricer<BondOptionInputData> {
+public final class BlackAndScholesPricer implements Pricer<EquityOptionInput, OptionResult> {
 
     @Override
-    public OptionOutputData priceCall(BondOptionInputData input) {
-        OptionOutputData output = new OptionOutputData();
-        // TO_DO
-        double t = OptionUtil.getTimeToMaturity(null/*input*/);
-        double s = 1.;//input.getUnderlyingReferencePrice();
-        double k = input.getStrike();
-        double r = 1.;//input.getDomesticRate();
-        double vol = input.getVolatility();
-
-        // se t è zero, il prezzo dell'opzione è semplicemente il suo valore intrinseco
-        // Max[(S-K),0)
-        if (t <= 0) {
-            output.setPrice((s - k > 0 ? (s - k) : 0));
-            return output;
+    public OptionResult calculate(EquityOptionInput in) {
+        OptionContract c = in.contract();
+        if (c.style() != ExerciseStyle.EUROPEAN) {
+            throw new IllegalArgumentException("Black-Scholes prezza solo opzioni europee: usare CRRBinomialPricer per "
+                    + in.instrumentId());
         }
 
-        double b = k * Math.exp(-r * t);
-        double sigmaSqrtT = vol * Math.sqrt(t);
+        double s = in.spot();
+        double k = c.strike();
+        double q = in.dividendYield();
+        double t = in.timeToExpiry();
+        double df = in.discountCurve().getDiscountFactor(c.expiryDate())
+                / in.discountCurve().getDiscountFactor(in.valuationDate());
+        double dq = t > 0 ? Math.exp(-q * t) : 1.0;           // sconto per i dividendi
+        double forward = s * dq / df;
 
-        double d1 = (Math.log(s / b) / sigmaSqrtT) + 0.5 * sigmaSqrtT;
+        // a scadenza (o con volatilita' nulla) vale il payoff sul forward, scontato
+        double sigmaSqrtT = in.volatility() * Math.sqrt(t);
+        if (t <= 0 || sigmaSqrtT <= 0) {
+            return atLimit(in, forward, df, t);
+        }
+
+        double r = -Math.log(df) / t;                         // tasso continuo equivalente
+        double d1 = (Math.log(forward / k) + 0.5 * sigmaSqrtT * sigmaSqrtT) / sigmaSqrtT;
         double d2 = d1 - sigmaSqrtT;
+        double nd1 = Gaussian.pdf(d1);
 
-        // Prezzo
-        output.setPrice(s * Gaussian.cdf(d1) - b * Gaussian.cdf(d2));
-
-        // Greche 
-        output.setDelta(Gaussian.cdf(d1));
-        output.setGamma(Gaussian.pdf(d1) / (s * sigmaSqrtT));
-        output.setVega(s * Gaussian.pdf(d1) * Math.sqrt(t) / 100.0);
-        output.setTheta(-((s * Gaussian.pdf(d1) * vol) / (2 * Math.sqrt(t)) + r * b * Gaussian.cdf(d2)) / 365.0);
-
-        return output;
-    }
-
-    @Override
-    public OptionOutputData pricePut(BondOptionInputData input) {
-        // 1. Calcoliamo la Call (che popola Prezzo e Greche della Call)
-        OptionOutputData output = priceCall(input);
-
-        double t = OptionUtil.getTimeToMaturity(null/*input*/);
-        // TO_DO
-        double r = 1.;//input.getDomesticRate();
-        double k = input.getStrike();
-        double s = 1.;//input.getUnderlyingReferencePrice();
-
-        if (t <= 0) {
-            output.setPrice((k - s > 0 ? (k - s) : 0));
-            return output;
+        double price;
+        double delta;
+        double theta;
+        double rho;
+        if (c.isCall()) {
+            price = s * dq * Gaussian.cdf(d1) - k * df * Gaussian.cdf(d2);
+            delta = dq * Gaussian.cdf(d1);
+            theta = -s * dq * nd1 * in.volatility() / (2 * Math.sqrt(t))
+                    - r * k * df * Gaussian.cdf(d2)
+                    + q * s * dq * Gaussian.cdf(d1);
+            rho = k * t * df * Gaussian.cdf(d2);
+        } else {
+            price = k * df * Gaussian.cdf(-d2) - s * dq * Gaussian.cdf(-d1);
+            delta = -dq * Gaussian.cdf(-d1);
+            theta = -s * dq * nd1 * in.volatility() / (2 * Math.sqrt(t))
+                    + r * k * df * Gaussian.cdf(-d2)
+                    - q * s * dq * Gaussian.cdf(-d1);
+            rho = -k * t * df * Gaussian.cdf(-d2);
         }
+        double gamma = dq * nd1 / (s * sigmaSqrtT);
+        double vega = s * dq * nd1 * Math.sqrt(t);
 
-        // --- CORREZIONE PREZZO (Put-Call Parity) ---
-        double b = k * Math.exp(-r * t);
-        double callPrice = output.getPrice();
-        double putPrice = b + callPrice - s;
-        output.setPrice(putPrice);
+        Greeks greeks = new Greeks(
+                delta,
+                gamma,
+                vega / 100.0, // per punto di volatilita'
+                theta / 365.0, // per giorno di calendario
+                rho / 100.0);       // per punto percentuale di tasso
 
-        // --- CORREZIONE GRECHE ---
-        // Delta Put = Delta Call - 1
-        // (Se Delta Call è 0.6, Delta Put è -0.4)
-        output.setDelta(output.getDelta() - 1.0);
-
-        // Theta Put = Theta Call + r * K * e^(-rT)
-        // In termini giornalieri (diviso 365)
-        double thetaAdjustment = (r * b) / 365.0;
-        output.setTheta(output.getTheta() + thetaAdjustment);
-
-        // Gamma e Vega rimangono invariati rispetto alla Call
-        return output;
+        return new OptionResult(in.instrumentId(), in.valuationDate(), price, price * c.notional(),
+                forward, df, t, greeks);
     }
 
-    public double calculateImpliedVolatility(BondOptionInputData input, double targetPrice, OptionType type) {
-
-        //double t = OptionUtil.getTimeToMaturity(input);
-        // TO_DO
-        double s = 1.;//input.getUnderlyingReferencePrice();
-        double k = input.getStrike();
-        // 1. Validazione finanziaria preventiva
-        double intrinsicValue = type == OptionType.CALL ? Math.max(0, s - k) : Math.max(0, k - s);
-
-        if (targetPrice <= intrinsicValue) {
-            throw new ArbitrageViolationException(targetPrice, intrinsicValue);
-        }
-
-        MathUtil.Function1 ivFunction = new MathUtil.Function1() {
-
-            @Override
-            public double f(double vol) {
-                // Creiamo un clone dell'input per non sporcare l'originale
-                BondOptionInputData tempInput = createInputWithNewVol(input, vol);
-
-                double currentPrice = type == OptionType.CALL
-                        ? priceCall(tempInput).getPrice()
-                        : pricePut(tempInput).getPrice();
-
-                // La radice è dove PrezzoModello - PrezzoMercato = 0
-                return currentPrice - targetPrice;
-            }
-
-            @Override
-            public double f(double x, Compounding compounding) {
-                return f(x);
-            }
-        };
-
-        // Partiamo da un guess del 20% (0.20)
-        // Newton-Raphson è molto veloce qui perché il Vega è sempre positivo
-        return MathUtil.rootNewton(ivFunction, 0.20, Compounding.COMPOUNDED);
-    }
-
-    private BondOptionInputData createInputWithNewVol(BondOptionInputData original, double newVol) {
-        // Creiamo un nuovo record basato su quello vecchio ma con vol diversa
-        OptionData newOptionData = new OptionData(
-                original.getOptionData().strike(),
-                newVol, // Nuova volatilità calcolata da Newton
-                original.getOptionData().style(),
-                original.getOptionData().type()
-        );
-
-        // Creiamo un nuovo oggetto di input (o usiamo un costruttore/setter per rimpiazzare il record)
-        BondOptionInputData newInput = cloneInput(original); // Il tuo metodo clone
-        newInput.setOptionData(newOptionData);
-        return newInput;
-    }
-
-    // Metodo di supporto per il cloning dei dati di input
-    private BondOptionInputData cloneInput(BondOptionInputData src) {
-        BondOptionInputData dest = new BondOptionInputData();
-        // TO_DO
-        /*
-        dest.setUnderlyingReferencePrice(src.getUnderlyingReferencePrice());
-        dest.setOptionData(src.getOptionData());
-        dest.setDomesticRate(src.getDomesticRate());
-        dest.setValuationDate(src.getValuationDate());
-        dest.setMaturityDate(src.getMaturityDate());
-        dest.setDaycount(src.getDaycount());
-*/
-        return dest;
+    /**
+     * Scadenza o volatilita' nulla: payoff deterministico sul forward,
+     * scontato.
+     */
+    private static OptionResult atLimit(EquityOptionInput in, double forward, double df, double t) {
+        OptionContract c = in.contract();
+        double k = c.strike();
+        boolean inTheMoney = c.isCall() ? forward > k : forward < k;
+        double price = df * (c.isCall() ? Math.max(forward - k, 0) : Math.max(k - forward, 0));
+        double dq = forward * df / in.spot();                 // e^{-qT}
+        double delta = inTheMoney ? (c.isCall() ? dq : -dq) : 0.0;
+        return new OptionResult(in.instrumentId(), in.valuationDate(), price, price * c.notional(),
+                forward, df, t, Greeks.atExpiry(delta));
     }
 }

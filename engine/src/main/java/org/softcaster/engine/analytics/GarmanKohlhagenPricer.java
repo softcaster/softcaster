@@ -4,165 +4,101 @@
  */
 package org.softcaster.engine.analytics;
 
-import org.softcaster.engine.dto.FxOptionInputData;
-import org.softcaster.engine.dto.MarketOutputData;
-import org.softcaster.engine.dto.OptionData;
-import org.softcaster.engine.dto.OptionOutputData;
-import org.softcaster.engine.enums.Compounding;
-import org.softcaster.engine.enums.OptionType;
+import org.softcaster.engine.dto.FxOptionInput;
+import org.softcaster.engine.dto.Greeks;
+import org.softcaster.engine.dto.OptionContract;
+import org.softcaster.engine.dto.OptionResult;
+import org.softcaster.engine.enums.ExerciseStyle;
 import org.softcaster.engine.math.Gaussian;
-import org.softcaster.engine.math.MathUtil;
-import org.softcaster.engine.math.OptionUtil;
+// + import di Gaussian dal suo package
 
 /**
+ * Garman-Kohlhagen per opzioni europee su cambi: Black-Scholes con il tasso
+ * estero al posto del dividend yield.
  *
- * @author ep
+ * Convenzione di FxOptionInput: spot e strike in valuta domestica per 1 unita'
+ * di valuta estera, prezzo in valuta domestica per 1 unita' di valuta estera.
+ *
+ * T = giorni / 365 DFd = DF_domestica(valuation -> expiry), DFf =
+ * DF_estera(valuation -> expiry) F = S DFf / DFd (stesso forward di
+ * FxForwardPricer) d1 = (ln(F/K) + sigma^2 T / 2) / (sigma sqrt T), d2 = d1 -
+ * sigma sqrt T call = S DFf N(d1) - K DFd N(d2) put = K DFd N(-d2) - S DFf
+ * N(-d1)
+ *
+ * Greche rispetto allo spot; rho rispetto al tasso DOMESTICO (curva estera
+ * ferma). Le americane vanno prezzate con CRRBinomialPricer.
  */
-public class GarmanKohlhagenPricer implements IOptionPricer<FxOptionInputData> {
+public final class GarmanKohlhagenPricer implements Pricer<FxOptionInput, OptionResult> {
 
     @Override
-    public OptionOutputData priceCall(FxOptionInputData input) {
-        OptionOutputData output = new OptionOutputData();
-        // TO_DO
-        double t = OptionUtil.getTimeToMaturity(null /*input*/);
-        double s = 1.;//input.getUnderlyingReferencePrice();
-        double k = input.getStrike();
-        double rd = 1.;//input.getDomesticRate(); // Domestic
-        double rf = 1.;//input.getForeignRate(); // Foreign
-        double vol = input.getVolatility();
-        double sqrtT = Math.sqrt(t);
-
-        double d1 = (Math.log(s / k) + (rd - rf + 0.5 * vol * vol) * t) / (vol * sqrtT);
-        double d2 = d1 - vol * sqrtT;
-
-        // Premium
-        double dfForeign = Math.exp(-rf * t);
-        double dfDomestic = Math.exp(-rd * t);
-        output.setPrice(s * dfForeign * Gaussian.cdf(d1) - k * dfDomestic * Gaussian.cdf(d2));
-
-        // PDF di d1 (necessaria per le greche)
-        double nd1 = Gaussian.pdf(d1);
-
-        // Greeks
-        //output.setDelta(dfForeign * Gaussian.cdf(d1));
-        output.setDelta(Math.exp(-1./*-input.getForeignRate()*/ * t) * Gaussian.cdf(d1));
-        output.setGamma((nd1 * dfForeign) / (s * vol * sqrtT));
-        output.setVega(s * dfForeign * sqrtT * nd1 / 100.0); // Diviso 100 per 1% vol
-
-        // Theta (versione semplificata per FX)
-        double theta = -(s * dfForeign * nd1 * vol) / (2 * sqrtT)
-                + rf * s * dfForeign * Gaussian.cdf(d1)
-                - rd * k * dfDomestic * Gaussian.cdf(d2);
-        output.setTheta(theta / 365.0);
-
-        return output;
-    }
-
-    @Override
-    public OptionOutputData pricePut(FxOptionInputData input) {
-        OptionOutputData output = new OptionOutputData();
-
-        // TO_DO
-        double t = OptionUtil.getTimeToMaturity(null/*input*/);
-        double s = 1.;//input.getUnderlyingReferencePrice();
-        double k = input.getStrike();
-        double rd = 1.;//input.getDomesticRate(); // Domestic Rate (es. USD)
-        double rf = 1.;//input.getForeignRate(); // Foreign Rate (es. EUR)
-        double vol = input.getVolatility();
-        double sqrtT = Math.sqrt(t);
-
-        // d1 e d2 sono identici alla Call
-        double d1 = (Math.log(s / k) + (rd - rf + 0.5 * vol * vol) * t) / (vol * sqrtT);
-        double d2 = d1 - vol * sqrtT;
-
-        double dfForeign = Math.exp(-rf * t);
-        double dfDomestic = Math.exp(-rd * t);
-
-        // --- PREMIUM PUT ---
-        // Formula: K * e^(-rd*t) * N(-d2) - S * e^(-rf*t) * N(-d1)
-        double price = k * dfDomestic * Gaussian.cdf(-d2) - s * dfForeign * Gaussian.cdf(-d1);
-        output.setPrice(price);
-
-        // --- GREEKS PUT ---
-        double nd1 = Gaussian.pdf(d1);
-
-        // Delta Put = e^(-rf*t) * (N(d1) - 1)
-        output.setDelta(dfForeign * (Gaussian.cdf(d1) - 1.0));
-
-        // Gamma e Vega sono identici alla Call
-        output.setGamma((nd1 * dfForeign) / (s * vol * sqrtT));
-        output.setVega(s * dfForeign * sqrtT * nd1 / 100.0);
-
-        // Theta Put
-        double theta = -(s * dfForeign * nd1 * vol) / (2 * sqrtT)
-                - rf * s * dfForeign * Gaussian.cdf(-d1)
-                + rd * k * dfDomestic * Gaussian.cdf(-d2);
-        output.setTheta(theta / 365.0);
-
-        return output;
-    }
-
-    public double calculateImpliedVolatility(FxOptionInputData input, double targetPrice) {
-
-        // 1. Definiamo la funzione obiettivo: f(vol) = PrezzoFX(vol) - PrezzoMercato
-        MathUtil.Function1 ivFunction = new MathUtil.Function1() {
-            @Override
-            public double f(double vol) {
-                // Creiamo un clone dell'input per non sporcare l'originale
-                FxOptionInputData tempInput = createInputWithNewVol(input, vol);
-                // Calcoliamo il prezzo in base al tipo (Call o Put)
-                MarketOutputData output = (input.getOptionType() == OptionType.CALL)
-                        ? priceCall(tempInput)
-                        : pricePut(tempInput);
-
-                return output.getPrice() - targetPrice;
-            }
-
-            @Override
-            public double f(double x, Compounding compounding) {
-                return f(x);
-            }
-
-        };
-
-        // 2. Risoluzione tramite Newton-Raphson
-        // Partiamo da un guess standard (es. 15% o 0.15)
-        try {
-            return MathUtil.rootNewton(ivFunction, 0.15, Compounding.COMPOUNDED);
-        } catch (Exception e) {
-            throw new PricingException("FX Implied Volatility failed to converge. "
-                    + "The market price might be outside arbitrage bounds.");
+    public OptionResult calculate(FxOptionInput in) {
+        OptionContract c = in.contract();
+        if (c.style() != ExerciseStyle.EUROPEAN) {
+            throw new IllegalArgumentException("Garman-Kohlhagen prezza solo opzioni europee: usare CRRBinomialPricer per "
+                    + in.instrumentId());
         }
+
+        double s = in.spot();
+        double k = c.strike();
+        double t = in.timeToExpiry();
+        double dfd = in.domesticCurve().getDiscountFactor(c.expiryDate())
+                / in.domesticCurve().getDiscountFactor(in.valuationDate());
+        double dff = in.foreignCurve().getDiscountFactor(c.expiryDate())
+                / in.foreignCurve().getDiscountFactor(in.valuationDate());
+        double forward = s * dff / dfd;
+
+        double sigmaSqrtT = in.volatility() * Math.sqrt(t);
+        if (t <= 0 || sigmaSqrtT <= 0) {
+            return atLimit(in, forward, dfd, dff, t);
+        }
+
+        double rd = -Math.log(dfd) / t;
+        double rf = -Math.log(dff) / t;
+        double d1 = (Math.log(forward / k) + 0.5 * sigmaSqrtT * sigmaSqrtT) / sigmaSqrtT;
+        double d2 = d1 - sigmaSqrtT;
+        double nd1 = Gaussian.pdf(d1);
+        double timeDecay = -s * dff * nd1 * in.volatility() / (2 * Math.sqrt(t));
+
+        double price;
+        double delta;
+        double theta;
+        double rho;
+        if (c.isCall()) {
+            price = s * dff * Gaussian.cdf(d1) - k * dfd * Gaussian.cdf(d2);
+            delta = dff * Gaussian.cdf(d1);
+            theta = timeDecay + rf * s * dff * Gaussian.cdf(d1) - rd * k * dfd * Gaussian.cdf(d2);
+            rho = k * t * dfd * Gaussian.cdf(d2);
+        } else {
+            price = k * dfd * Gaussian.cdf(-d2) - s * dff * Gaussian.cdf(-d1);
+            delta = -dff * Gaussian.cdf(-d1);
+            theta = timeDecay - rf * s * dff * Gaussian.cdf(-d1) + rd * k * dfd * Gaussian.cdf(-d2);
+            rho = -k * t * dfd * Gaussian.cdf(-d2);
+        }
+        double gamma = dff * nd1 / (s * sigmaSqrtT);
+        double vega = s * dff * nd1 * Math.sqrt(t);
+
+        Greeks greeks = new Greeks(
+                delta,
+                gamma,
+                vega / 100.0, // per punto di volatilita'
+                theta / 365.0, // per giorno di calendario
+                rho / 100.0);       // per punto percentuale del tasso domestico
+
+        return new OptionResult(in.instrumentId(), in.valuationDate(), price, price * c.notional(),
+                forward, dfd, t, greeks);
     }
 
-    private FxOptionInputData createInputWithNewVol(FxOptionInputData original, double newVol) {
-        // Creiamo un nuovo record basato su quello vecchio ma con vol diversa
-        OptionData newOptionData = new OptionData(
-                original.getOptionData().strike(),
-                newVol, // Nuova volatilità calcolata da Newton
-                original.getOptionData().style(),
-                original.getOptionData().type()
-        );
-
-        // Creiamo un nuovo oggetto di input (o usiamo un costruttore/setter per rimpiazzare il record)
-        FxOptionInputData newInput = cloneInput(original); // Il tuo metodo clone
-        newInput.setOptionData(newOptionData);
-        return newInput;
-    }
-
-    // Metodo di supporto per il cloning dei dati di input
-    private FxOptionInputData cloneInput(FxOptionInputData src) {
-        FxOptionInputData dest = new FxOptionInputData();
-        // TO_DO
-        /*
-        dest.setUnderlyingReferencePrice(src.getUnderlyingReferencePrice());
-        dest.setOptionData(src.getOptionData());
-        dest.setDomesticRate(src.getDomesticRate()); // Domestic
-        dest.setForeignRate(src.getForeignRate()); // Foreign
-        dest.setValuationDate(src.getValuationDate());
-        dest.setMaturityDate(src.getMaturityDate());
-        dest.setDaycount(src.getDaycount());
-*/
-        return dest;
+    /**
+     * Scadenza o volatilita' nulla: payoff deterministico sul forward, scontato
+     * in valuta domestica.
+     */
+    private static OptionResult atLimit(FxOptionInput in, double forward, double dfd, double dff, double t) {
+        OptionContract c = in.contract();
+        double k = c.strike();
+        double payoff = c.isCall() ? Math.max(forward - k, 0) : Math.max(k - forward, 0);
+        double price = dfd * payoff;
+        double delta = payoff > 0 ? (c.isCall() ? dff : -dff) : 0.0;
+        return new OptionResult(in.instrumentId(), in.valuationDate(), price, price * c.notional(),
+                forward, dfd, t, Greeks.atExpiry(delta));
     }
 }
