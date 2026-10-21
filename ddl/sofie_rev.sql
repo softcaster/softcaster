@@ -364,3 +364,12 @@ insert into ac_dc_bcy_link(ac_dc_bcy_link_id,asset_class,currency,curve_role,yie
     (select curve_role_id from curve_role where code='DISCOUNT'),
     (select id_yield_curve from yield_curve where code='TERMESTR'));
     
+insert into yield_curve(id_yield_curve,code,description,currency,calendar,compounding,provider) values (
+    nextval('yield_curve_s'),
+    'EUR_OIS',
+    'Eur Ois)',
+    (select id_currency from currency where iso_code='EUR'),
+    (select id_calendar from calendar where code='EUR'),
+    (select id_compounding from compounding where code='SIMPLE_THEN_COMPOUNDED'),
+    ''
+);

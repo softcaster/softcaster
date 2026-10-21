@@ -420,6 +420,7 @@ INSERT INTO node_type(node_type_id,code, description) VALUES (1,'MONEY_MARKET','
 INSERT INTO node_type(node_type_id,code, description) VALUES (2,'SWAP','Swap');
 INSERT INTO node_type(node_type_id,code, description) VALUES (3,'ZERO_RATES','Zero Rates');
 INSERT INTO node_type(node_type_id,code, description) VALUES (4,'PAR_YIELD','Par Yield');
+INSERT INTO node_type(node_type_id,code, description) VALUES (5,'OIS','Ois');
 
 INSERT INTO load_type VALUES (1, 'BASE', 'Base load - 24 hours a day, 7 days a week');
 INSERT INTO load_type VALUES (2, 'PEAK', 'Peak load - peak hours as defined by market convention');

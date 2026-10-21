@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_mds_core;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import org.softcaster.provider.bluegamma.BlueGammaOisProvider;
 import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.provider.cme.CmeGroupProvider;
 import org.softcaster.provider.cnbc.CnbcProvider;
@@ -39,6 +40,7 @@ public class ProviderFactory {
         REGISTRY.put("BorsaItalianaProvider", BorsaItalianaProvider::getInstance);
         REGISTRY.put("CsvProvider", CsvProvider::getInstance);
         REGISTRY.put("InvestingComProvider", InvestingComProvider::getInstance);
+        REGISTRY.put("BlueGammaOisProvider", BlueGammaOisProvider::getInstance);
     }
 
     // Metodo statico per ottenere l'istanza
