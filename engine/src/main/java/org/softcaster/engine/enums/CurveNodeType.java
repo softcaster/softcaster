@@ -13,7 +13,8 @@ public enum CurveNodeType implements IdentifiableEnum {
     MONEY_MARKET(1, "MONEY_MARKET", "Money Market"),
     SWAP(2, "SWAP", "Swap"),
     ZERO_RATES(3, "ZERO_RATES", "Zero Rate"),
-    PAR_YIELD(4, "PAR_YIELD", "Par Yield");
+    PAR_YIELD(4, "PAR_YIELD", "Par Yield"),
+    OIS(5, "OIS", "Ois");
 
     private final int id;
     private final String code;
