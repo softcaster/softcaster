@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_mds;
 import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
+import org.softcaster.core.data.CalendarDAO;
 import org.softcaster.core.data.CmdFutureMasterDataDAO;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
@@ -73,6 +74,8 @@ public class MDSFacade {
 
     @Autowired
     private CurrencyDAO currencyDAO;
+    @Autowired
+    private CalendarDAO calendarDAO;
     @Autowired
     private CountryDAO countryDAO;
     @Autowired
@@ -236,5 +239,12 @@ public class MDSFacade {
      */
     public SpreadCurveEntityDAO getSpreadCurveDAO() {
         return spreadCurveDAO;
+    }
+
+    /**
+     * @return the calendarDAO
+     */
+    public CalendarDAO getCalendarDAO() {
+        return calendarDAO;
     }
 }

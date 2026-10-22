@@ -46,12 +46,12 @@ public class TreeModel {
         // YC
         DefaultMutableTreeNode discountCurve = new DefaultMutableTreeNode("Discount Curves");
         DefaultMutableTreeNode ycurves = new DefaultMutableTreeNode("Yield Curves");
-        ycurves.add(new DefaultMutableTreeNode(new FndtNode<>("Update", AppTreeItem.YC_UPDATE)));
-        ycurves.add(new DefaultMutableTreeNode(new FndtNode<>("Define", AppTreeItem.YC_DEFINE)));
+        ycurves.add(new DefaultMutableTreeNode(new FndtNode<>("Rates", AppTreeItem.YC_UPDATE)));
+        ycurves.add(new DefaultMutableTreeNode(new FndtNode<>("Master Data", AppTreeItem.YC_DEFINE)));
         discountCurve.add(ycurves);
         DefaultMutableTreeNode scurves = new DefaultMutableTreeNode("Spreaded Curves");
-        scurves.add(new DefaultMutableTreeNode(new FndtNode<>("Update", AppTreeItem.SC_UPDATE)));
-        scurves.add(new DefaultMutableTreeNode(new FndtNode<>("Define", AppTreeItem.SC_DEFINE)));
+        scurves.add(new DefaultMutableTreeNode(new FndtNode<>("Rates", AppTreeItem.SC_UPDATE)));
+        scurves.add(new DefaultMutableTreeNode(new FndtNode<>("Master Data", AppTreeItem.SC_DEFINE)));
         discountCurve.add(scurves);
 
         root.add(discountCurve);

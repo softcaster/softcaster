@@ -61,7 +61,7 @@ public class YieldCurvePanel extends FndtAbstactPanel {
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("Yield Curves");
+        lblHeader.setText("Yield Curves Rates");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
