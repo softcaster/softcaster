@@ -1,32 +1,27 @@
 package org.softcaster.core.data;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedSubgraph;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 
+/**
+ * Testata di un bond future (es. MBTP). Le singole scadenze, con il paniere
+ * consegnabile, sono FutureContract.
+ */
 @Entity
 @Table(name = "bond_future_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 @NamedEntityGraph(
-        name = "BondFutureMasterData.fullGraphWithDeliverables",
+        name = "BondFutureMasterData.fullGraph",
         attributeNodes = {
             @NamedAttributeNode(value = "currency", subgraph = "currencyGraph"),
             @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
-            @NamedAttributeNode("deliverables")
+            @NamedAttributeNode("instrumentValuation")
         },
         subgraphs = {
             @NamedSubgraph(name = "currencyGraph", attributeNodes = {
@@ -50,11 +45,6 @@ public class BondFutureMasterData extends FutureMasterData {
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "initial_margin")
     private Double initialMargin;
-
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Fetch(value = FetchMode.SUBSELECT)
-    @JoinColumn(name = "master_data", nullable = false) // FK in child table deliverable_bonds
-    private List<DeliverableBonds> deliverables = new ArrayList<>();
 
     public Double getContractValue() {
         return contractValue;
@@ -83,19 +73,5 @@ public class BondFutureMasterData extends FutureMasterData {
     @Override
     public String toString() {
         return getCode();
-    }
-
-    /**
-     * @return the deliverables
-     */
-    public List<DeliverableBonds> getDeliverables() {
-        return deliverables;
-    }
-
-    /**
-     * @param deliverables the deliverables to set
-     */
-    public void setDeliverables(List<DeliverableBonds> deliverables) {
-        this.deliverables = deliverables;
     }
 }

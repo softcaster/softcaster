@@ -3,8 +3,9 @@ package org.softcaster.easy_pricer_mds_core.calc;
 import java.time.LocalDate;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import org.softcaster.core.data.FutureContract;
+import org.softcaster.core.data.FutureContractDAO;
 import org.softcaster.core.data.FxFutureMasterData;
-import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.curve.DiscountCurve;
@@ -41,14 +42,14 @@ import org.softcaster.engine.dto.FxForwardResult;
  */
 public class FxForwardCalculator {
 
-    private final FxFutureMasterDataDAO fxFutureMasterDataDAO;
+    private final FutureContractDAO futureContractDAO;
     private final MarketDataService marketDataService;
     private final FxForwardPricer fxForwardPricer;
 
-    public FxForwardCalculator(FxFutureMasterDataDAO fxFutureMasterDataDAO,
+    public FxForwardCalculator(FutureContractDAO futureContractDAO,
                                MarketDataService marketDataService,
                                FxForwardPricer fxForwardPricer) {
-        this.fxFutureMasterDataDAO = Objects.requireNonNull(fxFutureMasterDataDAO);
+        this.futureContractDAO = Objects.requireNonNull(futureContractDAO);
         this.marketDataService = Objects.requireNonNull(marketDataService);
         this.fxForwardPricer = Objects.requireNonNull(fxForwardPricer);
     }
@@ -110,8 +111,9 @@ public class FxForwardCalculator {
     public FxForwardInput getFxForwardInput(String code, LocalDate officialDate, double spotPrice,
                                             String domesticCurveCode, String foreignCurveCode,
                                             FxForwardInput.FxContract contract) {
-        FxFutureMasterData fmd = loadFuture(code);
-        
+        FutureContract futureContract = futureContractDAO.getByCodeOrIsin(code);
+        FxFutureMasterData fmd = futureContract.getMasterData(FxFutureMasterData.class);
+
         LocalDate valuationDate = CashFlowInstrumentCalculator.valuationDate(fmd, officialDate);
         
         if(domesticCurveCode == null || domesticCurveCode.isBlank())
@@ -121,7 +123,7 @@ public class FxForwardCalculator {
         DiscountCurve domesticCurve = loadCurve(domesticCurveCode, valuationDate);
         DiscountCurve foreignCurve = loadCurve(foreignCurveCode, valuationDate);
 
-        LocalDate deliveryDate = fmd.getMaturityDate().toLocalDate();
+        LocalDate deliveryDate = deliveryDate(futureContract, fmd);
 
         return new FxForwardInput(code, valuationDate, deliveryDate,
                 spotPrice, domesticCurve, foreignCurve, contract);
@@ -139,15 +141,20 @@ public class FxForwardCalculator {
     // -- Helper privati
     // ------------------------------------------------------------------------
 
-    private FxFutureMasterData loadFuture(String code) {
-        if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("Codice strumento mancante");
+    /**
+     * Data di consegna della scadenza; se non e' in anagrafica, regolamento
+     * spot dell'ultimo giorno di negoziazione (per il CME 6E: due giorni
+     * lavorativi dopo, il terzo mercoledi' del mese).
+     */
+    private static LocalDate deliveryDate(FutureContract contract, FxFutureMasterData fmd) {
+        if (contract.getDeliveryLocalDate() != null) {
+            return contract.getDeliveryLocalDate();
         }
-        FxFutureMasterData fmd = fxFutureMasterDataDAO.findByCodeWithUnderlying(code).orElse(null);
-        if (fmd == null) {
-            throw new NoSuchElementException("Future non trovato: " + code);
+        LocalDate lastTrading = contract.getLastTradingLocalDate();
+        if (lastTrading == null) {
+            throw new IllegalArgumentException("Ultimo giorno di negoziazione mancante per " + contract.getCode());
         }
-        return fmd;
+        return CashFlowInstrumentCalculator.valuationDate(fmd, lastTrading);
     }
 
     /**

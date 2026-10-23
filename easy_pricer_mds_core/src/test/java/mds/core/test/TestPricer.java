@@ -4,17 +4,17 @@
  */
 package mds.core.test;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import org.softcaster.core.data.AcDcBcyLink;
 import org.softcaster.core.data.AcDcBcyLinkDAO;
 import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.CurrencyDAO;
-import org.softcaster.core.data.FltSecurityMasterDataDAO;
+import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
-import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SpreadCurveEntity;
 import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntity;
@@ -23,13 +23,19 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.FxForwardCalculator;
+import org.softcaster.engine.analytics.Black76Pricer;
+import org.softcaster.engine.curve.DiscountCurve;
+import org.softcaster.engine.dto.ForwardOptionInput;
 import org.softcaster.engine.dto.FxForwardInput;
 import org.softcaster.engine.dto.FxForwardResult;
+import org.softcaster.engine.dto.OptionContract;
+import org.softcaster.engine.dto.OptionResult;
 import org.softcaster.engine.dto.XRBForwardInput;
 import org.softcaster.engine.dto.XRBForwardResult;
 import org.softcaster.engine.dto.XRBInput;
 import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.engine.enums.CurveRole;
+import org.softcaster.engine.enums.ExerciseStyle;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -63,6 +69,9 @@ public class TestPricer implements CommandLineRunner {
     BondForwardCalculator bndfwdCalculator;
 
     @Autowired
+    private FxFutureMasterDataDAO fxFutureMasterDataDAO;
+
+    @Autowired
     YieldCurveEntityDAO yieldCurveEntityDAO;
     @Autowired
     SpreadCurveEntityDAO spreadCurveEntityDAO;
@@ -86,9 +95,10 @@ public class TestPricer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Allinea curve e prezzi
         startUp();
-        //testCashFlowInstrumentCalculator();
-        //testFxForwardCalculator();
+        // testCashFlowInstrumentCalculator();
+        // testFxForwardCalculator();
         testBondForwardCalculator();
+        // testBlack76Pricer();
     }
 
     private void startUp() {
@@ -146,5 +156,45 @@ public class TestPricer implements CommandLineRunner {
             System.out.println("implied repo: " + result.ctd().impliedRepo());
             System.out.println("net basis:    " + result.ctd().netBasis());
         }
+    }
+
+    private void testBlack76Pricer() {
+
+        String fxFutCode = "M6EZ6";
+        FxFutureMasterData fmd = fxFutureMasterDataDAO.findByCodeWithUnderlying(fxFutCode).orElse(null);
+        if (fmd == null) {
+            throw new NoSuchElementException("Future non trovato: " + fxFutCode);
+        }
+
+        LocalDate valuationDate = CashFlowInstrumentCalculator.valuationDate(fmd, marketDataService.getOfficialDate());
+        double futurePrice = 1.12485;
+        DiscountCurve usdCurve = marketDataService.getDiscountCurve("TERMSOFR");
+        LocalDate optionExpiry = LocalDate.of(2026, 12, 4);
+        double notional = 125000.;
+        double volatility = 0.0641;
+        ForwardOptionInput input = new ForwardOptionInput(
+                "EUU Z6 C1.1000",
+                valuationDate, // trade date
+                futurePrice, // prezzo del future trimestrale sottostante (es. 6EZ6), non lo spot
+                usdCurve, // il premio e' in USD: si sconta con la curva USD
+                true, // premio pagato subito (vedi sotto)
+                new OptionContract(org.softcaster.engine.enums.OptionType.PUT, ExerciseStyle.EUROPEAN, 1.135,
+                        optionExpiry, // scadenza dell'OPZIONE, non la consegna del future
+                        notional, // nozionale del 6E in EUR
+                        List.of()),
+                volatility);
+
+        Black76Pricer pricer = new Black76Pricer();
+        double premioSettlement = 0.0057;
+        //volatility = ImpliedVolatility.solve(pricer, input, premioSettlement);
+        //System.out.println(volatility);
+
+        OptionResult result = pricer.calculate(input);
+        System.out.println("Price: " + result.price() + "\t"
+                + "Delta: " + result.greeks().delta() + "\t"
+                + "Gamma: " + result.greeks().gamma() + "\t"
+                + "Vega: " + result.greeks().vega() + "\t"
+                + "Rho: " + result.greeks().rho()
+        );
     }
 }

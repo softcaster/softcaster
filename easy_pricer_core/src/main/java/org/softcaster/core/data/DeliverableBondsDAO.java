@@ -18,8 +18,8 @@ public class DeliverableBondsDAO {
     }
 
     @Transactional(readOnly = true)
-    public Optional<DeliverableBonds> findByMasterDataAndIsin(Integer masterData, String isin) {
-        return repository.findByMasterDataAndIsin(masterData, isin); 
+    public Optional<DeliverableBonds> findByListedContractAndIsin(Integer listedContract, String isin) {
+        return repository.findByListedContractAndIsin(listedContract, isin);
     }
     
     @Transactional(readOnly = true)

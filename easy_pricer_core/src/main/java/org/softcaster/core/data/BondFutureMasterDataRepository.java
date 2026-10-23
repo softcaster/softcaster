@@ -18,6 +18,6 @@ public interface BondFutureMasterDataRepository extends BaseMasterDataRepository
         FROM BondFutureMasterData bfmd
         WHERE bfmd.isin = :isin
         """)
-    @EntityGraph("BondFutureMasterData.fullGraphWithDeliverables")
+    @EntityGraph("BondFutureMasterData.fullGraph")
     public Optional<BondFutureMasterData> findByIsin(@Param("isin") String in);
 }

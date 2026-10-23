@@ -8,5 +8,5 @@ public interface DeliverableBondsRepository extends JpaRepository<DeliverableBon
     public DeliverableBonds findByIdDeliverableBonds(Integer idDeliverableBonds);
 
     // Ritorna un Optional, un solo record o nessuno
-    public Optional<DeliverableBonds> findByMasterDataAndIsin(Integer masterData, String isin);
+    public Optional<DeliverableBonds> findByListedContractAndIsin(Integer listedContract, String isin);
 }
