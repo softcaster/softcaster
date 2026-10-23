@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface PowerFutureMasterDataRepository extends BaseMasterDataRepository<PowerFutureMasterData>  {
 
-    @EntityGraph("MasterData.fullGraph")
+    @EntityGraph(value = "MasterData.fullGraph", type = EntityGraph.EntityGraphType.LOAD)
     @Override
     List<PowerFutureMasterData> findAll(Sort sort);
 

@@ -34,6 +34,18 @@ import org.softcaster.engine.enums.FixingDayType;
             name = "FltSecurityMasterData.indexGraph",
             attributeNodes = {
                 @NamedAttributeNode("projectionIndex")
+            }),
+    // lista delle finestre di anagrafica: tutto cio' che la finestra del titolo legge
+    // fuori dalla transazione (un'unica collezione: i flussi)
+    @NamedEntityGraph(
+            name = "FltSecurityMasterData.fullGraphWithCashFlow",
+            attributeNodes = {
+                @NamedAttributeNode("currency"),
+                @NamedAttributeNode("assetClass"),
+                @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("issuer"),
+                @NamedAttributeNode("projectionIndex"),
+                @NamedAttributeNode("cashFlows")
             })
 })
 public class FltSecurityMasterData extends SecurityMasterData {

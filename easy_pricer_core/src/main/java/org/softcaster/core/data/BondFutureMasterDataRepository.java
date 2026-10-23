@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface BondFutureMasterDataRepository extends BaseMasterDataRepository<BondFutureMasterData>  {
 
-    @EntityGraph("MasterData.fullGraph")
+    @EntityGraph(value = "MasterData.fullGraph", type = EntityGraph.EntityGraphType.LOAD)
     @Override
     List<BondFutureMasterData> findAll(Sort sort);
 

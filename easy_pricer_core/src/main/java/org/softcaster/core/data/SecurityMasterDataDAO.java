@@ -17,6 +17,17 @@ public class SecurityMasterDataDAO extends AbstractMasterDataDAO<SecurityMasterD
         super(repository);
     }
 
+    /**
+     * Titoli con emittente e flussi (finestre di anagrafica).
+     *
+     * @return
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public List<SecurityMasterData> findAll() {
+        return repository.findAll(sortByCode);
+    }
+
     @Transactional(readOnly = true)
     public Optional<SecurityMasterData> findByIsin(String isin) {
         return repository.findByIsin(isin);

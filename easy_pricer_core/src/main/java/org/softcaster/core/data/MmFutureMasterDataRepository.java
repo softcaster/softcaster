@@ -6,6 +6,12 @@ import org.springframework.data.jpa.repository.EntityGraph;
 
 public interface MmFutureMasterDataRepository extends BaseMasterDataRepository<MmFutureMasterData>  {
 
-    @EntityGraph("MasterData.fullGraph")
+    /**
+     * Lista per le finestre di anagrafica: con testata e sottostante, usati
+     * fuori dalla transazione (combo del sottostante).
+     */
+    @EntityGraph(attributePaths = {"instrumentValuation", "currency", "assetClass", "product", "product.underlying"},
+            type = EntityGraph.EntityGraphType.LOAD)
     @Override
-    List<MmFutureMasterData> findAll(Sort sort);}
+    List<MmFutureMasterData> findAll(Sort sort);
+}

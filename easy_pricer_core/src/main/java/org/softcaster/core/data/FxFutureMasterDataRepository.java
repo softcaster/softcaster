@@ -9,7 +9,11 @@ import org.springframework.data.repository.query.Param;
 
 public interface FxFutureMasterDataRepository extends BaseMasterDataRepository<FxFutureMasterData> {
 
-    @EntityGraph("MasterData.fullGraph")
+    /**
+     * Lista per le finestre di anagrafica: con testata e coppia sottostante,
+     * usate fuori dalla transazione (combo del sottostante).
+     */
+    @EntityGraph(value = "FxFutureMasterData.fullGraph", type = EntityGraph.EntityGraphType.LOAD)
     @Override
     List<FxFutureMasterData> findAll(Sort sort);
 

@@ -2,11 +2,34 @@ package org.softcaster.core.data;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface SecurityMasterDataRepository extends BaseMasterDataRepository<SecurityMasterData> {
+
+    /**
+     * Lista per le finestre di anagrafica: emittente e flussi, letti fuori
+     * dalla transazione.
+     */
+    @EntityGraph(value = "SecurityMasterData.fullGraphWithCashFlow", type = EntityGraph.EntityGraphType.LOAD)
+    @Override
+    List<SecurityMasterData> findAll(Sort sort);
+
+    /**
+     * Come in BaseMasterDataRepository, con emittente e flussi (finestre di
+     * anagrafica).
+     */
+    @Query("""
+        SELECT md
+        FROM SecurityMasterData md
+        WHERE md.assetClass.code = :code
+        ORDER BY md.maturityDate ASC
+        """)
+    @EntityGraph(value = "SecurityMasterData.fullGraphWithCashFlow", type = EntityGraph.EntityGraphType.LOAD)
+    @Override
+    List<SecurityMasterData> findAllByAssetClass(@Param("code") String code);
 
     @Query("""
         SELECT smd

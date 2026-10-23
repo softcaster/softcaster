@@ -23,7 +23,7 @@ public interface BaseMasterDataRepository<E extends MasterData>
         FROM MasterData md
         WHERE md.idMasterData = :id
         """)
-    @EntityGraph("MasterData.fullGraph")
+    @EntityGraph(value = "MasterData.fullGraph", type = EntityGraph.EntityGraphType.LOAD)
     E findByIdMasterData(@Param("id") Integer idMasterData);
 
     @Query("""
@@ -31,7 +31,7 @@ public interface BaseMasterDataRepository<E extends MasterData>
         FROM MasterData md
         WHERE md.code = :code
         """)
-    @EntityGraph("MasterData.fullGraph")
+    @EntityGraph(value = "MasterData.fullGraph", type = EntityGraph.EntityGraphType.LOAD)
     E findByCode(@Param("code") String code);
 
     @Query("""
@@ -39,7 +39,7 @@ public interface BaseMasterDataRepository<E extends MasterData>
         FROM MasterData md
         WHERE md.idMasterData = :id
         """)
-    @EntityGraph("MasterData.valuationGraph")
+    @EntityGraph(value = "MasterData.valuationGraph", type = EntityGraph.EntityGraphType.LOAD)
     Optional<E> findByIdWithInstrumentValuation(
             @Param("id") Integer id);
 
@@ -48,7 +48,7 @@ public interface BaseMasterDataRepository<E extends MasterData>
         FROM MasterData md
         WHERE md.code = :code
         """)
-    @EntityGraph("MasterData.valuationGraph")
+    @EntityGraph(value = "MasterData.valuationGraph", type = EntityGraph.EntityGraphType.LOAD)
     Optional<E> findByCodeWithInstrumentValuation(
             @Param("code") String code);
 

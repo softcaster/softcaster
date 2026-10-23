@@ -103,20 +103,25 @@ public class DeliverableBonds implements Serializable {
         this.bondCf = bondCf;
     }
 
+    /**
+     * Uguaglianza per ISIN: il paniere e' un Set dentro la scadenza, dove l'ISIN
+     * e' unico (indice ux_deliverable_bonds_isin), e un titolo appena creato
+     * non ha ancora l'id.
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
-        if (getIdDeliverableBonds() == null || obj == null || getClass() != obj.getClass()) {
+        if (getIsin() == null || obj == null || getClass() != obj.getClass()) {
             return false;
         }
         DeliverableBonds that = (DeliverableBonds) obj;
-        return getIdDeliverableBonds().equals(that.getIdDeliverableBonds());
+        return getIsin().equals(that.getIsin());
     }
 
     @Override
     public int hashCode() {
-        return getIdDeliverableBonds() == null ? 0 : idDeliverableBonds.hashCode();
+        return getIsin() == null ? 0 : isin.hashCode();
     }
 }

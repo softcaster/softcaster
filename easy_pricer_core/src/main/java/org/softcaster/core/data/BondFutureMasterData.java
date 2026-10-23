@@ -10,8 +10,8 @@ import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -49,10 +49,12 @@ public class BondFutureMasterData extends FutureMasterData {
     @JoinColumn(name = "future_product", nullable = false)
     private BondFutureProduct product;
 
+    // Set e non List: l'entity graph lo carica insieme alle festivita' del calendario,
+    // e una List conterrebbe ogni titolo una volta per festivita' (prodotto della join)
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "master_data", nullable = false) // FK in child table deliverable_bonds
-    private List<DeliverableBonds> deliverables = new ArrayList<>();
+    private Set<DeliverableBonds> deliverables = new LinkedHashSet<>();
 
     /**
      * Nuova scadenza della testata, con i valori di default della testata.
@@ -81,11 +83,11 @@ public class BondFutureMasterData extends FutureMasterData {
         return BondFutureProduct.class;
     }
 
-    public List<DeliverableBonds> getDeliverables() {
+    public Set<DeliverableBonds> getDeliverables() {
         return deliverables;
     }
 
-    public void setDeliverables(List<DeliverableBonds> deliverables) {
+    public void setDeliverables(Set<DeliverableBonds> deliverables) {
         this.deliverables = deliverables;
     }
 
