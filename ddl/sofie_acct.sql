@@ -172,12 +172,10 @@ CREATE TABLE accounting_events (
     generated_ref varchar(100), -- batch_20260530_01
     created_at timestamp NOT NULL DEFAULT now(),
     processed_at timestamp NULL, -- null fino a quando event nonè processato
-    currency integer NOT NULL,
     PRIMARY KEY (event_id),
     CONSTRAINT fk_event_type FOREIGN KEY (event_type) REFERENCES accounting_event_types (event_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_event_status FOREIGN KEY (event_status) REFERENCES accounting_event_status (event_status_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_source_type FOREIGN KEY (source_type) REFERENCES event_source_types (source_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_acct_event_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_source_type FOREIGN KEY (source_type) REFERENCES event_source_types (source_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 -- Per garantire idemponenza (1 event_key per record)
@@ -270,9 +268,8 @@ CREATE TABLE journal_entries (
     journal_entry_id integer NOT NULL,
     accounting_event integer NOT NULL,
     entry_type integer NOT NULL, -- ACCOUNTING MEMO  REVERSAL ADJUSTMENT
-    entry_status integer NOT NULL, -- UNCONSOLIDATED CONSOLIDATED ERROR
+    entry_status integer NOT NULL DEFAULT 1, -- UNCONSOLIDATED CONSOLIDATED ERROR
     business_date date NOT NULL,
-    posting_date date, -- data posting a ledger
     reference varchar(100),
     description varchar(500),
     reversal_of integer NULL,
@@ -280,7 +277,7 @@ CREATE TABLE journal_entries (
     PRIMARY KEY (journal_entry_id),
     CONSTRAINT fk_je_event FOREIGN KEY (accounting_event) REFERENCES accounting_events (event_id),
     CONSTRAINT fk_je_reversal FOREIGN KEY (reversal_of) REFERENCES journal_entries (journal_entry_id),
-    CONSTRAINT fk_je_type FOREIGN KEY (entry_type) REFERENCES journal_entry_types (entry_type_id)
+    CONSTRAINT fk_je_type FOREIGN KEY (entry_type) REFERENCES journal_entry_types (entry_type_id),
     CONSTRAINT fk_je_status FOREIGN KEY (entry_status) REFERENCES journal_entry_status (entry_status_id)
 );
 
@@ -343,9 +340,7 @@ CREATE TABLE ledger_balances (
 
     CONSTRAINT fk_ledger_currency
         FOREIGN KEY (currency)
-        REFERENCES currency(id_currency),
-
-    CONSTRAINT uk_ledger UNIQUE (business_date, gl_account)
+        REFERENCES currency(id_currency)
 );
 ALTER TABLE ledger_balances
     OWNER TO sofie;

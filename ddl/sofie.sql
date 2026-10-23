@@ -385,42 +385,27 @@ ALTER SEQUENCE asset_class_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- master_data tabella base per anagrafica (securities,loan...)
+-- master_data tabella base per anagrafica: strumento negoziabile
+--   master_data
+--     ├── cash_flow_master_data    strumenti con flussi
+--     │     ├── security_master_data -> flt_security_master_data
+--     │     └── loan_master_data
+--     ├── future_master_data       (sezione FUTURE)
+--     └── forex_master_data
 -- ----------------------------------------------------------------------------
 CREATE TABLE master_data (
     id_master_data integer NOT NULL,
     code varchar(25) NOT NULL,
-    description varchar(255) NOT NULL DEFAULT '',
+    description varchar(255) DEFAULT '',
     currency integer NOT NULL,
     issue_date date NOT NULL,
     maturity_date date NOT NULL,
-    type_of_interest integer NOT NULL,
-    form integer NOT NULL,
-    daycount integer NOT NULL,
-    accrual_daycount integer NOT NULL,
-    frequency integer NOT NULL,
-    roll_convention integer NOT NULL DEFAULT 0,
-    accrual_schedule_type integer NOT NULL DEFAULT 0,
-    interest_rate numeric(23, 10) NOT NULL,
-    issue_price numeric(15, 5) NOT NULL,
-    redempion_price numeric(15, 5) NOT NULL,
     business_days integer NOT NULL DEFAULT 2,
     asset_class integer NOT NULL,
-    amortization_schedule integer NOT NULL,
     multiplier numeric(15, 5) NOT NULL DEFAULT 1, -- nel caso dei Bond sara 0.01
-    compounding integer NOT NULL,
     PRIMARY KEY (id_master_data),
-    CONSTRAINT fk_daycount FOREIGN KEY (daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_accrual_daycount FOREIGN KEY (accrual_daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_frequency FOREIGN KEY (frequency) REFERENCES frequency (id_frequency) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_form FOREIGN KEY (form) REFERENCES form (id_form) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_roll_convention FOREIGN KEY (roll_convention) REFERENCES roll_convention (id_roll_convention) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_type_of_interest FOREIGN KEY (type_of_interest) REFERENCES type_of_interest (id_type_of_interest) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_accrual_schedule_type FOREIGN KEY (accrual_schedule_type) REFERENCES accrual_schedule_type (id_accrual_schedule_type) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_asset_class FOREIGN KEY (asset_class) REFERENCES asset_class (id_asset_class) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_amortization_schedule FOREIGN KEY (amortization_schedule) REFERENCES amortization_schedule (id_amortization_schedule) ON DELETE NO ACTION ON UPDATE NO ACTION
-    CONSTRAINT fk_compounding FOREIGN KEY (compounding) REFERENCES compounding (id_compounding) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_asset_class FOREIGN KEY (asset_class) REFERENCES asset_class (id_asset_class) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 CREATE UNIQUE INDEX idx_master_data_code ON master_data (code);
@@ -434,6 +419,39 @@ CREATE SEQUENCE master_data_s
 
 ALTER SEQUENCE master_data_s
     OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- cash_flow_master_data - strumenti con flussi (titoli, mutui): convenzioni
+-- di cedole e ratei, prezzi di emissione e rimborso, forma; piano dei flussi
+-- in cash_flow_item e cash_flow_reset
+-- ----------------------------------------------------------------------------
+CREATE TABLE cash_flow_master_data (
+    id_master_data integer NOT NULL,
+    type_of_interest integer NOT NULL,
+    form integer NOT NULL,
+    daycount integer NOT NULL,
+    accrual_daycount integer NOT NULL,
+    frequency integer NOT NULL,
+    roll_convention integer NOT NULL DEFAULT 0,
+    accrual_schedule_type integer NOT NULL DEFAULT 0,
+    interest_rate numeric(23, 10) NOT NULL,
+    issue_price numeric(15, 5) NOT NULL,
+    redempion_price numeric(15, 5) NOT NULL,
+    amortization_schedule integer NOT NULL,
+    compounding integer NOT NULL DEFAULT 2,
+    CONSTRAINT pk_cash_flow_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_cash_flow_master_data_parent FOREIGN KEY (id_master_data) REFERENCES master_data (id_master_data),
+    CONSTRAINT fk_cfmd_type_of_interest FOREIGN KEY (type_of_interest) REFERENCES type_of_interest (id_type_of_interest),
+    CONSTRAINT fk_cfmd_form FOREIGN KEY (form) REFERENCES form (id_form),
+    CONSTRAINT fk_cfmd_daycount FOREIGN KEY (daycount) REFERENCES daycount (id_daycount),
+    CONSTRAINT fk_cfmd_accrual_daycount FOREIGN KEY (accrual_daycount) REFERENCES daycount (id_daycount),
+    CONSTRAINT fk_cfmd_frequency FOREIGN KEY (frequency) REFERENCES frequency (id_frequency),
+    CONSTRAINT fk_cfmd_roll_convention FOREIGN KEY (roll_convention) REFERENCES roll_convention (id_roll_convention),
+    CONSTRAINT fk_cfmd_accrual_schedule_type FOREIGN KEY (accrual_schedule_type) REFERENCES accrual_schedule_type (id_accrual_schedule_type),
+    CONSTRAINT fk_cfmd_amortization_schedule FOREIGN KEY (amortization_schedule) REFERENCES amortization_schedule (id_amortization_schedule),
+    CONSTRAINT fk_cfmd_compounding FOREIGN KEY (compounding) REFERENCES compounding (id_compounding)
+);
+ALTER TABLE cash_flow_master_data OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- instrument_valuation tabella valutazione strumento relativo a master_data
@@ -451,17 +469,11 @@ CREATE TABLE instrument_valuation(
     -- corrisponde a official date del sistema. Da questa si calcola settlement 
     -- aggiungendo business days
     valuation_date date NOT NULL DEFAULT NOW(), 
-    CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION,
     PRIMARY KEY (instrument_valuation_id)
 );
 ALTER TABLE instrument_valuation OWNER TO sofie;
--- Creo sequenza
-CREATE SEQUENCE instrument_valuation_s
-    START WITH 1
-    INCREMENT BY 1;
-
-ALTER SEQUENCE instrument_valuation_s
-    OWNER TO sofie;
+-- nessuna sequenza: instrument_valuation_id = id_master_data dello strumento
 
 -- ----------------------------------------------------------------------------
 -- loan_master_data - anagrafica mutui
@@ -482,18 +494,12 @@ CREATE TABLE loan_master_data (
     underwriting_fee numeric(23, 10) NOT NULL DEFAULT 0, -- Commissione di istruttoria
     insurance_premium numeric(23, 10) NOT NULL DEFAULT 0, -- Premio assicurativo (scoppio/incendio)
     tax_charges numeric(23, 10) NOT NULL DEFAULT 0, -- Imposta sostitutiva
+    CONSTRAINT fk_loan_master_data_parent FOREIGN KEY (id_master_data) REFERENCES cash_flow_master_data (id_master_data),
     PRIMARY KEY (id_master_data)
 );
 ALTER TABLE loan_master_data OWNER TO sofie;
 
-CREATE TABLE projection_method (
-    projection_method_id integer NOT NULL,
-    code varchar(25) NOT NULL,
-    description varchar(255) NOT NULL,
-    PRIMARY KEY (projection_method_id)
-);
-ALTER TABLE projection_method OWNER TO sofie;
-CREATE UNIQUE INDEX idx_projection_method_code ON projection_method (code);
+-- projection_method: definita nella sezione CouponProjectionMethod
 
 -- ----------------------------------------------------------------------------
 -- security_master_data - anagrafica titoli di stato
@@ -508,10 +514,8 @@ CREATE TABLE security_master_data (
     nominal_value numeric(23, 10) NOT NULL,
     first_coupon_rate numeric(23, 10) NOT NULL,
     first_coupon_payment_date date NOT NULL,
-    projection_method integer NOT NULL DEFAULT 3,
-    projection_id integer,
     CONSTRAINT fk_issuer FOREIGN KEY (issuer) REFERENCES issuer (id_issuer) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_projection_method FOREIGN KEY (projection_method) REFERENCES projection_method (projection_method_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_security_master_data_parent FOREIGN KEY (id_master_data) REFERENCES cash_flow_master_data (id_master_data),
     PRIMARY KEY (id_master_data)
 );
 CREATE UNIQUE INDEX idx_security_master_data_isin ON security_master_data (isin);
@@ -628,11 +632,9 @@ CREATE TABLE flt_security_master_data (
     coupon_pm integer NOT NULL,
     projection_index INTEGER,
     projection_curve  integer,
-    fixing_day_type INTEGER NOT NULL,
+    fixing_day_type INTEGER NOT NULL DEFAULT 2,
     CONSTRAINT fk_coupon_pm FOREIGN KEY (coupon_pm) REFERENCES coupon_pm (coupon_pm_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_projection_index FOREIGN KEY (projection_index) REFERENCES ref_rate_index (ref_rate_index_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_projection_curve FOREIGN KEY (projection_curve) REFERENCES yield_curve (id_yield_curve) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_fixing_day_type FOREIGN KEY (fixing_day_type) REFERENCES fixing_day_type(fixing_day_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     PRIMARY KEY (id_master_data)
 );
 ALTER TABLE flt_security_master_data OWNER TO sofie;
@@ -679,7 +681,7 @@ CREATE TABLE cash_flow_item (
     amount numeric(15, 5) NOT NULL,
     cash_flow_status integer NOT NULL DEFAULT 2, -- cedola fissata
     PRIMARY KEY (id_cash_flow_item),
-    CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_cash_flow_item_master_data FOREIGN KEY (master_data) REFERENCES cash_flow_master_data (id_master_data),
     CONSTRAINT cash_flow_status FOREIGN KEY (cash_flow_status) REFERENCES cash_flow_status (cash_flow_status_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
@@ -704,7 +706,7 @@ CREATE TABLE cash_flow_reset (
     start_date_reset date NOT NULL, -- data reset nuovo coupon
     interest_reset numeric(15, 5) NOT NULL, -- valore nuovo coupon
     PRIMARY KEY (id_cash_flow_reset),
-    CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_cash_flow_reset_master_data FOREIGN KEY (master_data) REFERENCES cash_flow_master_data (id_master_data)
 );
 
 CREATE UNIQUE INDEX idx_md_sdr ON cash_flow_reset (master_data, start_date_reset);
@@ -760,10 +762,10 @@ CREATE TABLE yield_curve_item (
     ask numeric(15, 5) NOT NULL,
     compounding integer NOT NULL DEFAULT 1,
     daycount integer NOT NULL,
-    node_type integer not null,
+    node_type integer not null default 1,
     PRIMARY KEY (id_yield_curve_item),
     CONSTRAINT fk_yield_curve FOREIGN KEY (yield_curve) REFERENCES yield_curve (id_yield_curve) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT fk_daycount FOREIGN KEY (daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT fk_daycount FOREIGN KEY (daycount) REFERENCES daycount (id_daycount) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_node_type FOREIGN KEY (node_type) REFERENCES node_type (node_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
@@ -787,12 +789,10 @@ CREATE TABLE calibration_profile (
     code VARCHAR(25),  
     description VARCHAR(200),  
     currency INTEGER NOT NULL,
-    yield_curve INTEGER NOT NULL,   -- base curve the spreads were CALIBRATED on (audit + load-time check)
     last_update DATE NOT NULL, -- reference date of the calibration
     CONSTRAINT pk_calibration_profile PRIMARY KEY (calibration_profile_id),
     CONSTRAINT uq_calibration_profile_code UNIQUE (code),
-    CONSTRAINT fk_cpi_currency FOREIGN KEY (currency) REFERENCES currency (id_currency),
-    CONSTRAINT fk_cpi_yield_curve FOREIGN KEY (yield_curve) REFERENCES yield_curve (id_yield_curve)
+    CONSTRAINT fk_cpi_currency FOREIGN KEY (currency) REFERENCES currency (id_currency)
 );
 ALTER TABLE calibration_profile OWNER TO sofie;
 CREATE SEQUENCE calibration_profile_s START WITH 1 INCREMENT BY 1;
@@ -807,13 +807,13 @@ CREATE TABLE calibration_profile_item (
     master_data INTEGER NOT NULL,
     instrument_quote INTEGER NOT NULL,
     code VARCHAR(25)  NOT NULL,            
-    bid numeric(18,10) NOT NULL,
-    ask numeric(18,10) NOT NULL,
+    bid numeric(18,10) NOT NULL DEFAULT 0,
+    ask numeric(18,10) NOT NULL DEFAULT 0,
     CONSTRAINT pk_calibration_profile_item PRIMARY KEY (calibration_profile_item_id),
     CONSTRAINT uq_item_cp_md UNIQUE (calibration_profile,master_data),
     CONSTRAINT fk_cpi_calibration_profile FOREIGN KEY (calibration_profile) REFERENCES calibration_profile (calibration_profile_id),
-    CONSTRAINT fk_cpi_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data),
-    CONSTRAINT fk_cpi_instrument_quote FOREIGN KEY (instrument_quote) REFERENCES instrument_quote (id_instrument_quote)
+    CONSTRAINT fk_cpi_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data)
+    -- fk_cpi_instrument_quote: aggiunta dopo la creazione di instrument_quote
 );
 ALTER TABLE calibration_profile_item OWNER TO sofie;
 CREATE SEQUENCE calibration_profile_item_s START WITH 1 INCREMENT BY 1;
@@ -830,7 +830,7 @@ CREATE TABLE spread_curve (
     max_age_days       INTEGER      NOT NULL DEFAULT 5,  -- reject spreads calibrated more than N days ago
     min_bonds          INTEGER      NOT NULL DEFAULT 3,  -- calibration: minimum bonds per bucket
     min_valid_buckets  INTEGER      NOT NULL DEFAULT 3,  -- calibration: reject if fewer valid buckets
-    calibration_profile INTEGER      NOT NULL, 
+    calibration_profile INTEGER      NOT NULL DEFAULT 1,
     CONSTRAINT pk_spread_curve PRIMARY KEY (id_spread_curve),
     CONSTRAINT uq_spread_curve_code UNIQUE (code),
     CONSTRAINT fk_sc_base_curve FOREIGN KEY (base_curve) REFERENCES yield_curve (id_yield_curve),
@@ -889,16 +889,103 @@ CREATE SEQUENCE settlement_type_s
 ALTER SEQUENCE settlement_type_s
     OWNER TO sofie;
 
+-- ============================================================================
+-- FUTURE
+--   future_product (testata, NON in master_data)      MBTP, M6E: dati comuni alle scadenze
+--     ├── bond_future_product
+--     ├── fx_future_product     underlying (coppia)
+--     ├── mm_future_product     underlying
+--     └── cmd_future_product    commodity_type          (sezione COMMODITY FUTURE)
+--           └── power_future_product   load_type
+--
+--   master_data -> future_master_data                 MBTPZ6: ISIN, mese, ultimo giorno, consegna
+--     ├── bond_future_master_data  future_product -> bond_future_product, paniere (deliverable_bonds)
+--     ├── fx_future_master_data    future_product -> fx_future_product
+--     ├── mm_future_master_data    future_product -> mm_future_product
+--     └── cmd_future_master_data   future_product -> cmd_future_product (sezione COMMODITY FUTURE)
+--           └── power_future_master_data
+--
+-- master_data e' la scadenza negoziabile: terna (controparte, posizione,
+-- anagrafica), quotazioni e valutazioni sono per scadenza.
+-- ============================================================================
+
 -- ----------------------------------------------------------------------------
--- future_master_data - anagrafica future
+-- future_product - testata future (FutureProduct)
+-- currency, asset_class, business_days, multiplier: valori copiati in
+-- master_data quando si crea una scadenza
+-- ----------------------------------------------------------------------------
+CREATE TABLE future_product (
+    id_future_product integer NOT NULL,
+    code varchar(25) NOT NULL, -- MBTP, M6E
+    description varchar(255) NOT NULL DEFAULT '',
+    exchange_contract_code varchar(25) NOT NULL DEFAULT '',
+    settlement_type integer NOT NULL,
+    contract_value numeric(15, 5) NOT NULL,
+    tick_size numeric(15, 5) NOT NULL,
+    initial_margin numeric(15, 5) NOT NULL,
+    maintenance_margin numeric(15, 5), -- assente per i bond future
+    currency integer NOT NULL,
+    asset_class integer NOT NULL,
+    business_days integer NOT NULL DEFAULT 2,
+    multiplier numeric(15, 5) NOT NULL DEFAULT 1,
+    CONSTRAINT pk_future_product PRIMARY KEY (id_future_product),
+    CONSTRAINT uq_future_product_code UNIQUE (code),
+    CONSTRAINT fk_future_product_settlement_type FOREIGN KEY (settlement_type) REFERENCES settlement_type (id_settlement_type),
+    CONSTRAINT fk_future_product_currency FOREIGN KEY (currency) REFERENCES currency (id_currency),
+    CONSTRAINT fk_future_product_asset_class FOREIGN KEY (asset_class) REFERENCES asset_class (id_asset_class)
+);
+ALTER TABLE future_product OWNER TO sofie;
+
+CREATE SEQUENCE future_product_s
+    START WITH 1
+    INCREMENT BY 1;
+
+ALTER SEQUENCE future_product_s
+    OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- bond_future_product - testata bond future
+-- ----------------------------------------------------------------------------
+CREATE TABLE bond_future_product (
+    id_future_product integer NOT NULL,
+    CONSTRAINT pk_bond_future_product PRIMARY KEY (id_future_product),
+    CONSTRAINT fk_bond_future_product_parent FOREIGN KEY (id_future_product) REFERENCES future_product (id_future_product)
+);
+ALTER TABLE bond_future_product OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- fx_future_product - testata forex future
+-- ----------------------------------------------------------------------------
+CREATE TABLE fx_future_product (
+    id_future_product integer NOT NULL,
+    underlying integer NOT NULL, -- coppia di cambi
+    CONSTRAINT pk_fx_future_product PRIMARY KEY (id_future_product),
+    CONSTRAINT fk_fx_future_product_parent FOREIGN KEY (id_future_product) REFERENCES future_product (id_future_product),
+    CONSTRAINT fk_fx_future_product_underlying FOREIGN KEY (underlying) REFERENCES forex_master_data (id_master_data)
+);
+ALTER TABLE fx_future_product OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- mm_future_product - testata money market future
+-- ----------------------------------------------------------------------------
+CREATE TABLE mm_future_product (
+    id_future_product integer NOT NULL,
+    underlying integer NOT NULL,
+    CONSTRAINT pk_mm_future_product PRIMARY KEY (id_future_product),
+    CONSTRAINT fk_mm_future_product_parent FOREIGN KEY (id_future_product) REFERENCES future_product (id_future_product),
+    CONSTRAINT fk_mm_future_product_underlying FOREIGN KEY (underlying) REFERENCES forex_master_data (id_master_data)
+);
+ALTER TABLE mm_future_product OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- future_master_data - scadenza future
 -- ----------------------------------------------------------------------------
 CREATE TABLE future_master_data (
     id_master_data integer NOT NULL,
-    isin varchar(25) NOT NULL, -- isin contratto principale
-    exchange_contract_code varchar(25) NOT NULL DEFAULT '',
-    settlement_type integer NOT NULL,
+    isin varchar(25), -- isin della scadenza
+    contract_month date NOT NULL, -- primo giorno del mese di scadenza
     last_trading_date date NOT NULL,
-    CONSTRAINT fk_settlement_type FOREIGN KEY (settlement_type) REFERENCES settlement_type (id_settlement_type) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    delivery_date date, -- null per i future regolati per cassa (data valuta calcolata)
     PRIMARY KEY (id_master_data)
 );
 
@@ -907,13 +994,12 @@ CREATE UNIQUE INDEX idx_future_master_data_isin ON future_master_data (isin);
 ALTER TABLE future_master_data OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- bond_future_master_data - anagrafica bond future
+-- bond_future_master_data - scadenza bond future
 -- ----------------------------------------------------------------------------
 CREATE TABLE bond_future_master_data (
     id_master_data integer NOT NULL,
-    contract_value numeric(15, 5) NOT NULL,
-    tick_size numeric(15, 5) NOT NULL,
-    initial_margin numeric(15, 5) NOT NULL,
+    future_product integer NOT NULL, -- testata
+    CONSTRAINT fk_bond_future_master_data_product FOREIGN KEY (future_product) REFERENCES bond_future_product (id_future_product),
     PRIMARY KEY (id_master_data)
 );
 
@@ -924,19 +1010,19 @@ ALTER TABLE bond_future_master_data OWNER TO sofie;
 -- ----------------------------------------------------------------------------
 CREATE TABLE deliverable_bonds (
     id_deliverable_bonds integer NOT NULL,
-    master_data integer NOT NULL, -- future
     expiration_date date NOT NULL, -- scadenza future
     isin varchar(25) NOT NULL, -- isin consegnabile
     coupon_rate numeric(15, 5) NOT NULL, -- coupon consegnabile
     bond_maturity date NOT NULL, -- scadenza consegnabile
     bond_cf numeric(15, 5) NOT NULL, -- conversion factor
-    CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES bond_future_master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    master_data integer NOT NULL, -- scadenza del bond future
+    CONSTRAINT fk_deliverable_bonds_master_data FOREIGN KEY (master_data) REFERENCES bond_future_master_data (id_master_data),
     PRIMARY KEY (id_deliverable_bonds)
 );
 
-CREATE UNIQUE INDEX idx_deliverable_bonds_isin ON deliverable_bonds (master_data, isin);
+CREATE UNIQUE INDEX ux_deliverable_bonds_isin ON deliverable_bonds (master_data, isin);
 
-ALTER TABLE bond_future_master_data OWNER TO sofie;
+ALTER TABLE deliverable_bonds OWNER TO sofie;
 
 -- Creo sequenza
 CREATE SEQUENCE deliverable_bonds_s
@@ -947,32 +1033,24 @@ ALTER SEQUENCE deliverable_bonds_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- fx_future_master_data - anagrafica forex future
+-- fx_future_master_data - scadenza forex future
 -- ----------------------------------------------------------------------------
 CREATE TABLE fx_future_master_data (
     id_master_data integer NOT NULL,
-    underlying integer NOT NULL, -- coppia sottostante il contratto
-    contract_value numeric(15, 5) NOT NULL,
-    tick_size numeric(15, 5) NOT NULL,
-    initial_margin numeric(15, 5) NOT NULL,
-    maintenance_margin numeric(15, 5) NOT NULL,
-    CONSTRAINT fk_underlying FOREIGN KEY (underlying) REFERENCES forex_master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    future_product integer NOT NULL, -- testata (con la coppia sottostante)
+    CONSTRAINT fk_fx_future_master_data_product FOREIGN KEY (future_product) REFERENCES fx_future_product (id_future_product),
     PRIMARY KEY (id_master_data)
 );
 
 ALTER TABLE fx_future_master_data OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
--- mm_future_master_data - anagrafica money market future
+-- mm_future_master_data - scadenza money market future
 -- ----------------------------------------------------------------------------
 CREATE TABLE mm_future_master_data (
     id_master_data integer NOT NULL,
-    underlying integer NOT NULL, -- coppia sottostante il contratto
-    contract_value numeric(15, 5) NOT NULL,
-    tick_size numeric(15, 5) NOT NULL,
-    initial_margin numeric(15, 5) NOT NULL,
-    maintenance_margin numeric(15, 5) NOT NULL,
-    CONSTRAINT fk_underlying FOREIGN KEY (underlying) REFERENCES forex_master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    future_product integer NOT NULL, -- testata (con il sottostante)
+    CONSTRAINT fk_mm_future_master_data_product FOREIGN KEY (future_product) REFERENCES mm_future_product (id_future_product),
     PRIMARY KEY (id_master_data)
 );
 
@@ -1003,6 +1081,10 @@ CREATE SEQUENCE instrument_quote_s
 
 ALTER SEQUENCE instrument_quote_s
     OWNER TO sofie;
+
+-- calibration_profile_item e' creata prima di instrument_quote
+ALTER TABLE calibration_profile_item ADD CONSTRAINT fk_cpi_instrument_quote
+    FOREIGN KEY (instrument_quote) REFERENCES instrument_quote (id_instrument_quote);
 
 -- ----------------------------------------------------------------------------
 -- instrument_quote_hist
@@ -1171,10 +1253,11 @@ CREATE TABLE position_detail (
     buy_accrual numeric(15, 5) NOT NULL DEFAULT 0, -- rateo maturato posizione long
     sell_accrual numeric(15, 5) NOT NULL DEFAULT 0, -- rateo maturato posizione short
     ytm numeric(15, 5) NOT NULL DEFAULT 0, -- yield-to-maturity
-    duration numeric(15, 5) NOT NULL DEFAULT 0, -- duration 
+    duration numeric(15, 5) NOT NULL DEFAULT 0, -- duration
+    time_to_maturity numeric(15, 5) NOT NULL DEFAULT 0, -- vita residua
     mod_duration numeric(15, 5) NOT NULL DEFAULT 0, -- modified duration
     theoretical_price numeric(15, 5) NOT NULL DEFAULT 0, -- prezzo teorico
-    official_date date NOT NULL DEFAULT NOW(), 
+    official_date date NOT NULL DEFAULT NOW(),
     last_mtm_executed TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW() - INTERVAL '1 hour',
     CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_counterparty FOREIGN KEY (counterparty) REFERENCES counterparty (id_counterparty) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -1204,6 +1287,13 @@ CREATE TABLE txn_status (
 );
 CREATE UNIQUE INDEX idx_txn_status_code ON txn_status (code);
 ALTER TABLE txn_status OWNER TO sofie;
+
+CREATE SEQUENCE txn_status_s
+    START WITH 1
+    INCREMENT BY 1;
+
+ALTER SEQUENCE txn_status_s
+    OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- txn_side - side
@@ -1238,9 +1328,9 @@ CREATE TABLE financial_txn (
     position_md integer NOT NULL, -- position
     master_data integer NOT NULL, -- identificativo strumento
     txn_status integer NOT NULL, -- stato transazione
-    txn_status_pre_elab integer NOT NULL, -- stato transazione pre processamento (iniziale)
+    txn_status_pre_elab integer NOT NULL DEFAULT 1, -- stato transazione pre processamento (iniziale)
     txn_acct_phase integer NOT NULL DEFAULT 1, -- stato contabile transazione
-    txn_side smallint NOT NULL, -- (Buy/Sell)
+    txn_side integer NOT NULL, -- (Buy/Sell)
     description varchar(255) NOT NULL,
     trade_date date NOT NULL DEFAULT NOW(), -- esecuzione deal
     value_date date NOT NULL, -- data valuta cash
@@ -1279,7 +1369,7 @@ CREATE TABLE position_txn_links (
     settlement date NOT NULL, -- regolamento/contabilizzazione
     quantity numeric(15, 5) NOT NULL,
     price numeric(15, 5) NOT NULL,
-    fx_rate numeric(15, 5) NOT NULL DEFAULT 1, -- cambio al momento del trade
+    fx_rate numeric(15, 5) NOT NULL, -- cambio al momento del trade
     PRIMARY KEY (pos_txn_link_id),
     CONSTRAINT fk_link_pos FOREIGN KEY (position_detail) REFERENCES position_detail (id_position_detail) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_link_txn FOREIGN KEY (financial_txn) REFERENCES financial_txn (id_financial_txn) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -1416,9 +1506,9 @@ ALTER TABLE sbc_status OWNER TO sofie;
 CREATE TABLE system_business_calendar (
     sbc_id integer NOT NULL,
     description varchar(50) NOT NULL,
-    calendar integer, 
-    currency integer NOT NULL UNIQUE, 
-    status integer NOT NULL,  
+    calendar integer UNIQUE,
+    currency integer NOT NULL DEFAULT 1,
+    status integer NOT NULL,
     last_official_date  DATE NOT NULL,
     official_date       DATE NOT NULL,
     next_business_date  DATE,
@@ -1462,6 +1552,43 @@ ALTER SEQUENCE descriptors_s OWNER TO sofie;
 --
 -- COMMODITY FUTURE
 --
+--
+-- Lookup Tables (usate dalle tabelle power e dai future su commodity)
+--
+-- ----------------------------------------------------------------------------
+-- commodity_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE commodity_type (
+    commodity_type_id integer NOT NULL,
+    code varchar(25) NOT NULL,
+    description varchar(25) NOT NULL,
+    PRIMARY KEY (commodity_type_id)
+);
+CREATE UNIQUE INDEX commodity_type_code ON commodity_type (code);
+ALTER TABLE commodity_type OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- load_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE load_type (
+    load_type_id INT PRIMARY KEY,
+    code VARCHAR(16) NOT NULL,
+    description VARCHAR(64)
+);
+CREATE UNIQUE INDEX load_type_code ON load_type (code);
+ALTER TABLE load_type OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- delivery_period_type
+-- ----------------------------------------------------------------------------
+CREATE TABLE delivery_period_type (
+    delivery_period_type_id INT PRIMARY KEY,
+    code VARCHAR(16) NOT NULL,
+    description VARCHAR(64)
+);
+CREATE UNIQUE INDEX load_dpt_code ON delivery_period_type (code);
+ALTER TABLE delivery_period_type OWNER TO sofie;
+
 -- ==================================================================
 -- Tabelle gestione power futures
 -- ==================================================================
@@ -1794,10 +1921,6 @@ CREATE TABLE granular_curve_point (
     CONSTRAINT pk_granular_curve_point
         PRIMARY KEY (granular_curve_point_id),
 
-    CONSTRAINT fk_gcp_curve
-        FOREIGN KEY (granular_curve_id)
-        REFERENCES granular_curve_definition(granular_curve_id),
-
     CONSTRAINT uq_granular_curve_point
         UNIQUE (
             granular_curve_id,
@@ -1809,75 +1932,54 @@ CREATE SEQUENCE IF NOT EXISTS granular_curve_point_s START WITH 1 INCREMENT BY 1
 ALTER SEQUENCE granular_curve_point_s OWNER TO sofie;
 
 --
--- Lookup Tables
--- 
--- ----------------------------------------------------------------------------
--- commodity_type
--- ----------------------------------------------------------------------------
-CREATE TABLE commodity_type (
-    commodity_type_id integer NOT NULL,
-    code varchar(25) NOT NULL,
-    description varchar(25) NOT NULL,
-    PRIMARY KEY (commodity_type_id)
-);
-CREATE UNIQUE INDEX commodity_type_code ON daycount (code);
-ALTER TABLE commodity_type OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
--- load_type
--- ----------------------------------------------------------------------------
-CREATE TABLE load_type (
-    load_type_id INT PRIMARY KEY,
-    code VARCHAR(16) NOT NULL,
-    description VARCHAR(64)
-);
-CREATE UNIQUE INDEX load_type_code ON daycount (code);
-ALTER TABLE load_type OWNER TO sofie;
-
--- ----------------------------------------------------------------------------
--- delivery_period_type
--- ----------------------------------------------------------------------------
-CREATE TABLE delivery_period_type (
-    delivery_period_type_id INT PRIMARY KEY,
-    code VARCHAR(16) NOT NULL,
-    description VARCHAR(64)
-);
-CREATE UNIQUE INDEX load_dpt_code ON daycount (code);
-ALTER TABLE delivery_period_type OWNER TO sofie;
-
---
--- Livello 1: comune a TUTTI i future su commodity 
+-- Livello 1: comune a TUTTI i future su commodity (testata e scadenza,
+-- vedi schema nella sezione FUTURE)
 --
 -- ----------------------------------------------------------------------------
--- cmd_future_master_data - anagrafica commodity future
+-- cmd_future_product - testata commodity future
+-- ----------------------------------------------------------------------------
+CREATE TABLE cmd_future_product (
+    id_future_product integer NOT NULL,
+    commodity_type integer NOT NULL,
+    CONSTRAINT pk_cmd_future_product PRIMARY KEY (id_future_product),
+    CONSTRAINT fk_cmd_future_product_parent FOREIGN KEY (id_future_product) REFERENCES future_product (id_future_product),
+    CONSTRAINT fk_cmd_future_product_commodity_type FOREIGN KEY (commodity_type) REFERENCES commodity_type (commodity_type_id)
+);
+ALTER TABLE cmd_future_product OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- cmd_future_master_data - scadenza commodity future
 -- ----------------------------------------------------------------------------
 CREATE TABLE cmd_future_master_data (
     id_master_data integer NOT NULL,
-    commodity_type integer NOT NULL,
-    contract_value numeric(15, 5) NOT NULL,
-    tick_size numeric(15, 5) NOT NULL,
-    initial_margin numeric(15, 5) NOT NULL,
-    maintenance_margin numeric(15, 5) NOT NULL,
-    CONSTRAINT fk_commodity_type FOREIGN KEY (commodity_type) REFERENCES commodity_type (commodity_type_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    future_product integer NOT NULL, -- testata (con il tipo di commodity)
+    CONSTRAINT fk_cmd_future_master_data_product FOREIGN KEY (future_product) REFERENCES cmd_future_product (id_future_product),
     PRIMARY KEY (id_master_data)
 );
 ALTER TABLE cmd_future_master_data OWNER TO sofie;
 
---DROP TABLE extended_delivery_future_master_data;
 -- ============================================================
 -- ANAGRAFICA FUTURE ET
 -- ============================================================
--- cmd_future_master_data: gia' esistente, comune a tutte le commodity ET
--- (id_master_data, commodity_type, contract_value, tick_size, initial_margin, maintenance_margin)
+-- power_future_product: testata, profilo di carico (base, peak)
+-- power_future_master_data: scadenza; il periodo di consegna e' in commodity_delivery_profile
+
+CREATE TABLE power_future_product (
+    id_future_product INTEGER NOT NULL,
+    load_type         INTEGER NOT NULL,
+    CONSTRAINT pk_power_future_product PRIMARY KEY (id_future_product),
+    CONSTRAINT fk_power_future_product_parent
+        FOREIGN KEY (id_future_product) REFERENCES cmd_future_product (id_future_product),
+    CONSTRAINT fk_power_future_product_load_type
+        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
+);
+ALTER TABLE power_future_product OWNER TO sofie;
 
 CREATE TABLE power_future_master_data (
     id_master_data    INTEGER NOT NULL,
-    load_type         INTEGER NOT NULL,
     CONSTRAINT pk_power_future_master_data PRIMARY KEY (id_master_data),
     CONSTRAINT fk_power_future_master_data_parent_table
-        FOREIGN KEY (id_master_data) REFERENCES cmd_future_master_data (id_master_data),
-    CONSTRAINT fk_power_future_load_type
-        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
+        FOREIGN KEY (id_master_data) REFERENCES cmd_future_master_data (id_master_data)
 );
 ALTER TABLE power_future_master_data OWNER TO sofie;
 
@@ -1886,16 +1988,18 @@ ALTER TABLE power_future_master_data OWNER TO sofie;
 -- ============================================================
 -- cmd_forward_master_data: analogo a cmd_future_master_data ma per il ramo OTC
 -- (id_master_data, commodity_type — niente contract_value/tick_size/margini, non applicabili a OTC)
-CREATE TABLE power_forward_master_data (
-    id_master_data    INTEGER NOT NULL,
-    load_type         INTEGER NOT NULL,
-    CONSTRAINT pk_power_forward_master_data PRIMARY KEY (id_master_data),
-    CONSTRAINT fk_power_forward_master_data_parent_table
-        FOREIGN KEY (id_master_data) REFERENCES cmd_forward_master_data (id_master_data),
-    CONSTRAINT fk_power_forward_load_type
-        FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
-);
-ALTER TABLE power_forward_master_data OWNER TO sofie;
+-- NON ANCORA IMPLEMENTATO: cmd_forward_master_data non e' definita e le due
+-- tabelle non esistono sul database. Da completare prima di attivarle.
+-- CREATE TABLE power_forward_master_data (
+--     id_master_data    INTEGER NOT NULL,
+--     load_type         INTEGER NOT NULL,
+--     CONSTRAINT pk_power_forward_master_data PRIMARY KEY (id_master_data),
+--     CONSTRAINT fk_power_forward_master_data_parent_table
+--         FOREIGN KEY (id_master_data) REFERENCES cmd_forward_master_data (id_master_data),
+--     CONSTRAINT fk_power_forward_load_type
+--         FOREIGN KEY (load_type) REFERENCES load_type (load_type_id)
+-- );
+-- ALTER TABLE power_forward_master_data OWNER TO sofie;
 
 -- ============================================================
 -- DELIVERY PROFILE: entita' satellite condivisa (composizione)
@@ -1913,6 +2017,8 @@ CREATE TABLE commodity_delivery_profile (
     market_quote_definition_id INTEGER,
 
     CONSTRAINT pk_commodity_delivery_profile PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_delivery_profile_mdp
+        FOREIGN KEY (market_quote_definition_id) REFERENCES market_quote_definition (market_quote_definition_id),
     CONSTRAINT fk_delivery_profile_period_type
         FOREIGN KEY (delivery_period_type) REFERENCES delivery_period_type (delivery_period_type_id),
     CONSTRAINT fk_delivery_profile_parent

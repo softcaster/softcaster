@@ -21,6 +21,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.NumberUtils;
+import org.softcaster.core.data.CashFlowMasterData;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
@@ -121,7 +122,7 @@ public class CalibrationTest implements CommandLineRunner {
         List<SecurityMasterData> dataList = smdDAO.findAllByAssetClass("XRB");
 
         for (MasterData data : dataList) {
-            if (!isPlainFixedBtp(data.getDescription(), data.getInterestRate())) {
+            if (!(data instanceof CashFlowMasterData cfmd) || !isPlainFixedBtp(data.getDescription(), cfmd.getInterestRate())) {
                 continue;
             }
             Node node = provider.getMktQuote(data.getCode(), Market.BONDS);

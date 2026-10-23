@@ -335,26 +335,15 @@ public class CurrencyPairsDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getForexMasterData().setTypeOfInterest(TypeOfInterest.NONE);
-        bean.getForexMasterData().setForm(Form.BEARER);
-        bean.getForexMasterData().setFrequency(Frequency.NONE);
-        bean.getForexMasterData().setRollConvention(RollConvention.UNADJUSTED);
-        bean.getForexMasterData().setAccrualScheduleType(AccrualScheduleType.NONE);
         bean.getForexMasterData().setAssetClass(masterDataFacade.findAssetClass("FSP"));
-        bean.getForexMasterData().setAmortizationSchedule(AmortizationSchedule.NONE);
 
         bean.getForexMasterData().setBusinessDays(2);
-        bean.getForexMasterData().setInterestRate(0.);
-        bean.getForexMasterData().setIssuePrice(0.);
-        bean.getForexMasterData().setRedempionPrice(0.);
         bean.getForexMasterData().setMultiplier(1.);
 
         // Dati relativi alla bcy
         Currency bcy = (Currency) cbBcy.getSelectedItem();
         bean.getForexMasterData().setCurrency(bcy);
-        bean.getForexMasterData().setDaycount(DaycountBasis.fromCode(bcy.getDaycount().getCode()));
         Currency ccy = (Currency) cbCcy.getSelectedItem();
-        bean.getForexMasterData().setAccrualDaycount(DaycountBasis.fromCode(ccy.getDaycount().getCode()));
         String code = bcy.getIsoCode()+ccy.getIsoCode();
         bean.getForexMasterData().setCode(code);
         bean.getForexMasterData().setIssueDate(new Date().sqlDate());

@@ -1,82 +1,75 @@
 package org.softcaster.core.data;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.sql.Types;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.softcaster.core.data.converters.CommodityTypeConverter;
+import org.hibernate.Hibernate;
 import org.softcaster.engine.enums.CommodityType;
 
+/**
+ * Scadenza di un future su commodity: testata CmdFutureProduct (o una sua
+ * sottoclasse, es. PowerFutureProduct per PowerFutureMasterData).
+ */
 @Entity
 @Table(name = "cmd_future_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
-
 public class CmdFutureMasterData extends FutureMasterData {
 
-    @Convert(converter = CommodityTypeConverter.class)
-    @Column(name = "commodity_type")
-    private CommodityType commodityType;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false) // testata sempre disponibile: processori, contabilita', finestre
+    @JoinColumn(name = "future_product", nullable = false)
+    private CmdFutureProduct product;
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "contract_value")
-    private Double contractValue;
+    /**
+     * Nuova scadenza della testata, con i valori di default della testata.
+     *
+     * @param product
+     * @return
+     */
+    public static CmdFutureMasterData of(CmdFutureProduct product) {
+        CmdFutureMasterData cfmd = new CmdFutureMasterData();
+        cfmd.setProduct(product);
+        cfmd.copyProductDefaults(product);
+        return cfmd;
+    }
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "tick_size")
-    private Double tickSize;
+    @Override
+    public CmdFutureProduct getProduct() {
+        return product;
+    }
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "initial_margin")
-    private Double initialMargin;
+    public void setProduct(CmdFutureProduct product) {
+        this.product = product;
+    }
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "maintenance_margin")
-    private Double maintenanceMargin;
+    @Override
+    protected Class<? extends FutureProduct> productType() {
+        return CmdFutureProduct.class;
+    }
 
+    /**
+     * Testata del tipo atteso (es. PowerFutureProduct).
+     *
+     * @param <T>
+     * @param type
+     * @return
+     */
+    protected <T extends CmdFutureProduct> T getProduct(Class<T> type) {
+        return type.cast(Hibernate.unproxy(product));
+    }
+
+    /**
+     * Tipo di commodity, dalla testata.
+     *
+     * @return
+     */
     public CommodityType getCommodityType() {
-        return commodityType;
+        return product == null ? null : product.getCommodityType();
     }
 
-    public void setCommodityType(CommodityType commodityType) {
-        this.commodityType = commodityType;
-    }
-
-    public Double getContractValue() {
-        return contractValue;
-    }
-
-    public void setContractValue(Double contractValue) {
-        this.contractValue = contractValue;
-    }
-
-    public Double getTickSize() {
-        return tickSize;
-    }
-
-    public void setTickSize(Double tickSize) {
-        this.tickSize = tickSize;
-    }
-
-    public Double getInitialMargin() {
-        return initialMargin;
-    }
-
-    public void setInitialMargin(Double initialMargin) {
-        this.initialMargin = initialMargin;
-    }
-
-    public Double getMaintenanceMargin() {
-        return maintenanceMargin;
-    }
-
-    public void setMaintenanceMargin(Double maintenanceMargin) {
-        this.maintenanceMargin = maintenanceMargin;
-    }
-    
     @Override
     public String toString() {
         return getCode();
-    }    
+    }
 }

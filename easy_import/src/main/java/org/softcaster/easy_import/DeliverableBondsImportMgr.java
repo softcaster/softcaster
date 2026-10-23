@@ -15,19 +15,18 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.softcaster.commons.imports.CsvImport;
 import org.softcaster.commons.imports.ImportConfig;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.core.data.BondFutureContract;
-import org.softcaster.core.data.BondFutureContractDAO;
 import org.softcaster.core.data.BondFutureMasterData;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
+import org.softcaster.core.data.BondFutureProduct;
 import org.softcaster.core.data.DeliverableBonds;
-import org.softcaster.core.data.FutureContract;
-import org.softcaster.core.data.FutureContractDAO;
+import org.softcaster.core.data.FutureProductDAO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -41,8 +40,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * (yyyyMMdd) [6] fattore di conversione
  *
  * Le righe sono raggruppate per scadenza (ISIN del future). Le scadenze di
- * testate non presenti in anagrafica sono ignorate; la scadenza
- * (BondFutureContract) viene creata se manca. Ogni scadenza
+ * testate (future_product) non presenti in anagrafica sono ignorate; la
+ * scadenza (BondFutureMasterData) viene creata se manca. Ogni scadenza
  * e' caricata una volta sola (con il paniere, tramite entity graph) e
  * aggiornata in una propria transazione: un errore su una scadenza non blocca
  * l'import delle altre.
@@ -66,18 +65,20 @@ public class DeliverableBondsImportMgr implements IImportMgr {
      */
     private static final boolean REPLACE_BASKET = false;
 
+    /**
+     * Mese nella descrizione di una nuova scadenza (es. "Mini BTP 10y future Mar-2027").
+     */
+    private static final DateTimeFormatter MONTH_FORMAT = DateTimeFormatter.ofPattern("MMM-yyyy", Locale.ENGLISH);
+
     private final BondFutureMasterDataDAO bondFutureMasterDataDAO;
-    private final BondFutureContractDAO bondFutureContractDAO;
-    private final FutureContractDAO futureContractDAO;
+    private final FutureProductDAO futureProductDAO;
     private final TransactionTemplate transactionTemplate;
 
     public DeliverableBondsImportMgr(BondFutureMasterDataDAO bondFutureMasterDataDAO,
-            BondFutureContractDAO bondFutureContractDAO,
-            FutureContractDAO futureContractDAO,
+            FutureProductDAO futureProductDAO,
             PlatformTransactionManager transactionManager) {
         this.bondFutureMasterDataDAO = bondFutureMasterDataDAO;
-        this.bondFutureContractDAO = bondFutureContractDAO;
-        this.futureContractDAO = futureContractDAO;
+        this.futureProductDAO = futureProductDAO;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
@@ -139,17 +140,17 @@ public class DeliverableBondsImportMgr implements IImportMgr {
     // -- Import di un singolo future (eseguito dentro la transazione)
     // ------------------------------------------------------------------------
     private void importFuture(String futureIsin, List<String[]> rows) {
-        BondFutureContract contract = loadOrCreateContract(futureIsin, rows.get(0));
-        if (contract == null) {
+        BondFutureMasterData bfmd = loadOrCreateFuture(futureIsin, rows.get(0));
+        if (bfmd == null) {
             return;
         }
 
         if (REPLACE_BASKET) {
-            contract.getDeliverables().clear();      // orphanRemoval cancella le righe vecchie
+            bfmd.getDeliverables().clear();          // orphanRemoval cancella le righe vecchie
         }
 
         Set<String> existing = new HashSet<>();
-        contract.getDeliverables().forEach(d -> existing.add(d.getIsin()));
+        bfmd.getDeliverables().forEach(d -> existing.add(d.getIsin()));
 
         for (String[] s : rows) {
             try {
@@ -158,13 +159,13 @@ public class DeliverableBondsImportMgr implements IImportMgr {
                     continue;                            // gia' nel paniere
                 }
                 DeliverableBonds deliverable = new DeliverableBonds();
-                // la FK listed_contract e' valorizzata da Hibernate tramite il @JoinColumn del contratto
+                // la FK master_data e' valorizzata da Hibernate tramite il @JoinColumn della scadenza
                 deliverable.setIsin(isin);
                 deliverable.setBondCf(Converter.toDouble(s[COL_CF].trim(), false));
                 deliverable.setExpirationDate(decodeDate(s[COL_EXPIRY].trim()));
                 deliverable.setCouponRate(Converter.toDouble(s[COL_COUPON].trim(), false));
                 deliverable.setBondMaturity(decodeDate(s[COL_MATURITY].trim()));
-                contract.getDeliverables().add(deliverable);
+                bfmd.getDeliverables().add(deliverable);
             }
             // nessun save esplicito: l'entity e' gestita e le modifiche vengono scritte al commit
             catch (ParseException ex) {
@@ -174,31 +175,38 @@ public class DeliverableBondsImportMgr implements IImportMgr {
     }
 
     /**
-     * Scadenza del future per ISIN; se manca la crea sotto la testata indicata
-     * nella colonna [0], con codice standard (MBTPZ6) e ultimo giorno di
-     * negoziazione dalla colonna [2].
+     * Scadenza del future per ISIN; se manca la crea in master_data sotto la
+     * testata indicata nella colonna [0]: codice standard (MBTPZ6), ultimo
+     * giorno di negoziazione dalla colonna [2], valori di default dalla
+     * testata.
      *
      * @return null se la testata non e' in anagrafica (future non gestito)
      */
-    private BondFutureContract loadOrCreateContract(String futureIsin, String[] row) {
-        BondFutureContract existing = bondFutureContractDAO.findByIsin(futureIsin).orElse(null);
+    private BondFutureMasterData loadOrCreateFuture(String futureIsin, String[] row) {
+        BondFutureMasterData existing = bondFutureMasterDataDAO.findByIsin(futureIsin).orElse(null);
         if (existing != null) {
             return existing;
         }
 
         String productCode = row[COL_PRODUCT].trim();
-        BondFutureMasterData bfmd = bondFutureMasterDataDAO.findByCode(productCode);
-        if (bfmd == null) {
+        BondFutureProduct product = futureProductDAO.findByCode(productCode, BondFutureProduct.class).orElse(null);
+        if (product == null) {
             return null;                                 // testata non gestita: si passa alla successiva
         }
 
         LocalDate lastTrading = decodeDate(row[COL_EXPIRY].trim()).toLocalDate();
-        BondFutureContract contract = new BondFutureContract();
-        contract.setMasterData(bfmd);
-        contract.setIsin(futureIsin);
-        contract.setLastTradingLocalDate(lastTrading);
-        contract.setCode(FutureContract.standardCode(productCode, lastTrading));
-        return futureContractDAO.saveOrUpdate(contract);
+        bondFutureMasterDataDAO.findByProductAndContractMonth(product, lastTrading).ifPresent(other -> {
+            throw new IllegalStateException("la scadenza " + other.getCode() + " di " + productCode
+                    + " esiste gia' con ISIN " + other.getIsin());
+        });
+        BondFutureMasterData bfmd = BondFutureMasterData.of(product);
+        bfmd.setCode(product.contractCode(lastTrading));
+        bfmd.setDescription(product.getDescription() + " " + MONTH_FORMAT.format(lastTrading));
+        bfmd.setIsin(futureIsin);
+        bfmd.setLastTradingLocalDate(lastTrading);
+        bfmd.setIssueDate(java.sql.Date.valueOf(LocalDate.now()));
+        bfmd.setMaturityDate(java.sql.Date.valueOf(lastTrading));
+        return bondFutureMasterDataDAO.saveOrUpdate(bfmd);
     }
 
     // ------------------------------------------------------------------------

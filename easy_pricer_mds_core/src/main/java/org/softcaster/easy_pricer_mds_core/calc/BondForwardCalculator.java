@@ -13,8 +13,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.BondFutureMasterData;
-import org.softcaster.core.data.BondFutureContract;
-import org.softcaster.core.data.BondFutureContractDAO;
+import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.DeliverableBonds;
 import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.core.data.InstrumentQuoteDAO;
@@ -37,7 +36,7 @@ import org.softcaster.engine.enums.DaycountBasis;
 
 /**
  * Costruisce l'input del BondForwardPricer per un bond future (es. Mini BTP
- * 10y): carica la scadenza del future (BondFutureContract) con testata e paniere
+ * 10y): carica la scadenza del future (BondFutureMasterData) con testata e paniere
  * consegnabile, prezzi a pronti dei
  * titoli, curva repo, e calcola le date di regolamento.
  *
@@ -56,18 +55,18 @@ public class BondForwardCalculator {
      */
     private static final DaycountBasis REPO_DAYCOUNT = DaycountBasis.ACT_360;
 
-    private final BondFutureContractDAO bondFutureContractDAO;
+    private final BondFutureMasterDataDAO bondFutureMasterDataDAO;
     private final SecurityMasterDataDAO smdDAO;
     private final InstrumentQuoteDAO instrumentQuoteDAO;
     private final MarketDataService marketDataService;
     private final XRBForwardPricer bondForwardPricer;
 
-    public BondForwardCalculator(BondFutureContractDAO bondFutureContractDAO,
+    public BondForwardCalculator(BondFutureMasterDataDAO bondFutureMasterDataDAO,
             SecurityMasterDataDAO smdDAO,
             InstrumentQuoteDAO instrumentQuoteDAO,
             MarketDataService marketDataService,
             XRBForwardPricer bondForwardPricer) {
-        this.bondFutureContractDAO = Objects.requireNonNull(bondFutureContractDAO);
+        this.bondFutureMasterDataDAO = Objects.requireNonNull(bondFutureMasterDataDAO);
         this.smdDAO = Objects.requireNonNull(smdDAO);
         this.instrumentQuoteDAO = Objects.requireNonNull(instrumentQuoteDAO);
         this.marketDataService = Objects.requireNonNull(marketDataService);
@@ -80,7 +79,7 @@ public class BondForwardCalculator {
     /**
      * Input con la curva repo recuperata dal MarketDataService.
      *
-     * @param futureIsin codice o ISIN della scadenza del future (BondFutureContract)
+     * @param futureIsin codice o ISIN della scadenza del future (BondFutureMasterData)
      * @param officialDate data di riferimento (oggi)
      * @param repoCurveCode codice della curva repo
      * @param quotedFuturePrice prezzo quotato del future, oppure null per il
@@ -142,6 +141,10 @@ public class BondForwardCalculator {
         ForwardPricingResponse response = new ForwardPricingResponse();
         response.theoreticalPrice = result.theoreticalPrice();
         response.ctd = result.ctdIsin();
+        response.ctdYield = result.ctd().yield();
+        response.ctdModifiedDuration = result.ctd().modifiedDuration();
+        response.ctdDv01 = result.ctd().dv01();
+        response.futureDv01 = result.futureDv01();
         // Se ForwardPricingResponse ha (o avra') i campi, si possono esporre anche:
         // result.termRepoRate(), result.ctd().netBasis(), result.ctd().impliedRepo(), result.deliverables()
         return response;
@@ -159,22 +162,21 @@ public class BondForwardCalculator {
 
     private Basket loadBasket(String futureIsin, LocalDate officialDate) {
         Objects.requireNonNull(officialDate, "officialDate");
-        BondFutureContract contract = bondFutureContractDAO.getByCodeOrIsin(futureIsin);
-        BondFutureMasterData bfmd = contract.getBondFutureMasterData();
+        BondFutureMasterData bfmd = bondFutureMasterDataDAO.getByCodeOrIsin(futureIsin);
         Calendar calendar = new Calendar(bfmd.getCurrency());
 
         // expiry day della scadenza
         // (due giorni di borsa prima del 10 del mese di contratto per il MBTP).
-        LocalDate expiryDate = contract.getLastTradingLocalDate();
+        LocalDate expiryDate = bfmd.getLastTradingLocalDate();
         if (expiryDate == null) {
-            throw new IllegalArgumentException("Ultimo giorno di negoziazione mancante per " + contract.getCode());
+            throw new IllegalArgumentException("Ultimo giorno di negoziazione mancante per " + bfmd.getCode());
         }
 
         List<DeliverableBond> deliverables = new ArrayList<>();
         List<String> skipped = new ArrayList<>();
         Integer settlementDays = null;
 
-        for (DeliverableBonds deliverable : contract.getDeliverables()) {
+        for (DeliverableBonds deliverable : bfmd.getDeliverables()) {
             String isin = deliverable.getIsin();
 
             SecurityMasterData smd = smdDAO.findByIsin(isin).orElse(null);

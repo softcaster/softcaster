@@ -27,7 +27,7 @@ public class XRBPricer extends AbstractFixedIncomePricer<XRBInput, XRBResult> {
                 input.schedule().daycount(), input.schedule().compounding(), input.schedule().frequency());
 
         // dv01
-        double dv01 = input.cleanPrice() + accruedInterest * modifiedDuration * 0.0001;
+        double dv01 = (input.cleanPrice() + accruedInterest) * modifiedDuration * 0.0001;
 
         // Prepara result
         CashFlowAnalytics analytics = new CashFlowAnalytics(

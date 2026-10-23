@@ -24,11 +24,11 @@ public class DeliverableBonds implements Serializable {
     private Integer idDeliverableBonds;
 
     /**
-     * Scadenza del future (FutureContract): valorizzata da Hibernate tramite
-     * il @JoinColumn di FutureContract.deliverables.
+     * Scadenza del bond future (BondFutureMasterData): valorizzata da
+     * Hibernate tramite il @JoinColumn di BondFutureMasterData.deliverables.
      */
-    @Column(name = "listed_contract", insertable = false, updatable = false)
-    private Integer listedContract;
+    @Column(name = "master_data", insertable = false, updatable = false)
+    private Integer masterData;
 
     @Column(name = "expiration_date")
     private java.sql.Date expirationDate;
@@ -55,12 +55,12 @@ public class DeliverableBonds implements Serializable {
         this.idDeliverableBonds = idDeliverableBonds;
     }
 
-    public Integer getListedContract() {
-        return listedContract;
+    public Integer getMasterData() {
+        return masterData;
     }
 
-    public void setListedContract(Integer listedContract) {
-        this.listedContract = listedContract;
+    public void setMasterData(Integer masterData) {
+        this.masterData = masterData;
     }
 
     public java.sql.Date getExpirationDate() {

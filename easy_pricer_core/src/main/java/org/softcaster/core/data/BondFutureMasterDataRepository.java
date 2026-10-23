@@ -13,6 +13,9 @@ public interface BondFutureMasterDataRepository extends BaseMasterDataRepository
     @Override
     List<BondFutureMasterData> findAll(Sort sort);
 
+    /**
+     * Scadenza con testata, calendario e paniere.
+     */
     @Query("""
         SELECT bfmd
         FROM BondFutureMasterData bfmd
@@ -20,4 +23,27 @@ public interface BondFutureMasterDataRepository extends BaseMasterDataRepository
         """)
     @EntityGraph("BondFutureMasterData.fullGraph")
     public Optional<BondFutureMasterData> findByIsin(@Param("isin") String in);
+
+    /**
+     * Come findByIsin, cercando per codice (MBTPZ6).
+     */
+    @Query("""
+        SELECT bfmd
+        FROM BondFutureMasterData bfmd
+        WHERE bfmd.code = :code
+        """)
+    @EntityGraph("BondFutureMasterData.fullGraph")
+    public Optional<BondFutureMasterData> findByCodeWithDeliverables(@Param("code") String code);
+
+    /**
+     * Scadenza della testata per mese: al massimo una.
+     */
+    @Query("""
+        SELECT bfmd
+        FROM BondFutureMasterData bfmd
+        WHERE bfmd.product.idFutureProduct = :idProduct
+          AND bfmd.contractMonth = :contractMonth
+        """)
+    Optional<BondFutureMasterData> findByProductAndContractMonth(@Param("idProduct") Integer idProduct,
+            @Param("contractMonth") java.sql.Date contractMonth);
 }

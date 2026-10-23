@@ -5,7 +5,6 @@
 package org.softcaster.core.data;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.NamedAttributeNode;
@@ -13,7 +12,6 @@ import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import org.softcaster.core.data.converters.LoadTypeConverter;
 import org.softcaster.engine.enums.DeliveryPeriodType;
 import org.softcaster.engine.enums.LoadType;
 
@@ -28,13 +26,11 @@ import org.softcaster.engine.enums.LoadType;
                 @NamedAttributeNode("currency"),
                 @NamedAttributeNode("assetClass"),
                 @NamedAttributeNode("instrumentValuation"),
+                @NamedAttributeNode("product"),
                 @NamedAttributeNode("deliveryProfile")}
     )
 })
 public class PowerFutureMasterData extends CmdFutureMasterData {
-
-    @Convert(converter = LoadTypeConverter.class)
-    private LoadType loadType;
 
     @OneToOne(
             fetch = FetchType.LAZY,
@@ -45,17 +41,39 @@ public class PowerFutureMasterData extends CmdFutureMasterData {
     private CommodityDeliveryProfile deliveryProfile;
 
     /**
-     * @return the loadType
+     * Nuova scadenza della testata, con i valori di default della testata.
+     *
+     * @param product
+     * @return
      */
-    public LoadType getLoadType() {
-        return loadType;
+    public static PowerFutureMasterData of(PowerFutureProduct product) {
+        PowerFutureMasterData pfmd = new PowerFutureMasterData();
+        pfmd.setProduct(product);
+        pfmd.copyProductDefaults(product);
+        return pfmd;
+    }
+
+    @Override
+    protected Class<? extends FutureProduct> productType() {
+        return PowerFutureProduct.class;
     }
 
     /**
-     * @param loadType the loadType to set
+     * Testata del future sull'energia.
+     *
+     * @return
      */
-    public void setLoadType(LoadType loadType) {
-        this.loadType = loadType;
+    public PowerFutureProduct getPowerFutureProduct() {
+        return getProduct(PowerFutureProduct.class);
+    }
+
+    /**
+     * Profilo di carico, dalla testata.
+     *
+     * @return the loadType
+     */
+    public LoadType getLoadType() {
+        return getProduct() == null ? null : getPowerFutureProduct().getLoadType();
     }
 
     /**

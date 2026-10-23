@@ -11,6 +11,7 @@ import org.softcaster.commons.types.Date;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.BondFutureMasterData;
+import org.softcaster.core.data.BondFutureProduct;
 import org.softcaster.core.data.Currency;
 import org.softcaster.engine.enums.SettlementType;
 import org.softcaster.engine.enums.AccrualScheduleType;
@@ -544,7 +545,6 @@ public class BondFutureDlg extends javax.swing.JDialog {
             txtLastTradingDate.setText(new Date(bean.getBondFutureMasterData().getLastTradingDate()).toString());
             txtContractCode.setText(bean.getBondFutureMasterData().getExchangeContractCode());
             cbCurrency.setSelectedItem(bean.getBondFutureMasterData().getCurrency());
-            cbDaycount.setSelectedItem(bean.getBondFutureMasterData().getDaycount());
             cbSettlementType.setSelectedItem(bean.getBondFutureMasterData().getSettlementType());
         }
 
@@ -621,19 +621,23 @@ public class BondFutureDlg extends javax.swing.JDialog {
             bfmd.setIsin(txtIsin.getText());
             bfmd.setCode(txtIsin.getText());
             bfmd.setDescription(txtDescription.getText());
-            bfmd.setContractValue(Converter.toDouble(txtContractValue.getText(), false));
-            bfmd.setTickSize(Converter.toDouble(txtTickSize.getText(), false));
-            bfmd.setInitialMargin(Converter.toDouble(txtInitMargin.getText(), false));
-            bfmd.setExchangeContractCode(txtContractCode.getText());
             bfmd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             bfmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
-            bfmd.setLastTradingDate(new Date(txtLastTradingDate.getText()).sqlDate());
+            bfmd.setLastTradingLocalDate(new Date(txtLastTradingDate.getText()).sqlDate().toLocalDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             bfmd.setCurrency(currency);
-            bfmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
-            bfmd.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
-            bfmd.setAccrualDaycount(DaycountBasis.ACT_365);
-            bfmd.setCompounding(Compounding.COMPOUNDED);
+            // codice contratto = codice della testata: creata o aggiornata con i dati di prodotto
+            bfmd.setProduct(FutureProductHelper.resolve(masterDataFacade.getFutureProductDAO(),
+                    BondFutureProduct.class, BondFutureProduct::new,
+                    new FutureProductHelper.ProductFields(txtContractCode.getText(), null,
+                            (SettlementType) cbSettlementType.getSelectedItem(),
+                            Converter.toDouble(txtContractValue.getText(), false),
+                            Converter.toDouble(txtTickSize.getText(), false),
+                            Converter.toDouble(txtInitMargin.getText(), false), null),
+                    bfmd, p -> {
+                    }));
+            // il multiplier e' un dato di prodotto: la scadenza usa quello della testata
+            bfmd.setMultiplier(bfmd.getProduct().getMultiplier());
             masterDataFacade.getBondFutureMasterDataDAO().saveOrUpdate(bfmd);
             return true;
         } catch (Exception ex) {
@@ -644,18 +648,10 @@ public class BondFutureDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getBondFutureMasterData().setTypeOfInterest(TypeOfInterest.NONE);
-        bean.getBondFutureMasterData().setForm(Form.BEARER);
-        bean.getBondFutureMasterData().setFrequency(Frequency.NONE);
-        bean.getBondFutureMasterData().setRollConvention(RollConvention.UNADJUSTED);
-        bean.getBondFutureMasterData().setAccrualScheduleType(AccrualScheduleType.NONE);
         bean.getBondFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("BFU"));
-        bean.getBondFutureMasterData().setAmortizationSchedule(AmortizationSchedule.NONE);
 
         bean.getBondFutureMasterData().setBusinessDays(2);
-        bean.getBondFutureMasterData().setInterestRate(0.);
-        bean.getBondFutureMasterData().setIssuePrice(100.);
-        bean.getBondFutureMasterData().setRedempionPrice(100.);
-        bean.getBondFutureMasterData().setMultiplier(1.);
+        // prezzo quotato in % del nominale, come i titoli: controvalore = prezzo x 0.01 x contract value
+        bean.getBondFutureMasterData().setMultiplier(0.01);
     }
 }

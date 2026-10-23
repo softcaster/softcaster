@@ -22,6 +22,7 @@ import org.softcaster.core.data.CalibrationProfileDAO;
 import org.softcaster.core.data.CalibrationProfileItem;
 import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.core.data.InstrumentQuoteDAO;
+import org.softcaster.core.data.CashFlowMasterData;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
@@ -160,7 +161,7 @@ public class ZSpreadBuilder implements CommandLineRunner {
                         continue;
                     }
                     String description = sanitize(data.getDescription());
-                    if (!isPlainFixedBtp(description, data.getInterestRate())) {
+                    if (!(data instanceof CashFlowMasterData cfmd) || !isPlainFixedBtp(description, cfmd.getInterestRate())) {
                         continue;
                     }
 
@@ -168,7 +169,8 @@ public class ZSpreadBuilder implements CommandLineRunner {
 
                     // Gestione di date e numeri
                     String maturityDate = (data.getIssueDate() != null) ? data.getMaturityDate().toString() : "";
-                    String interestRate = (data.getInterestRate() != null) ? String.valueOf(data.getInterestRate()) : "";
+                    String interestRate = (data instanceof CashFlowMasterData cf && cf.getInterestRate() != null)
+                    ? String.valueOf(cf.getInterestRate()) : "";
 
                     // Costruiamo la riga del CSV                   
                     double zSpread = calcZSpread(cleanPrice, data);

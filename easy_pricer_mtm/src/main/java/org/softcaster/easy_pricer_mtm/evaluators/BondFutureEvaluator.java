@@ -13,9 +13,7 @@ import org.softcaster.core.data.AcDcBcyLinkDAO;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.InstrumentValuation;
 import org.softcaster.core.data.MasterData;
-import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.PositionDetail;
-import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SpreadCurveEntity;
 import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntity;
@@ -29,7 +27,6 @@ import org.softcaster.easy_pricer_mtm.exceptions.MtmException;
 import org.softcaster.easy_pricer_mtm.services.MtmService;
 import org.softcaster.engine.dto.XRBForwardInput;
 import org.softcaster.engine.dto.XRBForwardResult;
-import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.engine.enums.CurveRole;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +41,6 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
     @Autowired
     @Qualifier("bondForwardCalculator")
     private BondForwardCalculator bondForwardCalculator;
-
-    @Autowired
-    MasterDataDAO masterDataDAO;
-
-    @Autowired
-    EvaluatorHelper evaluatorHelper;
 
     @Autowired
     YieldCurveEntityDAO yieldCurveEntityDAO;
@@ -104,9 +95,8 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
             }
             XRBForwardInput input = bondForwardCalculator.getBondForwardInput(masterData.getCode(), mtmHelper.getOfficialDate(), discountCurveName, mktPrice);
             XRBForwardResult result = bondForwardCalculator.bondFwdValuation(input);
-            // TO_DO
-            double dv01 = calcDV01(result.ctdIsin(), 100.,1.,mtmHelper.getOfficialDate());
-            currentValuation.setDv01(dv01);
+            // DV01 del future: DV01 del CTD al prezzo a pronti / fattore di conversione
+            currentValuation.setDv01(result.futureDv01());
 
             return currentValuation;
         });
@@ -121,20 +111,5 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
 
         // Aggiorna il legame bidirezionale nell'anagrafica (opzionale, utile per JPA)
         masterData.setInstrumentValuation(valuation);
-    }
-
-    private double calcDV01(String ctdIsin, double ctdPrice, double ctdCf, LocalDate officialDate) {
-        double dv01 = 0;
-        MasterData masterData = masterDataDAO.findByCode(ctdIsin);
-        if (masterData != null) {
-            if (masterData instanceof SecurityMasterData smd) {
-                XRBResult result = evaluatorHelper.calculateXRB(smd, ctdPrice, officialDate);
-                if (result != null) {
-                    dv01 = result.analytics().dv01() / ctdCf;
-                }
-            }
-        }
-
-        return dv01;
     }
 }

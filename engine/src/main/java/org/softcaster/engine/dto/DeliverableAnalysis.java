@@ -14,6 +14,11 @@ package org.softcaster.engine.dto;
  * @param isin codice del titolo
  * @param conversionFactor fattore di conversione
  * @param cleanPrice prezzo secco a pronti
+ * @param yield rendimento a scadenza (IRR del titolo) al prezzo a pronti,
+ * con le convenzioni del titolo
+ * @param modifiedDuration duration modificata al rendimento a pronti
+ * @param dv01 variazione del prezzo tel quel per 1 bp di rendimento:
+ * (cleanPrice + accruedSpot) * modifiedDuration * 0.0001
  * @param accruedSpot rateo alla valuationDate
  * @param accruedDelivery rateo alla deliveryDate
  * @param couponsCapitalized cedole pagate tra valuationDate e deliveryDate,
@@ -30,6 +35,9 @@ public record DeliverableAnalysis(
         String isin,
         double conversionFactor,
         double cleanPrice,
+        double yield,
+        double modifiedDuration,
+        double dv01,
         double accruedSpot,
         double accruedDelivery,
         double couponsCapitalized,

@@ -206,7 +206,7 @@ INSERT INTO calendar(id_calendar,code, description) VALUES (nextval('calendar_s'
 -- ----------------------------------------------------------------------------
 -- holiday
 -- ----------------------------------------------------------------------------
-INSERT INTO holiday(id_holiday,calendar, holiday_day,holiday_month,description) VALUES (nextval('holiday_s'),(SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),1,8,'New Year Day');
+INSERT INTO holiday(id_holiday,calendar, holiday_day,holiday_month,description) VALUES (nextval('holiday_s'),(SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),1,1,'New Year Day');
 INSERT INTO holiday(id_holiday,calendar, holiday_day,holiday_month,description) VALUES (nextval('holiday_s'),(SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),3,4,'Good Friday');
 INSERT INTO holiday(id_holiday,calendar, holiday_day,holiday_month,description) VALUES (nextval('holiday_s'),(SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),6,4,'Easter Monday');
 INSERT INTO holiday(id_holiday,calendar, holiday_day,holiday_month,description) VALUES (nextval('holiday_s'),(SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),1,5,'Labor Day');

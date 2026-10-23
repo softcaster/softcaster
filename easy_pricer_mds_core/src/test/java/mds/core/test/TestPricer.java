@@ -95,7 +95,7 @@ public class TestPricer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Allinea curve e prezzi
         startUp();
-        // testCashFlowInstrumentCalculator();
+        testCashFlowInstrumentCalculator();
         // testFxForwardCalculator();
         testBondForwardCalculator();
         // testBlack76Pricer();
@@ -155,6 +155,10 @@ public class TestPricer implements CommandLineRunner {
             System.out.println("term repo:    " + result.termRepoRate());
             System.out.println("implied repo: " + result.ctd().impliedRepo());
             System.out.println("net basis:    " + result.ctd().netBasis());
+            System.out.println("ctd yield:    " + result.ctd().yield());
+            System.out.println("ctd mod dur:  " + result.ctd().modifiedDuration());
+            System.out.println("ctd dv01:     " + result.ctd().dv01());
+            System.out.println("future dv01:  " + result.futureDv01());
         }
     }
 

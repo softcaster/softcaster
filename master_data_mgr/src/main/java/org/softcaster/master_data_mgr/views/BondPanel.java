@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.CashFlowMasterData;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.master_data_mgr.JMasterDataMgr;
@@ -268,7 +269,8 @@ public class BondPanel extends AbstactMDPanel {
 
                     // Gestione di date e numeri
                     String maturityDate = (data.getIssueDate() != null) ? data.getMaturityDate().toString() : "";
-                    String interestRate = (data.getInterestRate() != null) ? String.valueOf(data.getInterestRate()) : "";
+                    String interestRate = (data instanceof CashFlowMasterData cf && cf.getInterestRate() != null)
+                    ? String.valueOf(cf.getInterestRate()) : "";
 
                     // Costruiamo la riga del CSV
                     Node node = provider.getMktQuote(code, Market.BONDS);

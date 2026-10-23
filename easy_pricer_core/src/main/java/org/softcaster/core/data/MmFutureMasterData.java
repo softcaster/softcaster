@@ -1,88 +1,62 @@
 package org.softcaster.core.data;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.sql.Types;
-import org.hibernate.annotations.JdbcTypeCode;
 
+/**
+ * Scadenza di un future money market: testata MmFutureProduct, che porta il
+ * sottostante.
+ */
 @Entity
 @Table(name = "mm_future_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
-
 public class MmFutureMasterData extends FutureMasterData {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "underlying", nullable = true)
-    private ForexMasterData underlying;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false) // testata sempre disponibile: processori, contabilita', finestre
+    @JoinColumn(name = "future_product", nullable = false)
+    private MmFutureProduct product;
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "contract_value")
-    private Double contractValue;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "tick_size")
-    private Double tickSize;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "initial_margin")
-    private Double initialMargin;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "maintenance_margin")
-    private Double maintenanceMargin;
-
-    public Double getContractValue() {
-        return contractValue;
+    /**
+     * Nuova scadenza della testata, con i valori di default della testata.
+     *
+     * @param product
+     * @return
+     */
+    public static MmFutureMasterData of(MmFutureProduct product) {
+        MmFutureMasterData mfmd = new MmFutureMasterData();
+        mfmd.setProduct(product);
+        mfmd.copyProductDefaults(product);
+        return mfmd;
     }
 
-    public void setContractValue(Double contractValue) {
-        this.contractValue = contractValue;
+    @Override
+    public MmFutureProduct getProduct() {
+        return product;
     }
 
-    public Double getTickSize() {
-        return tickSize;
+    public void setProduct(MmFutureProduct product) {
+        this.product = product;
     }
 
-    public void setTickSize(Double tickSize) {
-        this.tickSize = tickSize;
-    }
-
-    public Double getInitialMargin() {
-        return initialMargin;
-    }
-
-    public void setInitialMargin(Double initialMargin) {
-        this.initialMargin = initialMargin;
-    }
-
-    public Double getMaintenanceMargin() {
-        return maintenanceMargin;
-    }
-
-    public void setMaintenanceMargin(Double maintenanceMargin) {
-        this.maintenanceMargin = maintenanceMargin;
+    @Override
+    protected Class<? extends FutureProduct> productType() {
+        return MmFutureProduct.class;
     }
 
     /**
-     * @return the underlying
+     * Sottostante, dalla testata.
+     *
+     * @return
      */
     public ForexMasterData getUnderlying() {
-        return underlying;
-    }
-
-    /**
-     * @param underlying the underlying to set
-     */
-    public void setUnderlying(ForexMasterData underlying) {
-        this.underlying = underlying;
+        return product == null ? null : product.getUnderlying();
     }
 
     @Override
     public String toString() {
         return getCode();
-    }    
+    }
 }

@@ -15,6 +15,7 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FxFutureMasterData;
+import org.softcaster.core.data.FxFutureProduct;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.Compounding;
@@ -608,7 +609,6 @@ public class FxFutureDlg extends javax.swing.JDialog {
             txtLastTradingDate.setText(new Date(bean.getFxFutureMasterData().getLastTradingDate()).toString());
             txtContractCode.setText(bean.getFxFutureMasterData().getExchangeContractCode());
             cbCurrency.setSelectedItem(bean.getFxFutureMasterData().getCurrency());
-            cbDaycount.setSelectedItem(bean.getFxFutureMasterData().getDaycount());
             cbSettlementType.setSelectedItem(bean.getFxFutureMasterData().getSettlementType());
             txtMainMant.setText(Converter.fromDouble(bean.getFxFutureMasterData().getMaintenanceMargin()));
             cbUnderlying.setSelectedItem(bean.getFxFutureMasterData().getUnderlying());
@@ -689,21 +689,24 @@ public class FxFutureDlg extends javax.swing.JDialog {
             ffmd.setIsin(txtIsin.getText());
             ffmd.setCode(txtIsin.getText());
             ffmd.setDescription(txtDescription.getText());
-            ffmd.setContractValue(Converter.toDouble(txtContractValue.getText(), false));
-            ffmd.setTickSize(Converter.toDouble(txtTickSize.getText(), false));
-            ffmd.setInitialMargin(Converter.toDouble(txtInitMargin.getText(), false));
-            ffmd.setExchangeContractCode(txtContractCode.getText());
             ffmd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             ffmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
-            ffmd.setLastTradingDate(new Date(txtLastTradingDate.getText()).sqlDate());
+            ffmd.setLastTradingLocalDate(new Date(txtLastTradingDate.getText()).sqlDate().toLocalDate());
+            // consegna CME: data di scadenza della finestra
+            ffmd.setDeliveryDate(new Date(txtExpiryDate.getText()).sqlDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             ffmd.setCurrency(currency);
-            ffmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
-            ffmd.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
-            ffmd.setAccrualDaycount(DaycountBasis.ACT_360);
-            ffmd.setUnderlying((ForexMasterData) cbUnderlying.getSelectedItem());
-            ffmd.setMaintenanceMargin(Converter.toDouble(txtMainMant.getText(), false));
-            ffmd.setCompounding(Compounding.COMPOUNDED);
+            // codice contratto = codice della testata: creata o aggiornata con i dati di prodotto
+            ForexMasterData underlying = (ForexMasterData) cbUnderlying.getSelectedItem();
+            ffmd.setProduct(FutureProductHelper.resolve(masterDataFacade.getFutureProductDAO(),
+                    FxFutureProduct.class, FxFutureProduct::new,
+                    new FutureProductHelper.ProductFields(txtContractCode.getText(), null,
+                            (SettlementType) cbSettlementType.getSelectedItem(),
+                            Converter.toDouble(txtContractValue.getText(), false),
+                            Converter.toDouble(txtTickSize.getText(), false),
+                            Converter.toDouble(txtInitMargin.getText(), false),
+                            Converter.toDouble(txtMainMant.getText(), false)),
+                    ffmd, p -> p.setUnderlying(underlying)));
             masterDataFacade.getFxFutureMasterDataDAO().saveOrUpdate(ffmd);
             return true;
         } catch (Exception ex) {
@@ -714,18 +717,9 @@ public class FxFutureDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getFxFutureMasterData().setTypeOfInterest(TypeOfInterest.NONE);
-        bean.getFxFutureMasterData().setForm(Form.BEARER);
-        bean.getFxFutureMasterData().setFrequency(Frequency.NONE);
-        bean.getFxFutureMasterData().setRollConvention(RollConvention.UNADJUSTED);
-        bean.getFxFutureMasterData().setAccrualScheduleType(AccrualScheduleType.NONE);
         bean.getFxFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("FFU"));
-        bean.getFxFutureMasterData().setAmortizationSchedule(AmortizationSchedule.NONE);
 
         bean.getFxFutureMasterData().setBusinessDays(2);
-        bean.getFxFutureMasterData().setInterestRate(0.);
-        bean.getFxFutureMasterData().setIssuePrice(100.);
-        bean.getFxFutureMasterData().setRedempionPrice(100.);
         bean.getFxFutureMasterData().setMultiplier(1.);
     }
 }

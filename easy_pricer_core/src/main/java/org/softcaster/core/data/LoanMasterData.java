@@ -10,7 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Table(name = "loan_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 
-public class LoanMasterData extends MasterData {
+public class LoanMasterData extends CashFlowMasterData {
 
     @Column(name = "description")
     private String description;

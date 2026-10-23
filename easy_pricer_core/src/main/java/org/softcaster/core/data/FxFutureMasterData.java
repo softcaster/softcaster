@@ -1,6 +1,5 @@
 package org.softcaster.core.data;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -9,97 +8,82 @@ import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.Table;
-import java.sql.Types;
 import java.util.List;
-import org.hibernate.annotations.JdbcTypeCode;
 
+/**
+ * Scadenza di un future su cambi (M6EZ6): testata FxFutureProduct (M6E), che
+ * porta la coppia sottostante.
+ *
+ * Entity graph "FxFutureMasterData.fullGraph": testata, coppia, valute delle
+ * due divise con calendario e festivita'.
+ */
 @Entity
 @Table(name = "fx_future_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
 @NamedEntityGraph(
         name = "FxFutureMasterData.fullGraph",
         attributeNodes = {
-            @NamedAttributeNode(value = "underlying", subgraph = "underlying")
+            @NamedAttributeNode(value = "currency", subgraph = "currency"),
+            @NamedAttributeNode("assetClass"),
+            @NamedAttributeNode("instrumentValuation"),
+            @NamedAttributeNode(value = "product", subgraph = "product")
         },
         subgraphs = {
+            @NamedSubgraph(name = "product", attributeNodes = {
+                @NamedAttributeNode(value = "underlying", subgraph = "underlying")
+            }),
             @NamedSubgraph(name = "underlying", attributeNodes = {
-        @NamedAttributeNode(value = "bcy", subgraph = "currency"),
-        @NamedAttributeNode(value = "ccy", subgraph = "currency")
-    }),
+                @NamedAttributeNode(value = "bcy", subgraph = "currency"),
+                @NamedAttributeNode(value = "ccy", subgraph = "currency")
+            }),
             @NamedSubgraph(name = "currency", attributeNodes = {
-        @NamedAttributeNode(value = "calendar", subgraph = "calendar")
-    }),
+                @NamedAttributeNode(value = "calendar", subgraph = "calendar")
+            }),
             @NamedSubgraph(name = "calendar", attributeNodes = {
-        @NamedAttributeNode("holidays")
-    })
+                @NamedAttributeNode("holidays")
+            })
         }
 )
 public class FxFutureMasterData extends FutureMasterData {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "underlying", nullable = true)
-    private ForexMasterData underlying;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false) // testata sempre disponibile: processori, contabilita', finestre
+    @JoinColumn(name = "future_product", nullable = false)
+    private FxFutureProduct product;
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "contract_value")
-    private Double contractValue;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "tick_size")
-    private Double tickSize;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "initial_margin")
-    private Double initialMargin;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "maintenance_margin")
-    private Double maintenanceMargin;
-
-    public Double getContractValue() {
-        return contractValue;
+    /**
+     * Nuova scadenza della testata, con i valori di default della testata.
+     *
+     * @param product
+     * @return
+     */
+    public static FxFutureMasterData of(FxFutureProduct product) {
+        FxFutureMasterData ffmd = new FxFutureMasterData();
+        ffmd.setProduct(product);
+        ffmd.copyProductDefaults(product);
+        return ffmd;
     }
 
-    public void setContractValue(Double contractValue) {
-        this.contractValue = contractValue;
+    @Override
+    public FxFutureProduct getProduct() {
+        return product;
     }
 
-    public Double getTickSize() {
-        return tickSize;
+    public void setProduct(FxFutureProduct product) {
+        this.product = product;
     }
 
-    public void setTickSize(Double tickSize) {
-        this.tickSize = tickSize;
-    }
-
-    public Double getInitialMargin() {
-        return initialMargin;
-    }
-
-    public void setInitialMargin(Double initialMargin) {
-        this.initialMargin = initialMargin;
-    }
-
-    public Double getMaintenanceMargin() {
-        return maintenanceMargin;
-    }
-
-    public void setMaintenanceMargin(Double maintenanceMargin) {
-        this.maintenanceMargin = maintenanceMargin;
+    @Override
+    protected Class<? extends FutureProduct> productType() {
+        return FxFutureProduct.class;
     }
 
     /**
-     * @return the underlying
+     * Coppia sottostante, dalla testata.
+     *
+     * @return
      */
     public ForexMasterData getUnderlying() {
-        return underlying;
-    }
-
-    /**
-     * @param underlying the underlying to set
-     */
-    public void setUnderlying(ForexMasterData underlying) {
-        this.underlying = underlying;
+        return product == null ? null : product.getUnderlying();
     }
 
     @Override
@@ -109,12 +93,8 @@ public class FxFutureMasterData extends FutureMasterData {
 
     @Override
     public List<Currency> getCurrencyList() {
-        List<Currency> currencies = null;
-        if (underlying != null) {
-            currencies = underlying.getCurrencyList();
-        }
-
-        return currencies;
+        ForexMasterData underlying = getUnderlying();
+        return underlying == null ? null : underlying.getCurrencyList();
     }
 
     @Override
@@ -124,6 +104,6 @@ public class FxFutureMasterData extends FutureMasterData {
 
     @Override
     public Currency getMasterDataCcy() {
-        return underlying.getBcy();
+        return getUnderlying().getBcy();
     }
 }

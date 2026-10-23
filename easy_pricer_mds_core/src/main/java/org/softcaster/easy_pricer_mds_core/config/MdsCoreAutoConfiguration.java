@@ -4,8 +4,8 @@
  */
 package org.softcaster.easy_pricer_mds_core.config;
 
-import org.softcaster.core.data.BondFutureContractDAO;
-import org.softcaster.core.data.FutureContractDAO;
+import org.softcaster.core.data.BondFutureMasterDataDAO;
+import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
@@ -40,12 +40,12 @@ public class MdsCoreAutoConfiguration {
 
     @Bean(name = "bondForwardCalculator")
     @ConditionalOnMissingBean
-    public BondForwardCalculator bondForwardCalculator(BondFutureContractDAO bondFutureContractDAO,
+    public BondForwardCalculator bondForwardCalculator(BondFutureMasterDataDAO bondFutureMasterDataDAO,
             SecurityMasterDataDAO smdDAO,
             InstrumentQuoteDAO instrumentQuoteDAO,
             MarketDataService marketDataService,
             XRBForwardPricer bondForwardPricer) {
-        return new BondForwardCalculator(bondFutureContractDAO,
+        return new BondForwardCalculator(bondFutureMasterDataDAO,
                 smdDAO,
                 instrumentQuoteDAO, 
                 marketDataService, 
@@ -55,10 +55,10 @@ public class MdsCoreAutoConfiguration {
     @Bean(name = "fxForwardCalculator")
     @ConditionalOnMissingBean
     public FxForwardCalculator fxForwardCalculator(
-            FutureContractDAO futureContractDAO,
+            FxFutureMasterDataDAO fxFutureMasterDataDAO,
             MarketDataService marketDataService,
             FxForwardPricer fxForwardPricer) {
-        return new FxForwardCalculator(futureContractDAO, marketDataService, fxForwardPricer);
+        return new FxForwardCalculator(fxFutureMasterDataDAO, marketDataService, fxForwardPricer);
     }
 
     @Bean(name = "cashFlowInstrumentCalculator")

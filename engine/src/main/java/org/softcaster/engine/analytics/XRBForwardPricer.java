@@ -49,6 +49,11 @@ import org.softcaster.engine.enums.DaycountBasis;
  */
 public final class XRBForwardPricer implements Pricer<XRBForwardInput, XRBForwardResult> {
 
+    /**
+     * 1 basis point.
+     */
+    private static final double BP = 0.0001;
+
     @Override
     public XRBForwardResult calculate(XRBForwardInput in) {
         List<DeliverableAnalysis> analyses = in.deliverables().stream()
@@ -112,6 +117,13 @@ public final class XRBForwardPricer implements Pricer<XRBForwardInput, XRBForwar
 
         double dirtySpot = d.cleanPrice() + accruedSpot;
         double dirtyForward = dirtySpot * growth;
+
+        // analisi del titolo al prezzo a pronti: stesse funzioni di XRBPricer
+        double yield = CashFlowHelper.calculateYtm(s.flows(), d.cleanPrice(), valuation,
+                s.daycount(), s.compounding(), s.frequency());
+        double modifiedDuration = CashFlowHelper.calculateModifiedDuration(s.flows(), yield, valuation,
+                s.daycount(), s.compounding(), s.frequency());
+        double dv01 = dirtySpot * modifiedDuration * BP;
         double forwardClean = dirtyForward - couponsCapitalized - accruedDelivery;
         double theoretical = forwardClean / d.conversionFactor();
 
@@ -131,7 +143,7 @@ public final class XRBForwardPricer implements Pricer<XRBForwardInput, XRBForwar
         }
 
         return new DeliverableAnalysis(d.isin(), d.conversionFactor(), d.cleanPrice(),
-                accruedSpot, accruedDelivery, couponsCapitalized, forwardClean, theoretical,
+                yield, modifiedDuration, dv01, accruedSpot, accruedDelivery, couponsCapitalized, forwardClean, theoretical,
                 grossBasis, netBasis, impliedRepo);
     }
 

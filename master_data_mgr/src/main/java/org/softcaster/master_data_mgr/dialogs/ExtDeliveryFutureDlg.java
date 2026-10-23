@@ -18,6 +18,7 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.PowerFutureMasterData;
+import org.softcaster.core.data.PowerFutureProduct;
 import org.softcaster.engine.enums.SettlementType;
 import org.softcaster.engine.enums.AccrualScheduleType;
 import org.softcaster.engine.enums.AmortizationSchedule;
@@ -831,7 +832,6 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
             txtLastTradingDate.setText(new Date(bean.getPowerFutureMasterData().getLastTradingDate()).toString());
             txtContractCode.setText(bean.getPowerFutureMasterData().getExchangeContractCode());
             cbCurrency.setSelectedItem(bean.getPowerFutureMasterData().getCurrency());
-            cbDaycount.setSelectedItem(bean.getPowerFutureMasterData().getDaycount());
             cbSettlementType.setSelectedItem(bean.getPowerFutureMasterData().getSettlementType());
             txtMainMant.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getMaintenanceMargin()));
             cbUnderlying.setSelectedItem(bean.getPowerFutureMasterData().getCommodityType());
@@ -923,21 +923,26 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
             ffmd.setIsin(txtIsin.getText());
             ffmd.setCode(txtIsin.getText());
             ffmd.setDescription(txtDescription.getText());
-            ffmd.setContractValue(Converter.toDouble(txtContractValue.getText(), false));
-            ffmd.setTickSize(Converter.toDouble(txtTickSize.getText(), false));
-            ffmd.setInitialMargin(Converter.toDouble(txtInitMargin.getText(), false));
-            ffmd.setExchangeContractCode(txtContractCode.getText());
             ffmd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             ffmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
-            ffmd.setLastTradingDate(new Date(txtLastTradingDate.getText()).sqlDate());
+            ffmd.setLastTradingLocalDate(new Date(txtLastTradingDate.getText()).sqlDate().toLocalDate());
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             ffmd.setCurrency(currency);
-            ffmd.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
-            ffmd.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
-            ffmd.setAccrualDaycount(DaycountBasis.ACT_360);
-            ffmd.setCommodityType((CommodityType) cbUnderlying.getSelectedItem());
-            ffmd.setMaintenanceMargin(Converter.toDouble(txtMainMant.getText(), false));
-            ffmd.setLoadType((LoadType) cbLoadType.getSelectedItem());
+            // codice contratto = codice della testata: creata o aggiornata con i dati di prodotto
+            CommodityType commodityType = (CommodityType) cbUnderlying.getSelectedItem();
+            LoadType loadType = (LoadType) cbLoadType.getSelectedItem();
+            ffmd.setProduct(FutureProductHelper.resolve(masterDataFacade.getFutureProductDAO(),
+                    PowerFutureProduct.class, PowerFutureProduct::new,
+                    new FutureProductHelper.ProductFields(txtContractCode.getText(), null,
+                            (SettlementType) cbSettlementType.getSelectedItem(),
+                            Converter.toDouble(txtContractValue.getText(), false),
+                            Converter.toDouble(txtTickSize.getText(), false),
+                            Converter.toDouble(txtInitMargin.getText(), false),
+                            Converter.toDouble(txtMainMant.getText(), false)),
+                    ffmd, p -> {
+                        p.setCommodityType(commodityType);
+                        p.setLoadType(loadType);
+                    }));
             
             ffmd.setMarket("EEX");
             ffmd.setDeliveryPeriodType((DeliveryPeriodType) cbDeliveryPeriodType.getSelectedItem());
@@ -957,20 +962,10 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getPowerFutureMasterData().setTypeOfInterest(TypeOfInterest.NONE);
-        bean.getPowerFutureMasterData().setForm(Form.BEARER);
-        bean.getPowerFutureMasterData().setFrequency(Frequency.NONE);
-        bean.getPowerFutureMasterData().setRollConvention(RollConvention.UNADJUSTED);
-        bean.getPowerFutureMasterData().setAccrualScheduleType(AccrualScheduleType.NONE);
         bean.getPowerFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("FFU"));
-        bean.getPowerFutureMasterData().setAmortizationSchedule(AmortizationSchedule.NONE);
 
         bean.getPowerFutureMasterData().setBusinessDays(0);
-        bean.getPowerFutureMasterData().setInterestRate(0.);
-        bean.getPowerFutureMasterData().setIssuePrice(100.);
-        bean.getPowerFutureMasterData().setRedempionPrice(100.);
         bean.getPowerFutureMasterData().setMultiplier(1.);
-        bean.getPowerFutureMasterData().setCompounding(Compounding.COMPOUNDED);
     }
 
     private void setUpDeliveryPeriodTypeCombo() {

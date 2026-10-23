@@ -13,6 +13,9 @@ public interface FxFutureMasterDataRepository extends BaseMasterDataRepository<F
     @Override
     List<FxFutureMasterData> findAll(Sort sort);
 
+    /**
+     * Scadenza con testata, coppia sottostante e calendari delle due valute.
+     */
     @Query("""
         SELECT ffmd
         FROM FxFutureMasterData ffmd
@@ -20,4 +23,15 @@ public interface FxFutureMasterDataRepository extends BaseMasterDataRepository<F
         """)
     @EntityGraph("FxFutureMasterData.fullGraph")
     Optional<FxFutureMasterData> findByCodeWithUnderlying(@Param("code") String code);
+
+    /**
+     * Come findByCodeWithUnderlying, cercando per ISIN.
+     */
+    @Query("""
+        SELECT ffmd
+        FROM FxFutureMasterData ffmd
+        WHERE ffmd.isin = :isin
+        """)
+    @EntityGraph("FxFutureMasterData.fullGraph")
+    Optional<FxFutureMasterData> findByIsinWithUnderlying(@Param("isin") String isin);
 }

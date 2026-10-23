@@ -9,6 +9,7 @@ import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.BrokerInstrumentRulesDAO;
 import org.softcaster.core.data.CmdFutureMasterDataDAO;
+import org.softcaster.core.data.FutureProductDAO;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
@@ -60,7 +61,9 @@ public class MasterDataFacade {
     private CmdFutureMasterDataDAO cmdFutureMasterDataDAO;
     @Autowired
     private PowerFutureMasterDataDAO powerFutureMasterDataDAO;
-    
+    @Autowired
+    private FutureProductDAO futureProductDAO;
+
     @Autowired
     private IssuerDAO issuerDAO;
     @Autowired
@@ -112,6 +115,13 @@ public class MasterDataFacade {
      */
     public BondFutureMasterDataDAO getBondFutureMasterDataDAO() {
         return bondFutureMasterDataDAO;
+    }
+
+    /**
+     * @return the futureProductDAO (testate dei future)
+     */
+    public FutureProductDAO getFutureProductDAO() {
+        return futureProductDAO;
     }
 
     /**

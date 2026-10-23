@@ -51,4 +51,15 @@ public record XRBForwardResult(
                 .findFirst()
                 .orElseThrow();
     }
+
+    /**
+     * DV01 del future per 100 di nominale: il future segue il CTD diviso il
+     * fattore di conversione, quindi DV01 del CTD / CF.
+     *
+     * @return
+     */
+    public double futureDv01() {
+        DeliverableAnalysis ctd = ctd();
+        return ctd.dv01() / ctd.conversionFactor();
+    }
 }

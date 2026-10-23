@@ -1,3 +1,10 @@
+/*
+-------------------------------------------------------------------------------
+-- NON PRESENTI SUL DATABASE (23/10/2026) e non usate dal codice:
+-- storicizzazione di instrument_quote in instrument_quote_hist.
+-- Da correggere prima di attivarle: virgola prima di END nella procedura,
+-- owner "easypricer" inesistente (il database usa "sofie").
+-------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE upsert_instrument_quote()
 LANGUAGE plpgsql
 AS $$
@@ -49,6 +56,7 @@ $$ LANGUAGE plpgsql;
 ALTER FUNCTION upsert_instrument_quote() OWNER TO easypricer;
 
 -- SELECT upsert_instrument_quote();
+*/
 
 CREATE OR REPLACE FUNCTION fn_manage_ref_id()
 RETURNS TRIGGER AS $$
