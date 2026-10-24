@@ -286,4 +286,10 @@ public class YieldCurveBuilder {
         }
 
     }
+
+    public List<String> getDiscountCurveNames() {
+        List<String> names = yieldCurveEntityDAO.findNames();
+        names.addAll(spreadCurveEntityDAO.findNames());
+        return names;
+    }
 }

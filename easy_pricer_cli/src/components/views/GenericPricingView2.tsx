@@ -2,20 +2,17 @@ import React from 'react';
 import { useGenericPricingView } from '../hooks/useGenericPricingView';
 import type { GenericMasterDataDto, PricingRequest, PricingResponse, YieldCurveDto } from '../services/dto';
 
-interface GenericPricingViewProps2<TRequest, TResponse> {
+interface GenericPricingViewProps2 {
     fetchMasterData: () => Promise<GenericMasterDataDto[]>;
     fetchYieldCurveDto: () => Promise<YieldCurveDto[]>;
-    calculatePricing: (req: TRequest) => Promise<TResponse>;
-    defaultRequest: TRequest;
-    defaultResponse: TResponse;
+    calculatePricing: (req: PricingRequest) => Promise<PricingResponse>;
+    defaultRequest: PricingRequest;
+    defaultResponse: PricingResponse;
     FormComponent: React.ComponentType<any>;
     FormDetail: React.ComponentType<any>;
 }
 
-export function GenericPricingView2<
-    TRequest extends PricingRequest, // Vincolo sulla interfaccia base
-    TResponse extends PricingResponse
->({
+export function GenericPricingView2({
     fetchMasterData,
     fetchYieldCurveDto,
     calculatePricing,
@@ -23,11 +20,11 @@ export function GenericPricingView2<
     defaultResponse,
     FormComponent,
     FormDetail,
-}: GenericPricingViewProps2<TRequest, TResponse>) {
+}: GenericPricingViewProps2) {
 
     const {
         masterDataList, request, setRequest, results, yieldCurveList
-    } = useGenericPricingView<TRequest, TResponse>(
+    } = useGenericPricingView(
         fetchMasterData,
         fetchYieldCurveDto,
         calculatePricing,

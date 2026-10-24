@@ -21,8 +21,8 @@ import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.easy_pricer_mds_core.dto.ForwardPricingRequest;
-import org.softcaster.easy_pricer_mds_core.dto.ForwardPricingResponse;
+import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.PricingResponse;
 import org.softcaster.engine.analytics.XRBForwardPricer;
 import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
@@ -124,29 +124,37 @@ public class BondForwardCalculator {
     }
 
     /**
-     * Entry point REST: per ora la request porta un tasso repo singolo
-     * (domesticRate).
+     * Entry point REST: curva repo (domesticRCurve) se indicata, altrimenti
+     * tasso repo singolo (domesticRate).
      *
      * @param request
      * @return
      */
-    public ForwardPricingResponse bondFwdValuation(ForwardPricingRequest request) {
+    public PricingResponse bondFwdValuation(PricingRequest request) {
         Objects.requireNonNull(request, "request");
-        Double quoted = request.referencePrice > 0 ? request.referencePrice : null;
+        Objects.requireNonNull(request.referenceDate, "referenceDate");
+        Double quoted = request.referencePrice != null && request.referencePrice > 0 ? request.referencePrice : null;
 
-        XRBForwardInput input = getBondForwardInput(request.isin, request.referenceDate.toLocalDate(),
-                request.domesticRate, quoted);
+        XRBForwardInput input;
+        if (request.domesticRCurve != null && !request.domesticRCurve.isBlank()) {
+            input = getBondForwardInput(request.isin, request.referenceDate, request.domesticRCurve, quoted);
+        } else if (request.domesticRate != null) {
+            input = getBondForwardInput(request.isin, request.referenceDate, request.domesticRate.doubleValue(), quoted);
+        } else {
+            throw new IllegalArgumentException("Tasso o curva repo mancante (domesticRate / domesticRCurve)");
+        }
         XRBForwardResult result = bondFwdValuation(input);
 
-        ForwardPricingResponse response = new ForwardPricingResponse();
+        PricingResponse response = new PricingResponse();
         response.theoreticalPrice = result.theoreticalPrice();
+        response.termRepoRate = result.termRepoRate();
         response.ctd = result.ctdIsin();
         response.ctdYield = result.ctd().yield();
         response.ctdModifiedDuration = result.ctd().modifiedDuration();
         response.ctdDv01 = result.ctd().dv01();
+        response.ctdNetBasis = result.ctd().netBasis();
+        response.ctdImpliedRepo = result.ctd().impliedRepo();
         response.futureDv01 = result.futureDv01();
-        // Se ForwardPricingResponse ha (o avra') i campi, si possono esporre anche:
-        // result.termRepoRate(), result.ctd().netBasis(), result.ctd().impliedRepo(), result.deliverables()
         return response;
     }
 

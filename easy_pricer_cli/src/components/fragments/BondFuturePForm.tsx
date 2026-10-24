@@ -1,19 +1,23 @@
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
-import { InstrumentField } from './FormFields.tsx';
+import { InstrumentField, YCurveField } from './FormFields.tsx';
 import { useState } from 'react';
-import type { ForwardPricingRequest, ForwardPricingResponse, GenericMasterDataDto } from '../services/dto.ts';
+import type { PricingRequest, PricingResponse, YieldCurveDto, GenericMasterDataDto } from '../services/dto.ts';
 
 interface BondFuturePricingFormProps {
     masterDataList: GenericMasterDataDto[];
-    data: ForwardPricingRequest;
-    results: ForwardPricingResponse;
-    onChange: (data: ForwardPricingRequest) => void;
+    yieldCurveList: YieldCurveDto[];
+    data: PricingRequest;
+    results: PricingResponse;
+    onChange: (data: PricingRequest) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop
-export const BondFuturePForm = ({ masterDataList, data, results, onChange }: BondFuturePricingFormProps) => {
+export const BondFuturePForm = ({ masterDataList, yieldCurveList, data, results, onChange }: BondFuturePricingFormProps) => {
+
+    // con la curva repo selezionata il server ignora il tasso repo
+    const hasRepoCurve = !!data.domesticRCurve;
 
     // Funzione helper per aggiornare Isin e Issue description
     const updateIsin = (value: any) => {
@@ -66,6 +70,25 @@ export const BondFuturePForm = ({ masterDataList, data, results, onChange }: Bon
                         inputStyle={{ textAlign: 'right' }}
                         className="w-full" />
                 </div>
+
+                <YCurveField
+                    label={'Repo Curve'}
+                    value={yieldCurveList.find(c => c.code === data.domesticRCurve) || null}
+                    options={yieldCurveList}
+                    onChange={(val) => updateRequest('domesticRCurve', val ? val.code : '')}
+                    showClear
+                />
+
+                <div className="col-12 md:col-3">
+                    <label className="block mb-2 font-bold text-sm">Repo rate %</label>
+                    <InputNumber
+                        value={data.domesticRate != null ? data.domesticRate * 100. : null}
+                        onValueChange={(e) => updateRequest('domesticRate', e.value != null ? e.value / 100. : undefined)}
+                        disabled={hasRepoCurve}
+                        mode="decimal" minFractionDigits={5} placeholder="0.00000"
+                        inputStyle={{ textAlign: 'right' }}
+                        className="w-full" />
+                </div>
                 <div className="col-12 md:col-3">
                     <label className="block mb-2 font-bold text-sm">Theoretical Price</label>
                     <InputNumber
@@ -79,9 +102,49 @@ export const BondFuturePForm = ({ masterDataList, data, results, onChange }: Bon
                 <div className="col-12 md:col-3">
                     <label className="block mb-2 font-bold text-sm">CTD</label>
                     <InputText
-                        value={results.ctd}
+                        value={results.ctd || ''}
                         readOnly
                         disabled
+                        className="w-full" />
+                </div>
+                <div className="col-12 md:col-3">
+                    <label className="block mb-2 font-bold text-sm">CTD yield %</label>
+                    <InputNumber
+                        value={results.ctdYield != null ? results.ctdYield * 100. : null}
+                        readOnly
+                        disabled
+                        mode="decimal" minFractionDigits={5} placeholder="0.00000"
+                        inputStyle={{ textAlign: 'right' }}
+                        className="w-full" />
+                </div>
+                <div className="col-12 md:col-3">
+                    <label className="block mb-2 font-bold text-sm">CTD modified duration</label>
+                    <InputNumber
+                        value={results.ctdModifiedDuration}
+                        readOnly
+                        disabled
+                        mode="decimal" minFractionDigits={5} placeholder="0.00000"
+                        inputStyle={{ textAlign: 'right' }}
+                        className="w-full" />
+                </div>
+                <div className="col-12 md:col-3">
+                    <label className="block mb-2 font-bold text-sm">CTD DV01</label>
+                    <InputNumber
+                        value={results.ctdDv01}
+                        readOnly
+                        disabled
+                        mode="decimal" minFractionDigits={5} placeholder="0.00000"
+                        inputStyle={{ textAlign: 'right' }}
+                        className="w-full" />
+                </div>
+                <div className="col-12 md:col-3">
+                    <label className="block mb-2 font-bold text-sm">Future DV01</label>
+                    <InputNumber
+                        value={results.futureDv01}
+                        readOnly
+                        disabled
+                        mode="decimal" minFractionDigits={5} placeholder="0.00000"
+                        inputStyle={{ textAlign: 'right' }}
                         className="w-full" />
                 </div>
             </div>

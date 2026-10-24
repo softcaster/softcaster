@@ -6,6 +6,8 @@ import java.util.Objects;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.PricingResponse;
 import org.softcaster.engine.analytics.FxForwardPricer;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.dto.FxForwardInput;
@@ -133,6 +135,28 @@ public class FxForwardCalculator {
 
     public FxForwardResult fxFwdValuation(FxForwardInput input) {
         return fxForwardPricer.calculate(Objects.requireNonNull(input, "input"));
+    }
+
+    /**
+     * Entry point REST: referencePrice e' il cambio a pronti; le curve non
+     * indicate si prendono dalla coppia di valute del future.
+     *
+     * @param request
+     * @return
+     */
+    public PricingResponse fxFwdValuation(PricingRequest request) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(request.referenceDate, "referenceDate");
+        Objects.requireNonNull(request.referencePrice, "referencePrice");
+
+        FxForwardInput input = getFxForwardInput(request.isin, request.referenceDate,
+                request.referencePrice, request.domesticRCurve, request.foreignRCurve);
+        FxForwardResult result = fxFwdValuation(input);
+
+        PricingResponse response = new PricingResponse();
+        response.theoreticalPrice = result.forwardRate();
+        response.forwardPoints = result.forwardPoints();
+        return response;
     }
 
     // ------------------------------------------------------------------------

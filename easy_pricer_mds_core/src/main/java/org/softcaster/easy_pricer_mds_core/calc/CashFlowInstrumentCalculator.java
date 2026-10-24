@@ -13,8 +13,8 @@ import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.PricingResponse;
 import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
 import org.softcaster.engine.analytics.FRBPricer;
 import org.softcaster.engine.analytics.XRBPricer;
@@ -151,23 +151,23 @@ public class CashFlowInstrumentCalculator {
     // ------------------------------------------------------------------------
     // -- Entry point REST
     // ------------------------------------------------------------------------
-    public BondPricingResponse bondValuation(BondPricingRequest request) {
+    public PricingResponse bondValuation(PricingRequest request) {
         Objects.requireNonNull(request, "request");
-        XRBInput input = getXRBInput(request.isin, request.referenceDate.toLocalDate(), request.referencePrice);
+        Objects.requireNonNull(request.referenceDate, "referenceDate");
+        Objects.requireNonNull(request.referencePrice, "referencePrice");
+        XRBInput input = getXRBInput(request.isin, request.referenceDate, request.referencePrice);
         XRBResult result = fixedIncomeValuation(input);
         CashFlowAnalytics a = result.analytics();
 
-        BondPricingResponse response = new BondPricingResponse();
+        PricingResponse response = new PricingResponse();
         response.accruedInterest = a.accruedInterest();
         response.convexity = a.convexity();
         response.dv01 = a.dv01();
         response.modifiedDuration = a.modifiedDuration();
         response.yieldToMaturity = a.yield();
-        // Non valorizzati perche' non calcolati per un fixed rate bond:
+        // Restano null (non calcolati per un fixed rate bond):
         // macaulayDuration, discountMargin, marginDuration, presentValue,
         // shortBondYield, yieldToMaturityPV.
-        // Se i campi di BondPricingResponse sono Double restano null nel JSON;
-        // se sono double primitivi conviene convertirli in Double.
         return response;
     }
 

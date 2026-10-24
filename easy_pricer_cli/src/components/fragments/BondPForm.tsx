@@ -3,13 +3,13 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { InstrumentField } from './FormFields';
 import { useState } from 'react';
-import type { BondPricingRequest, BondPricingResponse,GenericMasterDataDto} from '../services/dto.ts';
+import type { PricingRequest, PricingResponse, GenericMasterDataDto } from '../services/dto.ts';
 
 interface BondPricingFormProps {
     masterDataList: GenericMasterDataDto[];
-    data: BondPricingRequest;
-    results: BondPricingResponse;
-    onChange: (data: BondPricingRequest) => void;
+    data: PricingRequest;
+    results: PricingResponse;
+    onChange: (data: PricingRequest) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop
@@ -80,7 +80,7 @@ export const BondPForm = ({ masterDataList , data, results, onChange }: BondPric
                 <div className="col-12 md:col-3">
                     <label className="block mb-2 font-bold text-sm">Gross yield to maturity</label>
                     <InputNumber
-                        value={results.yieldToMaturity * 100.}
+                        value={results.yieldToMaturity != null ? results.yieldToMaturity * 100. : null}
                         readOnly
                         disabled
                         mode="decimal" minFractionDigits={5} placeholder="0.00000"

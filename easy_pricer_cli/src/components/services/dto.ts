@@ -2,45 +2,53 @@ import axios from 'axios';
 
 const BASE_URL = 'http://localhost:8080/api/v1';
 
+// Richiesta di pricing unica (PricingRequest in mds_core): ogni endpoint legge
+// solo i campi che gli servono.
 export interface PricingRequest {
-    isin: string;             // Il codice del bond (es: IT000...)
-    referencePrice: number;   // Il prezzo inserito
-    referenceDate: Date;      // La data selezionata
+    isin: string;              // codice o ISIN dello strumento
+    referencePrice?: number;   // bond: prezzo secco; bond future: prezzo quotato; FX future: spot
+    referenceDate: Date;       // inviata come "yyyy-MM-dd"
+    // bond
+    yieldCurve?: string;
+    fullCalc?: boolean;
+    referenceRate?: number;    // floating rate bond
+    // forward / future
+    domesticRate?: number;     // bond future: tasso repo se domesticRCurve e' vuota
+    domesticRCurve?: string;
+    foreignRate?: number;
+    foreignRCurve?: string;
+    maturityDate?: Date;
 }
 
-export interface BondPricingRequest extends PricingRequest {
-    yieldCurve: string;
-    fullCalc: boolean;
-}
-
-export interface ForwardPricingRequest extends PricingRequest {
-    domesticRate: number;
-    domesticRCurve: string;
-    foreignRate: number;
-    foreignRCurve: string;
-    maturityDate: Date;
-}
-
+// Risposta di pricing unica (PricingResponse in mds_core): il server invia
+// solo i campi calcolati. Valori per 100 di nominale, tassi in decimale.
 export interface PricingResponse {
+    // bond
+    accruedInterest?: number;
+    yieldToMaturity?: number;
+    macaulayDuration?: number;
+    modifiedDuration?: number;
+    convexity?: number;
+    presentValue?: number;
+    yieldToMaturityPV?: number;
+    dv01?: number;
+    discountMargin?: number;
+    shortBondYield?: number;
+    marginDuration?: number;
+    // forward / future
+    theoreticalPrice?: number;
+    forwardPoints?: number;
+    termRepoRate?: number;
+    ctd?: string;
+    ctdYield?: number;
+    ctdModifiedDuration?: number;
+    ctdDv01?: number;
+    ctdNetBasis?: number;
+    ctdImpliedRepo?: number;
+    futureDv01?: number;
 }
 
-export interface BondPricingResponse extends PricingResponse {
-    accruedInterest: number;
-    yieldToMaturity: number;
-    macaulayDuration: number;
-    modifiedDuration: number;
-    convexity: number;
-    presentValue: number;
-    yieldToMaturityPV: number;
-    dv01: number;
-}
-
-export interface ForwardPricingResponse extends PricingResponse {
-    theoreticalPrice: number;
-    ctd: string;
-}
-
-export const DEFAULT_BOND_PRICING_REQUEST: BondPricingRequest = {
+export const DEFAULT_BOND_PRICING_REQUEST: PricingRequest = {
     isin: '',
     referencePrice: 100.00,
     referenceDate: new Date(),
@@ -48,44 +56,45 @@ export const DEFAULT_BOND_PRICING_REQUEST: BondPricingRequest = {
     fullCalc: false
 };
 
-export const DEFAULT_FWD_PRICING_REQUEST: ForwardPricingRequest = {
+export const DEFAULT_FWD_PRICING_REQUEST: PricingRequest = {
     isin: '',
     referencePrice: 1.00,
     referenceDate: new Date(),
     domesticRate: 0.01,
     domesticRCurve: '',
     foreignRate: 0.01,
-    foreignRCurve: '',
-    maturityDate: new Date()
+    foreignRCurve: ''
 };
 
-export const DEFAULT_BOND_PRICING_RESPONSE: BondPricingResponse = {
-    accruedInterest: 0,
-    yieldToMaturity: 0,
-    modifiedDuration: 0,
-    macaulayDuration: 0,
-    convexity: 0,
-    presentValue: 0,
-    yieldToMaturityPV: 0,
-    dv01: 0
+export const DEFAULT_PRICING_RESPONSE: PricingResponse = {};
+
+// Data locale in "yyyy-MM-dd": JSON.stringify di una Date la converte in UTC
+// e a mezzanotte ora italiana darebbe il giorno precedente.
+const toIsoDate = (d?: Date | null): string | undefined => {
+    if (!d) return undefined;
+    const date = new Date(d);
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${mm}-${dd}`;
 };
 
-export const DEFAULT_FWD_PRICING_RESPONSE: ForwardPricingResponse = {
-    theoreticalPrice: 0,
-    ctd: ""
-};
+const toPayload = (request: PricingRequest) => ({
+    ...request,
+    referenceDate: toIsoDate(request.referenceDate),
+    maturityDate: toIsoDate(request.maturityDate)
+});
 
-export const calculateBondPricing = async (request: BondPricingRequest): Promise<BondPricingResponse> => {
-    const response = await axios.post(`${BASE_URL}/pricing/bond`, request);
+export const calculateBondPricing = async (request: PricingRequest): Promise<PricingResponse> => {
+    const response = await axios.post(`${BASE_URL}/pricing/bond`, toPayload(request));
     return response.data;
 };
 
-export const calculateFwdBondPricing = async (request: ForwardPricingRequest): Promise<ForwardPricingResponse> => {
-    const response = await axios.post(`${BASE_URL}/pricing/future`, request);
+export const calculateFwdBondPricing = async (request: PricingRequest): Promise<PricingResponse> => {
+    const response = await axios.post(`${BASE_URL}/pricing/future`, toPayload(request));
     return response.data;
 };
-export const calculateFwdFxPricing = async (request: ForwardPricingRequest): Promise<ForwardPricingResponse> => {
-    const response = await axios.post(`${BASE_URL}/pricing/fx-future`, request);
+export const calculateFwdFxPricing = async (request: PricingRequest): Promise<PricingResponse> => {
+    const response = await axios.post(`${BASE_URL}/pricing/fx-future`, toPayload(request));
     return response.data;
 };
 

@@ -5,8 +5,8 @@
 package org.softcaster.easy_pricer_srv.controller;
 
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.PricingResponse;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,7 +33,7 @@ public class HelperController {
     @GetMapping("/helper/bond/quote/{isin}")
     public ResponseEntity getBondIrr(@PathVariable("isin") String isin) {
         if (bondCalculator != null) {
-            BondPricingResponse output = null; //bondCalculator.bondValuation(isin);
+            PricingResponse output = null; //bondCalculator.bondValuation(isin);
             if (output != null) {
                 return new ResponseEntity(output, HttpStatus.OK);
             } else {
@@ -46,9 +46,9 @@ public class HelperController {
 
     @PostMapping(value = "helper/bond/request")
     @SuppressWarnings("unchecked")
-    public ResponseEntity getBondData(@RequestBody BondPricingRequest request) {
+    public ResponseEntity getBondData(@RequestBody PricingRequest request) {
         if (bondCalculator != null) {
-            BondPricingResponse output = bondCalculator.bondValuation(request);
+            PricingResponse output = bondCalculator.bondValuation(request);
             if (output != null) {
                 return new ResponseEntity(output, HttpStatus.OK);
             } else {

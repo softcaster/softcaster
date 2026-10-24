@@ -3,7 +3,7 @@ from datetime import date
 from dataclasses import asdict
 
 # Importa la classe dal file dto.py posizionato nella stessa cartella
-from dto import ForwardPricingRequest
+from dto import PricingRequest
 
 # Configura l'URL del endpoint REST
 BASE_URL = "http://localhost:8080/api/v1/pricing/future"
@@ -12,8 +12,8 @@ def main():
     """
     Punto di ingresso principale per il test dello script di pricing.
     """
-    # 1. Istanzia la classe ForwardPricingRequest con i dati di test
-    request_data = ForwardPricingRequest(
+    # 1. Istanzia la classe PricingRequest con i dati di test
+    request_data = PricingRequest(
         isin="IT0024832682",       
         referencePrice=116.16,       
         referenceDate=date(2026, 5, 19), 

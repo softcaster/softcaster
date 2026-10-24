@@ -4,7 +4,6 @@
  */
 package org.softcaster.easy_pricer_mds.dialog;
 
-import java.sql.Date;
 import java.text.ParseException;
 import org.softcaster.commons.ui.dialog.DialogHelper;
 import org.softcaster.commons.utils.Converter;
@@ -12,8 +11,8 @@ import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
 import org.softcaster.easy_pricer_mds.bean.FltBondBean;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.PricingResponse;
 import org.softcaster.engine.utils.DateParser;
 
 /**
@@ -435,7 +434,7 @@ public class BondPricerDlg extends javax.swing.JDialog {
 
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
         try {
-            BondPricingRequest request = new BondPricingRequest();
+            PricingRequest request = new PricingRequest();
             if (bean != null) {
                 request.isin = bean.getInstrumentQuote().getMasterData().getCode();
             }
@@ -444,18 +443,18 @@ public class BondPricerDlg extends javax.swing.JDialog {
                 request.referenceRate = Converter.toDouble(txtRefRate.getText(), false) / 100.;
             }
             request.referencePrice = Converter.toDouble(txtRefPrice.getText(), false);
-            request.referenceDate = Date.valueOf(DateParser.parse(txtRefDate.getText()));
+            request.referenceDate = DateParser.parse(txtRefDate.getText());
 
             CashFlowInstrumentCalculator calculator = mDSFacade.getBondCalculator();
-            BondPricingResponse response = calculator.bondValuation(request);
+            PricingResponse response = calculator.bondValuation(request);
 
-            txtAccrued.setText(Converter.fromDouble(response.accruedInterest));
-            txtYield.setText(Converter.fromDouble(response.yieldToMaturity * 100));
-            txtModDuration.setText(Converter.fromDouble(response.modifiedDuration));
+            txtAccrued.setText(format(response.accruedInterest, 1.));
+            txtYield.setText(format(response.yieldToMaturity, 100.));
+            txtModDuration.setText(format(response.modifiedDuration, 1.));
             if (fltBean != null) {
-                txtDiscountMargin.setText(Converter.fromDouble(response.discountMargin * 100.));
-                txtShortBondYield.setText(Converter.fromDouble(response.shortBondYield * 100.));
-                txtMarginDuration.setText(Converter.fromDouble(response.marginDuration));
+                txtDiscountMargin.setText(format(response.discountMargin, 100.));
+                txtShortBondYield.setText(format(response.shortBondYield, 100.));
+                txtMarginDuration.setText(format(response.marginDuration, 1.));
             } else {
                 txtDiscountMargin.setText("");
                 txtShortBondYield.setText("");
@@ -466,6 +465,13 @@ public class BondPricerDlg extends javax.swing.JDialog {
             System.getLogger(BondPricerDlg.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
     }//GEN-LAST:event_btnCalculateActionPerformed
+
+    /**
+     * Valore della risposta moltiplicato per scale; vuoto se non calcolato.
+     */
+    private static String format(Double value, double scale) {
+        return value == null ? "" : Converter.fromDouble(value * scale);
+    }
 
     private void txtRefDateFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtRefDateFocusLost
         DialogHelper.textFieldDateFocusLost(txtRefDate);

@@ -101,15 +101,23 @@ public class MtMPollingJob implements IMtmDataHelper {
         }
     }
 
-    private void refreshSpotPrice() {
+    private void refreshSpotPrices() {
         marketDataService.loadSpotPrice();
     }
-    
+
+    private void refreshDiscountCurves() {
+        marketDataService.reloadCurves();
+    }
+
+    // Chiama rest per un Mtm on-flight
     public boolean executeJob() {
         ValuationContext context = new ValuationContext();
 
         // Aggiornamento tassi/prezzi
-        refreshSpotPrice();
+        refreshSpotPrices();
+
+        // Aggiornamento curve
+        refreshDiscountCurves();
         
         // Valutazione posizioni
         fetchPosition(context);
@@ -136,7 +144,7 @@ public class MtMPollingJob implements IMtmDataHelper {
         return true;
     }
 
-    @Scheduled(fixedDelay = 15000)
+    @Scheduled(fixedDelay = 60000)
     public void pollPositionDetails() {
         if (engineStateManager.isSuspended()) {
             log.info("=== [MSRV] Service is suspended ===\n");
@@ -147,8 +155,11 @@ public class MtMPollingJob implements IMtmDataHelper {
         ValuationContext context = new ValuationContext();
 
         // Aggiornamento tassi/prezzi
-        refreshSpotPrice();
+        refreshSpotPrices();
         
+        // Aggiornamento curve
+        refreshDiscountCurves();
+
         // Valutazione posizioni
         fetchPosition(context);
 

@@ -133,6 +133,10 @@ public class MarketDataService {
         }
     }
 
+    public void reloadCurves() {
+       List<String> names =  yieldCurveBuilder.getDiscountCurveNames();
+       reloadCurves(names);
+    }
     /**
      * Rebuilds the given curves and publishes them together at the end, so a
      * failure leaves the previous curves untouched. Base curves are built once

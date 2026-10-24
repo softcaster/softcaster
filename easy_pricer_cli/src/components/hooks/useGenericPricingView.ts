@@ -1,24 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useActions } from '../../context/ActionContext';
 import { useSystemDate } from '../../context/SystemDateContext';
-import type { PricingRequest, YieldCurveDto,GenericMasterDataDto } from '../services/dto'; // Importa la tua interfaccia base
+import type { PricingRequest, PricingResponse, YieldCurveDto, GenericMasterDataDto } from '../services/dto';
 
-export function useGenericPricingView<TRequest extends PricingRequest, TResponse>(
+export function useGenericPricingView(
     fetchMasterData: () => Promise<GenericMasterDataDto[]>,
     fetchYieldCurveDto: () => Promise<YieldCurveDto[]>,
-    calculatePricing: (req: TRequest) => Promise<TResponse>,
-    defaultRequest: TRequest,
-    defaultResponse: TResponse
+    calculatePricing: (req: PricingRequest) => Promise<PricingResponse>,
+    defaultRequest: PricingRequest,
+    defaultResponse: PricingResponse
 ) {
     const [masterDataList, setMasterDataList] = useState<GenericMasterDataDto[]>([]);
     const [yieldCurveList, setYieldCurveList] = useState<YieldCurveDto[]>([]);
-    const [results, setResults] = useState<TResponse>(defaultResponse);
+    const [results, setResults] = useState<PricingResponse>(defaultResponse);
     const { setAction, showToast } = useActions();
     const { businessDate, loading: dateLoading } = useSystemDate();
 
-    // Nuovo helper dinamico che pulisce le date su QUALSIASI oggetto DTO passato
-    // Rende la funzione generica aggiungendo <R extends PricingRequest>
-    const applySystemDateToDto = <R extends PricingRequest>(dto: R): R => {
+    // Imposta la data di sistema come data di riferimento della request
+    const applySystemDateToDto = (dto: PricingRequest): PricingRequest => {
         // Creiamo una copia superficiale per preservare l'immutabilità dello stato di React
         //const updatedDto = { ...dto };
 
@@ -29,10 +28,9 @@ export function useGenericPricingView<TRequest extends PricingRequest, TResponse
         }
         return dto;
     };
-    const [request, setRequest] = useState<TRequest>(applySystemDateToDto(defaultRequest));
+    const [request, setRequest] = useState<PricingRequest>(applySystemDateToDto(defaultRequest));
 
     const handleCalculate = async () => {
-        // Ora TypeScript sa con certezza che .isin esiste su TRequest
         if (!request.isin) return;
         try {
             const data = await calculatePricing(request);

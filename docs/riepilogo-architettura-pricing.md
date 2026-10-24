@@ -9,7 +9,7 @@
 
 | Livello | Jar | Responsabilità |
 |---|---|---|
-| REST | easy_pricer_srv | DTO JSON flat (`PricingRequest`, `ForwardPricingResponse`, …) |
+| REST | easy_pricer_srv | Due DTO unici senza sottoclassi in `mds_core.dto`: `PricingRequest` (date `LocalDate`, "yyyy-MM-dd" nel JSON) e `PricingResponse` (campi `Double` nullable, `@JsonInclude(NON_NULL)`: ogni calcolatore valorizza solo ciò che calcola); l'endpoint sceglie il calcolatore |
 | Intermedio | **mds_core** (Spring, JPA) | Legge anagrafica e dati di mercato, risolve curve e prezzi, costruisce gli input tipizzati, chiama i pricer, converte i risultati nei DTO |
 | Calcolo | **engine** (Spring per i bean, nessuna dipendenza da DB/entity) | Pricer come funzioni pure `input → output` |
 | Anagrafica | **core** (`easy_pricer_core`) | Entity JPA, repository, DAO |

@@ -24,8 +24,8 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.TokenItem;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
+import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.PricingResponse;
 import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
 import org.softcaster.engine.cashflow.AmortizedCostPeriod;
 import org.softcaster.engine.curve.CurveBootstrapper;
@@ -164,29 +164,29 @@ public class TestMarketDataService {
     }
 
     private void testFltBondPricer() {
-        BondPricingRequest request = new BondPricingRequest();
+        PricingRequest request = new PricingRequest();
         request.isin = "IT0005491250";
         LocalDate referenceDate = org.softcaster.engine.utils.DateParser.parse("07/09/2026");
-        request.referenceDate = java.sql.Date.valueOf(referenceDate);
+        request.referenceDate = referenceDate;
         request.referencePrice = 101.65;
         request.fullCalc = false;
         request.yieldCurve = "";
 
-        //BondPricingResponse response = bondCalculator.bondValuation(request);
+        //PricingResponse response = bondCalculator.bondValuation(request);
         //System.out.println(response.accruedInterest);
         //System.out.println(response.yieldToMaturity);
     }
 
     private void testFltBondPricer2() {
-        BondPricingRequest request = new BondPricingRequest();
+        PricingRequest request = new PricingRequest();
         request.isin = "IT00011223344";
         LocalDate referenceDate = org.softcaster.engine.utils.DateParser.parse("22/09/2026");
-        request.referenceDate = java.sql.Date.valueOf(referenceDate);
-        request.referencePrice = 97;
+        request.referenceDate = referenceDate;
+        request.referencePrice = 97.;
         request.fullCalc = false;
         request.yieldCurve = "";
 
-        //BondPricingResponse response = bondCalculator.bondValuation(request);
+        //PricingResponse response = bondCalculator.bondValuation(request);
         System.out.println("Reference Date:" + "\t" + request.referenceDate);
         System.out.println("Clean Price:" + "\t" + request.referencePrice);
         //System.out.println("Accrued Interest:" + "\t" + response.accruedInterest);

@@ -87,10 +87,11 @@ interface YCurveFieldProps {
     label: string;
     value: any;
     options: any[];
-    onChange: (val: any) => void; 
+    onChange: (val: any) => void;
+    showClear?: boolean; // con la X per svuotare la combo: onChange riceve null
 }
 
-export const YCurveField = ({ label, value, options, onChange }: YCurveFieldProps) => (
+export const YCurveField = ({ label, value, options, onChange, showClear = false }: YCurveFieldProps) => (
     <div className="col-12 md:col-3">
         <label className="text-sm font-bold block mb-2 text-600">{label}</label>
         <Dropdown
@@ -100,6 +101,7 @@ export const YCurveField = ({ label, value, options, onChange }: YCurveFieldProp
             optionLabel="code"
             onChange={(e) => onChange(e.value)}
             placeholder={`Select ${label}`}
+            showClear={showClear}
             filter
             className="w-full"
 

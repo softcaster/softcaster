@@ -7,13 +7,9 @@ package org.softcaster.easy_pricer_srv.controller;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.FxForwardCalculator;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingRequest;
-import org.softcaster.easy_pricer_mds_core.dto.BondPricingResponse;
-import org.softcaster.easy_pricer_mds_core.dto.ForwardPricingRequest;
-import org.softcaster.easy_pricer_mds_core.dto.ForwardPricingResponse;
+import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
+import org.softcaster.easy_pricer_mds_core.dto.PricingResponse;
 import org.softcaster.easy_pricer_srv.util.CommonData;
-import org.softcaster.engine.dto.FxForwardInput;
-import org.softcaster.engine.dto.FxForwardResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,10 +34,10 @@ public class ValuationRestController {
 
     @PostMapping(value = "/pricing/bond", produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("unchecked")
-    public ResponseEntity<BondPricingResponse> calculateBondPricing(@RequestBody BondPricingRequest request) {
+    public ResponseEntity<PricingResponse> calculateBondPricing(@RequestBody PricingRequest request) {
 
         if (bondCalculator != null) {
-            BondPricingResponse response = bondCalculator.bondValuation(request);
+            PricingResponse response = bondCalculator.bondValuation(request);
             if (response != null) {
                 return new ResponseEntity(response, HttpStatus.OK);
             } else {
@@ -54,10 +50,10 @@ public class ValuationRestController {
 
     @PostMapping(value = "/pricing/future", produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("unchecked")
-    public ResponseEntity<ForwardPricingResponse> calculateFwdBondPricing(@RequestBody ForwardPricingRequest request) {
+    public ResponseEntity<PricingResponse> calculateFwdBondPricing(@RequestBody PricingRequest request) {
 
         if (bondForwardCalculator != null) {
-            ForwardPricingResponse response = bondForwardCalculator.bondFwdValuation(request);
+            PricingResponse response = bondForwardCalculator.bondFwdValuation(request);
             if (response != null) {
                 return new ResponseEntity(response, HttpStatus.OK);
             } else {
@@ -70,18 +66,17 @@ public class ValuationRestController {
 
     @PostMapping(value = "/pricing/fx-future", produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("unchecked")
-    public ResponseEntity<ForwardPricingResponse> calculateFxFuturePricing(@RequestBody ForwardPricingRequest request) {
+    public ResponseEntity<PricingResponse> calculateFxFuturePricing(@RequestBody PricingRequest request) {
 
-        ForwardPricingResponse response = new ForwardPricingResponse();
-        FxForwardInput input = fxForwardCalculator.getFxForwardInput(request.isin,
-                request.referenceDate.toLocalDate(),
-                request.referencePrice,
-                request.domesticRCurve,
-                request.foreignRCurve);
-        FxForwardResult output = fxForwardCalculator.fxFwdValuation(input);
-        
-        response.theoreticalPrice = output.forwardRate();
-        return new ResponseEntity(response, HttpStatus.OK);
-
+        if (fxForwardCalculator != null) {
+            PricingResponse response = fxForwardCalculator.fxFwdValuation(request);
+            if (response != null) {
+                return new ResponseEntity(response, HttpStatus.OK);
+            } else {
+                return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
+            }
+        } else {
+            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
+        }
     }
 }

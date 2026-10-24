@@ -4,15 +4,14 @@ import { Calendar } from 'primereact/calendar';
 import { InstrumentField, YCurveField } from './FormFields.tsx';
 import { useState } from 'react';
 
-import type { ForwardPricingRequest, ForwardPricingResponse, YieldCurveDto, GenericMasterDataDto } from '../services/dto.ts';
- '../data/schema.ts';
+import type { PricingRequest, PricingResponse, YieldCurveDto, GenericMasterDataDto } from '../services/dto.ts';
 
 interface FxFuturePricingFormProps {
     masterDataList: GenericMasterDataDto[];
     yieldCurveList: YieldCurveDto[];
-    data: ForwardPricingRequest;
-    results: ForwardPricingResponse;
-    onChange: (data: ForwardPricingRequest) => void;
+    data: PricingRequest;
+    results: PricingResponse;
+    onChange: (data: PricingRequest) => void;
 }
 
 //Il modulo riceve l'oggetto trade come prop
@@ -97,9 +96,9 @@ export const FxFuturePForm = ({ masterDataList, yieldCurveList, data, results, o
                         className="w-full" />
                 </div>
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">Basis</label>
+                    <label className="block mb-2 font-bold text-sm">Forward points</label>
                     <InputNumber
-                        value={results.theoreticalPrice}
+                        value={results.forwardPoints}
                         readOnly
                         disabled
                         mode="decimal" minFractionDigits={5} placeholder="0.00000"
