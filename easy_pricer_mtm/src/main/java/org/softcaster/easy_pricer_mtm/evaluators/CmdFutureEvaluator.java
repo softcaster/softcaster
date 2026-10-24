@@ -13,6 +13,7 @@ import org.softcaster.core.data.PositionDetail;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
+import org.softcaster.easy_pricer_mtm.exceptions.MtmException;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +43,10 @@ public class CmdFutureEvaluator extends AbstractEvaluator implements IPositionEv
             Calendar calendar = new Calendar(currencies);
             LocalDate valuationDate = calendar.getNextBusinessDate(mtmHelper.getOfficialDate(), masterData.getBusinessDays());
             double mktPrice = mtmHelper.getSpotPrice(masterData.getIdMasterData(), RequestType.BID);
+            if (mktPrice <= 0.) {
+                throw new MtmException("Quotazione mancante per " + masterData.getCode());
+            }
+            // senza curva forward della commodity il prezzo teorico e' quello di mercato
             currentValuation.setTheoreticalPrice(mktPrice);
             currentValuation.setMarketPrice(mktPrice);
             currentValuation.setYtm(0.);

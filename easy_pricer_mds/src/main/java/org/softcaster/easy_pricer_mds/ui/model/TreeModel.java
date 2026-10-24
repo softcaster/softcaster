@@ -39,6 +39,10 @@ public class TreeModel {
         futures.add(new DefaultMutableTreeNode(new FndtNode<>("Cmd Futures", AppTreeItem.CMD_FUTURE)));
         derivatives.add(futures);
 
+        DefaultMutableTreeNode options = new DefaultMutableTreeNode("Options");
+        options.add(new DefaultMutableTreeNode(new FndtNode<>("Fx Options", AppTreeItem.FX_OPTION)));
+        derivatives.add(options);
+
         instruments.add(derivatives);
 
         root.add(instruments);

@@ -962,7 +962,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getPowerFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("FFU"));
+        bean.getPowerFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("CFU"));
 
         bean.getPowerFutureMasterData().setBusinessDays(0);
         bean.getPowerFutureMasterData().setMultiplier(1.);

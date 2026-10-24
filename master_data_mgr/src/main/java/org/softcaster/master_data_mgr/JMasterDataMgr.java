@@ -7,6 +7,7 @@ package org.softcaster.master_data_mgr;
 import jakarta.annotation.PostConstruct;
 import java.awt.CardLayout;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,6 +39,7 @@ import org.softcaster.master_data_mgr.views.HomePanel;
 import org.softcaster.master_data_mgr.views.IssuerPanel;
 import org.softcaster.master_data_mgr.views.MarketQuoteDefinitionPanel;
 import org.softcaster.master_data_mgr.views.MmFuturePanel;
+import org.softcaster.master_data_mgr.views.OptionPanel;
 import org.softcaster.master_data_mgr.views.PortfolioPanel;
 import org.softcaster.master_data_mgr.views.PositionPanel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,6 +158,14 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case ISSUER -> {
                             cl.show(mainPanel, AppCard.ISSUER_CARD.name());
                             currentCard = AppCard.ISSUER_CARD;
+                        }
+                        case FX_OPTION -> {
+                            cl.show(mainPanel, AppCard.FX_OPTION_CARD.name());
+                            currentCard = AppCard.FX_OPTION_CARD;
+                        }
+                        case BOND_OPTION -> {
+                            cl.show(mainPanel, AppCard.BOND_OPTION_CARD.name());
+                            currentCard = AppCard.BOND_OPTION_CARD;
                         }
                         case MARKET_QUOTE_DEFINITION -> {
                             cl.show(mainPanel, AppCard.MARKET_QUOTE_DEFINITION_CARD.name());
@@ -454,7 +464,14 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         cardMap.put(AppCard.CMD_FUTURE_CARD, cmdFuturePanel);
 
         JPanel extDeliveryFuturePanel = new ExtDeliveryFuturePanel(masterDataFacade);
-        cardMap.put(AppCard.EXT_DELIVERY_FUTURE_CARD, cmdFuturePanel);
+        cardMap.put(AppCard.EXT_DELIVERY_FUTURE_CARD, extDeliveryFuturePanel);
+
+        // opzioni: un pannello per famiglia di sottostante (asset class della testata)
+        JPanel fxOptionPanel = new OptionPanel(masterDataFacade, "Fx Option Master Data", List.of("FFO", "FXO"));
+        cardMap.put(AppCard.FX_OPTION_CARD, fxOptionPanel);
+
+        JPanel bondOptionPanel = new OptionPanel(masterDataFacade, "Bond Option Master Data", List.of("BFO", "BDO"));
+        cardMap.put(AppCard.BOND_OPTION_CARD, bondOptionPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT.name());
@@ -472,6 +489,8 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(issuerPanel, AppCard.ISSUER_CARD.name());
         mainPanel.add(cmdFuturePanel, AppCard.CMD_FUTURE_CARD.name());
         mainPanel.add(extDeliveryFuturePanel, AppCard.EXT_DELIVERY_FUTURE_CARD.name());
+        mainPanel.add(fxOptionPanel, AppCard.FX_OPTION_CARD.name());
+        mainPanel.add(bondOptionPanel, AppCard.BOND_OPTION_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

@@ -22,6 +22,7 @@ import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND_FUTURE;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.CURR_PAIR;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.FX_FUTURE;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.SC_UPDATE;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.YC_DEFINE;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.YC_UPDATE;
 import org.softcaster.easy_pricer_mds.ui.model.TreeModel;
@@ -32,6 +33,7 @@ import org.softcaster.easy_pricer_mds.view.CmdFutPanel;
 import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
 import org.softcaster.easy_pricer_mds.view.FltBondPanel;
 import org.softcaster.easy_pricer_mds.view.FxFutPanel;
+import org.softcaster.easy_pricer_mds.view.FxOptPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
 import org.softcaster.easy_pricer_mds.view.MmFutPanel;
 import org.softcaster.easy_pricer_mds.view.SpreadedCurvePanel;
@@ -147,6 +149,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                             case SC_UPDATE -> {
                                 cl.show(mainPanel, AppCard.SC_UPDATE_CARD.name());
                                 currentCard = AppCard.SC_UPDATE_CARD;
+                            }
+                            case FX_OPTION -> {
+                                cl.show(mainPanel, AppCard.FX_OPTION_CARD.name());
+                                currentCard = AppCard.FX_OPTION_CARD;
                             }
                             default -> {
                                 cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
@@ -402,6 +408,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.YC_UPDATE_CARD, ycUpdatePanel);
         JPanel scUpdatePanel = new SpreadedCurvePanel(mDSFacade);
         cardMap.put(AppCard.SC_UPDATE_CARD, scUpdatePanel);
+        JPanel fxOptPanel = new FxOptPanel(mDSFacade);
+        cardMap.put(AppCard.FX_OPTION_CARD, fxOptPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
@@ -415,6 +423,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(ycPanel, AppCard.YC_DEFINE_CARD.name());
         mainPanel.add(ycUpdatePanel, AppCard.YC_UPDATE_CARD.name());
         mainPanel.add(scUpdatePanel, AppCard.SC_UPDATE_CARD.name());
+        mainPanel.add(fxOptPanel, AppCard.FX_OPTION_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

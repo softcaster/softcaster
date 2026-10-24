@@ -50,7 +50,14 @@ public class CmeGroupProviderTest {
 */        
         System.out.println("");
         // fx fut settembre 2674@M6EU6
-        Node node = provider.getQuote("2674@M6EU6", Market.FUTURES);
+        String fxfut="2674@M6EZ6";
+        String fxopt="8116/2026/12/ATM@EUUZ6_C1140";
+        
+        
+        Node node = provider.getQuote(fxfut, Market.FUTURES);
+        System.out.println(node.getSymbol() + "\t" + node.getData().bid());
+
+        node = provider.getQuote(fxopt, Market.OPTIONS);
         System.out.println(node.getSymbol() + "\t" + node.getData().bid());
     }
 }

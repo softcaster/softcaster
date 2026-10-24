@@ -20,9 +20,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.commons.utils.NumberUtils;
 import org.softcaster.provider.bricks.AbstractProvider;
 import org.softcaster.provider.bricks.Data;
 import org.softcaster.provider.bricks.ProviderInfo;
@@ -33,6 +36,7 @@ import org.softcaster.provider.bricks.Request;
 import org.softcaster.provider.enums.Market;
 import static org.softcaster.provider.enums.Market.FUTURES;
 import static org.softcaster.provider.enums.Market.NONE;
+import static org.softcaster.provider.enums.Market.OPTIONS;
 import static org.softcaster.provider.enums.Market.RATES;
 import org.softcaster.provider.enums.OffsetType;
 import org.softcaster.provider.exceptions.MarketDataProviderException;
@@ -53,6 +57,7 @@ public class CmeGroupProvider extends AbstractProvider {
     private final String sofrUrl = "https://www.cmegroup.com/services/sofr-strip-rates/";
     private final String esterUrl = "https://www.cmegroup.com/services/term-estr/";
     private final String v2Url = "https://www.cmegroup.com/CmeWS/mvc/quotes/v2/";
+    private final String optAtmUrl = "https://www.cmegroup.com/CmeWS/mvc/atm/strike-prices/";
 
     private static CmeGroupProvider _instance = null;
 
@@ -241,6 +246,8 @@ public class CmeGroupProvider extends AbstractProvider {
     @Override
     protected void parseResponse(ProviderInfo info, Market market) {
         switch (market) {
+            case OPTIONS ->
+                parseResponseOption(info.getExtraParameters().get(0));
             case RATES ->
                 parseResponseYieldCurve(info.getExtraParameters().get(0));
             case FUTURES ->
@@ -356,7 +363,19 @@ public class CmeGroupProvider extends AbstractProvider {
             String[] parsedSymbol = symbol.split("@");
             String ric = parsedSymbol[0];
 
-            request = new Request(v2Url + ric, market);
+            String url = null;
+            switch (market) {
+                case FUTURES ->
+                    url = v2Url;
+                case OPTIONS -> {
+                    url = optAtmUrl;
+                    info.getExtraParameters().add(parsedSymbol[1]);
+                }
+                default ->
+                    throw new org.softcaster.provider.exceptions.MarketDataProviderException("Market not enabled: " + market.getCode());
+
+            }
+            request = new Request(url + ric, market);
             info.getRequests().add(request);
 
             connect(info, market);
@@ -383,5 +402,56 @@ public class CmeGroupProvider extends AbstractProvider {
     @Override
     public Node getMktQuote(String symbol, Market market) {
         return getQuote(symbol, market);
+    }
+
+    private double parseStrike(String code) {
+        // Regex pattern: 
+        // "_"   -> finds the underscore
+        // ".*?" -> skips any characters/letters in between (like the 'C')
+        // "(\\d+)" -> captures the first sequence of numbers found after it
+        Pattern pattern = Pattern.compile("_.*?(\\d+)");
+        Matcher matcher = pattern.matcher(code);
+        // Check if the pattern matches anywhere in the string
+        if (matcher.find()) {
+            // matcher.group(1) extracts only the content inside the capturing group (the digits)
+            String numbersAsString = matcher.group(1);
+
+            // Convert the extracted text into an integer if you need to perform calculations
+            double numberAsDouble = Double.parseDouble(numbersAsString);
+            return numberAsDouble / 1000.;
+        } else {
+            return 0.;
+        }
+    }
+
+    private void parseResponseOption(String strikeCode) {
+        try {
+            double target = parseStrike(strikeCode);
+            ObjectMapper om = new ObjectMapper();
+            OptionRoot root = om.readValue(response, OptionRoot.class);
+
+            Node node = null;
+            Data data = null;
+
+            double bid = 0.;
+            double ask = 0.;
+            for (StrikePrice strike : root.strikePrices) {
+                double strikeValue = Double.parseDouble(strike.strikePrice);
+                if (NumberUtils.isZero(strikeValue - target)) {
+                    if (!strike.call.last.equals("-")) {
+                        bid = Double.parseDouble(strike.call.last);
+                    }
+                    if (!strike.put.last.equals("-")) {
+                        ask = Double.parseDouble(strike.put.last);
+                    }
+                    data = new Data(bid, ask);
+                    node = new Node(strikeCode, null, data, "", "", "");
+                    addQuote(OPTIONS, node);
+                    break;
+                }
+            }
+        } catch (JsonProcessingException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+        }
     }
 }

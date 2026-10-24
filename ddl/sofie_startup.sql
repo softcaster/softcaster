@@ -106,6 +106,7 @@ INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (n
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FFU','Forex Future',(SELECT id_super_class FROM super_class WHERE code='FX'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'MFU','MM Future',(SELECT id_super_class FROM super_class WHERE code='CCE'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'CFU','Commodity Future',(SELECT id_super_class FROM super_class WHERE code='DER'));
+INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FFO','Forex Future Option',(SELECT id_super_class FROM super_class WHERE code='DER'));
 
 -- ----------------------------------------------------------------------------
 -- settlement_type - tipo consegna
@@ -424,6 +425,13 @@ INSERT INTO node_type(node_type_id,code, description) VALUES (5,'OIS','Ois');
 
 INSERT INTO load_type VALUES (1, 'BASE', 'Base load - 24 hours a day, 7 days a week');
 INSERT INTO load_type VALUES (2, 'PEAK', 'Peak load - peak hours as defined by market convention');
+INSERT INTO exercise_style VALUES (1, 'EUROPEAN', 'Can only be exercised at the expiration date');
+INSERT INTO exercise_style VALUES (2, 'AMERICAN', 'Can be exercised at any time up to the expiration date');
+INSERT INTO exercise_style VALUES (3, 'BERMUDAN', 'Can be exercised on specific dates before expiration');
+INSERT INTO premium_style VALUES (1, 'EQUITY_STYLE', 'Premium paid upfront');
+INSERT INTO premium_style VALUES (2, 'FUTURES_STYLE', 'Premium margined daily like a future');
+INSERT INTO option_type VALUES (1, 'CALL', 'Call Option');
+INSERT INTO option_type VALUES (2, 'PUT', 'Put Option');
 
 INSERT INTO delivery_period_type VALUES (1, 'YEAR', 'Year Future - annual delivery contract');
 INSERT INTO delivery_period_type VALUES (2, 'QUARTER', 'Quarter Future - quarterly delivery contract');

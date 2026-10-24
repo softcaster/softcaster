@@ -121,6 +121,8 @@ master_data                 codice, descrizione, valuta, asset class, issue/matu
  │   ├─ mm_future_master_data     future_product -> mm_future_product
  │   └─ cmd_future_master_data    future_product -> cmd_future_product
  │         └─ power_future_master_data (periodo di consegna in commodity_delivery_profile)
+ ├─ option_master_data      serie: option_product (EAGER), underlying -> master_data, option_type, strike, isin;
+ │                          scadenza = maturity_date
  └─ forex_master_data
 ```
 - Classi: `MasterData`, `CashFlowMasterData` (astratta), `SecurityMasterData`, `FltSecurityMasterData`, `LoanMasterData`, `FutureMasterData` (astratta) e sottoclassi.
@@ -145,6 +147,23 @@ future_product        code (MBTP, M6E), descrizione, exchange_contract_code, set
 - Import panieri (`DeliverableBondsImportMgr`, CSV: [0] codice testata, [1] ISIN scadenza, [2] ultimo giorno, …): scadenza cercata per ISIN; se manca la crea sotto la testata; testate non in anagrafica (es. MBUN) ignorate in silenzio. Paniere `Set<DeliverableBonds>`, `DeliverableBonds` uguale per ISIN.
 - Finestre `master_data_mgr` dei future: il campo "codice contratto" è il codice della testata (`FutureProductHelper` la crea o ne aggiorna i dati di prodotto); il multiplier della scadenza viene dalla testata. La combo del daycount resta nel layout ma non è più usata (da togliere nel `.form`).
 
+### Opzioni (`option_product` + `option_master_data`)
+```
+option_product        code (EUU), descrizione, exchange_contract_code, asset_class, currency,
+                      exercise_style, premium_style, settlement_type, contract_value, tick_size,
+                      multiplier, business_days, margini, expiry_time + expiry_time_zone (IANA),
+                      future_product -> sottostante derivato (le serie puntano a una sua scadenza)
+                      underlying     -> sottostante secco fisso (titolo, azione, coppia di cambi)
+                      (al più uno dei due: CHECK)
+```
+- Nessuna sottoclasse: il tipo del sottostante della serie (`OptionMasterData.underlying`, una riga di `master_data`) sceglie il pricer (future → Black-76, forex → Garman-Kohlhagen, titolo → Black-76 sul forward, azione → Black-Scholes, americane → binomiale).
+- `@PrePersist` della serie: il sottostante dev'essere una scadenza del future della testata (le mensili esercitano nella trimestrale) oppure il sottostante fisso della testata.
+- `OptionMasterData.of(product)`. Codice e ISIN della serie sono una convenzione delle viste, non dell'anagrafica: `OptionDlg` (opzioni CME) li calcola con `cmeSeriesCode` → `EUUZ6_C1140` (cifre dello strike senza punto, almeno 4: 1,345 → `C1345`), campi di sola lettura; viste future (Eurex, IDEM, OTC) gestiranno codice e ISIN a modo loro; `getExpiryInstant()` = data della serie + orario e fuso della testata. DAO: `OptionProductDAO.findByCode`, `OptionMasterDataDAO.getByCodeOrIsin`, `findAllByProductAssetClass(List)`.
+- Enum `ExerciseStyle`, `PremiumStyle` (nuovo; `isDiscounted()` per `ForwardOptionInput.premiumDiscounted`), `OptionType` con lookup `exercise_style`, `premium_style`, `option_type` e converter.
+- Asset class per famiglia di sottostante: `FFO` (opzioni su FX future, creata), poi `BFO` (bond future), `FXO` (forex), `BDO` (titoli), `EQO` (azioni) quando servono.
+- `master_data_mgr`: pannello `OptionPanel` (Fx Options = FFO+FXO, Bond Options = BFO+BDO) e finestra `OptionDlg` (tab Specification = serie, tab Product = testata, trovata o creata per codice come per i future; codice e ISIN della serie calcolati).
+- EUU va su 6E (125.000 €); in anagrafica c'è solo M6E (12.500 €): stesso prezzo, nozionale diverso.
+
 ### Regole di caricamento (Hibernate)
 - Le testate dei future sono `FetchType.EAGER` (poche righe, condivise; le loro associazioni restano LAZY). Le uniche associazioni EAGER della gerarchia.
 - Spring Data usa gli entity graph come *fetch graph* (ignora gli EAGER fuori dal graph): nei repository delle anagrafiche si usa `type = EntityGraphType.LOAD` (base `BaseMasterDataRepository` e `findAll` dei future).
@@ -158,11 +177,14 @@ future_product        code (MBTP, M6E), descrizione, exchange_contract_code, set
 ### Script DDL (`ddl/`)
 - `sofie.sql`, `sofie_acct.sql`, `sofie_func.sql`, `sofie_proc.sql` ricreano **esattamente** il DB (verificato: 1.694 oggetti, 0 differenze, nessun errore). **Fa fede il DB**: ogni modifica fatta su pgAdmin va riportata negli script.
 - Migrazioni applicate il 23/10/2026: `future_product.sql`, `cash_flow_master_data.sql` (eliminate anche 5 righe orfane di `security_master_data`). Storicizzazione quotazioni (`upsert_instrument_quote`, trigger su `instrument_quote_hist`) in commento in `sofie_func.sql`: non presente sul DB.
+- `option_product.sql` (lookup opzioni, asset class FFO, `option_product`, `option_master_data`): già riportata in `sofie.sql`/`sofie_startup.sql`; i servizi hanno `ddl-auto=validate`, quindi va applicata prima di avviarli con il nuovo core.
+- `purge_expired_instruments.sql`: pulizia degli strumenti scaduti (con `dry_run`).
+- `sofie_startup.sql` si ferma alla riga 360 (`system_business_calendar` senza `last_official_date`): errore preesistente.
 - Vecchi import JDBC di easy_import: `Master_dataDAO` adattato (scrive `master_data` + `cash_flow_master_data`); `BondImportMgr`, `BondFutImportMgr`, `ForexImportMgr` non registrati, non aggiornati.
 
 ## 7. Prossimi passi
 
-1. **Opzioni (EUU)** con lo stesso schema dei future: testata `option_product` fuori da `master_data` (stile esercizio e premio, nozionale, orario e fuso di scadenza, testata del future sottostante); una riga di `master_data` **solo per le serie negoziate** (scadenza, tipo, strike, future sottostante della scadenza); smile/volatilità implicite per scadenza e strike in una tabella di dati di mercato, senza creare anagrafiche. Import dei settlement CME con calcolo e salvataggio della vol implicita.
+1. **Opzioni**: anagrafica fatta (sezione 6, migrazione `ddl/option_product.sql`). Restano: pricing REST e MtM (evaluator `FFO` con Black-76 sul future della serie, tempo alla scadenza da `getExpiryInstant()`); smile/volatilità implicite per testata, scadenza e strike in una tabella di dati di mercato; import dei settlement CME con calcolo e salvataggio della vol implicita.
 2. **Fase B — MtM e dati di mercato**: verificare a runtime evaluator FX/CMD e MtM dei future con la nuova anagrafica; quotazioni per scadenza; tempo alla scadenza in frazioni di giorno usando orario e fuso della testata.
 3. **Fase C — interfacce**: finestre di `master_data_mgr` (togliere la combo daycount dai future, scelta esplicita della testata), form React di `easy_pricer_cli` e JSON REST dei future.
 4. **Test automatici** con i casi validati (Borsa Italiana, Mini BTP incl. yield/DV01 del CTD, CME). In `TestPricer` il test FX è commentato.

@@ -17,7 +17,8 @@ public enum Market implements IdentifiableEnum {
     FUTURES(4, "FUTURES", ""),
     COMMODITIES(5, "COMMODITIES", ""),
     RATES(6, "RATES", ""),
-    NONE(7, "NONE", "");
+    OPTIONS(7, "OPTIONS", ""),
+    NONE(100, "NONE", "");
 
     private final int id;
     private final String code;

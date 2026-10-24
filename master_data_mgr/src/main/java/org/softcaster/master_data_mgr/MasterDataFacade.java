@@ -20,6 +20,8 @@ import org.softcaster.core.data.IssuerDAO;
 import org.softcaster.core.data.MarketQuoteDefinitionDAO;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.MmFutureMasterDataDAO;
+import org.softcaster.core.data.OptionMasterDataDAO;
+import org.softcaster.core.data.OptionProductDAO;
 import org.softcaster.core.data.PortfolioMasterDataDAO;
 import org.softcaster.core.data.PositionMasterDataDAO;
 import org.softcaster.core.data.PowerFutureMasterDataDAO;
@@ -63,6 +65,10 @@ public class MasterDataFacade {
     private PowerFutureMasterDataDAO powerFutureMasterDataDAO;
     @Autowired
     private FutureProductDAO futureProductDAO;
+    @Autowired
+    private OptionProductDAO optionProductDAO;
+    @Autowired
+    private OptionMasterDataDAO optionMasterDataDAO;
 
     @Autowired
     private IssuerDAO issuerDAO;
@@ -122,6 +128,20 @@ public class MasterDataFacade {
      */
     public FutureProductDAO getFutureProductDAO() {
         return futureProductDAO;
+    }
+
+    /**
+     * @return the optionProductDAO (testate delle opzioni)
+     */
+    public OptionProductDAO getOptionProductDAO() {
+        return optionProductDAO;
+    }
+
+    /**
+     * @return the optionMasterDataDAO (serie delle opzioni)
+     */
+    public OptionMasterDataDAO getOptionMasterDataDAO() {
+        return optionMasterDataDAO;
     }
 
     /**

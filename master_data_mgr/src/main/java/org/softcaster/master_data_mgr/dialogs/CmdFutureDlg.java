@@ -716,7 +716,7 @@ public class CmdFutureDlg extends javax.swing.JDialog {
 
     private void fillDefaultFields() {
         // Aggiungo campi standard
-        bean.getCmdFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("FFU"));
+        bean.getCmdFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("CFU"));
 
         bean.getCmdFutureMasterData().setBusinessDays(0);
         bean.getCmdFutureMasterData().setMultiplier(1.);
