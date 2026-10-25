@@ -7,10 +7,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.io.Serializable;
@@ -28,19 +28,20 @@ import org.softcaster.engine.enums.PremiumStyle;
 import org.softcaster.engine.enums.SettlementType;
 
 /**
- * Testata di un'opzione quotata (EUU): dati comuni a tutte le serie, fuori da
- * master_data come le testate dei future.
+ * Testata di un'opzione (EUU): dati comuni a tutte le serie, fuori da
+ * master_data come le testate dei future. Due rami per il sottostante:
+ * - FutureOptionProduct: opzione su future, ogni serie punta a una scadenza
+ *   del future della testata;
+ * - SpotOptionProduct: opzione su strumento secco (titolo, azione, coppia di
+ *   cambi), eventualmente fisso per tutte le serie.
  *
- * Sottostante (al piu' uno dei due):
- * - futureProduct: opzione su future, ogni serie punta a una scadenza di
- *   questa testata (le mensili esercitano nella trimestrale piu' vicina);
- * - underlying: opzione su sottostante secco fisso (titolo, azione, coppia di
- *   cambi), tutte le serie puntano a questo strumento.
+ * Orario e fuso di scadenza valgono anche come cut delle opzioni OTC.
  */
 @Entity
 @Table(name = "option_product")
 @SuppressWarnings("PersistenceUnitPresent")
-public class OptionProduct implements Serializable {
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class OptionProduct implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -93,13 +94,6 @@ public class OptionProduct implements Serializable {
     @Column(name = "expiry_time_zone")
     private String expiryTimeZone;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "future_product")
-    private FutureProduct futureProduct;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "underlying")
-    private MasterData underlying;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "currency", nullable = false)
@@ -116,21 +110,6 @@ public class OptionProduct implements Serializable {
     @Column(name = "multiplier")
     private Double multiplier;
 
-    @PrePersist
-    @PreUpdate
-    private void checkUnderlying() {
-        if (futureProduct != null && underlying != null) {
-            throw new IllegalStateException("Testata " + code
-                    + ": indicare il future sottostante oppure il sottostante secco, non entrambi");
-        }
-    }
-
-    /**
-     * true se il sottostante e' un future (Black-76 sul prezzo del future).
-     */
-    public boolean isOnFuture() {
-        return futureProduct != null;
-    }
 
     /**
      * Istante di scadenza di una serie con scadenza nel giorno indicato;
@@ -244,22 +223,6 @@ public class OptionProduct implements Serializable {
 
     public void setExpiryTimeZone(String expiryTimeZone) {
         this.expiryTimeZone = expiryTimeZone;
-    }
-
-    public FutureProduct getFutureProduct() {
-        return futureProduct;
-    }
-
-    public void setFutureProduct(FutureProduct futureProduct) {
-        this.futureProduct = futureProduct;
-    }
-
-    public MasterData getUnderlying() {
-        return underlying;
-    }
-
-    public void setUnderlying(MasterData underlying) {
-        this.underlying = underlying;
     }
 
     public Currency getCurrency() {

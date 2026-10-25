@@ -25,15 +25,11 @@ import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.Currency;
-import org.softcaster.core.data.BondFutureProduct;
-import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FutureMasterData;
 import org.softcaster.core.data.FutureProduct;
-import org.softcaster.core.data.FxFutureProduct;
 import org.softcaster.core.data.MasterData;
-import org.softcaster.core.data.OptionMasterData;
-import org.softcaster.core.data.OptionProduct;
-import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.core.data.FutureOptionMasterData;
+import org.softcaster.core.data.FutureOptionProduct;
 import org.softcaster.engine.enums.ExerciseStyle;
 import org.softcaster.engine.enums.OptionType;
 import org.softcaster.engine.enums.PremiumStyle;
@@ -42,8 +38,8 @@ import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.OptionBean;
 
 /**
- * Serie di un'opzione quotata CME (tab Specification) e sua testata (tab
- * Product). Codice e ISIN della serie seguono la convenzione CME
+ * Serie di un'opzione su future quotata CME (tab Specification) e sua testata
+ * (tab Product). Codice e ISIN della serie seguono la convenzione CME
  * (cmeSeriesCode) e non sono modificabili.
  *
  * Come per i future, il codice della testata individua la testata: se esiste
@@ -52,7 +48,8 @@ import org.softcaster.master_data_mgr.models.beans.OptionBean;
  * oppure, senza future, uno strumento secco che diventa il sottostante fisso
  * della testata.
  */
-public class OptionDlg extends javax.swing.JDialog {
+public class FutureOptionDlg extends javax.swing.JDialog {
+
 
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
@@ -70,7 +67,7 @@ public class OptionDlg extends javax.swing.JDialog {
     private boolean loading = true;
 
     /**
-     * Creates new form OptionDlg
+     * Creates new form FutureOptionDlg
      *
      * @param parent
      * @param modal
@@ -79,7 +76,7 @@ public class OptionDlg extends javax.swing.JDialog {
      * @param assetClasses asset class proposte per la testata (famiglia del
      * pannello: FFO e FXO per le opzioni su cambi)
      */
-    public OptionDlg(java.awt.Frame parent, boolean modal, OptionBean bean, MasterDataFacade masterDataFacade,
+    public FutureOptionDlg(java.awt.Frame parent, boolean modal, OptionBean bean, MasterDataFacade masterDataFacade,
             List<String> assetClasses) {
         super(parent, modal);
         this.bean = bean;
@@ -159,7 +156,7 @@ public class OptionDlg extends javax.swing.JDialog {
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Option");
+        setTitle("Future Option");
         getContentPane().setLayout(new java.awt.BorderLayout(10, 10));
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
@@ -809,7 +806,7 @@ public class OptionDlg extends javax.swing.JDialog {
     private void txtProductCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtProductCodeFocusLost
         // testata esistente: se ne caricano i dati (solo in inserimento)
         if (isInsert) {
-            masterDataFacade.getOptionProductDAO().findByCode(txtProductCode.getText().trim())
+            masterDataFacade.getOptionProductDAO().findByCode(txtProductCode.getText().trim(), FutureOptionProduct.class)
                     .ifPresent(this::showProduct);
         }
         refreshCode();
@@ -925,7 +922,7 @@ public class OptionDlg extends javax.swing.JDialog {
         cbSettlementType.setModel(new DefaultComboBoxModel<>(SettlementType.values()));
         cbCurrency.setModel(new DefaultComboBoxModel<>(masterDataFacade.getCurrencyDAO().findAll().toArray(Currency[]::new)));
         cbAssetClass.setModel(new DefaultComboBoxModel<>(masterDataFacade.getAssetClassDAO().findAll().stream()
-                .filter(ac -> assetClasses.contains(ac.getCode()))
+                .filter(ac -> assetClasses.contains(ac.getCode()) && FutureOptionProduct.FUTURE_PRODUCT_TYPES.containsKey(ac.getCode()))
                 .toArray(AssetClass[]::new)));
         cbAssetClass.setRenderer(new CodeRenderer());
         cbUnderlying.setRenderer(new CodeRenderer());
@@ -934,14 +931,14 @@ public class OptionDlg extends javax.swing.JDialog {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
                 return super.getListCellRendererComponent(list,
-                        value == null ? "(none - cash underlying)" : ((FutureProduct) value).getCode(),
+                        value == null ? "" : ((FutureProduct) value).getCode(),
                         index, isSelected, cellHasFocus);
             }
         });
 
         if (bean != null) {
             isInsert = false;
-            OptionMasterData omd = bean.getOptionMasterData();
+            FutureOptionMasterData omd = (FutureOptionMasterData) bean.getOptionMasterData();
             showProduct(omd.getProduct());
             txtProductCode.setEditable(false);
             txtCode.setText(omd.getCode());
@@ -971,7 +968,7 @@ public class OptionDlg extends javax.swing.JDialog {
     /**
      * Dati della testata nel tab Product.
      */
-    private void showProduct(OptionProduct p) {
+    private void showProduct(FutureOptionProduct p) {
         txtProductCode.setText(p.getCode());
         txtProductDescription.setText(p.getDescription());
         selectByCode(cbAssetClass, p.getAssetClass() == null ? null : p.getAssetClass().getCode());
@@ -992,9 +989,6 @@ public class OptionDlg extends javax.swing.JDialog {
         setUpFutureProductCombo();
         selectFutureProduct(p.getFutureProduct());
         loading = wasLoading;
-        if (p.getUnderlying() != null) {
-            selectUnderlying(p.getUnderlying());
-        }
     }
 
     private static final String MONTH_CODES = "FGHJKMNQUVXZ";
@@ -1046,45 +1040,30 @@ public class OptionDlg extends javax.swing.JDialog {
     }
 
     /**
-     * Testate di future proponibili come sottostante: solo per le opzioni su
-     * future (FFO: FX future, BFO: bond future); per le altre famiglie solo
-     * "nessuna" (sottostante secco).
+     * Testate di future proponibili per la famiglia scelta (FFO: FX future,
+     * BFO: bond future).
      */
     private void setUpFutureProductCombo() {
-        Class<? extends FutureProduct> type = switch (selectedAssetClass()) {
-            case "FFO" -> FxFutureProduct.class;
-            case "BFO" -> BondFutureProduct.class;
-            default -> null;
-        };
+        Class<? extends FutureProduct> type = FutureOptionProduct.FUTURE_PRODUCT_TYPES.get(selectedAssetClass());
         List<FutureProduct> products = new ArrayList<>();
-        if (type == null) {
-            products.add(null);
-        } else {
+        if (type != null) {
             products.addAll(masterDataFacade.getFutureProductDAO().findAll(type));
         }
         cbFutureProduct.setModel(new DefaultComboBoxModel<>(products.toArray(FutureProduct[]::new)));
     }
 
     /**
-     * Sottostanti proponibili, non scaduti: le scadenze del future scelto per
-     * le opzioni su future, altrimenti gli strumenti secchi della famiglia
-     * (FXO: coppie di cambi, BDO: titoli). La serie in modifica conserva il
-     * proprio sottostante anche se scaduto.
+     * Sottostanti proponibili: le scadenze non scadute del future scelto. La
+     * serie in modifica conserva il proprio sottostante anche se scaduto.
      */
     private void setUpUnderlyingCombo() {
         FutureProduct fp = (FutureProduct) cbFutureProduct.getSelectedItem();
         MasterData selected = (MasterData) cbUnderlying.getSelectedItem();
         MasterData current = bean == null ? null : bean.getOptionMasterData().getUnderlying();
-        String ac = selectedAssetClass();
         List<MasterData> candidates = allMasterData.stream()
                 .filter(md -> current != null && md.getIdMasterData().equals(current.getIdMasterData())
-                || !isExpired(md) && switch (ac) {
-                    case "FFO", "BFO" -> fp != null && md instanceof FutureMasterData fmd && fmd.getProduct() != null
-                    && fp.getIdFutureProduct().equals(fmd.getProduct().getIdFutureProduct());
-                    case "FXO" -> md instanceof ForexMasterData;
-                    case "BDO" -> md instanceof SecurityMasterData;
-                    default -> false;
-                })
+                || !isExpired(md) && fp != null && md instanceof FutureMasterData fmd && fmd.getProduct() != null
+                && fp.getIdFutureProduct().equals(fmd.getProduct().getIdFutureProduct()))
                 .toList();
         cbUnderlying.setModel(new DefaultComboBoxModel<>(candidates.toArray(MasterData[]::new)));
         if (selected != null) {
@@ -1142,10 +1121,14 @@ public class OptionDlg extends javax.swing.JDialog {
     private String saveBean() {
         try {
             AssetClass assetClass = (AssetClass) cbAssetClass.getSelectedItem();
-            MasterData underlying = (MasterData) cbUnderlying.getSelectedItem();
+            FutureMasterData underlying = (FutureMasterData) cbUnderlying.getSelectedItem();
             FutureProduct futureProduct = (FutureProduct) cbFutureProduct.getSelectedItem();
             if (assetClass == null) {
-                return "Asset class mancante: inserire in asset_class la famiglia di opzioni (" + String.join(", ", assetClasses) + ")";
+                return "Asset class mancante: inserire in asset_class la famiglia di opzioni su future ("
+                        + String.join(", ", assetClasses) + ")";
+            }
+            if (futureProduct == null) {
+                return "Future sottostante mancante";
             }
             if (underlying == null) {
                 return "Sottostante mancante";
@@ -1163,12 +1146,12 @@ public class OptionDlg extends javax.swing.JDialog {
 
             // -- testata: trovata per codice o creata
             String productCode = txtProductCode.getText().trim();
-            Optional<OptionProduct> existing = masterDataFacade.getOptionProductDAO().findByCode(productCode);
-            OptionProduct product = existing.orElseGet(OptionProduct::new);
-            if (existing.isPresent() && futureProduct == null && product.getUnderlying() != null
-                    && !product.getUnderlying().getIdMasterData().equals(underlying.getIdMasterData())) {
-                return "La testata " + productCode + " ha come sottostante " + product.getUnderlying().getCode();
+            if (masterDataFacade.getOptionProductDAO().findByCode(productCode).isPresent()
+                    && masterDataFacade.getOptionProductDAO().findByCode(productCode, FutureOptionProduct.class).isEmpty()) {
+                return "La testata " + productCode + " esiste gia' come opzione su strumento secco";
             }
+            FutureOptionProduct product = masterDataFacade.getOptionProductDAO()
+                    .findByCode(productCode, FutureOptionProduct.class).orElseGet(FutureOptionProduct::new);
             product.setCode(productCode);
             product.setDescription(txtProductDescription.getText().isBlank() ? productCode : txtProductDescription.getText());
             if (product.getExchangeContractCode() == null || product.getExchangeContractCode().isBlank()) {
@@ -1188,12 +1171,11 @@ public class OptionDlg extends javax.swing.JDialog {
             product.setExpiryTime(expiryTime);
             product.setExpiryTimeZone(zone.isEmpty() ? null : zone);
             product.setFutureProduct(futureProduct);
-            // senza future: il sottostante secco della serie e' quello fisso della testata
-            product.setUnderlying(futureProduct == null ? underlying : null);
             product = masterDataFacade.getOptionProductDAO().saveOrUpdate(product);
 
             // -- serie
-            OptionMasterData omd = isInsert ? OptionMasterData.of(product) : bean.getOptionMasterData();
+            FutureOptionMasterData omd = isInsert ? FutureOptionMasterData.of(product)
+                    : (FutureOptionMasterData) bean.getOptionMasterData();
             OptionType type = (OptionType) cbOptionType.getSelectedItem();
             double strike = Converter.toDouble(txtStrike.getText(), false);
             omd.setProduct(product);
@@ -1213,7 +1195,7 @@ public class OptionDlg extends javax.swing.JDialog {
             omd.setDescription(txtDescription.getText().isBlank()
                     ? product.getCode() + " " + expiry + " " + type + " " + Converter.fromDouble(strike)
                     : txtDescription.getText());
-            masterDataFacade.getOptionMasterDataDAO().saveOrUpdate(omd);
+            masterDataFacade.getFutureOptionMasterDataDAO().saveOrUpdate(omd);
             return null;
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());

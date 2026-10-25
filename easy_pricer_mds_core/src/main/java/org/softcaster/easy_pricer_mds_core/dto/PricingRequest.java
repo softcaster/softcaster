@@ -34,4 +34,12 @@ public class PricingRequest implements Serializable {
     public Double foreignRate = null;
     public String foreignRCurve = "";
     public LocalDate maturityDate = null;
+
+    // -- opzioni
+    // referencePrice: prezzo del sottostante (future per le opzioni su future);
+    // domesticRCurve / domesticRate: curva o tasso (continuo, ACT/365) per scontare il premio
+    // volatilita' annua in decimale (0.20 = 20%)
+    public Double volatility = null;
+    // premio di mercato unitario: se indicato si calcola la volatilita' implicita
+    public Double optionPrice = null;
 }

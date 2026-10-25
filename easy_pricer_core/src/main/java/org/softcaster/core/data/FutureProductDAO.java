@@ -68,8 +68,30 @@ public class FutureProductDAO {
         return repository.save(product);
     }
 
+    /**
+     * Scadenze e opzioni che usano la testata.
+     *
+     * @param product
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public long countReferences(FutureProduct product) {
+        return repository.countReferences(product.getIdFutureProduct());
+    }
+
+    /**
+     * Cancella una testata non usata da scadenze o opzioni.
+     *
+     * @param product
+     * @throws IllegalStateException se la testata e' in uso
+     */
     @Transactional
     public void delete(FutureProduct product) {
+        long references = repository.countReferences(product.getIdFutureProduct());
+        if (references > 0) {
+            throw new IllegalStateException("La testata " + product.getCode() + " e' usata da "
+                    + references + " scadenze/opzioni");
+        }
         repository.delete(product);
     }
 }

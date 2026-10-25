@@ -107,6 +107,9 @@ INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (n
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'MFU','MM Future',(SELECT id_super_class FROM super_class WHERE code='CCE'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'CFU','Commodity Future',(SELECT id_super_class FROM super_class WHERE code='DER'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FFO','Forex Future Option',(SELECT id_super_class FROM super_class WHERE code='DER'));
+INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FXO','Forex Option',(SELECT id_super_class FROM super_class WHERE code='DER'));
+INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'BDO','Bond Option',(SELECT id_super_class FROM super_class WHERE code='DER'));
+INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'BFO','Bond Future Option',(SELECT id_super_class FROM super_class WHERE code='DER'));
 
 -- ----------------------------------------------------------------------------
 -- settlement_type - tipo consegna

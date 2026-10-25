@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_srv.controller;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.FxForwardCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.OptionCalculator;
 import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
 import org.softcaster.easy_pricer_mds_core.dto.PricingResponse;
 import org.softcaster.easy_pricer_srv.util.CommonData;
@@ -31,6 +32,8 @@ public class ValuationRestController {
     private BondForwardCalculator bondForwardCalculator;
     @Autowired
     private FxForwardCalculator fxForwardCalculator;
+    @Autowired
+    private OptionCalculator optionCalculator;
 
     @PostMapping(value = "/pricing/bond", produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("unchecked")
@@ -70,6 +73,26 @@ public class ValuationRestController {
 
         if (fxForwardCalculator != null) {
             PricingResponse response = fxForwardCalculator.fxFwdValuation(request);
+            if (response != null) {
+                return new ResponseEntity(response, HttpStatus.OK);
+            } else {
+                return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
+            }
+        } else {
+            return new ResponseEntity(CommonData.getJsonError("null value"), HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    /**
+     * Opzioni di tutti i rami (su future, su cambio, su titolo): il modello lo
+     * sceglie la serie.
+     */
+    @PostMapping(value = "/pricing/option", produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<PricingResponse> calculateOptionPricing(@RequestBody PricingRequest request) {
+
+        if (optionCalculator != null) {
+            PricingResponse response = optionCalculator.optionValuation(request);
             if (response != null) {
                 return new ResponseEntity(response, HttpStatus.OK);
             } else {

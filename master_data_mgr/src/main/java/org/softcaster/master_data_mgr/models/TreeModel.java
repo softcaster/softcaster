@@ -33,6 +33,7 @@ public class TreeModel {
 
         DefaultMutableTreeNode derivatives = new DefaultMutableTreeNode("Derivatives");
         DefaultMutableTreeNode futures = new DefaultMutableTreeNode("Futures");
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Future Products", AppTreeItem.FUTURE_PRODUCT)));
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Futures", AppTreeItem.BOND_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Mm Futures", AppTreeItem.MM_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Futures", AppTreeItem.FX_FUTURE)));
@@ -40,10 +41,16 @@ public class TreeModel {
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Ext.Delivery Futures", AppTreeItem.EXT_DELIVERY_FUTURE)));
         derivatives.add(futures);
 
+        // opzioni: un ramo per le opzioni su future e uno per quelle su strumento secco
         DefaultMutableTreeNode options = new DefaultMutableTreeNode("Options");
-        options.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Options", AppTreeItem.BOND_OPTION)));
-        options.add(new DefaultMutableTreeNode(new MasterDataNode("MM Options", AppTreeItem.MM_OPTION)));
-        options.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Options", AppTreeItem.FX_OPTION)));
+        DefaultMutableTreeNode futureOptions = new DefaultMutableTreeNode("Future Options");
+        futureOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Future Options", AppTreeItem.FX_FUTURE_OPTION)));
+        futureOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Future Options", AppTreeItem.BOND_FUTURE_OPTION)));
+        options.add(futureOptions);
+        DefaultMutableTreeNode spotOptions = new DefaultMutableTreeNode("Spot Options");
+        spotOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Options", AppTreeItem.FX_OPTION)));
+        spotOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Options", AppTreeItem.BOND_OPTION)));
+        options.add(spotOptions);
         derivatives.add(options);
 
         instruments.add(derivatives);

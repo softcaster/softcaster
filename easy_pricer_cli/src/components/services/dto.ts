@@ -18,6 +18,9 @@ export interface PricingRequest {
     foreignRate?: number;
     foreignRCurve?: string;
     maturityDate?: Date;
+    // opzioni: referencePrice = prezzo del sottostante (future, cambio, prezzo secco del titolo)
+    volatility?: number;       // decimale (0.20 = 20%)
+    optionPrice?: number;      // premio di mercato: se indicato il server calcola la vol implicita
 }
 
 // Risposta di pricing unica (PricingResponse in mds_core): il server invia
@@ -46,6 +49,19 @@ export interface PricingResponse {
     ctdNetBasis?: number;
     ctdImpliedRepo?: number;
     futureDv01?: number;
+    // opzioni: premio unitario, vega per punto di vol, theta per giorno, rho per punto di tasso
+    optionModel?: string;
+    optionPremium?: number;
+    optionValue?: number;      // premio x contract value x multiplier
+    volatility?: number;       // usata: quella indicata o l'implicita del premio di mercato
+    underlyingForward?: number;
+    discountFactor?: number;
+    timeToExpiry?: number;     // anni ACT/365
+    delta?: number;
+    gamma?: number;
+    vega?: number;
+    theta?: number;
+    rho?: number;
 }
 
 export const DEFAULT_BOND_PRICING_REQUEST: PricingRequest = {
@@ -63,6 +79,15 @@ export const DEFAULT_FWD_PRICING_REQUEST: PricingRequest = {
     domesticRate: 0.01,
     domesticRCurve: '',
     foreignRate: 0.01,
+    foreignRCurve: ''
+};
+
+// opzioni: senza prezzo del sottostante il server usa la quotazione in anagrafica
+export const DEFAULT_OPTION_PRICING_REQUEST: PricingRequest = {
+    isin: '',
+    referenceDate: new Date(),
+    volatility: 0.10,
+    domesticRCurve: '',
     foreignRCurve: ''
 };
 
@@ -95,6 +120,12 @@ export const calculateFwdBondPricing = async (request: PricingRequest): Promise<
 };
 export const calculateFwdFxPricing = async (request: PricingRequest): Promise<PricingResponse> => {
     const response = await axios.post(`${BASE_URL}/pricing/fx-future`, toPayload(request));
+    return response.data;
+};
+
+// opzioni di tutti i rami: il server sceglie il modello dalla serie
+export const calculateOptionPricing = async (request: PricingRequest): Promise<PricingResponse> => {
+    const response = await axios.post(`${BASE_URL}/pricing/option`, toPayload(request));
     return response.data;
 };
 

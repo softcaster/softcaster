@@ -1059,9 +1059,11 @@ ALTER TABLE mm_future_master_data OWNER TO sofie;
 -- ============================================================================
 -- OPZIONI
 --   option_product (testata, NON in master_data)      EUU: dati comuni alle serie
---     future_product -> sottostante derivato (le serie puntano a una sua scadenza)
---     underlying     -> sottostante secco fisso (titolo, azione, coppia di cambi)
---   master_data -> option_master_data                 EUUZ6 C1.135: tipo, strike, sottostante
+--     ├─ future_option_product   future_product (le serie puntano a una sua scadenza)
+--     └─ spot_option_product     underlying: strumento secco fisso (facoltativo)
+--   master_data -> option_master_data                 EUUZ6_C1140: tipo, strike, isin
+--     ├─ future_option_master_data  underlying -> future_master_data
+--     └─ spot_option_master_data    underlying -> master_data, delivery_date
 --
 -- Lookup exercise_style, premium_style, option_type: righe in sofie_startup.sql
 -- ============================================================================
@@ -1110,10 +1112,9 @@ CREATE TABLE option_product (
     tick_size               NUMERIC(15,5) NOT NULL,
     initial_margin          NUMERIC(15,5),
     maintenance_margin      NUMERIC(15,5),
-    expiry_time             TIME,                        -- orario di scadenza (10:00 per EUU)
-    expiry_time_zone        VARCHAR(64),                 -- fuso IANA (America/New_York)
-    future_product          INTEGER,                     -- sottostante derivato
-    underlying              INTEGER,                     -- sottostante secco fisso
+    expiry_time             TIME,                        -- orario di scadenza / cut (09:00 per EUU)
+    expiry_time_zone        VARCHAR(64),                 -- fuso IANA (America/Chicago)
+
     -- valori copiati in master_data quando si crea una serie
     currency                INTEGER       NOT NULL,
     asset_class             INTEGER       NOT NULL,
@@ -1121,16 +1122,35 @@ CREATE TABLE option_product (
     multiplier              NUMERIC(15,5) NOT NULL DEFAULT 1,
     CONSTRAINT pk_option_product PRIMARY KEY (id_option_product),
     CONSTRAINT uq_option_product_code UNIQUE (code),
-    CONSTRAINT ck_option_product_underlying CHECK (future_product IS NULL OR underlying IS NULL),
     CONSTRAINT fk_option_product_exercise_style FOREIGN KEY (exercise_style) REFERENCES exercise_style (exercise_style_id),
     CONSTRAINT fk_option_product_premium_style FOREIGN KEY (premium_style) REFERENCES premium_style (premium_style_id),
     CONSTRAINT fk_option_product_settlement_type FOREIGN KEY (settlement_type) REFERENCES settlement_type (id_settlement_type),
-    CONSTRAINT fk_option_product_future_product FOREIGN KEY (future_product) REFERENCES future_product (id_future_product),
-    CONSTRAINT fk_option_product_underlying FOREIGN KEY (underlying) REFERENCES master_data (id_master_data),
     CONSTRAINT fk_option_product_currency FOREIGN KEY (currency) REFERENCES currency (id_currency),
     CONSTRAINT fk_option_product_asset_class FOREIGN KEY (asset_class) REFERENCES asset_class (id_asset_class)
 );
 ALTER TABLE option_product OWNER TO sofie;
+
+CREATE TABLE future_option_product (
+    id_option_product  INTEGER NOT NULL,
+    future_product     INTEGER NOT NULL,                 -- testata del future sottostante
+    CONSTRAINT pk_future_option_product PRIMARY KEY (id_option_product),
+    CONSTRAINT fk_future_option_product_parent
+        FOREIGN KEY (id_option_product) REFERENCES option_product (id_option_product),
+    CONSTRAINT fk_future_option_product_future_product
+        FOREIGN KEY (future_product) REFERENCES future_product (id_future_product)
+);
+ALTER TABLE future_option_product OWNER TO sofie;
+
+CREATE TABLE spot_option_product (
+    id_option_product  INTEGER NOT NULL,
+    underlying         INTEGER,                          -- sottostante secco fisso
+    CONSTRAINT pk_spot_option_product PRIMARY KEY (id_option_product),
+    CONSTRAINT fk_spot_option_product_parent
+        FOREIGN KEY (id_option_product) REFERENCES option_product (id_option_product),
+    CONSTRAINT fk_spot_option_product_underlying
+        FOREIGN KEY (underlying) REFERENCES master_data (id_master_data)
+);
+ALTER TABLE spot_option_product OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- 3. Serie negoziabile
@@ -1138,20 +1158,42 @@ ALTER TABLE option_product OWNER TO sofie;
 CREATE TABLE option_master_data (
     id_master_data  INTEGER       NOT NULL,
     option_product  INTEGER       NOT NULL,
-    underlying      INTEGER       NOT NULL,              -- scadenza del future o sottostante secco
     option_type     INTEGER       NOT NULL,              -- OptionType
     strike          NUMERIC(18,8) NOT NULL,
     isin            VARCHAR(25),
     CONSTRAINT pk_option_master_data PRIMARY KEY (id_master_data),
     CONSTRAINT fk_option_master_data_parent FOREIGN KEY (id_master_data) REFERENCES master_data (id_master_data),
     CONSTRAINT fk_option_master_data_product FOREIGN KEY (option_product) REFERENCES option_product (id_option_product),
-    CONSTRAINT fk_option_master_data_underlying FOREIGN KEY (underlying) REFERENCES master_data (id_master_data),
     CONSTRAINT fk_option_master_data_option_type FOREIGN KEY (option_type) REFERENCES option_type (option_type_id)
 );
 CREATE UNIQUE INDEX idx_option_master_data_isin ON option_master_data (isin);
 CREATE INDEX idx_option_master_data_product ON option_master_data (option_product);
-CREATE INDEX idx_option_master_data_underlying ON option_master_data (underlying);
 ALTER TABLE option_master_data OWNER TO sofie;
+
+CREATE TABLE future_option_master_data (
+    id_master_data  INTEGER NOT NULL,
+    underlying      INTEGER NOT NULL,                    -- scadenza del future
+    CONSTRAINT pk_future_option_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_future_option_master_data_parent
+        FOREIGN KEY (id_master_data) REFERENCES option_master_data (id_master_data),
+    CONSTRAINT fk_future_option_master_data_underlying
+        FOREIGN KEY (underlying) REFERENCES future_master_data (id_master_data)
+);
+CREATE INDEX idx_future_option_master_data_underlying ON future_option_master_data (underlying);
+ALTER TABLE future_option_master_data OWNER TO sofie;
+
+CREATE TABLE spot_option_master_data (
+    id_master_data  INTEGER NOT NULL,
+    underlying      INTEGER NOT NULL,                    -- strumento secco
+    delivery_date   DATE,                                -- consegna (scadenza + spot lag)
+    CONSTRAINT pk_spot_option_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_spot_option_master_data_parent
+        FOREIGN KEY (id_master_data) REFERENCES option_master_data (id_master_data),
+    CONSTRAINT fk_spot_option_master_data_underlying
+        FOREIGN KEY (underlying) REFERENCES master_data (id_master_data)
+);
+CREATE INDEX idx_spot_option_master_data_underlying ON spot_option_master_data (underlying);
+ALTER TABLE spot_option_master_data OWNER TO sofie;
 
 
 -- ----------------------------------------------------------------------------

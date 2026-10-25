@@ -12,6 +12,7 @@ import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.core.data.MasterData;
+import org.softcaster.core.data.FutureOptionMasterData;
 import org.softcaster.core.data.OptionMasterData;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.FxOptBean;
@@ -357,7 +358,7 @@ public class FxOptIQDlg extends javax.swing.JDialog {
     }
 
     private void setUpCurrencyPairsCombo() {
-        List<OptionMasterData> offmdList = mDSFacade.getOptionMasterDataDAO().findAll();
+        List<FutureOptionMasterData> offmdList = mDSFacade.getFutureOptionMasterDataDAO().findAll();
 
         // 2. Crea il modello partendo dalla lista
         DefaultComboBoxModel<OptionMasterData> model = new DefaultComboBoxModel<>(offmdList.toArray(OptionMasterData[]::new));

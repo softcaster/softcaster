@@ -18,7 +18,7 @@ import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.IssuerDAO;
 import org.softcaster.core.data.MmFutureMasterDataDAO;
-import org.softcaster.core.data.OptionMasterDataDAO;
+import org.softcaster.core.data.FutureOptionMasterDataDAO;
 import org.softcaster.core.data.PortfolioMasterDataDAO;
 import org.softcaster.core.data.PositionMasterDataDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
@@ -64,7 +64,7 @@ public class MDSFacade {
     @Autowired
     private CmdFutureMasterDataDAO cmdFutureMasterDataDAO;
     @Autowired
-    private OptionMasterDataDAO optionMasterDataDAO;
+    private FutureOptionMasterDataDAO futureOptionMasterDataDAO;
 
     @Autowired
     private IssuerDAO issuerDAO;
@@ -252,9 +252,9 @@ public class MDSFacade {
     }
 
     /**
-     * @return the optionMasterDataDAO
+     * @return the futureOptionMasterDataDAO (serie delle opzioni su future)
      */
-    public OptionMasterDataDAO getOptionMasterDataDAO() {
-        return optionMasterDataDAO;
+    public FutureOptionMasterDataDAO getFutureOptionMasterDataDAO() {
+        return futureOptionMasterDataDAO;
     }
 }

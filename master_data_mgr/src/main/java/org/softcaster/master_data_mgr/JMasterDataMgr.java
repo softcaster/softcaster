@@ -36,6 +36,7 @@ import org.softcaster.master_data_mgr.views.FltBondPanel;
 import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.FxFuturePanel;
 import org.softcaster.master_data_mgr.views.HomePanel;
+import org.softcaster.master_data_mgr.views.FutureProductPanel;
 import org.softcaster.master_data_mgr.views.IssuerPanel;
 import org.softcaster.master_data_mgr.views.MarketQuoteDefinitionPanel;
 import org.softcaster.master_data_mgr.views.MmFuturePanel;
@@ -119,6 +120,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                             cl.show(mainPanel, AppCard.CURRENCY_CARD.name());
                             currentCard = AppCard.CURRENCY_CARD;
                         }
+                        case FUTURE_PRODUCT -> {
+                            cl.show(mainPanel, AppCard.FUTURE_PRODUCT_CARD.name());
+                            currentCard = AppCard.FUTURE_PRODUCT_CARD;
+                        }
                         case BOND_FUTURE -> {
                             cl.show(mainPanel, AppCard.BOND_FUTURE_CARD.name());
                             currentCard = AppCard.BOND_FUTURE_CARD;
@@ -158,6 +163,14 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case ISSUER -> {
                             cl.show(mainPanel, AppCard.ISSUER_CARD.name());
                             currentCard = AppCard.ISSUER_CARD;
+                        }
+                        case FX_FUTURE_OPTION -> {
+                            cl.show(mainPanel, AppCard.FX_FUTURE_OPTION_CARD.name());
+                            currentCard = AppCard.FX_FUTURE_OPTION_CARD;
+                        }
+                        case BOND_FUTURE_OPTION -> {
+                            cl.show(mainPanel, AppCard.BOND_FUTURE_OPTION_CARD.name());
+                            currentCard = AppCard.BOND_FUTURE_OPTION_CARD;
                         }
                         case FX_OPTION -> {
                             cl.show(mainPanel, AppCard.FX_OPTION_CARD.name());
@@ -433,6 +446,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         JPanel currPairPanel = new CurrPairPanel(masterDataFacade);
         cardMap.put(AppCard.CURR_PAIR_CARD, currPairPanel);
 
+        JPanel futureProductPanel = new FutureProductPanel(masterDataFacade);
+        cardMap.put(AppCard.FUTURE_PRODUCT_CARD, futureProductPanel);
+
         JPanel futBondPanel = new BondFuturePanel(masterDataFacade);
         cardMap.put(AppCard.BOND_FUTURE_CARD, futBondPanel);
 
@@ -466,11 +482,21 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         JPanel extDeliveryFuturePanel = new ExtDeliveryFuturePanel(masterDataFacade);
         cardMap.put(AppCard.EXT_DELIVERY_FUTURE_CARD, extDeliveryFuturePanel);
 
-        // opzioni: un pannello per famiglia di sottostante (asset class della testata)
-        JPanel fxOptionPanel = new OptionPanel(masterDataFacade, "Fx Option Master Data", List.of("FFO", "FXO"));
+        // opzioni: un pannello per ramo (su future / su strumento secco) e famiglia (asset class della testata)
+        JPanel fxFutureOptionPanel = new OptionPanel(masterDataFacade, "Fx Future Option Master Data",
+                OptionPanel.Branch.FUTURE, List.of("FFO"));
+        cardMap.put(AppCard.FX_FUTURE_OPTION_CARD, fxFutureOptionPanel);
+
+        JPanel bondFutureOptionPanel = new OptionPanel(masterDataFacade, "Bond Future Option Master Data",
+                OptionPanel.Branch.FUTURE, List.of("BFO"));
+        cardMap.put(AppCard.BOND_FUTURE_OPTION_CARD, bondFutureOptionPanel);
+
+        JPanel fxOptionPanel = new OptionPanel(masterDataFacade, "Fx Option Master Data",
+                OptionPanel.Branch.SPOT, List.of("FXO"));
         cardMap.put(AppCard.FX_OPTION_CARD, fxOptionPanel);
 
-        JPanel bondOptionPanel = new OptionPanel(masterDataFacade, "Bond Option Master Data", List.of("BFO", "BDO"));
+        JPanel bondOptionPanel = new OptionPanel(masterDataFacade, "Bond Option Master Data",
+                OptionPanel.Branch.SPOT, List.of("BDO"));
         cardMap.put(AppCard.BOND_OPTION_CARD, bondOptionPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
@@ -479,6 +505,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(fltBondPanel, AppCard.FLT_BOND_CARD.name());
         mainPanel.add(fxPanel, AppCard.CURRENCY_CARD.name());
         mainPanel.add(currPairPanel, AppCard.CURR_PAIR_CARD.name());
+        mainPanel.add(futureProductPanel, AppCard.FUTURE_PRODUCT_CARD.name());
         mainPanel.add(futBondPanel, AppCard.BOND_FUTURE_CARD.name());
         mainPanel.add(fxFuturePanel, AppCard.FX_FUTURE_CARD.name());
         mainPanel.add(mmFuturePanel, AppCard.MM_FUTURE_CARD.name());
@@ -489,6 +516,8 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(issuerPanel, AppCard.ISSUER_CARD.name());
         mainPanel.add(cmdFuturePanel, AppCard.CMD_FUTURE_CARD.name());
         mainPanel.add(extDeliveryFuturePanel, AppCard.EXT_DELIVERY_FUTURE_CARD.name());
+        mainPanel.add(fxFutureOptionPanel, AppCard.FX_FUTURE_OPTION_CARD.name());
+        mainPanel.add(bondFutureOptionPanel, AppCard.BOND_FUTURE_OPTION_CARD.name());
         mainPanel.add(fxOptionPanel, AppCard.FX_OPTION_CARD.name());
         mainPanel.add(bondOptionPanel, AppCard.BOND_OPTION_CARD.name());
 

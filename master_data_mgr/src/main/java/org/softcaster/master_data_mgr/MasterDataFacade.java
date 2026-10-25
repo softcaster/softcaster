@@ -14,13 +14,13 @@ import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
 import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.FltSecurityMasterDataDAO;
+import org.softcaster.core.data.FutureOptionMasterDataDAO;
 import org.softcaster.core.data.ForexMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.IssuerDAO;
 import org.softcaster.core.data.MarketQuoteDefinitionDAO;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.MmFutureMasterDataDAO;
-import org.softcaster.core.data.OptionMasterDataDAO;
 import org.softcaster.core.data.OptionProductDAO;
 import org.softcaster.core.data.PortfolioMasterDataDAO;
 import org.softcaster.core.data.PositionMasterDataDAO;
@@ -28,6 +28,7 @@ import org.softcaster.core.data.PowerFutureMasterDataDAO;
 import org.softcaster.core.data.RefRateIndexDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SettlementTypeDAO;
+import org.softcaster.core.data.SpotOptionMasterDataDAO;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.core.data.account.GlAccountDAO;
@@ -68,7 +69,9 @@ public class MasterDataFacade {
     @Autowired
     private OptionProductDAO optionProductDAO;
     @Autowired
-    private OptionMasterDataDAO optionMasterDataDAO;
+    private FutureOptionMasterDataDAO futureOptionMasterDataDAO;
+    @Autowired
+    private SpotOptionMasterDataDAO spotOptionMasterDataDAO;
 
     @Autowired
     private IssuerDAO issuerDAO;
@@ -138,10 +141,17 @@ public class MasterDataFacade {
     }
 
     /**
-     * @return the optionMasterDataDAO (serie delle opzioni)
+     * @return the futureOptionMasterDataDAO (serie delle opzioni su future)
      */
-    public OptionMasterDataDAO getOptionMasterDataDAO() {
-        return optionMasterDataDAO;
+    public FutureOptionMasterDataDAO getFutureOptionMasterDataDAO() {
+        return futureOptionMasterDataDAO;
+    }
+
+    /**
+     * @return the spotOptionMasterDataDAO (serie delle opzioni su strumento secco)
+     */
+    public SpotOptionMasterDataDAO getSpotOptionMasterDataDAO() {
+        return spotOptionMasterDataDAO;
     }
 
     /**

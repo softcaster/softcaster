@@ -14,6 +14,7 @@ export const BondPView = lazy(() => import('../components/views/BondPView'));
 export const BondFutureView = lazy(() => import('../components/views/BondFutureView'));
 export const BondFuturePView = lazy(() => import('../components/views/BondFuturePView.tsx'));
 export const FxFuturePView = lazy(() => import('../components/views/FxFuturePView.tsx'));
+export const OptionPView = lazy(() => import('../components/views/OptionPView.tsx'));
 export const PositionProspectView = lazy(() => import('../components/views/PositionProspectView'));
 export const AccountingProspectView = lazy(() => import('../components/views/AccountingProspectView'));
 
@@ -94,6 +95,17 @@ export const navigationNodes: TreeNode[] = [
             label: 'FX Futures',
             data: '/fxfuture-p' // link
           },
+        ]
+      },
+      {
+        key: 'options-p',
+        label: 'Options',
+        children: [
+          {
+            key: 'option-key-p',
+            label: 'Options',   // su future, su cambio e su titolo: il modello lo sceglie la serie
+            data: '/option-p'
+          }
         ]
       }
     ]

@@ -11,18 +11,28 @@ import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.core.data.OptionMasterData;
 import org.softcaster.master_data_mgr.MasterDataFacade;
-import org.softcaster.master_data_mgr.dialogs.OptionDlg;
+import org.softcaster.master_data_mgr.dialogs.FutureOptionDlg;
+import org.softcaster.master_data_mgr.dialogs.SpotOptionDlg;
 import org.softcaster.master_data_mgr.models.OptionTableModel;
 import org.softcaster.master_data_mgr.models.beans.OptionBean;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
 
 /**
- * Serie di opzioni delle testate con le asset class indicate (es. FFO e FXO
- * per le opzioni su cambi).
+ * Serie di opzioni di un ramo (su future o su strumento secco) e delle
+ * famiglie indicate (es. FFO per le opzioni su FX future, FXO per quelle sul
+ * cambio).
  */
 public class OptionPanel extends FndtAbstactPanel {
 
+    /**
+     * Ramo dell'anagrafica delle opzioni mostrato dal pannello.
+     */
+    public enum Branch {
+        FUTURE, SPOT
+    }
+
     private final MasterDataFacade masterDataFacade;
+    private final Branch branch;
     private final List<String> assetClasses;
 
     /**
@@ -30,10 +40,12 @@ public class OptionPanel extends FndtAbstactPanel {
      *
      * @param masterDataFacade
      * @param title
+     * @param branch ramo delle serie mostrate
      * @param assetClasses asset class delle testate mostrate
      */
-    public OptionPanel(MasterDataFacade masterDataFacade, String title, List<String> assetClasses) {
+    public OptionPanel(MasterDataFacade masterDataFacade, String title, Branch branch, List<String> assetClasses) {
         this.masterDataFacade = masterDataFacade;
+        this.branch = branch;
         this.assetClasses = assetClasses;
         initComponents();
         lblHeader.setText(title);
@@ -112,6 +124,9 @@ public class OptionPanel extends FndtAbstactPanel {
         }
     }
 
+    /**
+     * Finestra del ramo: FutureOptionDlg (codice e ISIN CME) o SpotOptionDlg.
+     */
     private void openDialog(OptionBean bean) {
         java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
         java.awt.Frame parentFrame = null;
@@ -120,7 +135,9 @@ public class OptionPanel extends FndtAbstactPanel {
             parentFrame = frame;
         }
 
-        OptionDlg dialog = new OptionDlg(parentFrame, true, bean, masterDataFacade, assetClasses);
+        javax.swing.JDialog dialog = branch == Branch.FUTURE
+                ? new FutureOptionDlg(parentFrame, true, bean, masterDataFacade, assetClasses)
+                : new SpotOptionDlg(parentFrame, true, bean, masterDataFacade, assetClasses);
         dialog.setSize(640, 420);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
@@ -148,7 +165,10 @@ public class OptionPanel extends FndtAbstactPanel {
 
     @Override
     protected void refreshModel(FndtTableModel ftm) {
-        List<OptionMasterData> options = masterDataFacade.getOptionMasterDataDAO().findAllByProductAssetClass(assetClasses);
+        // serie del ramo, gia' ordinate per testata, scadenza, tipo e strike
+        List<? extends OptionMasterData> options = branch == Branch.FUTURE
+                ? masterDataFacade.getFutureOptionMasterDataDAO().findAllByProductAssetClass(assetClasses)
+                : masterDataFacade.getSpotOptionMasterDataDAO().findAllByProductAssetClass(assetClasses);
 
         List<OptionBean> beans = new ArrayList<>();
         for (OptionMasterData item : options) {

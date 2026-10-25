@@ -48,4 +48,22 @@ public class PricingResponse implements Serializable {
     public Double ctdImpliedRepo = null;
     // DV01 del future (DV01 del CTD / CF)
     public Double futureDv01 = null;
+
+    // -- opzioni (premio unitario, per 1 unita' di sottostante)
+    public String optionModel = null;
+    public Double optionPremium = null;
+    // premio x contract value x multiplier
+    public Double optionValue = null;
+    // volatilita' usata: quella della request o l'implicita del premio di mercato
+    public Double volatility = null;
+    public Double underlyingForward = null;
+    public Double discountFactor = null;
+    // anni ACT/365
+    public Double timeToExpiry = null;
+    // vega per punto di volatilita', theta per giorno, rho per punto di tasso
+    public Double delta = null;
+    public Double gamma = null;
+    public Double vega = null;
+    public Double theta = null;
+    public Double rho = null;
 }

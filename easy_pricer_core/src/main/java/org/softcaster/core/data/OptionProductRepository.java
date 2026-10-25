@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface OptionProductRepository extends JpaRepository<OptionProduct, Integer> {
 
-    @EntityGraph(attributePaths = {"currency", "assetClass", "futureProduct", "underlying"})
+    @EntityGraph(attributePaths = {"currency", "assetClass"}, type = EntityGraph.EntityGraphType.LOAD)
     Optional<OptionProduct> findByCode(String code);
 
     @Query("SELECT p FROM OptionProduct p ORDER BY p.code")
-    @EntityGraph(attributePaths = {"currency", "assetClass", "futureProduct", "underlying"})
+    @EntityGraph(attributePaths = {"currency", "assetClass"}, type = EntityGraph.EntityGraphType.LOAD)
     List<OptionProduct> findAllOrderByCode();
 }

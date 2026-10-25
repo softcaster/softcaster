@@ -116,6 +116,65 @@ public class BondForwardCalculator {
         return toInput(futureIsin, basket, repoCurve, quotedFuturePrice);
     }
 
+    /**
+     * Bond forward OTC su un singolo titolo: paniere di un titolo con fattore
+     * di conversione 1, quindi il prezzo teorico e' il prezzo secco a termine
+     * (es. per il Black-76 di un'opzione su titolo).
+     *
+     * @param isin codice o ISIN del titolo
+     * @param officialDate data di riferimento (oggi)
+     * @param deliveryDate data valuta a termine
+     * @param cleanPrice prezzo secco a pronti; null o <= 0 = quotazione in anagrafica
+     * @param repoCurveCode curva repo; se vuota si usa repoRate
+     * @param repoRate tasso repo (DECIMALE, interesse semplice ACT/360)
+     * @return
+     */
+    public XRBForwardInput getSingleBondForwardInput(String isin, LocalDate officialDate, LocalDate deliveryDate,
+            Double cleanPrice, String repoCurveCode, Double repoRate) {
+        Objects.requireNonNull(officialDate, "officialDate");
+        Objects.requireNonNull(deliveryDate, "deliveryDate");
+        // flussi e festivita' della valuta (calendario del regolamento) caricati in sessione
+        SecurityMasterData smd;
+        try {
+            smd = smdDAO.findByCodeWithCashFlowAndHolidays(isin);
+        } catch (NoSuchElementException ex) {
+            throw new NoSuchElementException("Titolo non trovato: " + isin);
+        }
+        if (smd.getCashFlows() == null || smd.getCashFlows().isEmpty()) {
+            throw new IllegalArgumentException("Flussi mancanti per " + isin);
+        }
+        double spot;
+        if (cleanPrice != null && cleanPrice > 0) {
+            spot = cleanPrice;
+        } else {
+            InstrumentQuote quote = instrumentQuoteDAO.findByMasterDataCode(smd.getIsin());
+            if (quote == null) {
+                throw new IllegalArgumentException("Prezzo mancante per " + isin);
+            }
+            spot = spotCleanPrice(quote);
+        }
+        CashFlowSchedule schedule = new CashFlowSchedule(Utils.convertCashFlow(smd.getCashFlows()),
+                smd.getAccrualDaycount(), smd.getFrequency(), smd.getCompounding());
+
+        LocalDate valuationDate = new Calendar(smd.getCurrency()).getNextBusinessDate(officialDate, smd.getBusinessDays());
+        if (!deliveryDate.isAfter(valuationDate)) {
+            throw new IllegalArgumentException("Data a termine " + deliveryDate + " non successiva al regolamento a pronti "
+                    + valuationDate + " per " + isin);
+        }
+        Basket basket = new Basket(smd.getCurrency(), valuationDate, deliveryDate,
+                List.of(new DeliverableBond(smd.getIsin(), schedule, spot, 1.0)));
+
+        DiscountCurve repoCurve;
+        if (repoCurveCode != null && !repoCurveCode.isBlank()) {
+            repoCurve = loadCurve(repoCurveCode, valuationDate);
+        } else if (repoRate != null) {
+            repoCurve = singleRateCurve(repoRate, basket);
+        } else {
+            throw new IllegalArgumentException("Tasso o curva repo mancante (domesticRate / domesticRCurve)");
+        }
+        return toInput(smd.getIsin(), basket, repoCurve, null);
+    }
+
     // ------------------------------------------------------------------------
     // -- Valutazione
     // ------------------------------------------------------------------------

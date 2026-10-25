@@ -95,7 +95,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
-        txtContractCode = new javax.swing.JTextField();
+        cbProduct = new javax.swing.JComboBox<>();
         cbCurrency = new javax.swing.JComboBox<>();
         cbDaycount = new javax.swing.JComboBox<>();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
@@ -135,10 +135,32 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         fieldPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
         fieldPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Code");
+        jLabel9.setText("Product");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(jLabel9, gridBagConstraints);
+        cbProduct.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbProductActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(cbProduct, gridBagConstraints);
+        jLabel1.setText("Code");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.3;
@@ -148,7 +170,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         jLabel2.setText("Description");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.7;
@@ -156,7 +178,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         fieldPanel.add(jLabel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -164,7 +186,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         fieldPanel.add(txtIsin, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -175,7 +197,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         jLabel3.setText("Contract Value");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -185,7 +207,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         jLabel4.setText("Tick Size");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -200,7 +222,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -215,7 +237,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -230,7 +252,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -240,7 +262,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         jLabel5.setText("Initial Margin");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -250,7 +272,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         jLabel6.setText("Issue Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -265,7 +287,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -275,7 +297,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         jLabel7.setText("Expity Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -290,7 +312,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -300,7 +322,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         jLabel8.setText("Last Trading Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -315,7 +337,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -323,7 +345,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         fieldPanel.add(txtLastTradingDate, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         fieldPanel.add(filler1, gridBagConstraints);
@@ -332,16 +354,6 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
 
         additionalPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
         additionalPanel.setLayout(new java.awt.GridBagLayout());
-
-        jLabel9.setText("Contract Code");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        additionalPanel.add(jLabel9, gridBagConstraints);
 
         jLabel10.setText("Currency");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -362,14 +374,6 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         additionalPanel.add(jLabel11, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        additionalPanel.add(txtContractCode, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -753,6 +757,10 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         DialogHelper.textFieldDateFocusLost(txtDeliveryEnd);
     }//GEN-LAST:event_txtDeliveryEndFocusLost
 
+    private void cbProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbProductActionPerformed
+        showProduct();
+    }//GEN-LAST:event_cbProductActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel additionalPanel;
     private javax.swing.JButton btnCancel;
@@ -762,6 +770,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
     private javax.swing.JComboBox<DaycountBasis> cbDaycount;
     private javax.swing.JComboBox<DeliveryPeriodType> cbDeliveryPeriodType;
     private javax.swing.JComboBox<LoadType> cbLoadType;
+    private javax.swing.JComboBox<PowerFutureProduct> cbProduct;
     private javax.swing.JComboBox<SettlementType> cbSettlementType;
     private javax.swing.JComboBox<CommodityType> cbUnderlying;
     private javax.swing.JPanel deliveryPanel;
@@ -794,7 +803,6 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
     private javax.swing.JPanel mainPanel;
     private javax.swing.JSpinner spinnerDH;
     private javax.swing.JTabbedPane tabbedPane;
-    private javax.swing.JTextField txtContractCode;
     private javax.swing.JTextField txtContractValue;
     private javax.swing.JTextField txtDeliveryEnd;
     private javax.swing.JTextField txtDeliveryStart;
@@ -818,26 +826,21 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         setUpDeliveryPeriodTypeCombo();
         setUpLoadTypeCombo();
         setUpSpinner();
+        FutureProductHelper.setUpProductCombo(cbProduct, masterDataFacade.getFutureProductDAO(), PowerFutureProduct.class);
+        FutureProductHelper.lock(txtContractValue, txtTickSize, txtInitMargin, txtMainMant,
+                cbCurrency, cbDaycount, cbSettlementType, cbUnderlying, cbLoadType);
 
         if (bean != null) {
             isInsert = false;
             txtIsin.setText(bean.getPowerFutureMasterData().getIsin());
             txtIsin.setEditable(false);
             txtDescription.setText(bean.getPowerFutureMasterData().getDescription());
-            txtContractValue.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getContractValue()));
-            txtTickSize.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getTickSize()));
-            txtInitMargin.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getInitialMargin()));
             txtIssueDate.setText(new Date(bean.getPowerFutureMasterData().getIssueDate()).toString());
             txtExpiryDate.setText(new Date(bean.getPowerFutureMasterData().getMaturityDate()).toString());
             txtLastTradingDate.setText(new Date(bean.getPowerFutureMasterData().getLastTradingDate()).toString());
-            txtContractCode.setText(bean.getPowerFutureMasterData().getExchangeContractCode());
-            cbCurrency.setSelectedItem(bean.getPowerFutureMasterData().getCurrency());
-            cbSettlementType.setSelectedItem(bean.getPowerFutureMasterData().getSettlementType());
-            txtMainMant.setText(Converter.fromDouble(bean.getPowerFutureMasterData().getMaintenanceMargin()));
-            cbUnderlying.setSelectedItem(bean.getPowerFutureMasterData().getCommodityType());
+            FutureProductHelper.selectById(cbProduct, bean.getPowerFutureMasterData().getProduct().getIdFutureProduct(),
+                    PowerFutureProduct::getIdFutureProduct);
 
-            cbLoadType.setSelectedItem(bean.getPowerFutureMasterData().getLoadType());
-            
             cbDeliveryPeriodType.setSelectedItem(bean.getPowerFutureMasterData().getDeliveryPeriodType());
             txtDeliveryStart.setText(new Date(bean.getPowerFutureMasterData().getDeliveryStart()).toString());
             txtDeliveryEnd.setText(new Date(bean.getPowerFutureMasterData().getDeliveryEnd()).toString());
@@ -847,10 +850,26 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
 
         }
 
-        // Aggiungo i campi alla lista di validazione
-        fieldsToValidate = Arrays.asList(txtIsin, txtDescription, txtContractValue, txtTickSize,
-                txtInitMargin, txtIssueDate, txtExpiryDate, txtLastTradingDate, txtContractCode, txtMainMant);
+        showProduct();
 
+        // Aggiungo i campi alla lista di validazione
+        fieldsToValidate = Arrays.asList(txtIsin, txtDescription, txtIssueDate, txtExpiryDate, txtLastTradingDate);
+
+    }
+
+    /**
+     * Dati di prodotto della testata scelta, in sola lettura.
+     */
+    private void showProduct() {
+        PowerFutureProduct p = (PowerFutureProduct) cbProduct.getSelectedItem();
+        txtContractValue.setText(p == null ? "" : FutureProductHelper.format(p.getContractValue()));
+        txtTickSize.setText(p == null ? "" : FutureProductHelper.format(p.getTickSize()));
+        txtInitMargin.setText(p == null ? "" : FutureProductHelper.format(p.getInitialMargin()));
+        txtMainMant.setText(p == null ? "" : FutureProductHelper.format(p.getMaintenanceMargin()));
+        cbSettlementType.setSelectedItem(p == null ? null : p.getSettlementType());
+        cbUnderlying.setSelectedItem(p == null ? null : p.getCommodityType());
+        cbLoadType.setSelectedItem(p == null ? null : p.getLoadType());
+        FutureProductHelper.selectById(cbCurrency, p == null ? null : p.getCurrency().getIdCurrency(), Currency::getIdCurrency);
     }
 
     private void setUpCurrencyCombo() {
@@ -891,6 +910,9 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
     }
 
     private boolean validateIntegrity() {
+        if (cbProduct.getSelectedItem() == null) {
+            return false;
+        }
         if (isInsert) {
             // Controlla univocita codice ISIN
             String isin = txtIsin.getText();
@@ -917,7 +939,6 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         try {
             if (isInsert) {
                 bean = new PowerFutBean(new PowerFutureMasterData());
-                fillDefaultFields();
             }
             PowerFutureMasterData ffmd = bean.getPowerFutureMasterData();
             ffmd.setIsin(txtIsin.getText());
@@ -926,24 +947,11 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
             ffmd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             ffmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
             ffmd.setLastTradingLocalDate(new Date(txtLastTradingDate.getText()).sqlDate().toLocalDate());
-            Currency currency = (Currency) cbCurrency.getSelectedItem();
-            ffmd.setCurrency(currency);
-            // codice contratto = codice della testata: creata o aggiornata con i dati di prodotto
-            CommodityType commodityType = (CommodityType) cbUnderlying.getSelectedItem();
-            LoadType loadType = (LoadType) cbLoadType.getSelectedItem();
-            ffmd.setProduct(FutureProductHelper.resolve(masterDataFacade.getFutureProductDAO(),
-                    PowerFutureProduct.class, PowerFutureProduct::new,
-                    new FutureProductHelper.ProductFields(txtContractCode.getText(), null,
-                            (SettlementType) cbSettlementType.getSelectedItem(),
-                            Converter.toDouble(txtContractValue.getText(), false),
-                            Converter.toDouble(txtTickSize.getText(), false),
-                            Converter.toDouble(txtInitMargin.getText(), false),
-                            Converter.toDouble(txtMainMant.getText(), false)),
-                    ffmd, p -> {
-                        p.setCommodityType(commodityType);
-                        p.setLoadType(loadType);
-                    }));
-            
+            // valuta, asset class, business days e multiplier vengono dalla testata
+            PowerFutureProduct product = (PowerFutureProduct) cbProduct.getSelectedItem();
+            ffmd.setProduct(product);
+            FutureProductHelper.applyProduct(ffmd, product);
+
             ffmd.setMarket("EEX");
             ffmd.setDeliveryPeriodType((DeliveryPeriodType) cbDeliveryPeriodType.getSelectedItem());
             ffmd.setDeliveryStart(new Date(txtDeliveryStart.getText()).sqlDate());
@@ -958,14 +966,6 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return false;
         }
-    }
-
-    private void fillDefaultFields() {
-        // Aggiungo campi standard
-        bean.getPowerFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("CFU"));
-
-        bean.getPowerFutureMasterData().setBusinessDays(0);
-        bean.getPowerFutureMasterData().setMultiplier(1.);
     }
 
     private void setUpDeliveryPeriodTypeCombo() {

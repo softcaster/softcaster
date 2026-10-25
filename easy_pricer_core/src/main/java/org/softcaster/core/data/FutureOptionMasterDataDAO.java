@@ -7,14 +7,14 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Serie delle opzioni (option_master_data).
+ * Serie delle opzioni su future (future_option_master_data).
  */
 @Repository
-public class OptionMasterDataDAO extends AbstractMasterDataDAO<OptionMasterData, OptionMasterDataRepository> {
+public class FutureOptionMasterDataDAO extends AbstractMasterDataDAO<FutureOptionMasterData, FutureOptionMasterDataRepository> {
 
     private final Sort sortByCode = Sort.by(Sort.Direction.ASC, "code");
 
-    public OptionMasterDataDAO(OptionMasterDataRepository repository) {
+    public FutureOptionMasterDataDAO(FutureOptionMasterDataRepository repository) {
         super(repository);
     }
 
@@ -23,7 +23,7 @@ public class OptionMasterDataDAO extends AbstractMasterDataDAO<OptionMasterData,
      */
     @Transactional(readOnly = true)
     @Override
-    public List<OptionMasterData> findAll() {
+    public List<FutureOptionMasterData> findAll() {
         return repository.findAll(sortByCode);
     }
 
@@ -31,17 +31,17 @@ public class OptionMasterDataDAO extends AbstractMasterDataDAO<OptionMasterData,
      * Serie delle testate con le asset class indicate (FFO, FXO...).
      */
     @Transactional(readOnly = true)
-    public List<OptionMasterData> findAllByProductAssetClass(List<String> assetClasses) {
+    public List<FutureOptionMasterData> findAllByProductAssetClass(List<String> assetClasses) {
         return repository.findAllByProductAssetClass(assetClasses);
     }
 
     @Transactional(readOnly = true)
-    public OptionMasterData getByCodeOrIsin(String codeOrIsin) {
+    public FutureOptionMasterData getByCodeOrIsin(String codeOrIsin) {
         if (codeOrIsin == null || codeOrIsin.isBlank()) {
-            throw new IllegalArgumentException("Codice opzione mancante");
+            throw new IllegalArgumentException("Codice opzione su future mancante");
         }
         return repository.findByCodeWithUnderlying(codeOrIsin)
                 .or(() -> repository.findByIsinWithUnderlying(codeOrIsin))
-                .orElseThrow(() -> new NoSuchElementException("Opzione non trovata: " + codeOrIsin));
+                .orElseThrow(() -> new NoSuchElementException("Opzione su future non trovata: " + codeOrIsin));
     }
 }

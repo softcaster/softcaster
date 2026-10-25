@@ -5,17 +5,23 @@
 package org.softcaster.easy_pricer_mds_core.config;
 
 import org.softcaster.core.data.BondFutureMasterDataDAO;
+import org.softcaster.core.data.FutureOptionMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
+import org.softcaster.core.data.SpotOptionMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.FxForwardCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.OptionCalculator;
 import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
+import org.softcaster.engine.analytics.Black76Pricer;
+import org.softcaster.engine.analytics.CRRBinomialPricer;
 import org.softcaster.engine.analytics.FRBPricer;
 import org.softcaster.engine.analytics.FxForwardPricer;
+import org.softcaster.engine.analytics.GarmanKohlhagenPricer;
 import org.softcaster.engine.analytics.XRBForwardPricer;
 import org.softcaster.engine.analytics.XRBPricer;
 import org.softcaster.engine.config.EngineAutoConfiguration;
@@ -59,6 +65,21 @@ public class MdsCoreAutoConfiguration {
             MarketDataService marketDataService,
             FxForwardPricer fxForwardPricer) {
         return new FxForwardCalculator(fxFutureMasterDataDAO, marketDataService, fxForwardPricer);
+    }
+
+    @Bean(name = "optionCalculator")
+    @ConditionalOnMissingBean
+    public OptionCalculator optionCalculator(
+            FutureOptionMasterDataDAO futureOptionMasterDataDAO,
+            SpotOptionMasterDataDAO spotOptionMasterDataDAO,
+            FxFutureMasterDataDAO fxFutureMasterDataDAO,
+            BondForwardCalculator bondForwardCalculator,
+            MarketDataService marketDataService,
+            Black76Pricer black76Pricer,
+            GarmanKohlhagenPricer garmanKohlhagenPricer,
+            CRRBinomialPricer crrPricer) {
+        return new OptionCalculator(futureOptionMasterDataDAO, spotOptionMasterDataDAO, fxFutureMasterDataDAO,
+                bondForwardCalculator, marketDataService, black76Pricer, garmanKohlhagenPricer, crrPricer);
     }
 
     @Bean(name = "cashFlowInstrumentCalculator")

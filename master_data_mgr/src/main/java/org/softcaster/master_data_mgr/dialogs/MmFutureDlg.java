@@ -88,7 +88,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
-        txtContractCode = new javax.swing.JTextField();
+        cbProduct = new javax.swing.JComboBox<>();
         cbCurrency = new javax.swing.JComboBox<>();
         cbDaycount = new javax.swing.JComboBox<>();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
@@ -112,10 +112,32 @@ public class MmFutureDlg extends javax.swing.JDialog {
         fieldPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
         fieldPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Code");
+        jLabel9.setText("Product");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(jLabel9, gridBagConstraints);
+        cbProduct.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbProductActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(cbProduct, gridBagConstraints);
+        jLabel1.setText("Code");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.3;
@@ -125,7 +147,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         jLabel2.setText("Description");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.7;
@@ -133,7 +155,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         fieldPanel.add(jLabel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -141,7 +163,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         fieldPanel.add(txtIsin, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -152,7 +174,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         jLabel3.setText("Contract Value");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -162,7 +184,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         jLabel4.setText("Tick Size");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -177,7 +199,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -192,7 +214,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -207,7 +229,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -217,7 +239,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         jLabel5.setText("Initial Margin");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -227,7 +249,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         jLabel6.setText("Issue Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -242,7 +264,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -252,7 +274,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         jLabel7.setText("Expity Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -267,7 +289,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -277,7 +299,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         jLabel8.setText("Last Trading Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -292,7 +314,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -300,7 +322,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
         fieldPanel.add(txtLastTradingDate, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         fieldPanel.add(filler1, gridBagConstraints);
@@ -309,16 +331,6 @@ public class MmFutureDlg extends javax.swing.JDialog {
 
         additionalPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
         additionalPanel.setLayout(new java.awt.GridBagLayout());
-
-        jLabel9.setText("Contract Code");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        additionalPanel.add(jLabel9, gridBagConstraints);
 
         jLabel10.setText("Currency");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -339,14 +351,6 @@ public class MmFutureDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         additionalPanel.add(jLabel11, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        additionalPanel.add(txtContractCode, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -543,6 +547,10 @@ public class MmFutureDlg extends javax.swing.JDialog {
         DialogHelper.textFieldDoubleFocusLost(txtMainMant);
     }//GEN-LAST:event_txtMainMantFocusLost
 
+    private void cbProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbProductActionPerformed
+        showProduct();
+    }//GEN-LAST:event_cbProductActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel additionalPanel;
     private javax.swing.JButton btnCancel;
@@ -550,6 +558,7 @@ public class MmFutureDlg extends javax.swing.JDialog {
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<Currency> cbCurrency;
     private javax.swing.JComboBox<DaycountBasis> cbDaycount;
+    private javax.swing.JComboBox<MmFutureProduct> cbProduct;
     private javax.swing.JComboBox<SettlementType> cbSettlementType;
     private javax.swing.JComboBox<ForexMasterData> cbUnderlying;
     private javax.swing.JPanel fieldPanel;
@@ -572,7 +581,6 @@ public class MmFutureDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTabbedPane tabbedPane;
-    private javax.swing.JTextField txtContractCode;
     private javax.swing.JTextField txtContractValue;
     private javax.swing.JTextField txtDescription;
     private javax.swing.JTextField txtExpiryDate;
@@ -589,29 +597,41 @@ public class MmFutureDlg extends javax.swing.JDialog {
         setUpDaycountCombo();
         setUpSettlementCombo();
         setUpUnderlyingCombo();
+        FutureProductHelper.setUpProductCombo(cbProduct, masterDataFacade.getFutureProductDAO(), MmFutureProduct.class);
+        FutureProductHelper.lock(txtContractValue, txtTickSize, txtInitMargin, txtMainMant,
+                cbCurrency, cbDaycount, cbSettlementType, cbUnderlying);
 
         if (bean != null) {
             isInsert = false;
             txtIsin.setText(bean.getMmFutureMasterData().getIsin());
             txtIsin.setEditable(false);
             txtDescription.setText(bean.getMmFutureMasterData().getDescription());
-            txtContractValue.setText(Converter.fromDouble(bean.getMmFutureMasterData().getContractValue()));
-            txtTickSize.setText(Converter.fromDouble(bean.getMmFutureMasterData().getTickSize()));
-            txtInitMargin.setText(Converter.fromDouble(bean.getMmFutureMasterData().getInitialMargin()));
             txtIssueDate.setText(new Date(bean.getMmFutureMasterData().getIssueDate()).toString());
             txtExpiryDate.setText(new Date(bean.getMmFutureMasterData().getMaturityDate()).toString());
             txtLastTradingDate.setText(new Date(bean.getMmFutureMasterData().getLastTradingDate()).toString());
-            txtContractCode.setText(bean.getMmFutureMasterData().getExchangeContractCode());
-            cbCurrency.setSelectedItem(bean.getMmFutureMasterData().getCurrency());
-            cbSettlementType.setSelectedItem(bean.getMmFutureMasterData().getSettlementType());
-            txtMainMant.setText(Converter.fromDouble(bean.getMmFutureMasterData().getMaintenanceMargin()));
-            cbUnderlying.setSelectedItem(bean.getMmFutureMasterData().getUnderlying());
+            FutureProductHelper.selectById(cbProduct, bean.getMmFutureMasterData().getProduct().getIdFutureProduct(),
+                    MmFutureProduct::getIdFutureProduct);
         }
+        showProduct();
 
         // Aggiungo i campi alla lista di validazione
-        fieldsToValidate = Arrays.asList(txtIsin, txtDescription, txtContractValue, txtTickSize,
-                txtInitMargin, txtIssueDate, txtExpiryDate, txtLastTradingDate, txtContractCode,txtMainMant);
+        fieldsToValidate = Arrays.asList(txtIsin, txtDescription, txtIssueDate, txtExpiryDate, txtLastTradingDate);
 
+    }
+
+    /**
+     * Dati di prodotto della testata scelta, in sola lettura.
+     */
+    private void showProduct() {
+        MmFutureProduct p = (MmFutureProduct) cbProduct.getSelectedItem();
+        txtContractValue.setText(p == null ? "" : FutureProductHelper.format(p.getContractValue()));
+        txtTickSize.setText(p == null ? "" : FutureProductHelper.format(p.getTickSize()));
+        txtInitMargin.setText(p == null ? "" : FutureProductHelper.format(p.getInitialMargin()));
+        txtMainMant.setText(p == null ? "" : FutureProductHelper.format(p.getMaintenanceMargin()));
+        cbSettlementType.setSelectedItem(p == null ? null : p.getSettlementType());
+        FutureProductHelper.selectById(cbCurrency, p == null ? null : p.getCurrency().getIdCurrency(), Currency::getIdCurrency);
+        FutureProductHelper.selectById(cbUnderlying, p == null ? null : p.getUnderlying().getIdMasterData(),
+                ForexMasterData::getIdMasterData);
     }
 
     private void setUpCurrencyCombo() {
@@ -652,6 +672,9 @@ public class MmFutureDlg extends javax.swing.JDialog {
     }
 
     private boolean validateIntegrity() {
+        if (cbProduct.getSelectedItem() == null) {
+            return false;
+        }
         if (isInsert) {
             // Controlla univocita codice ISIN
             String isin = txtIsin.getText();
@@ -678,7 +701,6 @@ public class MmFutureDlg extends javax.swing.JDialog {
         try {
             if (isInsert) {
                 bean = new MmFutBean(new MmFutureMasterData());
-                fillDefaultFields();
             }
             MmFutureMasterData mfmd = bean.getMmFutureMasterData();
             mfmd.setIsin(txtIsin.getText());
@@ -687,32 +709,15 @@ public class MmFutureDlg extends javax.swing.JDialog {
             mfmd.setIssueDate(new Date(txtIssueDate.getText()).sqlDate());
             mfmd.setMaturityDate(new Date(txtExpiryDate.getText()).sqlDate());
             mfmd.setLastTradingLocalDate(new Date(txtLastTradingDate.getText()).sqlDate().toLocalDate());
-            Currency currency = (Currency) cbCurrency.getSelectedItem();
-            mfmd.setCurrency(currency);
-            // codice contratto = codice della testata: creata o aggiornata con i dati di prodotto
-            ForexMasterData underlying = (ForexMasterData) cbUnderlying.getSelectedItem();
-            mfmd.setProduct(FutureProductHelper.resolve(masterDataFacade.getFutureProductDAO(),
-                    MmFutureProduct.class, MmFutureProduct::new,
-                    new FutureProductHelper.ProductFields(txtContractCode.getText(), null,
-                            (SettlementType) cbSettlementType.getSelectedItem(),
-                            Converter.toDouble(txtContractValue.getText(), false),
-                            Converter.toDouble(txtTickSize.getText(), false),
-                            Converter.toDouble(txtInitMargin.getText(), false),
-                            Converter.toDouble(txtMainMant.getText(), false)),
-                    mfmd, p -> p.setUnderlying(underlying)));
+            // valuta, asset class, business days e multiplier vengono dalla testata
+            MmFutureProduct product = (MmFutureProduct) cbProduct.getSelectedItem();
+            mfmd.setProduct(product);
+            FutureProductHelper.applyProduct(mfmd, product);
             masterDataFacade.getMmFutureMasterDataDAO().saveOrUpdate(mfmd);
             return true;
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return false;
         }
-    }
-
-    private void fillDefaultFields() {
-        // Aggiungo campi standard
-        bean.getMmFutureMasterData().setAssetClass(masterDataFacade.findAssetClass("MFU"));
-
-        bean.getMmFutureMasterData().setBusinessDays(2);
-        bean.getMmFutureMasterData().setMultiplier(1.);
     }
 }
