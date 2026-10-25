@@ -99,17 +99,19 @@ export const OptionPForm = ({ masterDataList, yieldCurveList, data, results, onC
                 </div>
 
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">{underlyingLabel(assetClass)}</label>
+                    <label className="block mb-2 font-bold text-sm">{underlyingLabel(assetClass)} (empty = quote)</label>
                     <InputNumber
                         value={data.referencePrice ?? null}
                         onValueChange={(e) => updateRequest('referencePrice', e.value ?? undefined)}
-                        mode="decimal" minFractionDigits={5} placeholder="market quote"
+                        mode="decimal" minFractionDigits={5} placeholder="0.00000"
+                        tooltip="Price of the underlying (future, spot rate or bond clean price). If empty, the server uses the current market quote."
+                        tooltipOptions={{ position: 'top' }}
                         inputStyle={{ textAlign: 'right' }}
                         className="w-full" />
                 </div>
 
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">Volatility %</label>
+                    <label className="block mb-2 font-bold text-sm">{hasMarketPremium ? 'Volatility % (first guess)' : 'Volatility %'}</label>
                     <InputNumber
                         value={data.volatility != null ? data.volatility * 100. : null}
                         onValueChange={(e) => updateRequest('volatility', e.value != null ? e.value / 100. : undefined)}
@@ -119,11 +121,13 @@ export const OptionPForm = ({ masterDataList, yieldCurveList, data, results, onC
                 </div>
 
                 <div className="col-12 md:col-3">
-                    <label className="block mb-2 font-bold text-sm">Market Premium (implied vol)</label>
+                    <label className="block mb-2 font-bold text-sm">Market Premium → implied vol</label>
                     <InputNumber
                         value={data.optionPrice ?? null}
                         onValueChange={(e) => updateRequest('optionPrice', e.value ?? undefined)}
-                        mode="decimal" minFractionDigits={6} placeholder="optional"
+                        mode="decimal" minFractionDigits={6} placeholder="0.000000"
+                        tooltip="Optional: option price observed on the market (e.g. exchange settlement). If set, the implied volatility is computed from it instead of using Volatility %."
+                        tooltipOptions={{ position: 'top' }}
                         inputStyle={{ textAlign: 'right' }}
                         className="w-full" />
                 </div>

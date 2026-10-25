@@ -10,7 +10,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import {
   navigationNodes, ForexView, FxFutureView, CmdFutureView, HomeView, PlaceholderView,
   BondView, XNoteView, BondPView, BondFutureView, BondFuturePView, PositionProspectView,
-  AccountingProspectView,FxFuturePView,FltBondView,OptionPView
+  AccountingProspectView,FxFuturePView,FltBondView,OptionPView,
+  FxOptionView, FxFutureOptionView, BondOptionView, BondFutureOptionView
 } from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
@@ -200,6 +201,10 @@ const MainLayout = () => {
               <Route path="/accounting" element={<AccountingProspectView />} />
               <Route path="/fxfuture-p" element={<FxFuturePView />} />
               <Route path="/option-p" element={<OptionPView />} />
+              <Route path="/fxoption" element={<FxOptionView />} />
+              <Route path="/fxfutureoption" element={<FxFutureOptionView />} />
+              <Route path="/bondoption" element={<BondOptionView />} />
+              <Route path="/bondfutureoption" element={<BondFutureOptionView />} />
 
               {/* Tutte le altre sezioni caricano il placeholder */}
               <Route path="/user" element={<PlaceholderView />} />

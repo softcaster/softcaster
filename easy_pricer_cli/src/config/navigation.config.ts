@@ -15,6 +15,11 @@ export const BondFutureView = lazy(() => import('../components/views/BondFutureV
 export const BondFuturePView = lazy(() => import('../components/views/BondFuturePView.tsx'));
 export const FxFuturePView = lazy(() => import('../components/views/FxFuturePView.tsx'));
 export const OptionPView = lazy(() => import('../components/views/OptionPView.tsx'));
+// deal sulle opzioni: una vista per famiglia, tutte nello stesso modulo
+export const FxOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.FxOptionView })));
+export const FxFutureOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.FxFutureOptionView })));
+export const BondOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.BondOptionView })));
+export const BondFutureOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.BondFutureOptionView })));
 export const PositionProspectView = lazy(() => import('../components/views/PositionProspectView'));
 export const AccountingProspectView = lazy(() => import('../components/views/AccountingProspectView'));
 
@@ -41,6 +46,8 @@ export const navigationNodes: TreeNode[] = [
             //icon: 'pi pi-fw pi-money-bill',
             data: '/fxfuture' // link
           },
+          { key: 'fxoption-key', label: 'FX Options', data: '/fxoption' },
+          { key: 'fxfutureoption-key', label: 'FX Future Options', data: '/fxfutureoption' },
         ]
       },
       {
@@ -51,7 +58,9 @@ export const navigationNodes: TreeNode[] = [
           { key: 'bond-key', label: 'X Bonds', /*icon: 'pi pi-fw pi-building',*/ data: '/bond' },
           { key: 'fbond-key', label: 'F Bonds', /*icon: 'pi pi-fw pi-building',*/ data: '/fbond' },
           { key: 'xnote-key', label: 'X Rate notes', /*icon: 'pi pi-fw pi-building',*/ data: '/xnote' },
-          { key: 'bondfuture-key', label: 'Bond Futures', /*icon: 'pi pi-fw pi-building',*/ data: '/bondfuture' }
+          { key: 'bondfuture-key', label: 'Bond Futures', /*icon: 'pi pi-fw pi-building',*/ data: '/bondfuture' },
+          { key: 'bondoption-key', label: 'Bond Options', data: '/bondoption' },
+          { key: 'bondfutureoption-key', label: 'Bond Future Options', data: '/bondfutureoption' }
         ]
       },
       {
