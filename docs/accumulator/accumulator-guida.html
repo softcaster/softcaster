@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Accumulator e decumulator</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  :root { --ink: #1d2733; --muted: #5b6878; --accent: #1f5f99; --line: #d5dbe3; --soft: #f3f6fa; --good: #2e7d32; --bad: #b3261e; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.45; margin: 0; }
+  h1 { font-size: 22pt; margin: 0 0 4pt 0; color: var(--accent); }
+  h2 { font-size: 14pt; color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 2pt; margin: 18pt 0 8pt 0; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 12pt 0 4pt 0; page-break-after: avoid; }
+  p { margin: 0 0 6pt 0; }
+  .subtitle { color: var(--muted); font-size: 11pt; margin-bottom: 14pt; }
+  .box { background: var(--soft); border-left: 4px solid var(--accent); padding: 7pt 10pt; margin: 8pt 0; page-break-inside: avoid; }
+  .warn { border-left-color: var(--bad); }
+  table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 3pt 6pt; text-align: left; vertical-align: top; }
+  th { background: var(--soft); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pos { color: var(--good); } .neg { color: var(--bad); }
+  code { font-family: Consolas, monospace; font-size: 9pt; background: var(--soft); padding: 0 2pt; }
+  .formula { font-family: "Cambria Math", Cambria, serif; font-size: 11pt; text-align: center; margin: 8pt 0; }
+  figure { margin: 8pt 0 12pt 0; page-break-inside: avoid; }
+  figcaption { color: var(--muted); font-size: 9pt; text-align: center; margin-top: 2pt; }
+  .toc li { margin: 1pt 0; }
+  .pb { page-break-before: always; }
+  ul, ol { margin: 0 0 6pt 0; padding-left: 18pt; }
+  li { margin: 1.5pt 0; }
+  .timeline { display: flex; gap: 4pt; margin: 8pt 0; page-break-inside: avoid; }
+  .timeline div { flex: 1; background: var(--soft); border-top: 3px solid var(--accent); padding: 5pt; font-size: 9pt; }
+  .timeline b { display: block; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>Accumulator e decumulator</h1>
+<div class="subtitle">Descrizione del contratto, valutazione, rischi e ciclo di vita — riferimento per l'implementazione OTC di Easy Pricer</div>
+
+<ol class="toc">
+  <li>Che cos'è</li>
+  <li>Termini del contratto</li>
+  <li>Come funziona, fixing per fixing</li>
+  <li>Il decumulator</li>
+  <li>Varianti</li>
+  <li>Perché il cliente lo compra e perché costa zero</li>
+  <li>Rischi</li>
+  <li>Esempio sul contratto di prova</li>
+  <li>Valutazione</li>
+  <li>Ciclo di vita</li>
+  <li>Corrispondenza con l'anagrafica di Easy Pricer</li>
+  <li>Glossario</li>
+</ol>
+
+<h2>1. Che cos'è</h2>
+<p>Un <b>accumulator</b> è un contratto OTC con cui chi lo detiene si impegna ad <b>acquistare ogni giorno una quantità fissa di un sottostante a un prezzo fisso</b> (lo <i>strike</i>), per un periodo stabilito, di solito da qualche settimana a un anno. Lo strike è fissato <b>sotto</b> il prezzo di mercato alla conclusione, quindi in partenza l'acquisto è conveniente.</p>
+<p>In cambio dello sconto il detentore accetta due condizioni sfavorevoli:</p>
+<ul>
+  <li><b>knock-out</b>: se il prezzo sale fino a una barriera (sopra lo strike), il contratto si chiude e il guadagno si ferma;</li>
+  <li><b>leva</b>: nei giorni in cui il prezzo è sotto lo strike, il detentore deve comprare un multiplo (tipicamente il doppio) della quantità giornaliera, sempre allo strike, cioè sopra il mercato.</li>
+</ul>
+<p>Il risultato è un profilo <b>asimmetrico</b>: guadagni piccoli e limitati quando il mercato sale, perdite amplificate quando scende. Per questo nel mercato l'accumulator è soprannominato <i>"I kill you later"</i>.</p>
+<p>Il <b>decumulator</b> è il contratto speculare: chi lo detiene <b>vende</b> ogni giorno allo strike, fissato sopra il mercato; il knock-out è sotto e la leva scatta quando il prezzo sale.</p>
+<div class="box">
+<b>Chi li usa.</b> Sottostanti tipici: cambi (EUR/USD, USD/CNH…), metalli e materie prime (oro, petrolio), azioni. Lato cliente: aziende importatrici che devono comprare valuta o materia prima con regolarità (accumulator) o esportatrici che devono venderla (decumulator), e investitori che vogliono accumulare un titolo a sconto. Lato banca: il contratto è venduto dalla banca al cliente, che lo "compra" a costo zero.
+</div>
+
+<h2>2. Termini del contratto</h2>
+<table>
+  <tr><th style="width:26%">Termine</th><th>Significato</th></tr>
+  <tr><td>Sottostante</td><td>Lo strumento accumulato: una coppia di cambi (si accumula la valuta base, es. EUR in EUR/USD), un future su commodity, un'azione.</td></tr>
+  <tr><td>Strike (K)</td><td>Prezzo fisso di acquisto (vendita per il decumulator). Per l'accumulator è inferiore al forward alla conclusione, spesso del 2-5% sui cambi, di più su sottostanti volatili.</td></tr>
+  <tr><td>Barriera di knock-out (KO)</td><td>Livello che, se raggiunto, chiude il contratto. Per l'accumulator è sopra lo strike (e di solito sopra il prezzo corrente).</td></tr>
+  <tr><td>Quantità giornaliera (q)</td><td>Quantità acquistata a ogni fixing favorevole (es. 100.000 EUR).</td></tr>
+  <tr><td>Leva (gearing)</td><td>Moltiplicatore della quantità nei fixing sfavorevoli (es. 2: si comprano 200.000 EUR).</td></tr>
+  <tr><td>Fixing</td><td>Le date di osservazione (di solito ogni giorno lavorativo) e il prezzo rilevato in quelle date, a un orario e una fonte stabiliti (es. BCE 14:15, WM/Reuters 16:00 Londra).</td></tr>
+  <tr><td>Periodo e frequenza di regolamento</td><td>Le quantità maturate non si scambiano ogni giorno: si sommano nel periodo (settimana, mese) e si regolano alla data di regolamento del periodo (ultimo fixing + spot lag).</td></tr>
+  <tr><td>Regolamento</td><td><b>Fisico</b>: si scambia davvero il sottostante allo strike (il cliente riceve EUR e paga USD a K). <b>Per differenza</b> (cash): si paga solo (S − K) × quantità.</td></tr>
+  <tr><td>Fixing garantiti</td><td>Primi fixing in cui il knock-out non è attivo: il cliente è sicuro di accumulare almeno quella quantità.</td></tr>
+  <tr><td>Knock-in (facoltativo)</td><td>Seconda barriera, sotto lo strike: finché non viene toccata la leva non si applica (o il contratto non è attivo).</td></tr>
+  <tr><td>Premio iniziale</td><td>Di solito nullo ("zero cost"): lo strike è scelto in modo che il contratto valga zero, al netto del margine della banca.</td></tr>
+</table>
+
+<h2>3. Come funziona, fixing per fixing</h2>
+<p>A ogni data di fixing, con S il prezzo rilevato:</p>
+<table>
+  <tr><th>Prezzo al fixing</th><th>Cosa succede (accumulator)</th><th class="num">Quantità</th><th>Valore per il detentore</th></tr>
+  <tr><td>S ≥ KO</td><td>Knock-out: il contratto termina (salvo fixing garantiti). Il fixing corrente matura solo se previsto dal contratto.</td><td class="num">0 (o q)</td><td>fine</td></tr>
+  <tr><td>K ≤ S &lt; KO</td><td>Fixing favorevole: si compra q a K, sotto il mercato.</td><td class="num">q</td><td class="pos">q · (S − K) &gt; 0</td></tr>
+  <tr><td>S &lt; K</td><td>Fixing sfavorevole: si compra leva × q a K, sopra il mercato.</td><td class="num">leva · q</td><td class="neg">leva · q · (S − K) &lt; 0</td></tr>
+</table>
+
+<figure>
+<svg viewBox="0 0 640 330" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="11">
+  <rect x="70" y="20" width="550" height="260" fill="#fbfcfe" stroke="#d5dbe3"/>
+  <g stroke="#e6eaf0">
+    <line x1="70" y1="35.3" x2="620" y2="35.3"/><line x1="70" y1="157.6" x2="620" y2="157.6"/><line x1="70" y1="218.8" x2="620" y2="218.8"/>
+  </g>
+  <line x1="70" y1="96.5" x2="620" y2="96.5" stroke="#8a96a6"/>
+  <rect x="493.1" y="20" width="126.9" height="260" fill="#fdecea"/>
+  <text x="556" y="140" text-anchor="middle" fill="#b3261e">knock-out:</text>
+  <text x="556" y="155" text-anchor="middle" fill="#b3261e">il contratto termina</text>
+  <polyline points="70,188.2 323.8,96.5" fill="none" stroke="#8a96a6" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <polyline points="70,280 323.8,96.5 493.1,35.3" fill="none" stroke="#1f5f99" stroke-width="3"/>
+  <line x1="493.1" y1="20" x2="493.1" y2="280" stroke="#b3261e" stroke-dasharray="4,3"/>
+  <line x1="323.8" y1="20" x2="323.8" y2="280" stroke="#1f5f99" stroke-dasharray="4,3"/>
+  <text x="327" y="275" fill="#1f5f99">K = 1,10</text>
+  <text x="497" y="275" fill="#b3261e">KO = 1,14</text>
+  <text x="120" y="250" fill="#1f5f99">leva 2: 200.000 · (S − K)</text>
+  <text x="96" y="212" fill="#5b6878">senza leva</text>
+  <text x="380" y="58" fill="#1f5f99">100.000 · (S − K)</text>
+  <g text-anchor="end" fill="#5b6878">
+    <text x="64" y="39">+4.000</text><text x="64" y="100">0</text><text x="64" y="161">−4.000</text><text x="64" y="222">−8.000</text><text x="64" y="284">−12.000</text>
+  </g>
+  <g text-anchor="middle" fill="#5b6878">
+    <text x="70" y="296">1,04</text><text x="154.6" y="296">1,06</text><text x="239.2" y="296">1,08</text><text x="323.8" y="296">1,10</text><text x="408.5" y="296">1,12</text><text x="493.1" y="296">1,14</text><text x="577.7" y="296">1,16</text>
+  </g>
+  <text x="345" y="320" text-anchor="middle" fill="#1d2733">EUR/USD al fixing</text>
+  <text x="14" y="150" transform="rotate(-90 14 150)" text-anchor="middle" fill="#1d2733">valore del fixing (USD)</text>
+</svg>
+<figcaption>Figura 1 — Valore di un singolo fixing per il detentore: accumulator EUR/USD, K 1,10, KO 1,14, 100.000 EUR al giorno, leva 2.</figcaption>
+</figure>
+
+<h3>Esempio su dieci fixing</h3>
+<p>Stesso contratto (K 1,10, KO 1,14, 100.000 EUR, leva 2), senza fixing garantiti; il fixing del knock-out non matura.</p>
+<table>
+  <tr><th>Giorno</th><th class="num">Fixing</th><th>Esito</th><th class="num">EUR acquistati a 1,10</th><th class="num">Valore al fixing (USD)</th></tr>
+  <tr><td>1</td><td class="num">1,1200</td><td>favorevole</td><td class="num">100.000</td><td class="num pos">+2.000</td></tr>
+  <tr><td>2</td><td class="num">1,1150</td><td>favorevole</td><td class="num">100.000</td><td class="num pos">+1.500</td></tr>
+  <tr><td>3</td><td class="num">1,1050</td><td>favorevole</td><td class="num">100.000</td><td class="num pos">+500</td></tr>
+  <tr><td>4</td><td class="num">1,0950</td><td>sfavorevole, leva</td><td class="num">200.000</td><td class="num neg">−1.000</td></tr>
+  <tr><td>5</td><td class="num">1,0900</td><td>sfavorevole, leva</td><td class="num">200.000</td><td class="num neg">−2.000</td></tr>
+  <tr><td>6</td><td class="num">1,1000</td><td>allo strike</td><td class="num">100.000</td><td class="num">0</td></tr>
+  <tr><td>7</td><td class="num">1,1120</td><td>favorevole</td><td class="num">100.000</td><td class="num pos">+1.200</td></tr>
+  <tr><td>8</td><td class="num">1,1250</td><td>favorevole</td><td class="num">100.000</td><td class="num pos">+2.500</td></tr>
+  <tr><td>9</td><td class="num">1,1330</td><td>favorevole</td><td class="num">100.000</td><td class="num pos">+3.300</td></tr>
+  <tr><td>10</td><td class="num">1,1410</td><td>knock-out: fine</td><td class="num">—</td><td class="num">—</td></tr>
+  <tr><th colspan="3">Totale</th><th class="num">1.100.000</th><th class="num pos">+8.000</th></tr>
+</table>
+<p>Il "valore al fixing" confronta lo strike con il prezzo del giorno del fixing. Il risultato effettivo dipende dal prezzo alla data di regolamento (regolamento per differenza) o da cosa si fa degli euro ricevuti (regolamento fisico). Si noti che il detentore ha comprato più euro nei giorni sfavorevoli (400.000 in due giorni) che in tre giorni favorevoli (300.000).</p>
+
+<h2 class="pb">4. Il decumulator</h2>
+<p>Chi detiene un decumulator <b>vende</b> q allo strike a ogni fixing. Lo strike è sopra il mercato (vendita a un prezzo migliore), il knock-out è <b>sotto</b> lo strike e la leva scatta quando il prezzo <b>sale</b> sopra lo strike. Il knock-in, se c'è, è sopra lo strike.</p>
+<table>
+  <tr><th>Prezzo al fixing</th><th>Cosa succede (decumulator)</th><th class="num">Quantità</th><th>Valore per il detentore</th></tr>
+  <tr><td>S ≤ KO</td><td>Knock-out: il contratto termina</td><td class="num">0</td><td>fine</td></tr>
+  <tr><td>KO &lt; S ≤ K</td><td>Favorevole: si vende q a K, sopra il mercato</td><td class="num">q</td><td class="pos">q · (K − S) &gt; 0</td></tr>
+  <tr><td>S &gt; K</td><td>Sfavorevole: si vende leva × q a K, sotto il mercato</td><td class="num">leva · q</td><td class="neg">leva · q · (K − S) &lt; 0</td></tr>
+</table>
+<figure>
+<svg viewBox="0 0 640 330" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="11">
+  <rect x="70" y="20" width="550" height="260" fill="#fbfcfe" stroke="#d5dbe3"/>
+  <g stroke="#e6eaf0">
+    <line x1="70" y1="35.3" x2="620" y2="35.3"/><line x1="70" y1="157.6" x2="620" y2="157.6"/><line x1="70" y1="218.8" x2="620" y2="218.8"/>
+  </g>
+  <line x1="70" y1="96.5" x2="620" y2="96.5" stroke="#8a96a6"/>
+  <rect x="70" y="20" width="126.9" height="260" fill="#fdecea"/>
+  <text x="133" y="140" text-anchor="middle" fill="#b3261e">knock-out:</text>
+  <text x="133" y="155" text-anchor="middle" fill="#b3261e">il contratto termina</text>
+  <polyline points="366.2,96.5 620,188.2" fill="none" stroke="#8a96a6" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <polyline points="196.9,35.3 366.2,96.5 620,280" fill="none" stroke="#1f5f99" stroke-width="3"/>
+  <line x1="196.9" y1="20" x2="196.9" y2="280" stroke="#b3261e" stroke-dasharray="4,3"/>
+  <line x1="366.2" y1="20" x2="366.2" y2="280" stroke="#1f5f99" stroke-dasharray="4,3"/>
+  <text x="370" y="275" fill="#1f5f99">K = 1,18</text>
+  <text x="200" y="275" fill="#b3261e">KO = 1,14</text>
+  <text x="430" y="250" fill="#1f5f99">leva 2: 200.000 · (K − S)</text>
+  <text x="545" y="178" fill="#5b6878">senza leva</text>
+  <text x="215" y="58" fill="#1f5f99">100.000 · (K − S)</text>
+  <g text-anchor="end" fill="#5b6878">
+    <text x="64" y="39">+4.000</text><text x="64" y="100">0</text><text x="64" y="161">−4.000</text><text x="64" y="222">−8.000</text><text x="64" y="284">−12.000</text>
+  </g>
+  <g text-anchor="middle" fill="#5b6878">
+    <text x="112.3" y="296">1,12</text><text x="196.9" y="296">1,14</text><text x="281.5" y="296">1,16</text><text x="366.2" y="296">1,18</text><text x="450.8" y="296">1,20</text><text x="535.4" y="296">1,22</text><text x="620" y="296">1,24</text>
+  </g>
+  <text x="345" y="320" text-anchor="middle" fill="#1d2733">EUR/USD al fixing</text>
+  <text x="14" y="150" transform="rotate(-90 14 150)" text-anchor="middle" fill="#1d2733">valore del fixing (USD)</text>
+</svg>
+<figcaption>Figura 2 — Decumulator EUR/USD, K 1,18, KO 1,14, 100.000 EUR al giorno, leva 2: lo specchio dell'accumulator.</figcaption>
+</figure>
+<p>Nel sistema accumulator e decumulator sono lo stesso strumento con un segno: +1 per l'accumulator, −1 per il decumulator. Il valore di un fixing è sempre <span class="formula" style="display:inline">segno · q · (S − K)</span>; "favorevole", "knock-out" e "knock-in" si invertono con il segno.</p>
+
+<h2>5. Varianti</h2>
+<h3>Osservazione del knock-out</h3>
+<ul>
+  <li><b>Al fixing</b> (la più comune): conta solo il prezzo rilevato al fixing.</li>
+  <li><b>In continuo</b> (americana): basta che il prezzo tocchi la barriera in qualsiasi momento. Esce più spesso, quindi è più favorevole alla banca.</li>
+  <li><b>Alle date di regolamento</b>: la barriera si osserva solo a fine periodo (es. il venerdì). Esce meno spesso.</li>
+</ul>
+<h3>Il giorno del knock-out</h3>
+<p>Il fixing che tocca la barriera può maturare (il cliente compra anche quel giorno) oppure no. Nel sistema: campo <code>ko_accrual</code>.</p>
+<h3>Fixing garantiti</h3>
+<p>Per i primi N fixing (es. due settimane) il knock-out non è attivo: il cliente accumula almeno N × q. Rende il contratto più caro per la banca, quindi a parità di costo lo strike sarà meno conveniente.</p>
+<h3>Knock-in</h3>
+<ul>
+  <li><b>Leva con knock-in</b>: la leva sui fixing sfavorevoli si applica solo dopo che il prezzo ha toccato una barriera sotto lo strike (es. K 1,10, KI 1,07). Un ribasso moderato non è amplificato; uno forte sì, e da quel momento per il resto del contratto.</li>
+  <li><b>Contratto con knock-in</b>: il contratto non accumula nulla finché la barriera non viene toccata. Meno diffuso.</li>
+</ul>
+<h3>Regolamento</h3>
+<p>Fisico (consegna del sottostante allo strike) o per differenza; frequenza giornaliera, settimanale, mensile o alla scadenza. Più il regolamento è lontano, più conta lo sconto e il forward alla data di regolamento invece che al fixing.</p>
+<h3>Prodotti vicini (non gestiti)</h3>
+<p><b>TARF</b> (Target Redemption Forward): termina al raggiungimento di un guadagno obiettivo invece che a una barriera di prezzo. <b>Pivot</b>, <b>fader</b>: varianti con due strike o con quantità che dipendono dal livello del prezzo. Hanno logiche diverse e vanno trattati come strumenti a sé.</p>
+
+<h2 class="pb">6. Perché il cliente lo compra e perché costa zero</h2>
+<p>Senza barriere, ogni fixing di un accumulator è la somma di due componenti note:</p>
+<ul>
+  <li><b>un forward comprato allo strike</b>: il detentore compra q a K. Valore q · (F − K) · DF, positivo perché K è sotto il forward F;</li>
+  <li><b>(leva − 1) put vendute con strike K</b>: nei fixing sfavorevoli il detentore compra (leva − 1) · q in più a K, cioè è come se avesse venduto delle put. Valore −(leva − 1) · q · Put(K).</li>
+</ul>
+<div class="formula">Valore ≈ Σ<sub>i</sub> DF<sub>i</sub> · [ q · (F<sub>i</sub> − K) − (leva − 1) · q · Put<sub>i</sub>(K) ]</div>
+<p>Il knock-out aggiunge una terza componente: il detentore <b>rinuncia</b> ai fixing successivi proprio negli scenari in cui sarebbero più favorevoli (prezzo alto). Questa rinuncia ha un valore che va a favore della banca.</p>
+<div class="box">
+<b>Zero cost.</b> La banca sceglie lo strike K (dato KO, leva e durata) in modo che il valore del contratto per il cliente sia zero, o leggermente negativo (il margine della banca). Il cliente "paga" lo sconto sullo strike vendendo opzionalità: le put della leva e il diritto ai fixing dopo il knock-out. Più la volatilità è alta, più valgono le put vendute e più lo strike può essere basso: per questo gli accumulator sono stati molto venduti nei periodi di alta volatilità.
+</div>
+<p>Il decumulator è lo specchio: forward venduto allo strike più (leva − 1) call vendute, con knock-out sotto.</p>
+
+<h2>7. Rischi</h2>
+<h3>Per il cliente (detentore)</h3>
+<ul>
+  <li><b>Asimmetria</b>: il guadagno è limitato dal knock-out (al massimo q × (KO − K) per fixing, finché il contratto vive), la perdita è proporzionale alla leva e alla durata residua.</li>
+  <li><b>Quantità che aumenta proprio quando conviene meno</b>: in un ribasso il cliente compra il doppio a un prezzo fuori mercato, per tutti i fixing rimanenti. Scenario C della sezione 8: 7,1 milioni di EUR acquistati invece di un massimo "atteso" di 3,8.</li>
+  <li><b>Durata casuale</b>: nei mercati in rialzo il contratto si chiude presto (coperture che spariscono); in quelli in ribasso dura fino alla fine.</li>
+  <li><b>Liquidità</b>: con regolamento fisico il cliente deve pagare allo strike quantità crescenti; chiudere anticipatamente costa il valore di mercato, che in uno scenario sfavorevole è molto negativo. Molti investitori privati asiatici subirono forti perdite su accumulator azionari nella crisi del 2008.</li>
+</ul>
+<h3>Per la banca (che lo vende)</h3>
+<ul>
+  <li><b>Delta</b>: la banca è corta di forward, quindi si copre comprando il sottostante. Il delta cambia rapidamente vicino alla barriera e, in prossimità del knock-out, può cambiare segno (salire verso la barriera fa perdere al cliente un contratto che vale).</li>
+  <li><b>Gamma e vega</b>: il cliente ha venduto opzionalità, quindi la banca è tipicamente lunga gamma e vega sulla parte con leva, ma corta di opzionalità vicino alla barriera.</li>
+  <li><b>Modello</b>: il prezzo dipende dallo smile e dalla dinamica della volatilità (barriere e leva sono sensibili a entrambi): per questo in produzione si usano modelli a volatilità locale o stocastica.</li>
+  <li><b>Controparte</b>: in uno scenario sfavorevole il cliente può non riuscire a pagare (rischio di credito, margini, garanzie).</li>
+</ul>
+
+<h2 class="pb">8. Esempio sul contratto di prova</h2>
+<p>Il contratto usato per provare il sistema: accumulator EUR/USD venduto dalla banca a un cliente.</p>
+<table>
+  <tr><th style="width:35%">Termine</th><th>Valore</th></tr>
+  <tr><td>Sottostante, verso</td><td>EUR/USD, accumulator (il cliente compra EUR)</td></tr>
+  <tr><td>Strike / KO / KI</td><td>1,10 / 1,14 (al fixing) / 1,07, attiva la leva</td></tr>
+  <tr><td>Quantità, leva</td><td>100.000 EUR al giorno, leva 2</td></tr>
+  <tr><td>Fixing</td><td>dal 26/10 al 18/12/2026, giorni lavorativi EUR e USD: 38 fixing</td></tr>
+  <tr><td>Regolamento</td><td>fisico, settimanale: ultimo fixing della settimana + 2 giorni lavorativi</td></tr>
+  <tr><td>Quantità massima (senza leva)</td><td>3.800.000 EUR</td></tr>
+  <tr><td>Spot alla conclusione</td><td>1,12028</td></tr>
+</table>
+<h3>Valutazione alla conclusione (23/10/2026)</h3>
+<table>
+  <tr><th>Grandezza (per il detentore, cioè il cliente)</th><th class="num">Vol piatta 8%</th><th class="num">Superficie EUR/USD</th></tr>
+  <tr><td>Valore del contratto (USD)</td><td class="num">21.159 ± 247</td><td class="num">16.664 ± 257</td></tr>
+  <tr><td>Volatilità media dei fixing</td><td class="num">8,00%</td><td class="num">8,43%</td></tr>
+  <tr><td>Probabilità di knock-out</td><td class="num">53%</td><td class="num">56%</td></tr>
+  <tr><td>Quantità attesa (EUR)</td><td class="num">2.650.628</td><td class="num">—</td></tr>
+  <tr><td>Delta (EUR equivalenti)</td><td class="num">≈ 979.000</td><td class="num">—</td></tr>
+  <tr><td>Vega (USD per punto di vol)</td><td class="num">≈ −10.100</td><td class="num">—</td></tr>
+</table>
+<p>Il contratto vale circa 17-21 mila USD per il cliente: la banca lo ha venduto per un premio di 15.000 USD, quindi alla conclusione la banca è in perdita di circa 1.700 USD (con la superficie). Uno strike "zero cost" sarebbe un po' più alto di 1,10. La quantità attesa (2,65 milioni) è inferiore al massimo (3,8 milioni) perché in più di metà degli scenari il contratto esce per knock-out; il vega negativo conferma che il cliente è corto di volatilità.</p>
+<h3>Tre scenari (illustrativi, valori ai fixing)</h3>
+<table>
+  <tr><th>Scenario</th><th>Andamento</th><th class="num">EUR acquistati</th><th class="num">Risultato cliente (USD)</th></tr>
+  <tr><td>A — rialzo</td><td>EUR/USD sale e tocca 1,14 all'ottavo fixing, media dei fixing precedenti 1,12</td><td class="num">700.000</td><td class="num pos">≈ +14.000</td></tr>
+  <tr><td>B — laterale</td><td>oscilla tra 1,10 e 1,14 per tutti i 38 fixing, media 1,12</td><td class="num">3.800.000</td><td class="num pos">≈ +76.000</td></tr>
+  <tr><td>C — ribasso</td><td>prima settimana a 1,11, poi scende a 1,05 (KI a 1,07 toccato) e ci resta</td><td class="num">7.100.000</td><td class="num neg">≈ −325.000</td></tr>
+</table>
+<p>Lo scenario migliore per il cliente è il laterale (B); il rialzo (A) dà un guadagno piccolo e presto interrotto; il ribasso (C) produce una perdita oltre venti volte il guadagno di A e quasi il doppio degli euro della quantità "massima".</p>
+
+<h2>9. Valutazione</h2>
+<p>Non esiste una formula chiusa: il knock-out dipende dal percorso del prezzo, e il knock-in cambia la quantità dei fixing successivi. Si usa una simulazione <b>Monte Carlo</b>:</p>
+<ol>
+  <li>si simulano molti percorsi del sottostante alle date di fixing, coerenti con i forward (curve delle due valute per i cambi, prezzo del future per le commodity) e con la volatilità;</li>
+  <li>su ogni percorso si applicano le regole del contratto (KO, KI, leva, fixing garantiti) e si sommano i valori dei fixing, scontati alle date di regolamento;</li>
+  <li>il valore è la media dei percorsi; l'errore standard misura la precisione.</li>
+</ol>
+<p>In Easy Pricer: <code>AccumulatorPricer</code> (engine) con modello lognormale e <b>struttura a termine della volatilità</b> (volatilità di ogni fixing dalla superficie, allo strike), sentieri antitetici e seme fisso (stesso input, stesso risultato), greche con gli stessi numeri casuali. Verifica: senza barriere il Monte Carlo coincide con la scomposizione della sezione 6. Le quantità già maturate e non regolate si valutano come forward allo strike.</p>
+<div class="box">
+<b>Limiti noti.</b> Il modello lognormale con volatilità dipendente da tempo e strike non cattura la dinamica dello smile, che conta per barriere e leva. Il passo successivo è un modello a volatilità stocastica e locale (Heston con funzione di leva, già abbozzato nell'incubator), calibrato sulla superficie.
+</div>
+
+<h2 class="pb">10. Ciclo di vita</h2>
+<div class="timeline">
+  <div><b>Conclusione</b>Termini, calendario dei fixing, premio. Anagrafica + transazione.</div>
+  <div><b>Fixing</b>Ogni giorno: rilevazione del prezzo, quantità maturata (q o leva·q), controllo KO/KI.</div>
+  <div><b>Regolamento</b>A fine periodo: consegna allo strike della quantità maturata, o pagamento della differenza.</div>
+  <div><b>Fine</b>Knock-out o ultimo regolamento: chiusura della posizione.</div>
+</div>
+<table>
+  <tr><th style="width:22%">Evento</th><th>Cosa succede</th><th style="width:30%">Effetti</th></tr>
+  <tr><td>Conclusione</td><td>Si fissano i termini e si genera il calendario (date di fixing e di regolamento). Premio iniziale, di solito zero.</td><td>Anagrafica, transazione, eventuale premio.</td></tr>
+  <tr><td>Fixing</td><td>Si rileva S alla fonte e all'orario del contratto. Si calcola la quantità maturata; se S tocca il KI si attiva la leva per i fixing successivi; se tocca il KO (fuori dai garantiti) il contratto termina.</td><td>Prezzo e quantità del fixing; date di KI/KO.</td></tr>
+  <tr><td>Regolamento</td><td>Si somma la quantità maturata nel periodo. Fisico: il detentore riceve la quantità e paga quantità × K. Per differenza: riceve (paga) quantità × (S<sub>reg</sub> − K).</td><td>Movimenti di cassa / consegna, P&amp;L realizzato.</td></tr>
+  <tr><td>Knock-out</td><td>Nessun nuovo fixing; si regolano le quantità già maturate alla loro data.</td><td>Chiusura della parte futura.</td></tr>
+  <tr><td>Valutazione giornaliera</td><td>Valore dei fixing futuri (Monte Carlo) + quantità maturate da regolare (forward).</td><td>MtM, P&amp;L non realizzato.</td></tr>
+</table>
+<p>Tra un fixing e l'altro il valore del contratto si sposta da "potenziale" (fixing futuri) a "maturato" (quantità da regolare) e infine a "realizzato" (regolato). Questa distinzione serve anche alla contabilità.</p>
+
+<h2>11. Corrispondenza con l'anagrafica di Easy Pricer</h2>
+<table>
+  <tr><th style="width:32%">Termine del contratto</th><th>Campo</th></tr>
+  <tr><td>Asset class</td><td><code>FXA</code> (cambi), <code>CMA</code> (commodity)</td></tr>
+  <tr><td>Codice, descrizione</td><td><code>master_data.code</code> (<code>FXA-EURUSD-&lt;id&gt;</code>), <code>description</code></td></tr>
+  <tr><td>Conclusione, ultimo regolamento</td><td><code>issue_date</code>, <code>maturity_date</code></td></tr>
+  <tr><td>Valuta di regolamento, spot lag</td><td><code>currency</code>, <code>business_days</code></td></tr>
+  <tr><td>Sottostante</td><td><code>accumulator_master_data.underlying</code></td></tr>
+  <tr><td>Accumulator / decumulator</td><td><code>accumulator_type</code></td></tr>
+  <tr><td>Strike, quantità, leva</td><td><code>strike</code>, <code>daily_quantity</code>, <code>leverage</code></td></tr>
+  <tr><td>Knock-out e osservazione</td><td><code>ko_barrier</code>, <code>ko_observation</code> (FIXING, CONTINUOUS, SETTLEMENT), <code>ko_accrual</code></td></tr>
+  <tr><td>Knock-in</td><td><code>ki_barrier</code>, <code>ki_effect</code> (LEVERAGE, CONTRACT)</td></tr>
+  <tr><td>Fixing garantiti</td><td><code>guaranteed_fixings</code></td></tr>
+  <tr><td>Periodo dei fixing, orario</td><td><code>first_fixing_date</code>, <code>last_fixing_date</code>, <code>fixing_time</code>, <code>fixing_time_zone</code></td></tr>
+  <tr><td>Regolamento</td><td><code>settlement_type</code> (PHYSICAL, CASH), <code>settlement_frequency</code> (DAILY, WEEKLY, MONTHLY, NONE)</td></tr>
+  <tr><td>Calendario</td><td><code>accumulator_fixing</code>: data di fixing e di regolamento, prezzo e quantità maturata</td></tr>
+  <tr><td>Stato</td><td><code>ko_date</code>, <code>ki_date</code></td></tr>
+  <tr><td>Premio, lato</td><td>transazione: prezzo = premio per contratto, quantità 1, BUY/SELL dal punto di vista della banca</td></tr>
+</table>
+
+<h2>12. Glossario</h2>
+<table>
+  <tr><td style="width:24%"><b>Forward</b></td><td>Prezzo a termine del sottostante a una data: per i cambi S · DF<sub>estera</sub> / DF<sub>domestica</sub>.</td></tr>
+  <tr><td><b>Knock-out (KO)</b></td><td>Barriera che, toccata, estingue il contratto.</td></tr>
+  <tr><td><b>Knock-in (KI)</b></td><td>Barriera che, toccata, attiva una parte del contratto (la leva o il contratto stesso).</td></tr>
+  <tr><td><b>Leva (gearing)</b></td><td>Moltiplicatore della quantità nei fixing sfavorevoli.</td></tr>
+  <tr><td><b>Fixing</b></td><td>Data e prezzo di osservazione.</td></tr>
+  <tr><td><b>Zero cost</b></td><td>Contratto senza premio iniziale: lo strike è scelto in modo che il valore sia nullo.</td></tr>
+  <tr><td><b>Mark to model</b></td><td>Valutazione con un modello in assenza di prezzo di mercato.</td></tr>
+  <tr><td><b>Delta, gamma, vega</b></td><td>Sensibilità del valore a prezzo del sottostante (prima e seconda derivata) e a volatilità.</td></tr>
+  <tr><td><b>TARF</b></td><td>Target Redemption Forward: si estingue al raggiungimento di un guadagno cumulato obiettivo.</td></tr>
+</table>
+<p style="color:#5b6878; font-size:9pt; margin-top:12pt">I valori della sezione 8 provengono dalle prove di Easy Pricer su una copia del database (29/10/2026); gli scenari sono illustrativi e valutati ai prezzi di fixing.</p>
+
+</body>
+</html>

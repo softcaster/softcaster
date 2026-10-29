@@ -6,7 +6,7 @@ package org.softcaster.engine.dto;
 
 import java.time.LocalDate;
 
-public sealed interface PricingResult permits CashFlowResult, ForwardResult, OptionResult {
+public sealed interface PricingResult permits CashFlowResult, ForwardResult, OptionResult, AccumulatorResult {
 
     String instrumentId();
 

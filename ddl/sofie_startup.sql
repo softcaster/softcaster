@@ -27,6 +27,10 @@ INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (next
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'QUARTERLY','Quarterly',4);
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'BI-MONTHLY','Every two months',6);
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'MONTHLY','Monthly',12);
+-- id fissi come l'enum Frequency; settimanale e giornaliera solo per i regolamenti periodici
+INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (7,'CUSTOM','Custom',0);
+INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (8,'WEEKLY','Weekly',52);
+INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (9,'DAILY','Daily',365);
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (100,'NONE','None',0);
 
 -- ----------------------------------------------------------------------------
@@ -110,6 +114,8 @@ INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (n
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FXO','Forex Option',(SELECT id_super_class FROM super_class WHERE code='DER'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'BDO','Bond Option',(SELECT id_super_class FROM super_class WHERE code='DER'));
 INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'BFO','Bond Future Option',(SELECT id_super_class FROM super_class WHERE code='DER'));
+INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'FXA','Forex Accumulator',(SELECT id_super_class FROM super_class WHERE code='DER'));
+INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (nextval('asset_class_s'),'CMA','Commodity Accumulator',(SELECT id_super_class FROM super_class WHERE code='DER'));
 
 -- ----------------------------------------------------------------------------
 -- settlement_type - tipo consegna
@@ -435,6 +441,13 @@ INSERT INTO premium_style VALUES (1, 'EQUITY_STYLE', 'Premium paid upfront');
 INSERT INTO premium_style VALUES (2, 'FUTURES_STYLE', 'Premium margined daily like a future');
 INSERT INTO option_type VALUES (1, 'CALL', 'Call Option');
 INSERT INTO option_type VALUES (2, 'PUT', 'Put Option');
+INSERT INTO accumulator_type VALUES (1, 'ACCUMULATOR', 'Accumulator (buys at strike, KO above)');
+INSERT INTO accumulator_type VALUES (2, 'DECUMULATOR', 'Decumulator (sells at strike, KO below)');
+INSERT INTO barrier_observation VALUES (1, 'FIXING', 'At each fixing');
+INSERT INTO barrier_observation VALUES (2, 'CONTINUOUS', 'Continuous');
+INSERT INTO barrier_observation VALUES (3, 'SETTLEMENT', 'At settlement dates');
+INSERT INTO knock_in_effect VALUES (1, 'LEVERAGE', 'Activates the leverage on unfavourable fixings');
+INSERT INTO knock_in_effect VALUES (2, 'CONTRACT', 'Activates the contract');
 
 INSERT INTO delivery_period_type VALUES (1, 'YEAR', 'Year Future - annual delivery contract');
 INSERT INTO delivery_period_type VALUES (2, 'QUARTER', 'Quarter Future - quarterly delivery contract');

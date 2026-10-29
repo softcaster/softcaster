@@ -19,6 +19,9 @@ public class ForwardScheduleGenerator implements ScheduleGenerator {
 
     @Override
     public List<PaymentPeriod> generate(LocalDate effectiveDate, LocalDate terminationDate, Frequency frequency, BusinessDayConvention bdc, DaycountBasis daycount, HolidayCalendar calendar) {
+        if (!frequency.isCouponFrequency()) {
+            throw new IllegalArgumentException("Frequenza " + frequency.getCode() + " non ammessa per un piano cedolare");
+        }
         List<PaymentPeriod> periods = new ArrayList<>();
         LocalDate currentStart = effectiveDate;
         int monthsToStep = 12 / frequency.getYearFraction();

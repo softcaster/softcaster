@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import org.hibernate.Hibernate;
 import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FutureMasterData;
@@ -49,6 +50,10 @@ import org.softcaster.provider.enums.RequestType;
  *                                     alla consegna (bond forward con la curva repo)
  *  - americane (tutti i rami)      -> albero binomiale CRR sullo stesso input
  *
+ * Volatilita': indicata, implicita dal premio di mercato oppure, se mancano
+ * entrambi, dalla superficie del sottostante della serie (VolatilityProvider)
+ * alla scadenza e allo strike della serie.
+ *
  * Premio: "futures-style" (regolato con i margini) non si sconta,
  * "equity-style" si sconta con la curva o il tasso indicati; per le opzioni su
  * FX future, senza indicazioni, con la curva della valuta di quotazione della
@@ -74,6 +79,7 @@ public class OptionCalculator {
     private final Black76Pricer black76Pricer;
     private final GarmanKohlhagenPricer garmanKohlhagenPricer;
     private final CRRBinomialPricer crrPricer;
+    private final VolatilityProvider volatilityProvider;
 
     public OptionCalculator(FutureOptionMasterDataDAO futureOptionMasterDataDAO,
                             SpotOptionMasterDataDAO spotOptionMasterDataDAO,
@@ -82,7 +88,8 @@ public class OptionCalculator {
                             MarketDataService marketDataService,
                             Black76Pricer black76Pricer,
                             GarmanKohlhagenPricer garmanKohlhagenPricer,
-                            CRRBinomialPricer crrPricer) {
+                            CRRBinomialPricer crrPricer,
+                            VolatilityProvider volatilityProvider) {
         this.futureOptionMasterDataDAO = Objects.requireNonNull(futureOptionMasterDataDAO);
         this.spotOptionMasterDataDAO = Objects.requireNonNull(spotOptionMasterDataDAO);
         this.fxFutureMasterDataDAO = Objects.requireNonNull(fxFutureMasterDataDAO);
@@ -91,6 +98,30 @@ public class OptionCalculator {
         this.black76Pricer = Objects.requireNonNull(black76Pricer);
         this.garmanKohlhagenPricer = Objects.requireNonNull(garmanKohlhagenPricer);
         this.crrPricer = Objects.requireNonNull(crrPricer);
+        this.volatilityProvider = Objects.requireNonNull(volatilityProvider);
+    }
+
+    /**
+     * Volatilita' della serie dalla superficie del suo sottostante, alla
+     * scadenza e allo strike della serie; vuota se il sottostante non ha
+     * superficie alla data.
+     *
+     * @param code codice o ISIN della serie
+     * @param valuationDate
+     * @return
+     */
+    public Optional<VolatilityProvider.SurfaceData> surface(String code, LocalDate valuationDate) {
+        OptionMasterData omd = findSeries(code);
+        return volatilityProvider.surface(omd.getUnderlying().getIdMasterData(), valuationDate);
+    }
+
+    public Optional<Double> surfaceVolatility(String code, LocalDate valuationDate) {
+        OptionMasterData omd = findSeries(code);
+        if (omd.getStrike() == null || omd.getExpiryLocalDate() == null) {
+            return Optional.empty();
+        }
+        return volatilityProvider.surface(omd.getUnderlying().getIdMasterData(), valuationDate)
+                .map(s -> s.surface().volatility(omd.getExpiryLocalDate(), omd.getStrike()));
     }
 
     // ------------------------------------------------------------------------
@@ -133,7 +164,8 @@ public class OptionCalculator {
      */
     private ForwardOptionInput getFutureOptionInput(FutureOptionMasterData omd, LocalDate valuationDate,
                                                     Double futurePrice, String curveCode, Double rate, double volatility) {
-        FutureMasterData underlying = omd.getUnderlying();
+        // dentro una transazione gia' aperta (MtM) il future puo' essere un proxy di FutureMasterData
+        FutureMasterData underlying = (FutureMasterData) Hibernate.unproxy(omd.getUnderlying());
         double forward = price(futurePrice, underlying);
 
         boolean discounted = premiumStyle(omd).isDiscounted();
@@ -263,12 +295,19 @@ public class OptionCalculator {
         LocalDate valuationDate = request.referenceDate != null
                 ? request.referenceDate : marketDataService.getOfficialDate();
         boolean implied = request.optionPrice != null && request.optionPrice > 0;
-        if (!implied && (request.volatility == null || request.volatility <= 0)) {
-            throw new IllegalArgumentException("Volatilita' (volatility) o premio di mercato (optionPrice) mancante");
+        String volatilitySource = implied ? "implied" : "request";
+        Double volatility = request.volatility;
+        if (!implied && (volatility == null || volatility <= 0)) {
+            // senza volatilita' ne' premio: superficie del sottostante
+            Optional<VolatilityProvider.SurfaceData> surface = surface(request.isin, valuationDate);
+            volatility = surfaceVolatility(request.isin, valuationDate).orElseThrow(() -> new IllegalArgumentException(
+                    "Volatilita' (volatility) o premio di mercato (optionPrice) mancante, e nessuna superficie di "
+                    + "volatilita' per il sottostante al " + valuationDate));
+            volatilitySource = surface.map(VolatilityProvider.SurfaceData::describe).orElse("surface");
         }
 
         // con il premio di mercato la volatilita' della request e' solo il primo tentativo
-        double firstVol = request.volatility != null && request.volatility > 0 ? request.volatility : 0.20;
+        double firstVol = volatility != null && volatility > 0 ? volatility : 0.20;
         OptionInput input = getOptionInput(request.isin, valuationDate, request.referencePrice,
                 request.domesticRCurve, request.domesticRate, request.foreignRCurve, firstVol);
         if (implied) {
@@ -281,6 +320,7 @@ public class OptionCalculator {
         response.optionPremium = result.price();
         response.optionValue = result.positionValue();
         response.volatility = input.volatility();
+        response.volatilitySource = volatilitySource;
         response.underlyingForward = result.forward();
         response.discountFactor = result.discountFactor();
         response.timeToExpiry = result.timeToExpiry();

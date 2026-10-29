@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFormattedTextField;
@@ -1230,7 +1231,10 @@ public class BondDlg extends javax.swing.JDialog {
     }
 
     private void setUpFrequencyCombo() {
-        List<Frequency> frequencies = List.of(Frequency.values());
+        // settimanale e giornaliera non valgono per le cedole
+        List<Frequency> frequencies = Stream.of(Frequency.values())
+                .filter(f -> f != Frequency.WEEKLY && f != Frequency.DAILY)
+                .toList();
 
         // 2. Crea il modello partendo dalla lista
         DefaultComboBoxModel<Frequency> model = new DefaultComboBoxModel<>(frequencies.toArray(Frequency[]::new));

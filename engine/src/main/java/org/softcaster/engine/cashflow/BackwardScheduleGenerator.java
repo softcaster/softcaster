@@ -19,8 +19,8 @@ public class BackwardScheduleGenerator implements ScheduleGenerator {
             Frequency frequency, BusinessDayConvention bdc,DaycountBasis daycount,
             HolidayCalendar calendar) {
         
-        // Non puo generare un cash flow
-        if(frequency.getYearFraction() <= 0)
+        // Non puo generare un cash flow (alla scadenza, custom, settimanale, giornaliera)
+        if(!frequency.isCouponFrequency())
             return null;
         
         List<PaymentPeriod> periods = new ArrayList<>();

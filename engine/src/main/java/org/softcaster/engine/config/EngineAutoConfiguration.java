@@ -8,6 +8,7 @@ import org.softcaster.engine.analytics.Black76Pricer;
 import org.softcaster.engine.analytics.BlackAndScholesPricer;
 import org.softcaster.engine.analytics.XRBForwardPricer;
 import org.softcaster.engine.analytics.XRBPricer;
+import org.softcaster.engine.analytics.AccumulatorPricer;
 import org.softcaster.engine.analytics.CRRBinomialPricer;
 import org.softcaster.engine.analytics.FRBPricer;
 import org.softcaster.engine.analytics.FxForwardPricer;
@@ -73,6 +74,13 @@ public class EngineAutoConfiguration {
     @ConditionalOnMissingBean
     public GarmanKohlhagenPricer garmanKohlhagenPricer() {
         return new GarmanKohlhagenPricer();
+    }
+
+    // Accumulator / decumulator (Monte Carlo)
+    @Bean(name = "accumulatorPricer")
+    @ConditionalOnMissingBean
+    public AccumulatorPricer accumulatorPricer() {
+        return new AccumulatorPricer();
     }
 
     // Cox-Ross-Rubinstein
