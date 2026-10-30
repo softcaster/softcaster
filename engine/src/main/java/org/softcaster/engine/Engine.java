@@ -150,8 +150,8 @@ public class Engine {
 
     private void testFrenchAmortizationStrategy() {
         LocalDate effectiveDate = LocalDate.of(2026, 5, 8);
-        LocalDate terminationDate = LocalDate.of(2027, 5, 8);
-        Frequency freq = Frequency.BI_MONTHLY;
+        LocalDate terminationDate = LocalDate.of(2036, 5, 8);
+        Frequency freq = Frequency.SEMI_ANNUAL;
         BusinessDayConvention bdc = BusinessDayConvention.FORWARD;
         DaycountBasis daycount = DaycountBasis.ACT_365;
         DummyCaLendar dummy = new DummyCaLendar();
@@ -160,10 +160,10 @@ public class Engine {
         List<PaymentPeriod> periods = fsg.generate(effectiveDate, terminationDate, freq, bdc, daycount, dummy);
 
         FrenchAmortizationStrategy fas = new FrenchAmortizationStrategy();
-        List<CashFlow> flows = fas.generateCashFlows(10000., 0.03, periods, daycount);
+        List<CashFlow> flows = fas.generateCashFlows(100000., 0.03, periods, daycount);
 
         for (CashFlow cf : flows) {
-            System.out.println(cf.accrualStart() + "," + cf.accrualEnd() + "," + cf.interest() + "," + cf.principal());
+            System.out.println(cf.accrualStart() + "\t" + cf.accrualEnd() + "\t" + cf.interest() + "," + cf.principal() + "\t" + (cf.interest() + cf.principal()));
         }
         try {
             CashFlowExporter.toCsv(flows, "piano_ammortamento.csv", ";");
