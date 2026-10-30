@@ -5,10 +5,12 @@
 package mds.core.test;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.softcaster.core.data.AcDcBcyLink;
 import org.softcaster.core.data.AcDcBcyLinkDAO;
+import org.softcaster.core.data.AccumulatorFixing;
 import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.Currency;
@@ -19,12 +21,15 @@ import org.softcaster.core.data.SpreadCurveEntity;
 import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntity;
 import org.softcaster.core.data.YieldCurveEntityDAO;
+import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.calc.AccumulatorCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.FxForwardCalculator;
 import org.softcaster.engine.analytics.Black76Pricer;
 import org.softcaster.engine.curve.DiscountCurve;
+import org.softcaster.engine.dto.AccumulatorInput;
 import org.softcaster.engine.dto.ForwardOptionInput;
 import org.softcaster.engine.dto.FxForwardInput;
 import org.softcaster.engine.dto.FxForwardResult;
@@ -34,8 +39,12 @@ import org.softcaster.engine.dto.XRBForwardInput;
 import org.softcaster.engine.dto.XRBForwardResult;
 import org.softcaster.engine.dto.XRBInput;
 import org.softcaster.engine.dto.XRBResult;
+import org.softcaster.engine.enums.AccumulatorType;
+import org.softcaster.engine.enums.BarrierObservation;
 import org.softcaster.engine.enums.CurveRole;
 import org.softcaster.engine.enums.ExerciseStyle;
+import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.KnockInEffect;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,6 +78,9 @@ public class TestPricer implements CommandLineRunner {
     BondForwardCalculator bndfwdCalculator;
 
     @Autowired
+    AccumulatorCalculator acCalculator;
+    
+    @Autowired
     private FxFutureMasterDataDAO fxFutureMasterDataDAO;
 
     @Autowired
@@ -95,10 +107,11 @@ public class TestPricer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Allinea curve e prezzi
         startUp();
-        testCashFlowInstrumentCalculator();
+        //testCashFlowInstrumentCalculator();
         // testFxForwardCalculator();
-        testBondForwardCalculator();
+        //testBondForwardCalculator();
         // testBlack76Pricer();
+        testAccumulatorCalculator();
     }
 
     private void startUp() {
@@ -199,6 +212,43 @@ public class TestPricer implements CommandLineRunner {
                 + "Gamma: " + result.greeks().gamma() + "\t"
                 + "Vega: " + result.greeks().vega() + "\t"
                 + "Rho: " + result.greeks().rho()
+        );
+    }
+
+    private void testAccumulatorCalculator() {
+
+        LocalDate firstFixing = LocalDate.of(2026, 9, 23);
+        LocalDate lastFixing = LocalDate.of(2026, 10, 22);
+        Frequency frequency = Frequency.WEEKLY;
+        int spotLag = 2;
+        Calendar calendar = new Calendar(currencyDAO.findByIsoCode("EUR"));        
+        
+        List<AccumulatorFixing> fixingList = AccumulatorCalculator.schedule(firstFixing,lastFixing,
+                frequency,spotLag,calendar);
+        
+        for(AccumulatorFixing fixing: fixingList) {
+            System.out.println(fixing.getFixingDate() + "\t" + fixing.getSettlementDate() + "\t" + fixing.getFixingPrice());
+        }
+        
+        AccumulatorInput input = new AccumulatorInput(
+             "EURUSD_ACC",
+                firstFixing,
+                AccumulatorType.ACCUMULATOR,
+                1.15,
+                1.17,
+                BarrierObservation.FIXING,
+                null,
+                KnockInEffect.LEVERAGE,
+                2.,
+                3333.34,
+                3,
+                true,
+                false,
+                1.166,
+                null,
+                null,
+                1000,
+                42L
         );
     }
 }
