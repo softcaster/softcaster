@@ -1195,6 +1195,146 @@ CREATE TABLE spot_option_master_data (
 CREATE INDEX idx_spot_option_master_data_underlying ON spot_option_master_data (underlying);
 ALTER TABLE spot_option_master_data OWNER TO sofie;
 
+-- ----------------------------------------------------------------------------
+-- Accumulator / decumulator OTC (FXA, CMA): foglia di master_data
+-- ----------------------------------------------------------------------------
+CREATE TABLE accumulator_type (
+    accumulator_type_id  INTEGER NOT NULL,
+    code                 VARCHAR(25) NOT NULL,
+    description          VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_accumulator_type PRIMARY KEY (accumulator_type_id),
+    CONSTRAINT uq_accumulator_type_code UNIQUE (code)
+);
+ALTER TABLE accumulator_type OWNER TO sofie;
+
+CREATE TABLE barrier_observation (
+    barrier_observation_id  INTEGER NOT NULL,
+    code                    VARCHAR(25) NOT NULL,
+    description             VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_barrier_observation PRIMARY KEY (barrier_observation_id),
+    CONSTRAINT uq_barrier_observation_code UNIQUE (code)
+);
+ALTER TABLE barrier_observation OWNER TO sofie;
+
+CREATE TABLE knock_in_effect (
+    knock_in_effect_id  INTEGER NOT NULL,
+    code                VARCHAR(25) NOT NULL,
+    description         VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_knock_in_effect PRIMARY KEY (knock_in_effect_id),
+    CONSTRAINT uq_knock_in_effect_code UNIQUE (code)
+);
+ALTER TABLE knock_in_effect OWNER TO sofie;
+
+CREATE TABLE accumulator_master_data (
+    id_master_data        INTEGER NOT NULL,
+    underlying            INTEGER NOT NULL,                  -- coppia (FXA) o strumento (CMA)
+    accumulator_type      INTEGER NOT NULL,
+    settlement_type       INTEGER NOT NULL,                  -- fisico o per differenza
+    settlement_frequency  INTEGER NOT NULL,                  -- DAILY, WEEKLY, MONTHLY, NONE (alla scadenza)
+    strike                NUMERIC(18,8) NOT NULL,
+    ko_barrier            NUMERIC(18,8) NOT NULL,
+    ko_observation        INTEGER NOT NULL DEFAULT 1,        -- FIXING, CONTINUOUS, SETTLEMENT
+    ki_barrier            NUMERIC(18,8),                     -- knock-in facoltativo
+    ki_effect             INTEGER,                           -- LEVERAGE, CONTRACT (con ki_barrier)
+    leverage              NUMERIC(15,5) NOT NULL DEFAULT 1,  -- fattore sui fixing sfavorevoli
+    daily_quantity        NUMERIC(18,5) NOT NULL,            -- valuta base / unita' di commodity
+    first_fixing_date     DATE NOT NULL,
+    last_fixing_date      DATE NOT NULL,
+    guaranteed_fixings    INTEGER NOT NULL DEFAULT 0,        -- fixing iniziali senza knock-out
+    ko_accrual            BOOLEAN NOT NULL DEFAULT FALSE,    -- si accumula il giorno del knock-out
+    fixing_time           TIME,
+    fixing_time_zone      VARCHAR(64),                       -- IANA, es. Europe/Rome
+    ko_date               DATE,                              -- valorizzata al knock-out
+    ki_date               DATE,                              -- valorizzata al knock-in
+    CONSTRAINT pk_accumulator_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_accumulator_master_data_parent
+        FOREIGN KEY (id_master_data) REFERENCES master_data (id_master_data),
+    CONSTRAINT fk_accumulator_master_data_underlying
+        FOREIGN KEY (underlying) REFERENCES master_data (id_master_data),
+    CONSTRAINT fk_accumulator_master_data_type
+        FOREIGN KEY (accumulator_type) REFERENCES accumulator_type (accumulator_type_id),
+    CONSTRAINT fk_accumulator_master_data_settlement_type
+        FOREIGN KEY (settlement_type) REFERENCES settlement_type (id_settlement_type),
+    CONSTRAINT fk_accumulator_master_data_settlement_frequency
+        FOREIGN KEY (settlement_frequency) REFERENCES frequency (id_frequency),
+    CONSTRAINT fk_accumulator_master_data_ko_observation
+        FOREIGN KEY (ko_observation) REFERENCES barrier_observation (barrier_observation_id),
+    CONSTRAINT fk_accumulator_master_data_ki_effect
+        FOREIGN KEY (ki_effect) REFERENCES knock_in_effect (knock_in_effect_id),
+    CONSTRAINT ck_accumulator_master_data_quantities
+        CHECK (strike > 0 AND ko_barrier > 0 AND leverage >= 1 AND daily_quantity > 0 AND guaranteed_fixings >= 0),
+    CONSTRAINT ck_accumulator_master_data_dates
+        CHECK (last_fixing_date >= first_fixing_date),
+    -- accumulator KI < strike < KO, decumulator KO < strike < KI
+    CONSTRAINT ck_accumulator_master_data_barrier
+        CHECK ((accumulator_type = 1 AND ko_barrier > strike AND (ki_barrier IS NULL OR ki_barrier < strike))
+            OR (accumulator_type = 2 AND ko_barrier < strike AND (ki_barrier IS NULL OR ki_barrier > strike))),
+    -- livello ed effetto del knock-in insieme; la data solo con il livello
+    CONSTRAINT ck_accumulator_master_data_knock_in
+        CHECK ((ki_barrier IS NULL) = (ki_effect IS NULL) AND (ki_date IS NULL OR ki_barrier IS NOT NULL))
+);
+CREATE INDEX idx_accumulator_master_data_underlying ON accumulator_master_data (underlying);
+ALTER TABLE accumulator_master_data OWNER TO sofie;
+
+CREATE TABLE accumulator_fixing (
+    id_accumulator_fixing  INTEGER NOT NULL,
+    master_data            INTEGER NOT NULL,
+    fixing_date            DATE NOT NULL,
+    settlement_date        DATE NOT NULL,                    -- regolamento del periodo
+    fixing_price           NUMERIC(18,8),                    -- valorizzato al fixing
+    accumulated_quantity   NUMERIC(18,5),                    -- quantita' maturata al fixing (leva inclusa)
+    CONSTRAINT pk_accumulator_fixing PRIMARY KEY (id_accumulator_fixing),
+    CONSTRAINT fk_accumulator_fixing_master_data
+        FOREIGN KEY (master_data) REFERENCES accumulator_master_data (id_master_data) ON DELETE CASCADE,
+    CONSTRAINT uq_accumulator_fixing UNIQUE (master_data, fixing_date),
+    CONSTRAINT ck_accumulator_fixing_dates CHECK (settlement_date >= fixing_date)
+);
+CREATE INDEX idx_accumulator_fixing_settlement ON accumulator_fixing (settlement_date);
+ALTER TABLE accumulator_fixing OWNER TO sofie;
+
+CREATE SEQUENCE IF NOT EXISTS accumulator_fixing_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE accumulator_fixing_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- Volatilita' implicite per sottostante (superficie + punti per data di rilevazione)
+-- ----------------------------------------------------------------------------
+CREATE TABLE volatility_surface (
+    id_volatility_surface  INTEGER NOT NULL,
+    code                   VARCHAR(25) NOT NULL,
+    description            VARCHAR(255) NOT NULL DEFAULT '',
+    underlying             INTEGER NOT NULL,
+    CONSTRAINT pk_volatility_surface PRIMARY KEY (id_volatility_surface),
+    CONSTRAINT uq_volatility_surface_code UNIQUE (code),
+    CONSTRAINT uq_volatility_surface_underlying UNIQUE (underlying),
+    CONSTRAINT fk_volatility_surface_underlying
+        FOREIGN KEY (underlying) REFERENCES master_data (id_master_data)
+);
+ALTER TABLE volatility_surface OWNER TO sofie;
+
+CREATE SEQUENCE IF NOT EXISTS volatility_surface_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE volatility_surface_s OWNER TO sofie;
+
+CREATE TABLE volatility_point (
+    id_volatility_point    INTEGER NOT NULL,
+    volatility_surface     INTEGER NOT NULL,
+    reference_date         DATE NOT NULL,                   -- data di rilevazione
+    expiry_date            DATE NOT NULL,                   -- scadenza dell'opzione
+    strike                 NUMERIC(18,8),                   -- NULL = at the money
+    volatility             NUMERIC(12,8) NOT NULL,          -- annua, decimale (0.08 = 8%)
+    source                 VARCHAR(64) NOT NULL DEFAULT '',
+    CONSTRAINT pk_volatility_point PRIMARY KEY (id_volatility_point),
+    CONSTRAINT fk_volatility_point_surface
+        FOREIGN KEY (volatility_surface) REFERENCES volatility_surface (id_volatility_surface) ON DELETE CASCADE,
+    CONSTRAINT uq_volatility_point UNIQUE NULLS NOT DISTINCT (volatility_surface, reference_date, expiry_date, strike),
+    CONSTRAINT ck_volatility_point_values
+        CHECK (volatility > 0 AND volatility < 5 AND (strike IS NULL OR strike > 0) AND expiry_date > reference_date)
+);
+CREATE INDEX idx_volatility_point_date ON volatility_point (volatility_surface, reference_date);
+ALTER TABLE volatility_point OWNER TO sofie;
+
+CREATE SEQUENCE IF NOT EXISTS volatility_point_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE volatility_point_s OWNER TO sofie;
+
 
 -- ----------------------------------------------------------------------------
 -- instrument_quote

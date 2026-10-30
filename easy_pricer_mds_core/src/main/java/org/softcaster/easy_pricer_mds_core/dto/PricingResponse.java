@@ -56,6 +56,8 @@ public class PricingResponse implements Serializable {
     public Double optionValue = null;
     // volatilita' usata: quella della request o l'implicita del premio di mercato
     public Double volatility = null;
+    // provenienza della volatilita': request, implied, superficie e data di rilevazione
+    public String volatilitySource = null;
     public Double underlyingForward = null;
     public Double discountFactor = null;
     // anni ACT/365
