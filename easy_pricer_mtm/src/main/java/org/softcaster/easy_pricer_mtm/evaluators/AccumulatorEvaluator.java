@@ -7,7 +7,6 @@ import org.softcaster.core.data.InstrumentValuation;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
-import org.softcaster.easy_pricer_mds_core.PnlCalc;
 import org.softcaster.easy_pricer_mds_core.calc.AccumulatorCalculator;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.easy_pricer_mtm.exceptions.MtmException;
@@ -73,9 +72,8 @@ public abstract class AccumulatorEvaluator extends AbstractEvaluator implements 
         position.setMarketPrice(valuation.getMarketPrice());
         position.setTheoreticalPrice(valuation.getTheoreticalPrice());
 
-        // P&L non realizzato su posizioni lunghe e corte (prezzo = valore per contratto)
-        position.setUnrealizedPnl(PnlCalc.unrealized(position.getBuyQty(), position.getSellQty(),
-                position.getNotionalValueBuy(), position.getNotionalValueSell(), valuation.getMarketPrice()));
+        // prezzo = valore per contratto
+        position.setUnrealizedPnl(calcUnrealizedPL(valuation.getMarketPrice(), position));
 
         masterData.setInstrumentValuation(valuation);
     }

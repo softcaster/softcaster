@@ -485,19 +485,66 @@ ALTER TABLE instrument_valuation OWNER TO sofie;
 -- 000010 valore da sequenza master_data_code_s
 CREATE TABLE loan_master_data (
     id_master_data integer NOT NULL,
-    description varchar(255) NOT NULL DEFAULT '',
-    processing_fees numeric(23, 10) NOT NULL DEFAULT 0, -- Spese di incasso rata
-    management_fees numeric(23, 10) NOT NULL DEFAULT 0, -- Spese di gestione pratica
-    incidental_expenses numeric(23, 10) NOT NULL DEFAULT 0, -- Oneri accessori
-    default_interest numeric(23, 10) NOT NULL DEFAULT 0, -- Interessi di mora
-    late_payment_fee numeric(23, 10) NOT NULL DEFAULT 0, -- Penale di mora
-    underwriting_fee numeric(23, 10) NOT NULL DEFAULT 0, -- Commissione di istruttoria
-    insurance_premium numeric(23, 10) NOT NULL DEFAULT 0, -- Premio assicurativo (scoppio/incendio)
-    tax_charges numeric(23, 10) NOT NULL DEFAULT 0, -- Imposta sostitutiva
+    default_interest numeric(23, 10) NOT NULL DEFAULT 0, -- Interessi di mora (punti percentuali, fuori dal prezzo)
+    late_payment_fee numeric(23, 10) NOT NULL DEFAULT 0, -- Penale per rata in ritardo (importo, fuori dal prezzo)
+    principal_amount numeric(23, 5) NOT NULL,             -- Capitale finanziato
+    first_payment_date date,                              -- Prima rata (vuota = erogazione + un periodo)
+    pre_amortization_periods integer NOT NULL DEFAULT 0,  -- Rate iniziali di soli interessi
     CONSTRAINT fk_loan_master_data_parent FOREIGN KEY (id_master_data) REFERENCES cash_flow_master_data (id_master_data),
+    CONSTRAINT ck_loan_master_data_values
+        CHECK (principal_amount > 0 AND pre_amortization_periods >= 0 AND default_interest >= 0 AND late_payment_fee >= 0),
     PRIMARY KEY (id_master_data)
 );
 ALTER TABLE loan_master_data OWNER TO sofie;
+
+-- spese del mutuo: importo o punti percentuali (del capitale se una tantum,
+-- del debito residuo a inizio periodo se per rata)
+CREATE TABLE loan_fee_type (
+    loan_fee_type_id  INTEGER NOT NULL,
+    code              VARCHAR(25) NOT NULL,
+    description       VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_loan_fee_type PRIMARY KEY (loan_fee_type_id),
+    CONSTRAINT uq_loan_fee_type_code UNIQUE (code)
+);
+ALTER TABLE loan_fee_type OWNER TO sofie;
+
+CREATE TABLE fee_basis (
+    fee_basis_id  INTEGER NOT NULL,
+    code          VARCHAR(25) NOT NULL,
+    description   VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_fee_basis PRIMARY KEY (fee_basis_id),
+    CONSTRAINT uq_fee_basis_code UNIQUE (code)
+);
+ALTER TABLE fee_basis OWNER TO sofie;
+
+CREATE TABLE fee_timing (
+    fee_timing_id  INTEGER NOT NULL,
+    code           VARCHAR(25) NOT NULL,
+    description    VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_fee_timing PRIMARY KEY (fee_timing_id),
+    CONSTRAINT uq_fee_timing_code UNIQUE (code)
+);
+ALTER TABLE fee_timing OWNER TO sofie;
+
+CREATE TABLE loan_fee (
+    id_loan_fee   INTEGER NOT NULL,
+    master_data   INTEGER NOT NULL,
+    fee_type      INTEGER NOT NULL,
+    fee_basis     INTEGER NOT NULL,
+    fee_timing    INTEGER NOT NULL,
+    value         NUMERIC(23,10) NOT NULL,         -- importo o punti percentuali
+    CONSTRAINT pk_loan_fee PRIMARY KEY (id_loan_fee),
+    CONSTRAINT fk_loan_fee_master_data
+        FOREIGN KEY (master_data) REFERENCES loan_master_data (id_master_data) ON DELETE CASCADE,
+    CONSTRAINT fk_loan_fee_type FOREIGN KEY (fee_type) REFERENCES loan_fee_type (loan_fee_type_id),
+    CONSTRAINT fk_loan_fee_basis FOREIGN KEY (fee_basis) REFERENCES fee_basis (fee_basis_id),
+    CONSTRAINT fk_loan_fee_timing FOREIGN KEY (fee_timing) REFERENCES fee_timing (fee_timing_id),
+    CONSTRAINT uq_loan_fee UNIQUE (master_data, fee_type),
+    CONSTRAINT ck_loan_fee_value CHECK (value >= 0)
+);
+ALTER TABLE loan_fee OWNER TO sofie;
+CREATE SEQUENCE IF NOT EXISTS loan_fee_s START WITH 1 INCREMENT BY 1;
+ALTER SEQUENCE loan_fee_s OWNER TO sofie;
 
 -- projection_method: definita nella sezione CouponProjectionMethod
 
@@ -633,11 +680,37 @@ CREATE TABLE flt_security_master_data (
     projection_index INTEGER,
     projection_curve  integer,
     fixing_day_type INTEGER NOT NULL DEFAULT 2,
+    cap numeric(18,10),
     CONSTRAINT fk_coupon_pm FOREIGN KEY (coupon_pm) REFERENCES coupon_pm (coupon_pm_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_projection_index FOREIGN KEY (projection_index) REFERENCES ref_rate_index (ref_rate_index_id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     PRIMARY KEY (id_master_data)
 );
 ALTER TABLE flt_security_master_data OWNER TO sofie;
+
+-- mutui a tasso variabile: stesse condizioni dei titoli (FloatingRateTerms)
+CREATE TABLE flt_loan_master_data (
+    id_master_data    INTEGER NOT NULL,
+    spread            NUMERIC(23,10) NOT NULL,       -- decimale, come per i titoli (0.0075)
+    projection_index  INTEGER,
+    coupon_pm         INTEGER NOT NULL,
+    fixing_lag_days   INTEGER NOT NULL DEFAULT 2,
+    fixing_day_type   INTEGER NOT NULL DEFAULT 2,
+    floor             NUMERIC(18,10),
+    cap               NUMERIC(18,10),
+    index_months      INTEGER NOT NULL DEFAULT 6,
+    projection_curve  INTEGER,
+    CONSTRAINT pk_flt_loan_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_flt_loan_master_data_parent
+        FOREIGN KEY (id_master_data) REFERENCES loan_master_data (id_master_data),
+    CONSTRAINT fk_flt_loan_projection_index
+        FOREIGN KEY (projection_index) REFERENCES ref_rate_index (ref_rate_index_id),
+    CONSTRAINT fk_flt_loan_coupon_pm
+        FOREIGN KEY (coupon_pm) REFERENCES coupon_pm (coupon_pm_id),
+    CONSTRAINT fk_flt_loan_fixing_day_type
+        FOREIGN KEY (fixing_day_type) REFERENCES fixing_day_type (fixing_day_type_id),
+    CONSTRAINT ck_flt_loan_floor_cap CHECK (floor IS NULL OR cap IS NULL OR floor <= cap)
+);
+ALTER TABLE flt_loan_master_data OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- forex_master_data - anagrafica forex
@@ -1225,6 +1298,15 @@ CREATE TABLE knock_in_effect (
 );
 ALTER TABLE knock_in_effect OWNER TO sofie;
 
+CREATE TABLE guarantee_type (
+    guarantee_type_id  INTEGER NOT NULL,
+    code               VARCHAR(25) NOT NULL,
+    description        VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_guarantee_type PRIMARY KEY (guarantee_type_id),
+    CONSTRAINT uq_guarantee_type_code UNIQUE (code)
+);
+ALTER TABLE guarantee_type OWNER TO sofie;
+
 CREATE TABLE accumulator_master_data (
     id_master_data        INTEGER NOT NULL,
     underlying            INTEGER NOT NULL,                  -- coppia (FXA) o strumento (CMA)
@@ -1240,13 +1322,19 @@ CREATE TABLE accumulator_master_data (
     daily_quantity        NUMERIC(18,5) NOT NULL,            -- valuta base / unita' di commodity
     first_fixing_date     DATE NOT NULL,
     last_fixing_date      DATE NOT NULL,
-    guaranteed_fixings    INTEGER NOT NULL DEFAULT 0,        -- fixing iniziali senza knock-out
+    guaranteed_periods    INTEGER NOT NULL DEFAULT 0,        -- periodi di regolamento iniziali senza knock-out
     ko_accrual            BOOLEAN NOT NULL DEFAULT FALSE,    -- si accumula il giorno del knock-out
     fixing_time           TIME,
     fixing_time_zone      VARCHAR(64),                       -- IANA, es. Europe/Rome
     ko_date               DATE,                              -- valorizzata al knock-out
     ki_date               DATE,                              -- valorizzata al knock-in
+    guarantee_type        INTEGER NOT NULL DEFAULT 1,        -- NONE, LEVERAGED, UNLEVERAGED
     CONSTRAINT pk_accumulator_master_data PRIMARY KEY (id_master_data),
+    CONSTRAINT fk_accumulator_master_data_guarantee_type
+        FOREIGN KEY (guarantee_type) REFERENCES guarantee_type (guarantee_type_id),
+    -- nessuna garanzia se e solo se zero periodi garantiti
+    CONSTRAINT ck_accumulator_master_data_guarantee
+        CHECK ((guarantee_type = 1) = (guaranteed_periods = 0)),
     CONSTRAINT fk_accumulator_master_data_parent
         FOREIGN KEY (id_master_data) REFERENCES master_data (id_master_data),
     CONSTRAINT fk_accumulator_master_data_underlying
@@ -1262,7 +1350,7 @@ CREATE TABLE accumulator_master_data (
     CONSTRAINT fk_accumulator_master_data_ki_effect
         FOREIGN KEY (ki_effect) REFERENCES knock_in_effect (knock_in_effect_id),
     CONSTRAINT ck_accumulator_master_data_quantities
-        CHECK (strike > 0 AND ko_barrier > 0 AND leverage >= 1 AND daily_quantity > 0 AND guaranteed_fixings >= 0),
+        CHECK (strike > 0 AND ko_barrier > 0 AND leverage >= 1 AND daily_quantity > 0 AND guaranteed_periods >= 0),
     CONSTRAINT ck_accumulator_master_data_dates
         CHECK (last_fixing_date >= first_fixing_date),
     -- accumulator KI < strike < KO, decumulator KO < strike < KI

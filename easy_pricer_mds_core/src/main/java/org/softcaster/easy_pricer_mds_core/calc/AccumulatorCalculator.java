@@ -2,7 +2,6 @@ package org.softcaster.easy_pricer_mds_core.calc;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -16,7 +15,6 @@ import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntityDAO;
-import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.dto.AccumulatorPricingResponse;
 import org.softcaster.engine.analytics.AccumulatorPricer;
@@ -26,7 +24,6 @@ import org.softcaster.engine.dto.AccumulatorInput;
 import org.softcaster.engine.dto.AccumulatorPendingSettlement;
 import org.softcaster.engine.dto.AccumulatorResult;
 import org.softcaster.engine.enums.CurveRole;
-import org.softcaster.engine.enums.Frequency;
 import org.softcaster.provider.enums.RequestType;
 
 /**
@@ -42,6 +39,8 @@ import org.softcaster.provider.enums.RequestType;
  *
  * Calendario alla data di valutazione V:
  *  - fixing dopo V: futuri, simulati;
+ *  - fixing a V non ancora rilevato (es. primo fixing = data dell'operazione):
+ *    futuro con tempo 0, al forward corrente;
  *  - fixing fino a V rilevati e regolati dopo V: quantita' da regolare;
  *  - fixing fino a V rilevati e gia' regolati: fuori dalla valutazione;
  *  - fixing fino a V non rilevati: errore (vanno registrati prima).
@@ -107,70 +106,6 @@ public class AccumulatorCalculator {
     }
 
     // ------------------------------------------------------------------------
-    // -- Calendario dei fixing
-    // ------------------------------------------------------------------------
-
-    /**
-     * Calendario dei fixing: tutti i giorni lavorativi tra la prima e
-     * l'ultima data. Il regolamento di un periodo e' l'ultimo fixing del
-     * periodo + spot lag giorni lavorativi. Periodi: il giorno (DAILY), la
-     * settimana ISO (WEEKLY), blocchi di mesi dal primo fixing (MONTHLY,
-     * QUARTERLY...), tutto il contratto (NONE).
-     *
-     * @param calendar festivita' delle valute del sottostante e di regolamento
-     */
-    public static List<AccumulatorFixing> schedule(LocalDate firstFixing, LocalDate lastFixing, Frequency frequency,
-                                                   int spotLag, Calendar calendar) {
-        Objects.requireNonNull(firstFixing, "firstFixing");
-        Objects.requireNonNull(lastFixing, "lastFixing");
-        Objects.requireNonNull(frequency, "frequency");
-        if (lastFixing.isBefore(firstFixing)) {
-            throw new IllegalArgumentException("Ultimo fixing precedente al primo");
-        }
-        if (frequency == Frequency.CUSTOM) {
-            throw new IllegalArgumentException("Frequenza di regolamento CUSTOM non gestita");
-        }
-
-        List<LocalDate> dates = new ArrayList<>();
-        for (LocalDate d = firstFixing; !d.isAfter(lastFixing); d = d.plusDays(1)) {
-            if (calendar.isBusinessDay(d)) {
-                dates.add(d);
-            }
-        }
-        if (dates.isEmpty()) {
-            throw new IllegalArgumentException("Nessun giorno lavorativo tra " + firstFixing + " e " + lastFixing);
-        }
-
-        List<AccumulatorFixing> fixings = new ArrayList<>();
-        int periodStart = 0;
-        for (int i = 0; i < dates.size(); i++) {
-            boolean lastOfPeriod = i == dates.size() - 1
-                    || period(dates.get(i + 1), firstFixing, frequency) != period(dates.get(i), firstFixing, frequency);
-            if (lastOfPeriod) {
-                LocalDate settlement = calendar.getNextBusinessDate(dates.get(i), spotLag);
-                for (int j = periodStart; j <= i; j++) {
-                    fixings.add(new AccumulatorFixing(dates.get(j), settlement));
-                }
-                periodStart = i + 1;
-            }
-        }
-        return fixings;
-    }
-
-    /**
-     * Indice del periodo di regolamento di una data.
-     */
-    private static long period(LocalDate date, LocalDate first, Frequency frequency) {
-        return switch (frequency) {
-            case DAILY -> date.toEpochDay();
-            case WEEKLY -> date.get(IsoFields.WEEK_BASED_YEAR) * 100L + date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
-            case NONE -> 0L;
-            default -> ChronoUnit.MONTHS.between(first.withDayOfMonth(1), date.withDayOfMonth(1))
-                    / (12 / frequency.getYearFraction());
-        };
-    }
-
-    // ------------------------------------------------------------------------
     // -- Costruzione input
     // ------------------------------------------------------------------------
 
@@ -219,7 +154,9 @@ public class AccumulatorCalculator {
             AccumulatorFixing f = schedule.get(i);
             LocalDate fixingDate = f.getFixingLocalDate();
             LocalDate settlementDate = f.getSettlementLocalDate();
-            if (fixingDate.isAfter(valuationDate)) {
+            // fixing del giorno non ancora rilevato: futuro con tempo 0 (al forward corrente)
+            boolean pendingToday = fixingDate.equals(valuationDate) && !f.isFixed();
+            if (fixingDate.isAfter(valuationDate) || pendingToday) {
                 if (amd.isKnockedOut()) {
                     continue;
                 }
@@ -248,7 +185,7 @@ public class AccumulatorCalculator {
 
         AccumulatorInput input = new AccumulatorInput(amd.getCode(), valuationDate, amd.getAccumulatorType(), amd.getStrike(),
                 amd.getKoBarrier(), amd.getKoObservation(), amd.getKiBarrier(), amd.getKiEffect(),
-                amd.getLeverage(), amd.getDailyQuantity(), amd.getGuaranteedFixings(),
+                amd.getLeverage(), amd.getDailyQuantity(), amd.getGuaranteedFixings(), amd.getGuaranteeType(),
                 Boolean.TRUE.equals(amd.getKoAccrual()), amd.isKnockedIn(), s, future, pending,
                 paths != null && paths > 1 ? paths : AccumulatorInput.DEFAULT_PATHS, AccumulatorInput.DEFAULT_SEED);
         return new Prepared(input, vol == null ? "" : vol.source());

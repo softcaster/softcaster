@@ -1,22 +1,20 @@
 package org.softcaster.core.data;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.Table;
-import java.sql.Types;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.softcaster.core.data.converters.CouponProjectionMethodConverter;
-import org.softcaster.core.data.converters.FixingDayTypeConverter;
 import org.softcaster.engine.enums.CouponProjectionMethod;
 import org.softcaster.engine.enums.FixingDayType;
 
+/**
+ * Titolo a tasso variabile: le condizioni del variabile sono in
+ * FloatingRateTerms (condivisa con i mutui); i getter qui sotto delegano, per
+ * chi usa il titolo.
+ */
 @Entity
 @Table(name = "flt_security_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
@@ -33,7 +31,10 @@ import org.softcaster.engine.enums.FixingDayType;
     @NamedEntityGraph(
             name = "FltSecurityMasterData.indexGraph",
             attributeNodes = {
-                @NamedAttributeNode("projectionIndex")
+                @NamedAttributeNode(value = "floatingTerms", subgraph = "floatingTerms")
+            },
+            subgraphs = {
+                @NamedSubgraph(name = "floatingTerms", attributeNodes = @NamedAttributeNode("projectionIndex"))
             }),
     // lista delle finestre di anagrafica: tutto cio' che la finestra del titolo legge
     // fuori dalla transazione (un'unica collezione: i flussi)
@@ -44,145 +45,103 @@ import org.softcaster.engine.enums.FixingDayType;
                 @NamedAttributeNode("assetClass"),
                 @NamedAttributeNode("instrumentValuation"),
                 @NamedAttributeNode("issuer"),
-                @NamedAttributeNode("projectionIndex"),
+                @NamedAttributeNode(value = "floatingTerms", subgraph = "floatingTerms"),
                 @NamedAttributeNode("cashFlows")
+            },
+            subgraphs = {
+                @NamedSubgraph(name = "floatingTerms", attributeNodes = @NamedAttributeNode("projectionIndex"))
             })
 })
 public class FltSecurityMasterData extends SecurityMasterData {
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "spread")
-    private Double spread;
+    @Embedded
+    private FloatingRateTerms floatingTerms = new FloatingRateTerms();
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "floor")
-    private Double floor;
+    public FloatingRateTerms getFloatingTerms() {
+        return floatingTerms;
+    }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "projection_index", nullable = true)
-    private RefRateIndex projectionIndex;
+    public void setFloatingTerms(FloatingRateTerms floatingTerms) {
+        this.floatingTerms = floatingTerms;
+    }
 
-    @Column(name = "projection_curve")
-    private Integer projectionCurveId;
+    private FloatingRateTerms terms() {
+        // Hibernate lascia null un embeddable con tutte le colonne vuote
+        if (floatingTerms == null) {
+            floatingTerms = new FloatingRateTerms();
+        }
+        return floatingTerms;
+    }
 
-    @Convert(converter = CouponProjectionMethodConverter.class)
-    @Column(name = "coupon_pm")
-    private CouponProjectionMethod couponPm;
-
-    @Column(name = "fixing_lag_days")
-    private Integer fixingLagDays;
-
-    @Column(name = "index_months")
-    private Integer indexMonths;
-    
-    @Convert(converter = FixingDayTypeConverter.class)
-    @Column(name = "fixing_day_type")
-    private FixingDayType fixingDayType;
-    
     public Double getSpread() {
-        return spread;
+        return terms().getSpread();
     }
 
     public void setSpread(Double spread) {
-        this.spread = spread;
+        terms().setSpread(spread);
     }
 
-    /**
-     * @return the couponPm
-     */
     public CouponProjectionMethod getCouponPm() {
-        return couponPm;
+        return terms().getCouponPm();
     }
 
-    /**
-     * @param couponPm the couponPm to set
-     */
     public void setCouponPm(CouponProjectionMethod couponPm) {
-        this.couponPm = couponPm;
+        terms().setCouponPm(couponPm);
     }
 
-    /**
-     * @return the fixingDayType
-     */
     public FixingDayType getFixingDayType() {
-        return fixingDayType;
+        return terms().getFixingDayType();
     }
 
-    /**
-     * @param fixingDayType the fixingDayType to set
-     */
     public void setFixingDayType(FixingDayType fixingDayType) {
-        this.fixingDayType = fixingDayType;
+        terms().setFixingDayType(fixingDayType);
     }
 
-    /**
-     * @return the floor
-     */
     public Double getFloor() {
-        return floor;
+        return terms().getFloor();
     }
 
-    /**
-     * @param floor the floor to set
-     */
     public void setFloor(Double floor) {
-        this.floor = floor;
+        terms().setFloor(floor);
     }
 
-    /**
-     * @return the projectionIndex
-     */
+    public Double getCap() {
+        return terms().getCap();
+    }
+
+    public void setCap(Double cap) {
+        terms().setCap(cap);
+    }
+
     public RefRateIndex getProjectionIndex() {
-        return projectionIndex;
+        return terms().getProjectionIndex();
     }
 
-    /**
-     * @param projectionIndex the projectionIndex to set
-     */
     public void setProjectionIndex(RefRateIndex projectionIndex) {
-        this.projectionIndex = projectionIndex;
+        terms().setProjectionIndex(projectionIndex);
     }
 
-    /**
-     * @return the fixingLagDays
-     */
     public Integer getFixingLagDays() {
-        return fixingLagDays;
+        return terms().getFixingLagDays();
     }
 
-    /**
-     * @param fixingLagDays the fixingLagDays to set
-     */
     public void setFixingLagDays(Integer fixingLagDays) {
-        this.fixingLagDays = fixingLagDays;
+        terms().setFixingLagDays(fixingLagDays);
     }
 
-    /**
-     * @return the indexMonths
-     */
     public Integer getIndexMonths() {
-        return indexMonths;
+        return terms().getIndexMonths();
     }
 
-    /**
-     * @param indexMonths the indexMonths to set
-     */
     public void setIndexMonths(Integer indexMonths) {
-        this.indexMonths = indexMonths;
+        terms().setIndexMonths(indexMonths);
     }
 
-    /**
-     * @return the projectionCurveId
-     */
     public Integer getProjectionCurveId() {
-        return projectionCurveId;
+        return terms().getProjectionCurveId();
     }
 
-    /**
-     * @param projectionCurveId the projectionCurveId to set
-     */
     public void setProjectionCurveId(Integer projectionCurveId) {
-        this.projectionCurveId = projectionCurveId;
+        terms().setProjectionCurveId(projectionCurveId);
     }
-
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import org.softcaster.engine.enums.AccumulatorType;
 import org.softcaster.engine.enums.BarrierObservation;
+import org.softcaster.engine.enums.GuaranteeType;
 import org.softcaster.engine.enums.KnockInEffect;
 
 /**
@@ -18,6 +19,12 @@ import org.softcaster.engine.enums.KnockInEffect;
  * @param spot              prezzo corrente del sottostante: le greche sono
  *                          rispetto a questo, con i forward che si muovono in
  *                          proporzione
+ * @param guaranteedFixings fixing garantiti dall'inizio del contratto (il
+ *                          chiamante traduce i periodi garantiti in fixing):
+ *                          knock-out non attivo
+ * @param guaranteeType     NONE (con 0 fixing garantiti), LEVERAGED (leva
+ *                          normale), UNLEVERAGED (quantita' base su ogni
+ *                          fixing garantito)
  * @param knockedIn         knock-in gia' avvenuto
  * @param fixings           fixing futuri in ordine di data, ciascuno con la
  *                          sua volatilita' (vuoto se il contratto e' finito o
@@ -38,6 +45,7 @@ public record AccumulatorInput(
         double leverage,
         double dailyQuantity,
         int guaranteedFixings,
+        GuaranteeType guaranteeType,
         boolean koAccrual,
         boolean knockedIn,
         double spot,
@@ -69,6 +77,10 @@ public record AccumulatorInput(
         }
         if (leverage < 1 || dailyQuantity <= 0 || guaranteedFixings < 0) {
             throw new IllegalArgumentException("leverage >= 1, dailyQuantity > 0, guaranteedFixings >= 0");
+        }
+        Objects.requireNonNull(guaranteeType, "guaranteeType");
+        if ((guaranteeType == GuaranteeType.NONE) != (guaranteedFixings == 0)) {
+            throw new IllegalArgumentException("guaranteeType NONE se e solo se non ci sono fixing garantiti");
         }
         if (paths < 2) {
             throw new IllegalArgumentException("paths deve essere >= 2");

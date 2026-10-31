@@ -39,6 +39,7 @@ INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (100,
 INSERT INTO form(id_form,code, description) VALUES (nextval('form_s'),'BEARER','Bearer');
 INSERT INTO form(id_form,code, description) VALUES (nextval('form_s'),'REGISTERED','Registered');
 INSERT INTO form(id_form,code, description) VALUES (nextval('form_s'),'BOOK-ENTRY-BOND','Book-entry Bond');
+INSERT INTO form(id_form,code, description) VALUES (100,'NONE','None');
 
 -- ----------------------------------------------------------------------------
 -- type_of_interest
@@ -60,15 +61,16 @@ INSERT INTO type_of_interest(id_type_of_interest,code, description) VALUES (100,
 -- ----------------------------------------------------------------------------
 -- accrual_schedule_type
 -- ----------------------------------------------------------------------------
-INSERT INTO accrual_schedule_type(id_accrual_schedule_type,code, description) VALUES (100,'NONE','None');
+INSERT INTO accrual_schedule_type(id_accrual_schedule_type,code, description) VALUES (100,'AST_NONE','None');
 
 -- ----------------------------------------------------------------------------
 -- compounding
 -- ----------------------------------------------------------------------------
 INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'SIMPLE','Linear');
 INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'COMPOUNDED','Compounded');
+-- id come l'enum Compounding: 3 = SIMPLE-THEN-COMPOUNDED, 4 = CONTINUOUS
+INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'SIMPLE-THEN-COMPOUNDED','Linear then Compounded');
 INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'CONTINUOUS','Continuous');
-INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'SIMPLE_THEN_COMPOUNDED','Linear then Compounded');
 
 -- ----------------------------------------------------------------------------
 -- amortization_schedule
@@ -406,6 +408,8 @@ INSERT INTO cash_flow_status(cash_flow_status_id,code, description) VALUES (3,'P
 
 INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (1,'LAST_COUPON','Last Coupon');
 INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (2,'FORWARD_CURVE','Forward Curve');
+INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (3,'HIST_SERIE','Historical Serie');
+INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (4,'NONE','None');
 
 INSERT INTO tenor (tenor_id, code, description) VALUES
 (1, 'ON',  'Overnight'),
@@ -448,6 +452,19 @@ INSERT INTO barrier_observation VALUES (2, 'CONTINUOUS', 'Continuous');
 INSERT INTO barrier_observation VALUES (3, 'SETTLEMENT', 'At settlement dates');
 INSERT INTO knock_in_effect VALUES (1, 'LEVERAGE', 'Activates the leverage on unfavourable fixings');
 INSERT INTO knock_in_effect VALUES (2, 'CONTRACT', 'Activates the contract');
+INSERT INTO guarantee_type VALUES (1, 'NONE', 'No guarantee');
+INSERT INTO guarantee_type VALUES (2, 'LEVERAGED', 'KO not active, leverage applies');
+INSERT INTO guarantee_type VALUES (3, 'UNLEVERAGED', 'KO not active, base quantity on every fixing');
+INSERT INTO loan_fee_type VALUES (1, 'PROCESSING', 'Processing fee');
+INSERT INTO loan_fee_type VALUES (2, 'UNDERWRITING', 'Underwriting / appraisal fee');
+INSERT INTO loan_fee_type VALUES (3, 'TAX', 'Tax charges');
+INSERT INTO loan_fee_type VALUES (4, 'INCIDENTAL', 'Incidental expenses');
+INSERT INTO loan_fee_type VALUES (5, 'MANAGEMENT', 'Management / collection fee');
+INSERT INTO loan_fee_type VALUES (6, 'INSURANCE', 'Insurance premium');
+INSERT INTO fee_basis VALUES (1, 'AMOUNT', 'Amount in loan currency');
+INSERT INTO fee_basis VALUES (2, 'PERCENT', 'Percentage of principal or outstanding');
+INSERT INTO fee_timing VALUES (1, 'UPFRONT', 'Once, at disbursement');
+INSERT INTO fee_timing VALUES (2, 'PER_INSTALLMENT', 'At every installment');
 
 INSERT INTO delivery_period_type VALUES (1, 'YEAR', 'Year Future - annual delivery contract');
 INSERT INTO delivery_period_type VALUES (2, 'QUARTER', 'Quarter Future - quarterly delivery contract');

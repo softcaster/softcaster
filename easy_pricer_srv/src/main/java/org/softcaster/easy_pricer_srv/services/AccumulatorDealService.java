@@ -22,10 +22,13 @@ import org.softcaster.easy_pricer_mds_core.dto.AccumulatorPricingResponse;
 import org.softcaster.easy_pricer_srv.dto.AccumulatorDealRequest;
 import org.softcaster.easy_pricer_srv.dto.AccumulatorDealResponse;
 import org.softcaster.easy_pricer_srv.dto.AccumulatorDto;
+import org.softcaster.engine.cashflow.AccumulatorFixingDate;
+import org.softcaster.engine.cashflow.AccumulatorScheduleGenerator;
 import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.AccumulatorType;
 import org.softcaster.engine.enums.BarrierObservation;
 import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.GuaranteeType;
 import org.softcaster.engine.enums.KnockInEffect;
 import org.softcaster.engine.enums.SettlementType;
 import org.softcaster.engine.enums.TxnSide;
@@ -51,6 +54,8 @@ public class AccumulatorDealService {
 
     private static final List<String> ASSET_CLASSES = List.of(
             AccumulatorMasterData.FX_ASSET_CLASS, AccumulatorMasterData.COMMODITY_ASSET_CLASS);
+
+    private final AccumulatorScheduleGenerator scheduleGenerator = new AccumulatorScheduleGenerator();
 
     @Autowired
     private TransactionTemplate transactionTemplate;
@@ -100,9 +105,8 @@ public class AccumulatorDealService {
             TxnSide side = TxnSide.fromCode(require(request.side, "side"));
             require(request.counterpartyId, "counterpartyId");
             require(request.positionMdId, "positionMdId");
-            double premium = request.premium == null ? 0. : request.premium;
-
             AccumulatorMasterData amd = accumulatorDAO.create(build(request));
+            double premium = premium(request, amd);
 
             FinancialTxnDto txn = new FinancialTxnDto(0, amd.getDescription(),
                     request.counterpartyId, null, null,
@@ -183,32 +187,83 @@ public class AccumulatorDealService {
         amd.setKiBarrier(r.kiBarrier);
         amd.setKiEffect(r.kiEffect == null || r.kiEffect.isBlank() ? null : KnockInEffect.fromCode(r.kiEffect));
         amd.setLeverage(r.leverage == null ? 1. : r.leverage);
-        amd.setDailyQuantity(require(r.dailyQuantity, "dailyQuantity"));
         LocalDate first = require(r.firstFixingDate, "firstFixingDate");
         LocalDate last = require(r.lastFixingDate, "lastFixingDate");
         amd.setFirstFixingDate(java.sql.Date.valueOf(first));
         amd.setLastFixingDate(java.sql.Date.valueOf(last));
-        amd.setGuaranteedFixings(r.guaranteedFixings == null ? 0 : r.guaranteedFixings);
+        int guaranteedPeriods = r.guaranteedPeriods == null ? 0 : r.guaranteedPeriods;
+        if (guaranteedPeriods < 0) {
+            throw new IllegalArgumentException("guaranteedPeriods negativo");
+        }
+        amd.setGuaranteedPeriods(guaranteedPeriods);
+        if (guaranteedPeriods == 0) {
+            if (r.guaranteeType != null && !r.guaranteeType.isBlank() && !"NONE".equals(r.guaranteeType)) {
+                throw new IllegalArgumentException("guaranteeType " + r.guaranteeType + " senza periodi garantiti");
+            }
+            amd.setGuaranteeType(GuaranteeType.NONE);
+        } else {
+            GuaranteeType type = r.guaranteeType == null || r.guaranteeType.isBlank()
+                    ? GuaranteeType.LEVERAGED : GuaranteeType.fromCode(r.guaranteeType);
+            if (type == GuaranteeType.NONE) {
+                throw new IllegalArgumentException("guaranteeType NONE con " + guaranteedPeriods + " periodi garantiti");
+            }
+            amd.setGuaranteeType(type);
+        }
         amd.setKoAccrual(Boolean.TRUE.equals(r.koAccrual));
         amd.setFixingTime(r.fixingTime);
         amd.setFixingTimeZone(r.fixingTimeZone);
 
         LocalDate tradeDate = tradeDate(r);
-        if (!first.isAfter(tradeDate)) {
-            throw new IllegalArgumentException("Il primo fixing (" + first + ") deve seguire la data dell'operazione (" + tradeDate + ")");
+        // il primo fixing puo' essere il giorno dell'operazione (fixing al cut, dopo la conclusione)
+        if (first.isBefore(tradeDate)) {
+            throw new IllegalArgumentException("Il primo fixing (" + first + ") precede la data dell'operazione (" + tradeDate + ")");
         }
         int spotLag = r.spotLag != null ? r.spotLag
                 : underlying.getBusinessDays() != null ? underlying.getBusinessDays() : 2;
-        List<AccumulatorFixing> fixings = AccumulatorCalculator.schedule(first, last, frequency, spotLag,
-                new Calendar(amd.getCurrencyList()));
-        amd.getFixings().addAll(fixings);
+        // fixing sul calendario della valuta del fixing (base della coppia), regolamento su entrambe
+        Calendar settlementCalendar = new Calendar(amd.getCurrencyList());
+        Calendar fixingCalendar = underlying instanceof ForexMasterData pair ? new Calendar(pair.getBcy()) : settlementCalendar;
+        List<AccumulatorFixingDate> schedule = scheduleGenerator.generate(first, last, frequency, spotLag,
+                fixingCalendar, settlementCalendar);
+        schedule.forEach(d -> amd.getFixings().add(new AccumulatorFixing(d.fixingDate(), d.settlementDate())));
+        amd.setDailyQuantity(dailyQuantity(r, schedule.size()));
 
         amd.setIssueDate(java.sql.Date.valueOf(tradeDate));
-        amd.setMaturityDate(fixings.get(fixings.size() - 1).getSettlementDate());
+        amd.setMaturityDate(java.sql.Date.valueOf(schedule.get(schedule.size() - 1).settlementDate()));
         amd.setBusinessDays(spotLag);
         amd.setMultiplier(1.);
         amd.setDescription(r.description != null && !r.description.isBlank() ? r.description : description(amd));
         return amd;
+    }
+
+    /**
+     * Quantita' per fixing: indicata (dailyQuantity) oppure quantita' massima
+     * totale senza leva divisa per il numero di fixing (maxQuantity 100.000 su
+     * 22 fixing -> 4.545,45).
+     */
+    private static double dailyQuantity(AccumulatorDealRequest r, int fixings) {
+        boolean daily = r.dailyQuantity != null && r.dailyQuantity > 0;
+        boolean max = r.maxQuantity != null && r.maxQuantity > 0;
+        if (daily == max) {
+            throw new IllegalArgumentException("Indicare la quantita' per fixing (dailyQuantity) oppure quella massima (maxQuantity)");
+        }
+        return daily ? r.dailyQuantity : r.maxQuantity / fixings;
+    }
+
+    /**
+     * Premio iniziale per contratto: importo (premium) oppure percentuale
+     * (premiumPercent) dell'importo massimo nella seconda valuta = quantita'
+     * massima x strike (-0,282713% di 115.000 USD -> -325,12 USD).
+     */
+    private static double premium(AccumulatorDealRequest r, AccumulatorMasterData amd) {
+        boolean amount = r.premium != null && r.premium != 0.;
+        if (r.premiumPercent == null) {
+            return amount ? r.premium : 0.;
+        }
+        if (amount) {
+            throw new IllegalArgumentException("Indicare il premio come importo (premium) oppure in percentuale (premiumPercent)");
+        }
+        return r.premiumPercent / 100. * amd.getMaxQuantity() * amd.getStrike();
     }
 
     private static String description(AccumulatorMasterData amd) {

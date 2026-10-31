@@ -15,6 +15,8 @@ import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.VolatilitySurfaceDAO;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.calc.AccumulatorCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.LoanCalculator;
+import org.softcaster.engine.analytics.LoanPricer;
 import org.softcaster.easy_pricer_mds_core.calc.VolatilityProvider;
 import org.softcaster.engine.analytics.AccumulatorPricer;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
@@ -108,6 +110,17 @@ public class MdsCoreAutoConfiguration {
             AccumulatorPricer accumulatorPricer) {
         return new AccumulatorCalculator(acDcBcyLinkDAO, yieldCurveEntityDAO, spreadCurveEntityDAO,
                 marketDataService, volatilityProvider, accumulatorPricer);
+    }
+
+    @Bean(name = "loanCalculator")
+    @ConditionalOnMissingBean
+    public LoanCalculator loanCalculator(
+            AcDcBcyLinkDAO acDcBcyLinkDAO,
+            YieldCurveEntityDAO yieldCurveEntityDAO,
+            SpreadCurveEntityDAO spreadCurveEntityDAO,
+            MarketDataService marketDataService,
+            LoanPricer loanPricer) {
+        return new LoanCalculator(acDcBcyLinkDAO, yieldCurveEntityDAO, spreadCurveEntityDAO, marketDataService, loanPricer);
     }
 
     @Bean(name = "cashFlowInstrumentCalculator")

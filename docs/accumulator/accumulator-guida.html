@@ -71,21 +71,21 @@
   <tr><td>Sottostante</td><td>Lo strumento accumulato: una coppia di cambi (si accumula la valuta base, es. EUR in EUR/USD), un future su commodity, un'azione.</td></tr>
   <tr><td>Strike (K)</td><td>Prezzo fisso di acquisto (vendita per il decumulator). Per l'accumulator è inferiore al forward alla conclusione, spesso del 2-5% sui cambi, di più su sottostanti volatili.</td></tr>
   <tr><td>Barriera di knock-out (KO)</td><td>Livello che, se raggiunto, chiude il contratto. Per l'accumulator è sopra lo strike (e di solito sopra il prezzo corrente).</td></tr>
-  <tr><td>Quantità giornaliera (q)</td><td>Quantità acquistata a ogni fixing favorevole (es. 100.000 EUR).</td></tr>
+  <tr><td>Quantità per fixing (q)</td><td>Quantità acquistata a ogni fixing favorevole (es. 100.000 EUR). Spesso il term sheet indica invece la quantità massima senza leva: q = massima / numero di fixing (100.000 su 22 fixing → 4.545,45).</td></tr>
   <tr><td>Leva (gearing)</td><td>Moltiplicatore della quantità nei fixing sfavorevoli (es. 2: si comprano 200.000 EUR).</td></tr>
-  <tr><td>Fixing</td><td>Le date di osservazione (di solito ogni giorno lavorativo) e il prezzo rilevato in quelle date, a un orario e una fonte stabiliti (es. BCE 14:15, WM/Reuters 16:00 Londra).</td></tr>
-  <tr><td>Periodo e frequenza di regolamento</td><td>Le quantità maturate non si scambiano ogni giorno: si sommano nel periodo (settimana, mese) e si regolano alla data di regolamento del periodo (ultimo fixing + spot lag).</td></tr>
+  <tr><td>Fixing</td><td>Le date di osservazione (i giorni lavorativi del calendario della fonte di fixing; per i cambi quello della valuta del fixing, es. EUR) e il prezzo rilevato in quelle date, a un orario e una fonte stabiliti (es. BCE 14:15, WM/Reuters 16:00 Londra).</td></tr>
+  <tr><td>Periodo e frequenza di regolamento</td><td>Le quantità maturate non si scambiano ogni giorno: si sommano nel periodo e si regolano alla data di regolamento del periodo: ultimo fixing del periodo (data di esercizio) + spot lag, in un giorno lavorativo di entrambe le valute. I periodi partono dal primo fixing: settimanale con primo fixing mercoledì 23/9 → 23/9-29/9, 30/9-6/10…; mensile per anniversari del primo fixing.</td></tr>
   <tr><td>Regolamento</td><td><b>Fisico</b>: si scambia davvero il sottostante allo strike (il cliente riceve EUR e paga USD a K). <b>Per differenza</b> (cash): si paga solo (S − K) × quantità.</td></tr>
-  <tr><td>Fixing garantiti</td><td>Primi fixing in cui il knock-out non è attivo: il cliente è sicuro di accumulare almeno quella quantità.</td></tr>
+  <tr><td>Periodo garantito</td><td>Primi periodi di regolamento in cui il knock-out non è attivo, con o senza leva (sezione 5).</td></tr>
   <tr><td>Knock-in (facoltativo)</td><td>Seconda barriera, sotto lo strike: finché non viene toccata la leva non si applica (o il contratto non è attivo).</td></tr>
-  <tr><td>Premio iniziale</td><td>Di solito nullo ("zero cost"): lo strike è scelto in modo che il contratto valga zero, al netto del margine della banca.</td></tr>
+  <tr><td>Premio iniziale</td><td>Di solito nullo ("zero cost"): lo strike è scelto in modo che il contratto valga zero, al netto del margine della banca. Se c'è, spesso è espresso in % dell'importo massimo nella seconda valuta (quantità massima × strike: −0,282713% di 115.000 USD = −325,12 USD).</td></tr>
 </table>
 
 <h2>3. Come funziona, fixing per fixing</h2>
 <p>A ogni data di fixing, con S il prezzo rilevato:</p>
 <table>
   <tr><th>Prezzo al fixing</th><th>Cosa succede (accumulator)</th><th class="num">Quantità</th><th>Valore per il detentore</th></tr>
-  <tr><td>S ≥ KO</td><td>Knock-out: il contratto termina (salvo fixing garantiti). Il fixing corrente matura solo se previsto dal contratto.</td><td class="num">0 (o q)</td><td>fine</td></tr>
+  <tr><td>S ≥ KO</td><td>Knock-out: il contratto termina (salvo periodo garantito). Il fixing corrente matura solo se previsto dal contratto.</td><td class="num">0 (o q)</td><td>fine</td></tr>
   <tr><td>K ≤ S &lt; KO</td><td>Fixing favorevole: si compra q a K, sotto il mercato.</td><td class="num">q</td><td class="pos">q · (S − K) &gt; 0</td></tr>
   <tr><td>S &lt; K</td><td>Fixing sfavorevole: si compra leva × q a K, sopra il mercato.</td><td class="num">leva · q</td><td class="neg">leva · q · (S − K) &lt; 0</td></tr>
 </table>
@@ -122,7 +122,7 @@
 </figure>
 
 <h3>Esempio su dieci fixing</h3>
-<p>Stesso contratto (K 1,10, KO 1,14, 100.000 EUR, leva 2), senza fixing garantiti; il fixing del knock-out non matura.</p>
+<p>Stesso contratto (K 1,10, KO 1,14, 100.000 EUR, leva 2), senza periodo garantito; il fixing del knock-out non matura.</p>
 <table>
   <tr><th>Giorno</th><th class="num">Fixing</th><th>Esito</th><th class="num">EUR acquistati a 1,10</th><th class="num">Valore al fixing (USD)</th></tr>
   <tr><td>1</td><td class="num">1,1200</td><td>favorevole</td><td class="num">100.000</td><td class="num pos">+2.000</td></tr>
@@ -188,8 +188,13 @@
 </ul>
 <h3>Il giorno del knock-out</h3>
 <p>Il fixing che tocca la barriera può maturare (il cliente compra anche quel giorno) oppure no. Nel sistema: campo <code>ko_accrual</code>.</p>
-<h3>Fixing garantiti</h3>
-<p>Per i primi N fixing (es. due settimane) il knock-out non è attivo: il cliente accumula almeno N × q. Rende il contratto più caro per la banca, quindi a parità di costo lo strike sarà meno conveniente.</p>
+<h3>Periodo garantito</h3>
+<p>Per i primi N periodi di regolamento (es. le prime tre settimane) il knock-out non è attivo: il cliente accumula comunque in quei periodi. Rende il contratto più caro per la banca, quindi a parità di costo lo strike sarà meno conveniente. Due varianti:</p>
+<ul>
+  <li><b>con leva</b> (LEVERAGED, la più diffusa): toglie solo il knock-out, la leva si applica come sempre;</li>
+  <li><b>senza leva</b> (UNLEVERAGED): ogni fixing garantito matura la quantità base qualunque sia il prezzo; più favorevole al cliente.</li>
+</ul>
+<p>Esempio con leva 2 e tre settimane garantite (accumulator EUR/USD K 1,10, KO 1,14): valore per il cliente 5.871 USD senza garanzia, 8.895 con garanzia con leva, 9.150 con garanzia senza leva.</p>
 <h3>Knock-in</h3>
 <ul>
   <li><b>Leva con knock-in</b>: la leva sui fixing sfavorevoli si applica solo dopo che il prezzo ha toccato una barriera sotto lo strike (es. K 1,10, KI 1,07). Un ribasso moderato non è amplificato; uno forte sì, e da quel momento per il resto del contratto.</li>
@@ -265,7 +270,7 @@
 <p>Non esiste una formula chiusa: il knock-out dipende dal percorso del prezzo, e il knock-in cambia la quantità dei fixing successivi. Si usa una simulazione <b>Monte Carlo</b>:</p>
 <ol>
   <li>si simulano molti percorsi del sottostante alle date di fixing, coerenti con i forward (curve delle due valute per i cambi, prezzo del future per le commodity) e con la volatilità;</li>
-  <li>su ogni percorso si applicano le regole del contratto (KO, KI, leva, fixing garantiti) e si sommano i valori dei fixing, scontati alle date di regolamento;</li>
+  <li>su ogni percorso si applicano le regole del contratto (KO, KI, leva, periodo garantito) e si sommano i valori dei fixing, scontati alle date di regolamento;</li>
   <li>il valore è la media dei percorsi; l'errore standard misura la precisione.</li>
 </ol>
 <p>In Easy Pricer: <code>AccumulatorPricer</code> (engine) con modello lognormale e <b>struttura a termine della volatilità</b> (volatilità di ogni fixing dalla superficie, allo strike), sentieri antitetici e seme fisso (stesso input, stesso risultato), greche con gli stessi numeri casuali. Verifica: senza barriere il Monte Carlo coincide con la scomposizione della sezione 6. Le quantità già maturate e non regolate si valutano come forward allo strike.</p>
@@ -302,7 +307,7 @@
   <tr><td>Strike, quantità, leva</td><td><code>strike</code>, <code>daily_quantity</code>, <code>leverage</code></td></tr>
   <tr><td>Knock-out e osservazione</td><td><code>ko_barrier</code>, <code>ko_observation</code> (FIXING, CONTINUOUS, SETTLEMENT), <code>ko_accrual</code></td></tr>
   <tr><td>Knock-in</td><td><code>ki_barrier</code>, <code>ki_effect</code> (LEVERAGE, CONTRACT)</td></tr>
-  <tr><td>Fixing garantiti</td><td><code>guaranteed_fixings</code></td></tr>
+  <tr><td>Periodo garantito</td><td><code>guaranteed_periods</code>, <code>guarantee_type</code> (NONE, LEVERAGED, UNLEVERAGED)</td></tr>
   <tr><td>Periodo dei fixing, orario</td><td><code>first_fixing_date</code>, <code>last_fixing_date</code>, <code>fixing_time</code>, <code>fixing_time_zone</code></td></tr>
   <tr><td>Regolamento</td><td><code>settlement_type</code> (PHYSICAL, CASH), <code>settlement_frequency</code> (DAILY, WEEKLY, MONTHLY, NONE)</td></tr>
   <tr><td>Calendario</td><td><code>accumulator_fixing</code>: data di fixing e di regolamento, prezzo e quantità maturata</td></tr>

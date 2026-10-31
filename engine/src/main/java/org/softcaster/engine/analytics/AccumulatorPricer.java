@@ -9,6 +9,7 @@ import org.softcaster.engine.dto.AccumulatorPendingSettlement;
 import org.softcaster.engine.dto.AccumulatorResult;
 import org.softcaster.engine.enums.AccumulatorType;
 import org.softcaster.engine.enums.BarrierObservation;
+import org.softcaster.engine.enums.GuaranteeType;
 import org.softcaster.engine.enums.KnockInEffect;
 
 /**
@@ -28,7 +29,8 @@ import org.softcaster.engine.enums.KnockInEffect;
  * 2. knock-in (osservato al fixing);
  * 3. maturazione: q = dailyQuantity nei fixing favorevoli, dailyQuantity x
  *    leverage negli sfavorevoli (leva 1 prima del knock-in LEVERAGE, nessuna
- *    maturazione prima del knock-in CONTRACT). La quantita' si regola allo
+ *    maturazione prima del knock-in CONTRACT); nei fixing garantiti con
+ *    garanzia UNLEVERAGED sempre dailyQuantity. La quantita' si regola allo
  *    strike alla data di regolamento del periodo: vale
  *    sign q (S_i Fs_i / F_i - K) DF_i, con Fs_i/F_i il passaggio dal forward
  *    al fixing a quello al regolamento.
@@ -125,6 +127,8 @@ public final class AccumulatorPricer implements Pricer<AccumulatorInput, Accumul
         private final double[] settlementRatio;
         private final double[] discountFactor;
         private final boolean[] koObserved;
+        // fixing garantiti senza leva
+        private final boolean[] baseOnly;
 
         Path(AccumulatorInput in, double scale, double volShift) {
             this.in = in;
@@ -137,6 +141,7 @@ public final class AccumulatorPricer implements Pricer<AccumulatorInput, Accumul
             settlementRatio = new double[n];
             discountFactor = new double[n];
             koObserved = new boolean[n];
+            baseOnly = new boolean[n];
             double variance = 0.;
             for (int i = 0; i < n; i++) {
                 AccumulatorFixingInput f = fixings.get(i);
@@ -154,6 +159,7 @@ public final class AccumulatorPricer implements Pricer<AccumulatorInput, Accumul
                 discountFactor[i] = f.discountFactor();
                 koObserved[i] = f.index() >= in.guaranteedFixings()
                         && (in.koObservation() != BarrierObservation.SETTLEMENT || f.periodEnd());
+                baseOnly[i] = in.guaranteeType() == GuaranteeType.UNLEVERAGED && f.index() < in.guaranteedFixings();
             }
         }
 
@@ -186,7 +192,7 @@ public final class AccumulatorPricer implements Pricer<AccumulatorInput, Accumul
                 double s = Math.exp(lnForward[i] + x);
                 if (koObserved[i] && type.isKnockedOut(s, koLevel[i])) {
                     if (in.koAccrual()) {
-                        double q = quantity(s, knockedIn);
+                        double q = quantity(i, s, knockedIn);
                         value += accrual(i, s, q);
                         quantity += q;
                     }
@@ -195,14 +201,18 @@ public final class AccumulatorPricer implements Pricer<AccumulatorInput, Accumul
                 if (in.kiBarrier() != null && !knockedIn && type.isKnockedIn(s, in.kiBarrier())) {
                     knockedIn = true;
                 }
-                double q = quantity(s, knockedIn);
+                double q = quantity(i, s, knockedIn);
                 value += accrual(i, s, q);
                 quantity += q;
             }
             return new double[]{value, quantity, 0.};
         }
 
-        private double quantity(double s, boolean knockedIn) {
+        private double quantity(int i, double s, boolean knockedIn) {
+            if (baseOnly[i]) {
+                // garanzia senza leva: quantita' base qualunque sia il prezzo
+                return in.dailyQuantity();
+            }
             if (in.kiEffect() == KnockInEffect.CONTRACT && !knockedIn) {
                 return 0.;
             }
