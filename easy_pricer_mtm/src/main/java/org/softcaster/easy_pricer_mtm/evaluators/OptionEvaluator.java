@@ -48,7 +48,7 @@ public abstract class OptionEvaluator extends AbstractEvaluator implements IPosi
     @Override
     public void evaluate(PositionDetail position, MasterData masterData, IMtmDataHelper mtmHelper, ValuationContext context) {
         if (!(Hibernate.unproxy(masterData) instanceof OptionMasterData omd)) {
-            throw new MtmException(masterData.getCode() + " non e' un'opzione");
+            throw new MtmException(masterData.getCode() + " is not an option");
         }
         Integer masterDataId = masterData.getIdMasterData();
 
@@ -77,15 +77,15 @@ public abstract class OptionEvaluator extends AbstractEvaluator implements IPosi
             LocalDate expiry = omd.getExpiryLocalDate();
             if (expiry != null && expiry.isBefore(officialDate)) {
                 mktPrice = intrinsicValue(omd, mtmHelper);
-                log.warn("Opzione {} scaduta il {}: valutata al valore intrinseco {}", omd.getCode(), expiry, mktPrice);
+                log.warn("Option {} expired on {}: valued at intrinsic value {}", omd.getCode(), expiry, mktPrice);
             } else {
                 theoretical = theoreticalPrice(omd, officialDate);
                 mktPrice = mtmHelper.getSpotPrice(masterDataId, RequestType.BID);
                 if (mktPrice <= 0.) {
                     if (theoretical == null) {
-                        throw new MtmException("Quotazione e superficie di volatilita' mancanti per " + masterData.getCode());
+                        throw new MtmException("Missing quote and volatility surface for " + masterData.getCode());
                     }
-                    log.warn("Quotazione mancante per {}: valutata al prezzo teorico {}", omd.getCode(), theoretical);
+                    log.warn("Missing quote for {}: valued at theoretical price {}", omd.getCode(), theoretical);
                     mktPrice = theoretical;
                 }
             }
@@ -126,7 +126,7 @@ public abstract class OptionEvaluator extends AbstractEvaluator implements IPosi
             OptionInput input = optionCalculator.getOptionInput(omd.getCode(), officialDate, null, null, null, null, vol.get());
             return optionCalculator.valuation(input).price();
         } catch (RuntimeException e) {
-            log.warn("Prezzo teorico di {} non calcolato: {}", omd.getCode(), e.getMessage());
+            log.warn("Theoretical price of {} not computed: {}", omd.getCode(), e.getMessage());
             return null;
         }
     }
@@ -137,12 +137,12 @@ public abstract class OptionEvaluator extends AbstractEvaluator implements IPosi
     private static double intrinsicValue(OptionMasterData omd, IMtmDataHelper mtmHelper) {
         MasterData underlying = omd.getUnderlying();
         if (underlying == null || omd.getStrike() == null) {
-            throw new MtmException("Sottostante o strike mancanti per l'opzione scaduta " + omd.getCode());
+            throw new MtmException("Missing underlying or strike for expired option " + omd.getCode());
         }
         // l'id di un proxy LAZY si legge senza inizializzarlo
         double price = mtmHelper.getSpotPrice(underlying.getIdMasterData(), RequestType.BID);
         if (price <= 0.) {
-            throw new MtmException("Quotazione del sottostante mancante per l'opzione scaduta " + omd.getCode());
+            throw new MtmException("Missing underlying quote for expired option " + omd.getCode());
         }
         double strike = omd.getStrike();
         return omd.getOptionType() == OptionType.CALL ? Math.max(price - strike, 0.) : Math.max(strike - price, 0.);

@@ -33,7 +33,7 @@ public final class GridVolatilitySurface implements VolatilitySurface {
         }
         byExpiry.forEach((expiry, list) -> smiles.put(expiry, Smile.of(list)));
         if (smiles.isEmpty()) {
-            throw new IllegalArgumentException("Nessuna scadenza successiva al " + referenceDate);
+            throw new IllegalArgumentException("No expiry after " + referenceDate);
         }
     }
 

@@ -7,18 +7,18 @@ export const AccumulatorResults = ({ result, strike }: { result: AccumulatorPric
     const ccyMax = strike ? result.maxQuantity * strike : null;
     return (
         <KpiGrid items={[
-            { label: 'Valore (detentore)', value: fmt(result.value), tone: tone(result.value) },
-            { label: 'Errore standard', value: fmt(result.standardError) },
-            { label: 'Valore % importo max', value: ccyMax ? pct(100 * result.value / ccyMax) : '—', hint: 'Valore / (quantita\' massima x strike)' },
-            { label: 'Da regolare', value: fmt(result.pendingValue), hint: 'Quantita\' gia\' maturate e non regolate' },
+            { label: 'Value (holder)', value: fmt(result.value), tone: tone(result.value) },
+            { label: 'Standard error', value: fmt(result.standardError) },
+            { label: 'Value % of max amount', value: ccyMax ? pct(100 * result.value / ccyMax) : '—', hint: 'Value / (maximum quantity × strike)' },
+            { label: 'Pending settlement', value: fmt(result.pendingValue), hint: 'Quantities already accrued and not yet settled' },
             { label: 'P(knock-out)', value: pct(100 * result.knockOutProbability, 2) },
-            { label: 'Quantità massima', value: fmt(result.maxQuantity) },
-            { label: 'Quantità attesa', value: fmt(result.expectedQuantity, 0) },
+            { label: 'Maximum quantity', value: fmt(result.maxQuantity) },
+            { label: 'Expected quantity', value: fmt(result.expectedQuantity, 0) },
             { label: 'Delta', value: fmt(result.delta, 0) },
             { label: 'Gamma', value: fmt(result.gamma, 0) },
-            { label: 'Vega (per punto)', value: fmt(result.vega) },
-            { label: 'Fixing', value: `${result.futureFixings} / ${result.totalFixings}` },
-            { label: 'Volatilità', value: `${pct(100 * result.volatility, 2)} (${result.volatilitySource})` },
+            { label: 'Vega (per point)', value: fmt(result.vega) },
+            { label: 'Fixings', value: `${result.futureFixings} / ${result.totalFixings}` },
+            { label: 'Volatility', value: `${pct(100 * result.volatility, 2)} (${result.volatilitySource})` },
             { label: 'Spot', value: fmt(result.spot, 5) },
         ]} />
     );

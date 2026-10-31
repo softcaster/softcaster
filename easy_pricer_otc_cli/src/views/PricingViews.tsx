@@ -5,9 +5,9 @@ import { priceAccumulator, priceLoan } from '../api/services';
 import type { AccumulatorPricingResponse, LoanPricingResponse } from '../api/types';
 import { useActions } from '../context/ActionContext';
 import { AccumulatorResults } from '../fragments/AccumulatorResults';
-import { AccumulatorTermsForm } from '../fragments/AccumulatorTermsForm';
+import { AccumulatorFormTabs } from '../fragments/AccumulatorTermsForm';
 import { LoanResults } from '../fragments/LoanResults';
-import { LoanTermsForm } from '../fragments/LoanTermsForm';
+import { LoanFormTabs } from '../fragments/LoanTermsForm';
 import { accumulatorRequest, newAccumulatorForm } from '../model/accumulatorForm';
 import { loanRequest, newLoanForm } from '../model/loanForm';
 
@@ -22,11 +22,13 @@ export const LoanPricingView = () => {
     const [form, setForm] = useState(() => newLoanForm());
     const [result, setResult] = useState<LoanPricingResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [tab, setTab] = useState('terms');
 
     const calculate = async () => {
         setError(null);
         try {
             setResult(await priceLoan(loanRequest(form)));
+            setTab('results');
         } catch (e) {
             setError(errorMessage(e));
         }
@@ -36,6 +38,7 @@ export const LoanPricingView = () => {
         setForm(newLoanForm());
         setResult(null);
         setError(null);
+        setTab('terms');
     };
 
     useEffect(() => {
@@ -50,9 +53,9 @@ export const LoanPricingView = () => {
     return (
         <div style={pageStyle} className="overflow-auto">
             <div className="font-semibold mb-2">Pricing · Loans</div>
-            <LoanTermsForm value={form} onChange={setForm} />
-            {error && <Message severity="error" text={error} className="w-full mb-3" />}
-            {result && <LoanResults result={result} />}
+            {error && <Message severity="error" text={error} className="w-full mb-2" />}
+            <LoanFormTabs value={form} onChange={setForm} tab={tab} onTabChange={setTab}
+                results={result ? <LoanResults result={result} /> : undefined} />
         </div>
     );
 };
@@ -62,11 +65,13 @@ const AccumulatorPricingView = ({ assetClass }: { assetClass: 'FXA' | 'CMA' }) =
     const [form, setForm] = useState(() => newAccumulatorForm(assetClass));
     const [result, setResult] = useState<AccumulatorPricingResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [tab, setTab] = useState('terms');
 
     const calculate = async () => {
         setError(null);
         try {
             setResult(await priceAccumulator(accumulatorRequest(form)));
+            setTab('results');
         } catch (e) {
             setError(errorMessage(e));
         }
@@ -76,6 +81,7 @@ const AccumulatorPricingView = ({ assetClass }: { assetClass: 'FXA' | 'CMA' }) =
         setForm(newAccumulatorForm(assetClass));
         setResult(null);
         setError(null);
+        setTab('terms');
     };
 
     useEffect(() => {
@@ -90,9 +96,9 @@ const AccumulatorPricingView = ({ assetClass }: { assetClass: 'FXA' | 'CMA' }) =
     return (
         <div style={pageStyle} className="overflow-auto">
             <div className="font-semibold mb-2">Pricing · {assetClass === 'FXA' ? 'FX Accumulators' : 'Commodity Accumulators'}</div>
-            <AccumulatorTermsForm value={form} onChange={setForm} assetClass={assetClass} />
-            {error && <Message severity="error" text={error} className="w-full mb-3" />}
-            {result && <AccumulatorResults result={result} strike={form.strike} />}
+            {error && <Message severity="error" text={error} className="w-full mb-2" />}
+            <AccumulatorFormTabs value={form} onChange={setForm} assetClass={assetClass} tab={tab} onTabChange={setTab}
+                results={result ? <AccumulatorResults result={result} strike={form.strike} /> : undefined} />
         </div>
     );
 };

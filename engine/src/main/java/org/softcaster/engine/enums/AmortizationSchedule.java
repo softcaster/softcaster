@@ -9,9 +9,9 @@ package org.softcaster.engine.enums;
  * @author ep
  */
 public enum AmortizationSchedule  implements IdentifiableEnum {
-    SAS(1, "SAS", "Standard Amortization Schedule"), // Piano ammortamento francese a rata costante
-    SLP(2, "SLP", "Straight Line - Fixed principal repayment"), // Piano ammortamento italiano a quote cap. costanti
-    IOL(3, "IOL", "Interest only - Full principal at maturity"), // Paino ammortamento Bond
+    SAS(1, "SAS", "French (level installment)"), // Piano ammortamento francese a rata costante
+    SLP(2, "SLP", "Italian (level principal)"), // Piano ammortamento italiano a quote cap. costanti
+    IOL(3, "IOL", "Bullet (principal at maturity)"), // Paino ammortamento Bond: solo interessi, capitale a scadenza
     NONE(100, "NONE", "None");
 
     private final int id;

@@ -38,14 +38,14 @@ public record LoanInput(
         Objects.requireNonNull(schedule, "schedule");
         installmentFees = List.copyOf(Objects.requireNonNull(installmentFees, "installmentFees"));
         if (principal <= 0) {
-            throw new IllegalArgumentException("principal deve essere > 0");
+            throw new IllegalArgumentException("principal must be > 0");
         }
         if (installmentFees.size() != schedule.flows().size()) {
-            throw new IllegalArgumentException("una spesa per rata: " + installmentFees.size() + " su "
-                    + schedule.flows().size() + " rate");
+            throw new IllegalArgumentException("one fee per installment: " + installmentFees.size() + " for "
+                    + schedule.flows().size() + " installments");
         }
         if (upfrontFees < 0 || upfrontFees >= principal) {
-            throw new IllegalArgumentException("spese all'erogazione fuori intervallo");
+            throw new IllegalArgumentException("upfront fees out of range");
         }
     }
 }

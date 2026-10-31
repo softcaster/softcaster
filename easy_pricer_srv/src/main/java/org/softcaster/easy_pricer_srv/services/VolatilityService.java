@@ -67,10 +67,10 @@ public class VolatilityService {
      */
     public VolatilitySurfaceDto upload(String code, VolatilitySurfaceDto dto) {
         if (dto.referenceDate() == null) {
-            throw new IllegalArgumentException("referenceDate mancante");
+            throw new IllegalArgumentException("Missing referenceDate");
         }
         if (dto.points() == null || dto.points().isEmpty()) {
-            throw new IllegalArgumentException("Nessun punto da caricare");
+            throw new IllegalArgumentException("No points to load");
         }
         transactionTemplate.executeWithoutResult(status -> {
             VolatilitySurfaceEntity s = volatilitySurfaceDAO.findByCode(code).orElseGet(() -> create(code, dto));
@@ -91,39 +91,39 @@ public class VolatilityService {
         LocalDate d = date != null ? date : marketDataService.getOfficialDate();
         return volatilityProvider.surface(s.getUnderlying().getIdMasterData(), d)
                 .map(data -> data.surface().volatility(expiry, strike))
-                .orElseThrow(() -> new NoSuchElementException("Nessun punto utile per " + code + " al " + d));
+                .orElseThrow(() -> new NoSuchElementException("No usable points for " + code + " at " + d));
     }
 
     private VolatilitySurfaceEntity create(String code, VolatilitySurfaceDto dto) {
         if (dto.underlyingCode() == null || dto.underlyingCode().isBlank()) {
-            throw new IllegalArgumentException("Superficie " + code + " nuova: underlyingCode mancante");
+            throw new IllegalArgumentException("New surface " + code + ": missing underlyingCode");
         }
         MasterData underlying = masterDataDAO.findByCode(dto.underlyingCode());
         if (underlying == null) {
-            throw new NoSuchElementException("Sottostante non trovato: " + dto.underlyingCode());
+            throw new NoSuchElementException("Underlying not found: " + dto.underlyingCode());
         }
         VolatilitySurfaceEntity s = new VolatilitySurfaceEntity();
         s.setCode(code);
-        s.setDescription(dto.description() != null ? dto.description() : "Volatilita' " + underlying.getCode());
+        s.setDescription(dto.description() != null ? dto.description() : "Volatility " + underlying.getCode());
         s.setUnderlying(underlying);
         return volatilitySurfaceDAO.saveOrUpdate(s);
     }
 
     private static VolatilityPoint point(Integer surfaceId, LocalDate referenceDate, VolatilitySurfaceDto.Point p) {
         if (p.expiryDate() == null || p.volatility() == null) {
-            throw new IllegalArgumentException("Punto senza scadenza o volatilita'");
+            throw new IllegalArgumentException("Point without expiry or volatility");
         }
         if (!p.expiryDate().isAfter(referenceDate)) {
-            throw new IllegalArgumentException("Scadenza " + p.expiryDate() + " non successiva alla data di rilevazione");
+            throw new IllegalArgumentException("Expiry " + p.expiryDate() + " is not after the reference date");
         }
         if (p.volatility() <= 0 || p.volatility() >= 5) {
-            throw new IllegalArgumentException("Volatilita' " + p.volatility() + " fuori intervallo (decimale: 0.08 = 8%)");
+            throw new IllegalArgumentException("Volatility " + p.volatility() + " out of range (decimal: 0.08 = 8%)");
         }
         return new VolatilityPoint(surfaceId, referenceDate, p.expiryDate(), p.strike(), p.volatility(), p.source());
     }
 
     private VolatilitySurfaceEntity surface(String code) {
         return volatilitySurfaceDAO.findByCode(code)
-                .orElseThrow(() -> new NoSuchElementException("Superficie di volatilita' non trovata: " + code));
+                .orElseThrow(() -> new NoSuchElementException("Volatility surface not found: " + code));
     }
 }

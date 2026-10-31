@@ -15,10 +15,10 @@ public record VolatilityNode(LocalDate expiry, Double strike, double volatility)
     public VolatilityNode {
         Objects.requireNonNull(expiry, "expiry");
         if (volatility <= 0) {
-            throw new IllegalArgumentException("volatility deve essere > 0");
+            throw new IllegalArgumentException("volatility must be > 0");
         }
         if (strike != null && strike <= 0) {
-            throw new IllegalArgumentException("strike deve essere > 0");
+            throw new IllegalArgumentException("strike must be > 0");
         }
     }
 }

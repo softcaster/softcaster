@@ -64,3 +64,12 @@
 .kpi-value.neg {
     color: #b3261e;
 }
+
+.otc-tabs .p-tabview-nav-link {
+    padding: 0.6rem 1rem;
+    font-size: 0.875rem;
+}
+
+.otc-tabs .p-tabview-panels {
+    padding: 0.75rem 0.25rem 0;
+}

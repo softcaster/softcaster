@@ -1,4 +1,4 @@
-const number = (digits: number) => new Intl.NumberFormat('it-IT', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+const number = (digits: number) => new Intl.NumberFormat('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
 export const fmt = (value: number | null | undefined, digits = 2): string =>
     value === null || value === undefined || Number.isNaN(value) ? '—' : number(digits).format(value);

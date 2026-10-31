@@ -6,8 +6,8 @@ package org.softcaster.engine.enums;
  * tantum, debito residuo a inizio periodo per quelle per rata).
  */
 public enum FeeBasis implements IdentifiableEnum {
-    AMOUNT(1, "AMOUNT", "Amount in loan currency"),
-    PERCENT(2, "PERCENT", "Percentage of principal or outstanding");
+    AMOUNT(1, "AMOUNT", "Amount"),
+    PERCENT(2, "PERCENT", "% (points)");
 
     private final int id;
     private final String code;

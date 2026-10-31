@@ -57,7 +57,7 @@ import org.softcaster.provider.enums.RequestType;
  */
 public class AccumulatorCalculator {
 
-    public static final String MODEL = "Monte Carlo lognormale (GK/Black)";
+    public static final String MODEL = "Monte Carlo lognormal (GK/Black)";
 
     private final AcDcBcyLinkDAO acDcBcyLinkDAO;
     private final YieldCurveEntityDAO yieldCurveEntityDAO;
@@ -101,8 +101,8 @@ public class AccumulatorCalculator {
         }
         return volatilityProvider.surface(underlying.getIdMasterData(), valuationDate)
                 .map(s -> new Volatility(null, s))
-                .orElseThrow(() -> new IllegalArgumentException("Volatilita' mancante: indicare volatility o caricare "
-                        + "la superficie di volatilita' di " + underlying.getCode() + " al " + valuationDate));
+                .orElseThrow(() -> new IllegalArgumentException("Missing volatility: provide volatility or load "
+                        + "the volatility surface of " + underlying.getCode() + " at " + valuationDate));
     }
 
     // ------------------------------------------------------------------------
@@ -179,7 +179,7 @@ public class AccumulatorCalculator {
             }
         }
         if (!missing.isEmpty()) {
-            throw new IllegalArgumentException("Accumulator " + amd.getCode() + ": fixing non rilevati al "
+            throw new IllegalArgumentException("Accumulator " + amd.getCode() + ": fixings not recorded at "
                     + valuationDate + " " + missing);
         }
 
@@ -262,8 +262,8 @@ public class AccumulatorCalculator {
     private String discountCurveCode(AccumulatorMasterData amd) {
         AcDcBcyLink link = acDcBcyLinkDAO.find(amd.getAssetClass().getIdAssetClass(),
                 amd.getCurrency().getIdCurrency(), CurveRole.DISCOUNT)
-                .orElseThrow(() -> new IllegalArgumentException("Curva di sconto mancante (domesticRCurve) e nessuna curva "
-                        + "DISCOUNT configurata per " + amd.getAssetClass().getCode() + "/" + amd.getCurrency().getIsoCode()));
+                .orElseThrow(() -> new IllegalArgumentException("Missing discount curve (domesticRCurve) and no "
+                        + "DISCOUNT curve configured for " + amd.getAssetClass().getCode() + "/" + amd.getCurrency().getIsoCode()));
         return link.isSpreadCurve()
                 ? spreadCurveEntityDAO.findByIdWithBase(link.getSpreadCurve()).getCode()
                 : yieldCurveEntityDAO.findByIdYieldCurve(link.getCurveId()).getCode();
@@ -274,22 +274,22 @@ public class AccumulatorCalculator {
                 ? price
                 : marketDataService.getSpotPrice(underlying.getIdMasterData(), RequestType.MIDDLE);
         if (p <= 0) {
-            throw new IllegalArgumentException("Prezzo del sottostante " + underlying.getCode() + " mancante");
+            throw new IllegalArgumentException("Missing price of underlying " + underlying.getCode());
         }
         return p;
     }
 
     private DiscountCurve loadCurve(String curveCode, LocalDate valuationDate) {
         if (blank(curveCode)) {
-            throw new IllegalArgumentException("Codice curva mancante");
+            throw new IllegalArgumentException("Missing curve code");
         }
         DiscountCurve curve = marketDataService.getDiscountCurve(curveCode);
         if (curve == null) {
-            throw new NoSuchElementException("Curva non trovata: " + curveCode);
+            throw new NoSuchElementException("Curve not found: " + curveCode);
         }
         if (curve.getValuationDate().isAfter(valuationDate)) {
-            throw new IllegalArgumentException("La curva " + curveCode + " ha data "
-                    + curve.getValuationDate() + ", successiva alla valuationDate " + valuationDate);
+            throw new IllegalArgumentException("Curve " + curveCode + " is dated "
+                    + curve.getValuationDate() + ", after valuationDate " + valuationDate);
         }
         return curve;
     }

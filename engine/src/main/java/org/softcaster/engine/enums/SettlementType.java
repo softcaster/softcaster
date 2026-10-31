@@ -10,8 +10,8 @@ package org.softcaster.engine.enums;
  */
 public enum SettlementType implements IdentifiableEnum {
 
-    PHYSICAL(1, "PHYSICAL", "Physical Settlement"),
-    CASH(2, "CASH", "Cash Settlement");
+    PHYSICAL(1, "PHYSICAL", "Physical"),
+    CASH(2, "CASH", "Cash");
 
     private final int id;
     private final String code;

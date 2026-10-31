@@ -42,13 +42,13 @@ public class AccumulatorScheduleGenerator {
         Objects.requireNonNull(fixingCalendar, "fixingCalendar");
         Objects.requireNonNull(settlementCalendar, "settlementCalendar");
         if (lastFixing.isBefore(firstFixing)) {
-            throw new IllegalArgumentException("Ultimo fixing precedente al primo");
+            throw new IllegalArgumentException("Last fixing before the first one");
         }
         if (frequency == Frequency.CUSTOM) {
-            throw new IllegalArgumentException("Frequenza di regolamento CUSTOM non gestita");
+            throw new IllegalArgumentException("Settlement frequency CUSTOM not supported");
         }
         if (spotLag < 0) {
-            throw new IllegalArgumentException("Spot lag negativo");
+            throw new IllegalArgumentException("Negative spot lag");
         }
 
         List<LocalDate> dates = new ArrayList<>();
@@ -58,7 +58,7 @@ public class AccumulatorScheduleGenerator {
             }
         }
         if (dates.isEmpty()) {
-            throw new IllegalArgumentException("Nessun giorno lavorativo tra " + firstFixing + " e " + lastFixing);
+            throw new IllegalArgumentException("No business day between " + firstFixing + " and " + lastFixing);
         }
 
         List<AccumulatorFixingDate> schedule = new ArrayList<>();

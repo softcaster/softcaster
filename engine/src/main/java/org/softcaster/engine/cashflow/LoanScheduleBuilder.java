@@ -39,7 +39,7 @@ public class LoanScheduleBuilder {
         Objects.requireNonNull(maturity, "maturity");
         LocalDate first = firstPayment != null ? firstPayment : frequency.offset(disbursement);
         if (!first.isAfter(disbursement) || first.isAfter(maturity)) {
-            throw new IllegalArgumentException("Prima rata " + first + " fuori dal periodo " + disbursement + " - " + maturity);
+            throw new IllegalArgumentException("First payment " + first + " outside the period " + disbursement + " - " + maturity);
         }
         // prima rata a un periodo pieno: date ancorate all'erogazione (31/10 -> 30/11, 31/12, ... 28/2, 31/3)
         if (first.equals(frequency.offset(disbursement))) {
@@ -73,11 +73,11 @@ public class LoanScheduleBuilder {
     public List<CashFlow> cashFlows(double principal, double annualRate, AmortizationSchedule type,
             List<PaymentPeriod> periods, Frequency frequency, int preAmortizationPeriods, DaycountBasis daycount) {
         if (principal <= 0) {
-            throw new IllegalArgumentException("Capitale deve essere > 0");
+            throw new IllegalArgumentException("Principal must be > 0");
         }
         int interestOnly = preAmortizationPeriods + (hasStub(periods, frequency) ? 1 : 0);
         if (interestOnly >= periods.size()) {
-            throw new IllegalArgumentException("Preammortamento (" + interestOnly + " rate) non lascia rate di ammortamento su "
+            throw new IllegalArgumentException("Pre-amortization (" + interestOnly + " installments) leaves no amortizing installment out of "
                     + periods.size());
         }
         List<CashFlow> flows = new ArrayList<>();
@@ -89,7 +89,7 @@ public class LoanScheduleBuilder {
             case SAS -> new FrenchAmortizationStrategy();
             case SLP -> new StraightLineStrategy();
             case IOL -> new BulletAmortizationStrategy();
-            case NONE -> throw new IllegalArgumentException("Tipo di piano mancante");
+            case NONE -> throw new IllegalArgumentException("Missing amortization type");
         };
         flows.addAll(strategy.generateCashFlows(principal, annualRate, periods.subList(interestOnly, periods.size()), daycount));
         return flows;

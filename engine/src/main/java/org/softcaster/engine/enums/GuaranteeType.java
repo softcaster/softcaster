@@ -8,8 +8,8 @@ package org.softcaster.engine.enums;
  */
 public enum GuaranteeType implements IdentifiableEnum {
     NONE(1, "NONE", "No guarantee"),
-    LEVERAGED(2, "LEVERAGED", "KO not active, leverage applies"),
-    UNLEVERAGED(3, "UNLEVERAGED", "KO not active, base quantity on every fixing");
+    LEVERAGED(2, "LEVERAGED", "Leveraged"),
+    UNLEVERAGED(3, "UNLEVERAGED", "Unleveraged");
 
     private final int id;
     private final String code;

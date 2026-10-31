@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
-import { SelectButton } from 'primereact/selectbutton';
 import { fetchCounterparties, fetchPositions } from '../api/services';
 import type { GenericMasterDataDto } from '../api/types';
-import { Field, Section } from './ui';
+import { SIDES } from '../model/options';
+import { Choice, Field, Section } from './ui';
 
 export interface Registration {
     side: string;
@@ -13,19 +13,16 @@ export interface Registration {
     tradeDate: Date | null;
 }
 
-const SIDES = [
-    { label: 'BUY', value: 'BUY' },
-    { label: 'SELL', value: 'SELL' },
-];
-
 /**
  * Dati dell'operazione per la registrazione: lato (punto di vista della
  * banca), controparte, posizione, data.
  */
-export const RegistrationPanel = ({ value, onChange, sideHint }: {
+export const RegistrationPanel = ({ value, onChange, sideHint, readOnly = false }: {
     value: Registration;
     onChange: (r: Registration) => void;
     sideHint: string;
+    /** transazione gia' registrata: dati in sola lettura */
+    readOnly?: boolean;
 }) => {
     const [counterparties, setCounterparties] = useState<GenericMasterDataDto[]>([]);
     const [positions, setPositions] = useState<GenericMasterDataDto[]>([]);
@@ -38,20 +35,20 @@ export const RegistrationPanel = ({ value, onChange, sideHint }: {
     const option = (d: GenericMasterDataDto) => ({ label: `${d.code} — ${d.description}`, value: d.genericMasterDataId });
 
     return (
-        <Section title="Operazione (per la registrazione)">
-            <Field label="Lato" hint={sideHint} col={3}>
-                <SelectButton value={value.side} options={SIDES} onChange={(e) => e.value && onChange({ ...value, side: e.value })} />
+        <Section title="Trade">
+            <Field label="Side" hint={sideHint} col={3}>
+                <Choice value={value.side} options={SIDES} disabled={readOnly} onChange={(side) => onChange({ ...value, side })} />
             </Field>
-            <Field label="Controparte" col={3}>
-                <Dropdown value={value.counterpartyId} options={counterparties.map(option)} filter placeholder="Controparte"
+            <Field label="Counterparty" col={3}>
+                <Dropdown value={value.counterpartyId} options={counterparties.map(option)} disabled={readOnly} filter placeholder="Counterparty"
                     onChange={(e) => onChange({ ...value, counterpartyId: e.value })} />
             </Field>
-            <Field label="Posizione" col={3}>
-                <Dropdown value={value.positionMdId} options={positions.map(option)} filter placeholder="Posizione"
+            <Field label="Position" col={3}>
+                <Dropdown value={value.positionMdId} options={positions.map(option)} disabled={readOnly} filter placeholder="Position"
                     onChange={(e) => onChange({ ...value, positionMdId: e.value })} />
             </Field>
-            <Field label="Data operazione" col={3} hint="Vuota = data ufficiale (accumulator) o erogazione (mutui)">
-                <Calendar value={value.tradeDate} onChange={(e) => onChange({ ...value, tradeDate: e.value ?? null })}
+            <Field label="Trade date" col={3} hint="Empty = official date (accumulators) or disbursement (loans)">
+                <Calendar value={value.tradeDate} disabled={readOnly} onChange={(e) => onChange({ ...value, tradeDate: e.value ?? null })}
                     dateFormat="dd/mm/yy" showIcon showButtonBar />
             </Field>
         </Section>

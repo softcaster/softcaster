@@ -24,9 +24,9 @@ export const errorMessage = (error: unknown): string => {
             return data;
         }
         if (!error.response) {
-            return 'Server non raggiungibile (easy_pricer_srv su localhost:8080)';
+            return 'Server unreachable (easy_pricer_srv on localhost:8080)';
         }
-        return `Errore ${error.response.status}`;
+        return `Error ${error.response.status}`;
     }
     return error instanceof Error ? error.message : String(error);
 };

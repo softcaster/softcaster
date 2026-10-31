@@ -30,16 +30,16 @@ public record AccumulatorFixingInput(
 
     public AccumulatorFixingInput {
         if (time < 0) {
-            throw new IllegalArgumentException("fixing " + index + ": time deve essere >= 0 (fixing futuro o del giorno)");
+            throw new IllegalArgumentException("fixing " + index + ": time must be >= 0 (future or same-day fixing)");
         }
         if (forward <= 0 || settlementForward <= 0) {
-            throw new IllegalArgumentException("fixing " + index + ": forward deve essere > 0");
+            throw new IllegalArgumentException("fixing " + index + ": forward must be > 0");
         }
         if (discountFactor <= 0) {
-            throw new IllegalArgumentException("fixing " + index + ": discountFactor deve essere > 0");
+            throw new IllegalArgumentException("fixing " + index + ": discountFactor must be > 0");
         }
         if (volatility < 0) {
-            throw new IllegalArgumentException("fixing " + index + ": volatility deve essere >= 0");
+            throw new IllegalArgumentException("fixing " + index + ": volatility must be >= 0");
         }
     }
 }

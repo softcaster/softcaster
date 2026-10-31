@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
-import { InputNumber } from 'primereact/inputnumber';
 import { Message } from 'primereact/message';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { TabPanel, TabView } from 'primereact/tabview';
@@ -9,7 +8,7 @@ import { errorMessage } from '../api/client';
 import { fetchAccumulators, fetchLoans, valueAccumulator, valueLoan } from '../api/services';
 import type { AccumulatorDto, LoanDto } from '../api/types';
 import { fmt, fmtDate, fromPercent, pct, tone } from '../components/format';
-import { KpiGrid, type KpiItem } from '../components/ui';
+import { KpiGrid, NumberInput, type KpiItem } from '../components/ui';
 import { useActions } from '../context/ActionContext';
 
 type Selection = { kind: 'loan'; row: LoanDto } | { kind: 'accumulator'; row: AccumulatorDto } | null;
@@ -53,28 +52,28 @@ const ContractsView = () => {
                 const r = await valueLoan(selection.row.code, { discountRate: fromPercent(discountRatePct) });
                 setValuation({
                     code: selection.row.code, items: [
-                        { label: 'Data', value: fmtDate(r.valuationDate) },
-                        { label: 'Debito residuo', value: fmt(r.outstandingPrincipal) },
-                        { label: 'Rateo', value: fmt(r.accruedInterest) },
+                        { label: 'Date', value: fmtDate(r.valuationDate) },
+                        { label: 'Outstanding', value: fmt(r.outstandingPrincipal) },
+                        { label: 'Accrued interest', value: fmt(r.accruedInterest) },
                         { label: 'Fair value', value: fmt(r.fairValue) },
                         { label: 'Fair value %', value: pct(r.fairValuePercent, 3) },
-                        { label: 'Prossima rata', value: `${fmtDate(r.nextPaymentDate)} · ${fmt(r.nextPaymentAmount)}` },
+                        { label: 'Next payment', value: `${fmtDate(r.nextPaymentDate)} · ${fmt(r.nextPaymentAmount)}` },
                         { label: 'DV01', value: fmt(r.dv01) },
-                        { label: 'Sconto', value: r.discountSource },
+                        { label: 'Discounting', value: r.discountSource },
                     ],
                 });
             } else {
                 const r = await valueAccumulator(selection.row.code, {});
                 setValuation({
                     code: selection.row.code, items: [
-                        { label: 'Data', value: fmtDate(r.valuationDate) },
-                        { label: 'Valore (detentore)', value: fmt(r.value), tone: tone(r.value) },
-                        { label: 'Errore standard', value: fmt(r.standardError) },
-                        { label: 'Da regolare', value: fmt(r.pendingValue) },
+                        { label: 'Date', value: fmtDate(r.valuationDate) },
+                        { label: 'Value (holder)', value: fmt(r.value), tone: tone(r.value) },
+                        { label: 'Standard error', value: fmt(r.standardError) },
+                        { label: 'Pending settlement', value: fmt(r.pendingValue) },
                         { label: 'P(knock-out)', value: pct(100 * r.knockOutProbability, 2) },
-                        { label: 'Fixing futuri', value: `${r.futureFixings} / ${r.totalFixings}` },
+                        { label: 'Future fixings', value: `${r.futureFixings} / ${r.totalFixings}` },
                         { label: 'Delta', value: fmt(r.delta, 0) },
-                        { label: 'Volatilità', value: `${pct(100 * r.volatility, 2)} (${r.volatilitySource})` },
+                        { label: 'Volatility', value: `${pct(100 * r.volatility, 2)} (${r.volatilitySource})` },
                     ],
                 });
             }
@@ -102,43 +101,43 @@ const ContractsView = () => {
         <div style={{ height: 'calc(100vh - 45px)', padding: '1rem', boxSizing: 'border-box' }} className="flex flex-column">
             <Splitter layout="vertical" style={{ height: '100%' }} className="border-none">
                 <SplitterPanel size={30} minSize={15} className="block overflow-auto bg-white p-2">
-                    <div className="font-semibold mb-2">Holding Views · Contratti OTC</div>
+                    <div className="font-semibold mb-2">Holding Views · OTC contracts</div>
                     <div className="flex align-items-center gap-2 mb-2">
-                        <span className="field-label">Tasso di sconto % dei mutui (se non c'e' una curva configurata)</span>
-                        <InputNumber value={discountRatePct} onValueChange={(e) => setDiscountRatePct(e.value ?? null)} mode="decimal" locale="it-IT" maxFractionDigits={4} suffix=" %" />
+                        <span className="field-label">Loan discount rate % (when no curve is configured)</span>
+                        <div className="w-10rem"><NumberInput value={discountRatePct} onChange={setDiscountRatePct} digits={4} /></div>
                     </div>
                     {error && <Message severity="error" text={error} className="w-full mb-2" />}
-                    {!valuation && <div className="text-500 text-sm">Selezionare un contratto e usare Calcola.</div>}
+                    {!valuation && <div className="text-500 text-sm">Select a contract and use Calculate.</div>}
                     {valuation && (
                         <>
-                            <div className="font-semibold mb-2">Valutazione {valuation.code}</div>
+                            <div className="font-semibold mb-2">Valuation {valuation.code}</div>
                             <KpiGrid items={valuation.items} />
                         </>
                     )}
                 </SplitterPanel>
                 <SplitterPanel size={70} minSize={30} className="p-2 flex flex-column overflow-hidden">
                     <TabView>
-                        <TabPanel header={`Mutui (${loans.length})`}>
+                        <TabPanel header={`Loans (${loans.length})`}>
                             <DataTable value={loans} selectionMode="single" dataKey="code"
                                 selection={selection?.kind === 'loan' ? selection.row : null}
                                 onSelectionChange={(e) => select(e.value ? { kind: 'loan', row: e.value as LoanDto } : null)}
-                                size="small" stripedRows paginator rows={15} emptyMessage="Nessun mutuo">
-                                <Column field="code" header="Codice" />
-                                <Column field="description" header="Descrizione" />
-                                <Column header="Capitale" body={(r: LoanDto) => `${fmt(r.principalAmount)} ${r.currency}`} className="text-right" />
-                                <Column header="Tasso" body={(r: LoanDto) => pct(r.annualRate, 3)} className="text-right" />
-                                <Column header="Scadenza" body={(r: LoanDto) => fmtDate(r.maturityDate)} />
-                                <Column field="installments" header="Rate" />
+                                size="small" stripedRows paginator rows={15} emptyMessage="No loans">
+                                <Column field="code" header="Code" />
+                                <Column field="description" header="Description" />
+                                <Column header="Principal" body={(r: LoanDto) => `${fmt(r.principalAmount)} ${r.currency}`} className="text-right" />
+                                <Column header="Rate" body={(r: LoanDto) => pct(r.annualRate, 3)} className="text-right" />
+                                <Column header="Maturity" body={(r: LoanDto) => fmtDate(r.maturityDate)} />
+                                <Column field="installments" header="Installments" />
                             </DataTable>
                         </TabPanel>
-                        <TabPanel header={`Accumulator (${accumulators.length})`}>
+                        <TabPanel header={`Accumulators (${accumulators.length})`}>
                             <DataTable value={accumulators} selectionMode="single" dataKey="code"
                                 selection={selection?.kind === 'accumulator' ? selection.row : null}
                                 onSelectionChange={(e) => select(e.value ? { kind: 'accumulator', row: e.value as AccumulatorDto } : null)}
-                                size="small" stripedRows paginator rows={15} emptyMessage="Nessun accumulator">
-                                <Column field="code" header="Codice" />
-                                <Column field="description" header="Descrizione" />
-                                <Column field="assetClass" header="Classe" />
+                                size="small" stripedRows paginator rows={15} emptyMessage="No accumulators">
+                                <Column field="code" header="Code" />
+                                <Column field="description" header="Description" />
+                                <Column field="assetClass" header="Asset class" />
                                 <Column header="Strike" body={(r: AccumulatorDto) => fmt(r.strike, 5)} className="text-right" />
                                 <Column header="KO" body={(r: AccumulatorDto) => fmt(r.koBarrier, 5)} className="text-right" />
                                 <Column header="Fixing" body={(r: AccumulatorDto) => `${fmtDate(r.firstFixingDate)} – ${fmtDate(r.lastFixingDate)}`} />

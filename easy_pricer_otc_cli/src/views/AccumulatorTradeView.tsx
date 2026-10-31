@@ -1,56 +1,68 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Column } from 'primereact/column';
-import { DataTable } from 'primereact/datatable';
 import { Message } from 'primereact/message';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { Tag } from 'primereact/tag';
 import { errorMessage, isoDate } from '../api/client';
-import { bookAccumulator, fetchAccumulators, priceAccumulator, valueAccumulator } from '../api/services';
-import type { AccumulatorDto, AccumulatorPricingResponse } from '../api/types';
-import { fmt, fmtDate } from '../components/format';
+import { bookAccumulator, fetchAccumulators, fetchTxns, priceAccumulator, valueAccumulator } from '../api/services';
+import type { AccumulatorDto, AccumulatorPricingResponse, FinancialTxnDto } from '../api/types';
+import { fromPercent } from '../components/format';
 import { RegistrationPanel, type Registration } from '../components/RegistrationPanel';
+import { TxnTable } from '../components/TxnTable';
 import { useActions } from '../context/ActionContext';
 import { AccumulatorResults } from '../fragments/AccumulatorResults';
-import { AccumulatorTermsForm } from '../fragments/AccumulatorTermsForm';
+import { AccumulatorFormTabs, AccumulatorPremium } from '../fragments/AccumulatorTermsForm';
 import { accumulatorFormFromDto, accumulatorRequest, newAccumulatorForm } from '../model/accumulatorForm';
-import { fromPercent } from '../components/format';
+import { registrationFromTxn } from '../model/txn';
 
 const NEW_REGISTRATION: Registration = { side: 'SELL', counterpartyId: null, positionMdId: null, tradeDate: null };
 
 /**
  * Deal capture degli accumulator di una asset class (FXA su cambi, CMA su
- * commodity): in alto il contratto, in basso quelli registrati.
+ * commodity): in alto il contratto, in basso le transazioni registrate;
+ * la transazione selezionata carica i suoi dati e l'anagrafica collegata.
  */
 const AccumulatorTradeView = ({ assetClass }: { assetClass: 'FXA' | 'CMA' }) => {
     const { setAction, showToast } = useActions();
     const [form, setForm] = useState(() => newAccumulatorForm(assetClass));
     const [registration, setRegistration] = useState<Registration>(NEW_REGISTRATION);
     const [contracts, setContracts] = useState<AccumulatorDto[]>([]);
-    const [selected, setSelected] = useState<AccumulatorDto | null>(null);
+    const [txns, setTxns] = useState<FinancialTxnDto[]>([]);
+    const [selectedTxn, setSelectedTxn] = useState<FinancialTxnDto | null>(null);
     const [result, setResult] = useState<AccumulatorPricingResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [tab, setTab] = useState('terms');
+
+    // anagrafica collegata alla transazione selezionata
+    const selected = selectedTxn ? contracts.find((a) => a.code === selectedTxn.masterDataCode) ?? null : null;
+
+    const load = useCallback(async () => {
+        const [all, allTxns] = await Promise.all([fetchAccumulators(), fetchTxns(assetClass)]);
+        setContracts(all.filter((a) => a.assetClass === assetClass));
+        setTxns(allTxns);
+        return allTxns;
+    }, [assetClass]);
 
     const refresh = useCallback(async () => {
         try {
-            const all = await fetchAccumulators();
-            setContracts(all.filter((a) => a.assetClass === assetClass));
+            await load();
         } catch (e) {
             setError(errorMessage(e));
         }
-    }, [assetClass]);
+    }, [load]);
 
     useEffect(() => {
-        // caricamento iniziale dei contratti dal server
+        // caricamento iniziale di anagrafiche e transazioni dal server
         // eslint-disable-next-line react-hooks/set-state-in-effect
         refresh();
     }, [refresh]);
 
     const newDeal = () => {
-        setSelected(null);
+        setSelectedTxn(null);
         setForm(newAccumulatorForm(assetClass));
         setRegistration(NEW_REGISTRATION);
         setResult(null);
         setError(null);
+        setTab('terms');
     };
 
     const calculate = async () => {
@@ -60,6 +72,7 @@ const AccumulatorTradeView = ({ assetClass }: { assetClass: 'FXA' | 'CMA' }) => 
                 ? await valueAccumulator(selected.code,
                     { spot: form.spot, volatility: fromPercent(form.volatilityPct), paths: form.paths }, isoDate(form.valuationDate))
                 : await priceAccumulator(accumulatorRequest(form)));
+            setTab('results');
         } catch (e) {
             setError(errorMessage(e));
         }
@@ -70,37 +83,49 @@ const AccumulatorTradeView = ({ assetClass }: { assetClass: 'FXA' | 'CMA' }) => 
         try {
             const response = await bookAccumulator(accumulatorRequest(form, registration));
             setResult(response.pricing);
-            showToast({ severity: 'success', summary: 'Accumulator registrato', detail: response.contract.code });
+            setTab(response.pricing ? 'results' : 'terms');
+            showToast({ severity: 'success', summary: 'Accumulator booked', detail: response.contract.code });
             if (!response.pricing) {
-                setError(`${response.contract.code} registrato senza valutazione (volatilita' o curve mancanti)`);
+                setError(`${response.contract.code} booked without valuation (missing volatility or curves)`);
             }
-            const all = await fetchAccumulators();
-            const mine = all.filter((a) => a.assetClass === assetClass);
-            setContracts(mine);
-            setSelected(mine.find((a) => a.code === response.contract.code) ?? null);
+            const allTxns = await load();
+            const txn = allTxns.filter((t) => t.masterDataCode === response.contract.code)
+                .sort((a, b) => b.financialTxnId - a.financialTxnId)[0];
+            if (txn) {
+                setSelectedTxn(txn);
+                setRegistration(registrationFromTxn(txn));
+            }
         } catch (e) {
             setError(errorMessage(e));
         }
     };
 
-    const select = (dto: AccumulatorDto | null) => {
-        if (!dto) {
+    const select = (txn: FinancialTxnDto | null) => {
+        if (!txn) {
             newDeal();
             return;
         }
-        setSelected(dto);
-        setForm((f) => accumulatorFormFromDto(dto, f));
+        setSelectedTxn(txn);
+        setRegistration(registrationFromTxn(txn));
         setResult(null);
-        setError(null);
+        const dto = contracts.find((a) => a.code === txn.masterDataCode);
+        if (dto) {
+            setForm((f) => accumulatorFormFromDto(dto, f));
+            setError(null);
+        } else {
+            setError(`Master data ${txn.masterDataCode ?? '?'} of trade ${txn.financialTxnId} not found`);
+        }
+        // i risultati non valgono per la transazione selezionata
+        setTab((t) => (t === 'results' ? 'terms' : t));
     };
 
-    const canSave = !selected && registration.counterpartyId !== null && registration.positionMdId !== null;
+    const canSave = !selectedTxn && registration.counterpartyId !== null && registration.positionMdId !== null;
 
     useEffect(() => {
         setAction({ new: newDeal, save: canSave ? save : undefined, calculate, refresh });
         // le azioni della toolbar si aggiornano con lo stato del form
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [form, registration, selected, canSave]);
+    }, [form, registration, selectedTxn, contracts, canSave]);
 
     // toolbar vuota quando si lascia la vista
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,27 +137,23 @@ const AccumulatorTradeView = ({ assetClass }: { assetClass: 'FXA' | 'CMA' }) => 
                 <SplitterPanel size={65} minSize={25} className="block overflow-auto bg-white p-2">
                     <div className="flex align-items-center gap-2 mb-2">
                         <span className="font-semibold">{assetClass === 'FXA' ? 'FX Accumulators' : 'Commodity Accumulators'}</span>
-                        {selected
-                            ? <Tag value={`${selected.code} · registrato`} severity="info" />
-                            : <Tag value="Nuovo contratto" severity="success" />}
+                        {selectedTxn
+                            ? <Tag value={`Trade ${String(selectedTxn.financialTxnId).padStart(5, '0')} · ${selectedTxn.masterDataCode ?? ''} · ${selectedTxn.txnStatusDescription ?? ''}`} severity="info" />
+                            : <Tag value="New contract" severity="success" />}
                     </div>
-                    <AccumulatorTermsForm value={form} onChange={setForm} assetClass={assetClass} readOnly={!!selected} showPremium={!selected} />
-                    {!selected && <RegistrationPanel value={registration} onChange={setRegistration} sideHint="SELL = la banca vende il contratto al cliente" />}
-                    {error && <Message severity="error" text={error} className="w-full mb-3" />}
-                    {result && <AccumulatorResults result={result} strike={form.strike} />}
+                    {error && <Message severity="error" text={error} className="w-full mb-2" />}
+                    <AccumulatorFormTabs value={form} onChange={setForm} assetClass={assetClass} readOnly={!!selectedTxn} tab={tab} onTabChange={setTab}
+                        booking={(
+                            <>
+                                {!selectedTxn && <AccumulatorPremium value={form} onChange={setForm} />}
+                                <RegistrationPanel value={registration} onChange={setRegistration} readOnly={!!selectedTxn}
+                                    sideHint="SELL = the bank sells the contract to the client" />
+                            </>
+                        )}
+                        results={result ? <AccumulatorResults result={result} strike={form.strike} /> : undefined} />
                 </SplitterPanel>
                 <SplitterPanel size={35} minSize={15} className="p-2 flex flex-column overflow-hidden">
-                    <DataTable value={contracts} selectionMode="single" selection={selected} dataKey="code"
-                        onSelectionChange={(e) => select(e.value as AccumulatorDto | null)}
-                        size="small" stripedRows scrollable scrollHeight="flex" emptyMessage="Nessun accumulator registrato">
-                        <Column field="code" header="Codice" />
-                        <Column field="description" header="Descrizione" />
-                        <Column field="accumulatorType" header="Tipo" />
-                        <Column header="Strike" body={(r: AccumulatorDto) => fmt(r.strike, 5)} className="text-right" />
-                        <Column header="KO" body={(r: AccumulatorDto) => fmt(r.koBarrier, 5)} className="text-right" />
-                        <Column header="Q. massima" body={(r: AccumulatorDto) => fmt(r.maxQuantity, 0)} className="text-right" />
-                        <Column header="Fixing" body={(r: AccumulatorDto) => `${fmtDate(r.firstFixingDate)} – ${fmtDate(r.lastFixingDate)}`} />
-                    </DataTable>
+                    <TxnTable data={txns} selection={selectedTxn} onSelectionChange={select} emptyMessage="No accumulator trades" />
                 </SplitterPanel>
             </Splitter>
         </div>

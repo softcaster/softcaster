@@ -4,8 +4,8 @@ package org.softcaster.engine.enums;
  * Quando si paga una spesa: una volta all'erogazione o a ogni rata.
  */
 public enum FeeTiming implements IdentifiableEnum {
-    UPFRONT(1, "UPFRONT", "Once, at disbursement"),
-    PER_INSTALLMENT(2, "PER_INSTALLMENT", "At every installment");
+    UPFRONT(1, "UPFRONT", "Upfront"),
+    PER_INSTALLMENT(2, "PER_INSTALLMENT", "Per installment");
 
     private final int id;
     private final String code;

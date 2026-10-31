@@ -133,8 +133,8 @@ public class LoanCalculator {
         } else if (discountRate != null) {
             rate = discountRate;
         } else {
-            throw new IllegalArgumentException("Curva di sconto (discountCurve) o tasso (discountRate) mancante e nessuna curva "
-                    + "DISCOUNT configurata per " + lmd.getAssetClass().getCode() + "/" + lmd.getCurrency().getIsoCode());
+            throw new IllegalArgumentException("Missing discount curve (discountCurve) or rate (discountRate) and no "
+                    + "DISCOUNT curve configured for " + lmd.getAssetClass().getCode() + "/" + lmd.getCurrency().getIsoCode());
         }
         List<Double> fees = new ArrayList<>();
         double outstanding = lmd.getPrincipalAmount();
@@ -207,11 +207,11 @@ public class LoanCalculator {
     private DiscountCurve loadCurve(String curveCode, LocalDate valuationDate) {
         DiscountCurve curve = marketDataService.getDiscountCurve(curveCode);
         if (curve == null) {
-            throw new NoSuchElementException("Curva non trovata: " + curveCode);
+            throw new NoSuchElementException("Curve not found: " + curveCode);
         }
         if (curve.getValuationDate().isAfter(valuationDate)) {
-            throw new IllegalArgumentException("La curva " + curveCode + " ha data " + curve.getValuationDate()
-                    + ", successiva alla valuationDate " + valuationDate);
+            throw new IllegalArgumentException("Curve " + curveCode + " is dated " + curve.getValuationDate()
+                    + ", after valuationDate " + valuationDate);
         }
         return curve;
     }

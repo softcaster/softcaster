@@ -127,7 +127,7 @@ public class LoanPricer extends AbstractFixedIncomePricer<LoanInput, LoanResult>
         double lo = -0.99;
         double hi = 10.;
         if (f.applyAsDouble(lo) < 0 || f.applyAsDouble(hi) > 0) {
-            throw new ArithmeticException("Tasso fuori dall'intervallo [-99%, 1000%]");
+            throw new ArithmeticException("Rate outside the range [-99%, 1000%]");
         }
         for (int k = 0; k < 200 && hi - lo > 1e-12; k++) {
             double mid = 0.5 * (lo + hi);

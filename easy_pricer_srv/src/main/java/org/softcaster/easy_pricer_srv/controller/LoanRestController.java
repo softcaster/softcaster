@@ -3,6 +3,7 @@ package org.softcaster.easy_pricer_srv.controller;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.softcaster.easy_pricer_mds_core.dto.LoanPricingResponse;
+import org.softcaster.easy_pricer_srv.dto.LoanCashFlowDto;
 import org.softcaster.easy_pricer_srv.dto.LoanDealRequest;
 import org.softcaster.easy_pricer_srv.dto.LoanDto;
 import org.softcaster.easy_pricer_srv.services.LoanDealService;
@@ -20,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Mutui OTC: simulazione del piano e valutazione dei termini, registrazione
- * (anagrafica + spese + piano + transazione), lista, dettaglio e valutazione
- * di un mutuo registrato.
+ * (anagrafica + spese + piano + transazione), lista, dettaglio e valutazione di
+ * un mutuo registrato.
  */
 @RestController
 public class LoanRestController {
@@ -50,8 +51,23 @@ public class LoanRestController {
     }
 
     /**
+     * Piano salvato (cash_flow_item) di un mutuo registrato.
+     *
+     * @param code
+     * @return
+     */
+    @GetMapping("/otc/loan/cashflows/{code}")
+    public ResponseEntity<List<LoanCashFlowDto>> cashFlows(@PathVariable("code") String code) {
+        return ResponseEntity.ok(service.cashFlows(code));
+    }
+
+    /**
      * Valutazione di un mutuo registrato: dalla richiesta si usano solo
      * valuationDate, discountCurve, discountRate e creditSpread.
+     *
+     * @param code
+     * @param pricing
+     * @return
      */
     @PostMapping(value = "/otc/loan/value/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoanPricingResponse> value(@PathVariable("code") String code, @RequestBody LoanDealRequest pricing) {

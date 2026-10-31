@@ -86,7 +86,7 @@ public class LoanMasterData extends CashFlowMasterData {
      * Codice del contratto: asset class e id (XRM-123).
      */
     public String contractCode() {
-        Objects.requireNonNull(getIdMasterData(), "Mutuo non ancora salvato");
+        Objects.requireNonNull(getIdMasterData(), "Loan not saved yet");
         return getAssetClass().getCode() + "-" + getIdMasterData();
     }
 

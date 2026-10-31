@@ -64,30 +64,30 @@ public record AccumulatorInput(
         fixings = List.copyOf(Objects.requireNonNull(fixings, "fixings"));
         pending = List.copyOf(Objects.requireNonNull(pending, "pending"));
         if (strike <= 0 || koBarrier <= 0 || spot <= 0) {
-            throw new IllegalArgumentException("strike, koBarrier e spot devono essere > 0");
+            throw new IllegalArgumentException("strike, koBarrier and spot must be > 0");
         }
         if (!type.isFavourable(koBarrier, strike)) {
-            throw new IllegalArgumentException("barriera di knock-out dalla parte sbagliata dello strike");
+            throw new IllegalArgumentException("knock-out barrier on the wrong side of the strike");
         }
         if ((kiBarrier == null) != (kiEffect == null)) {
-            throw new IllegalArgumentException("kiBarrier e kiEffect vanno indicati insieme");
+            throw new IllegalArgumentException("kiBarrier and kiEffect must be given together");
         }
         if (kiBarrier != null && !type.isFavourable(strike, kiBarrier)) {
-            throw new IllegalArgumentException("barriera di knock-in dalla parte sbagliata dello strike");
+            throw new IllegalArgumentException("knock-in barrier on the wrong side of the strike");
         }
         if (leverage < 1 || dailyQuantity <= 0 || guaranteedFixings < 0) {
             throw new IllegalArgumentException("leverage >= 1, dailyQuantity > 0, guaranteedFixings >= 0");
         }
         Objects.requireNonNull(guaranteeType, "guaranteeType");
         if ((guaranteeType == GuaranteeType.NONE) != (guaranteedFixings == 0)) {
-            throw new IllegalArgumentException("guaranteeType NONE se e solo se non ci sono fixing garantiti");
+            throw new IllegalArgumentException("guaranteeType NONE if and only if there are no guaranteed fixings");
         }
         if (paths < 2) {
-            throw new IllegalArgumentException("paths deve essere >= 2");
+            throw new IllegalArgumentException("paths must be >= 2");
         }
         for (int i = 1; i < fixings.size(); i++) {
             if (fixings.get(i).time() <= fixings.get(i - 1).time()) {
-                throw new IllegalArgumentException("fixing non in ordine di data");
+                throw new IllegalArgumentException("fixings not in date order");
             }
         }
     }

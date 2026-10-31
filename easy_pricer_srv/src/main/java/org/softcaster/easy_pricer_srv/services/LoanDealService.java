@@ -17,6 +17,7 @@ import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.LoanCalculator;
 import org.softcaster.easy_pricer_mds_core.dto.LoanPricingResponse;
+import org.softcaster.easy_pricer_srv.dto.LoanCashFlowDto;
 import org.softcaster.easy_pricer_srv.dto.LoanDealRequest;
 import org.softcaster.easy_pricer_srv.dto.LoanDto;
 import org.softcaster.engine.cashflow.CashFlow;
@@ -123,6 +124,17 @@ public class LoanDealService {
         });
     }
 
+    /**
+     * Piano salvato di un mutuo registrato (cash_flow_item), in ordine di data.
+     */
+    public List<LoanCashFlowDto> cashFlows(String code) {
+        return transactionTemplate.execute(status -> {
+            List<CashFlow> flows = LoanCalculator.fromItems(loanDAO.getByCode(code));
+            return java.util.stream.IntStream.range(0, flows.size())
+                    .mapToObj(i -> LoanCashFlowDto.of(i + 1, flows.get(i))).toList();
+        });
+    }
+
     public List<LoanDto> findAll() {
         return transactionTemplate.execute(status -> loanDAO.findAll().stream().map(LoanDto::of).toList());
     }
@@ -141,7 +153,7 @@ public class LoanDealService {
         lmd.setAssetClass(assetClassDAO.findByCode(floating ? LoanMasterData.FLOATING_ASSET_CLASS : LoanMasterData.FIXED_ASSET_CLASS));
         Currency currency = currencyDAO.findByIsoCode(require(r.currency, "currency"));
         if (currency == null) {
-            throw new NoSuchElementException("Valuta non trovata: " + r.currency);
+            throw new NoSuchElementException("Currency not found: " + r.currency);
         }
         lmd.setCurrency(currency);
 
@@ -150,14 +162,14 @@ public class LoanDealService {
         LocalDate disbursement = require(r.disbursementDate, "disbursementDate");
         LocalDate maturity = require(r.maturityDate, "maturityDate");
         if (!maturity.isAfter(disbursement)) {
-            throw new IllegalArgumentException("Scadenza " + maturity + " non successiva all'erogazione " + disbursement);
+            throw new IllegalArgumentException("Maturity " + maturity + " is not after disbursement " + disbursement);
         }
         lmd.setIssueDate(java.sql.Date.valueOf(disbursement));
         lmd.setMaturityDate(java.sql.Date.valueOf(maturity));
         lmd.setFirstPaymentDate(r.firstPaymentDate == null ? null : java.sql.Date.valueOf(r.firstPaymentDate));
         Frequency frequency = Frequency.fromCode(require(r.frequency, "frequency"));
         if (!frequency.isCouponFrequency()) {
-            throw new IllegalArgumentException("Frequenza delle rate " + r.frequency + " non ammessa");
+            throw new IllegalArgumentException("Installment frequency " + r.frequency + " not allowed");
         }
         lmd.setFrequency(frequency);
         AmortizationSchedule amortization = AmortizationSchedule.fromCode(require(r.amortization, "amortization"));
@@ -185,7 +197,7 @@ public class LoanDealService {
                         FeeBasis.fromCode(require(f.basis, "fees.basis")), FeeTiming.fromCode(require(f.timing, "fees.timing")),
                         require(f.value, "fees.value"));
                 if (!lmd.getFees().add(fee)) {
-                    throw new IllegalArgumentException("Spesa " + f.type + " indicata due volte");
+                    throw new IllegalArgumentException("Fee " + f.type + " given twice");
                 }
             }
         }
@@ -196,7 +208,7 @@ public class LoanDealService {
             terms.setFloor(r.floor);
             terms.setCap(r.cap);
             if (r.floor != null && r.cap != null && r.floor > r.cap) {
-                throw new IllegalArgumentException("Floor superiore al cap");
+                throw new IllegalArgumentException("Floor above cap");
             }
             terms.setIndexMonths(r.indexMonths == null ? 6 : r.indexMonths);
             terms.setFixingLagDays(r.fixingLagDays == null ? 2 : r.fixingLagDays);
@@ -205,7 +217,7 @@ public class LoanDealService {
             if (r.indexCode != null && !r.indexCode.isBlank()) {
                 terms.setProjectionIndex(refRateIndexDAO.findAll().stream()
                         .filter(i -> r.indexCode.equals(i.getCode())).findFirst()
-                        .orElseThrow(() -> new NoSuchElementException("Indice non trovato: " + r.indexCode)));
+                        .orElseThrow(() -> new NoSuchElementException("Index not found: " + r.indexCode)));
             }
         }
 
@@ -215,12 +227,12 @@ public class LoanDealService {
 
     private static String description(LoanMasterData lmd, AmortizationSchedule amortization) {
         String plan = switch (amortization) {
-            case SAS -> "francese";
-            case SLP -> "italiano";
+            case SAS -> "French";
+            case SLP -> "Italian";
             case IOL -> "bullet";
             case NONE -> "";
         };
-        return "Mutuo " + (lmd instanceof FltLoanMasterData ? "variabile " : "fisso ") + plan + " "
+        return (lmd instanceof FltLoanMasterData ? "Floating " : "Fixed ") + "loan " + plan + " "
                 + String.format("%,.0f", lmd.getPrincipalAmount()) + " " + lmd.getCurrency().getIsoCode()
                 + " " + lmd.getInterestRate() + "% " + lmd.getIssueDate() + "/" + lmd.getMaturityDate();
     }
@@ -235,7 +247,7 @@ public class LoanDealService {
 
     private static <T> T require(T value, String name) {
         if (value == null || (value instanceof String s && s.isBlank())) {
-            throw new IllegalArgumentException("Campo obbligatorio mancante: " + name);
+            throw new IllegalArgumentException("Missing required field: " + name);
         }
         return value;
     }

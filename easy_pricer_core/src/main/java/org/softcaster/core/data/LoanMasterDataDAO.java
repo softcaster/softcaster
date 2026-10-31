@@ -24,7 +24,7 @@ public class LoanMasterDataDAO extends AbstractMasterDataDAO<LoanMasterData, Loa
     @Transactional
     public LoanMasterData create(LoanMasterData lmd) {
         if (lmd.getIdMasterData() != null) {
-            throw new IllegalArgumentException("Mutuo " + lmd.getCode() + " gia' salvato");
+            throw new IllegalArgumentException("Loan " + lmd.getCode() + " already saved");
         }
         lmd.setCode("NEW-" + UUID.randomUUID().toString().substring(0, 18));
         LoanMasterData saved = repository.saveAndFlush(lmd);
@@ -35,10 +35,10 @@ public class LoanMasterDataDAO extends AbstractMasterDataDAO<LoanMasterData, Loa
     @Transactional(readOnly = true)
     public LoanMasterData getByCode(String code) {
         if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("Codice mutuo mancante");
+            throw new IllegalArgumentException("Missing loan code");
         }
         LoanMasterData lmd = repository.findByCodeWithCashFlows(code)
-                .orElseThrow(() -> new NoSuchElementException("Mutuo non trovato: " + code));
+                .orElseThrow(() -> new NoSuchElementException("Loan not found: " + code));
         lmd.getFees().size();
         return lmd;
     }
@@ -46,7 +46,7 @@ public class LoanMasterDataDAO extends AbstractMasterDataDAO<LoanMasterData, Loa
     @Transactional(readOnly = true)
     public LoanMasterData getById(Integer id) {
         LoanMasterData lmd = repository.findByIdWithCashFlows(id)
-                .orElseThrow(() -> new NoSuchElementException("Mutuo non trovato: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Loan not found: " + id));
         lmd.getFees().size();
         return lmd;
     }

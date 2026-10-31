@@ -56,7 +56,7 @@ public abstract class AccumulatorEvaluator extends AbstractEvaluator implements 
                 AccumulatorResult result = accumulatorCalculator.valuation(input);
                 value = result.value();
             } catch (RuntimeException e) {
-                throw new MtmException("Valutazione di " + masterData.getCode() + " non riuscita: " + e.getMessage());
+                throw new MtmException("Valuation of " + masterData.getCode() + " failed: " + e.getMessage());
             }
 
             currentValuation.setTheoreticalPrice(value);

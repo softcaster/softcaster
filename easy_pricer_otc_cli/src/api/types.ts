@@ -3,6 +3,51 @@
 export interface Option {
     label: string;
     value: string;
+    icon?: string;
+}
+
+/** Transazione (FinancialTxnDto di easy_pricer_srv, /financial_txn/r03/{assetClass}). */
+export interface FinancialTxnDto {
+    financialTxnId: number;
+    description: string;
+    counterpartyId: number | null;
+    counterpartyCode: string | null;
+    counterpartyDesc: string | null;
+    positionMdId: number | null;
+    positionMdCode: string | null;
+    masterDataId: number | null;
+    masterDataCode: string | null;
+    masterDataDesc: string | null;
+    txnStatusId: number | null;
+    txnStatusCode: string | null;
+    txnStatusDescription: string | null;
+    refId: number | null;
+    txnSide: number;
+    tradeDate: string | null;
+    settlement: string | null;
+    quantity: number;
+    price: number;
+    fxRate: number | null;
+    txnAcctPhase: number | null;
+}
+
+/** Rata del piano salvato di un mutuo (cash_flow_item), LoanCashFlowDto. */
+export interface LoanCashFlow {
+    number: number;
+    startDate: string;
+    endDate: string;
+    principal: number;
+    interest: number;
+    total: number;
+    outstanding: number;
+    status: string;
+}
+
+/** Voce di un enum del server (EnumDto): code nelle richieste, description come etichetta. */
+export interface EnumDto {
+    id: number;
+    code: string;
+    description: string;
 }
 
 export interface GenericMasterDataDto {

@@ -156,7 +156,7 @@ public class AccumulatorMasterData extends MasterData {
      * codice del sottostante si accorcia per stare nei 25 caratteri.
      */
     public String contractCode() {
-        Objects.requireNonNull(getIdMasterData(), "Contratto non ancora salvato");
+        Objects.requireNonNull(getIdMasterData(), "Contract not saved yet");
         String prefix = getAssetClass().getCode() + "-";
         String suffix = "-" + getIdMasterData();
         String underlyingCode = underlying.getCode();
@@ -170,28 +170,28 @@ public class AccumulatorMasterData extends MasterData {
     @PrePersist
     @PreUpdate
     private void checkContract() {
-        Objects.requireNonNull(underlying, "Accumulator " + label() + ": sottostante mancante");
-        Objects.requireNonNull(accumulatorType, "Accumulator " + label() + ": tipo mancante");
-        Objects.requireNonNull(strike, "Accumulator " + label() + ": strike mancante");
-        Objects.requireNonNull(koBarrier, "Accumulator " + label() + ": barriera di knock-out mancante");
+        Objects.requireNonNull(underlying, "Accumulator " + label() + ": missing underlying");
+        Objects.requireNonNull(accumulatorType, "Accumulator " + label() + ": missing type");
+        Objects.requireNonNull(strike, "Accumulator " + label() + ": missing strike");
+        Objects.requireNonNull(koBarrier, "Accumulator " + label() + ": missing knock-out barrier");
         String assetClass = getAssetClass() == null ? null : getAssetClass().getCode();
         if (FX_ASSET_CLASS.equals(assetClass) && !(Hibernate.unproxy(underlying) instanceof ForexMasterData)) {
-            throw new IllegalStateException("Accumulator " + label() + ": il sottostante " + underlying.getCode()
-                    + " non e' una coppia di cambi");
+            throw new IllegalStateException("Accumulator " + label() + ": underlying " + underlying.getCode()
+                    + " is not a currency pair");
         }
         if (!accumulatorType.isFavourable(koBarrier, strike)) {
-            throw new IllegalStateException("Accumulator " + label() + ": la barriera di knock-out deve stare "
-                    + (accumulatorType == AccumulatorType.ACCUMULATOR ? "sopra" : "sotto") + " lo strike");
+            throw new IllegalStateException("Accumulator " + label() + ": the knock-out barrier must be "
+                    + (accumulatorType == AccumulatorType.ACCUMULATOR ? "above" : "below") + " the strike");
         }
         if ((guaranteeType == null || guaranteeType == GuaranteeType.NONE) != (guaranteedPeriods == null || guaranteedPeriods == 0)) {
-            throw new IllegalStateException("Accumulator " + label() + ": periodi garantiti e tipo di garanzia incoerenti");
+            throw new IllegalStateException("Accumulator " + label() + ": guaranteed periods and guarantee type are inconsistent");
         }
         if ((kiBarrier == null) != (kiEffect == null)) {
-            throw new IllegalStateException("Accumulator " + label() + ": livello ed effetto del knock-in vanno indicati insieme");
+            throw new IllegalStateException("Accumulator " + label() + ": knock-in level and effect must be given together");
         }
         if (kiBarrier != null && !accumulatorType.isFavourable(strike, kiBarrier)) {
-            throw new IllegalStateException("Accumulator " + label() + ": la barriera di knock-in deve stare "
-                    + (accumulatorType == AccumulatorType.ACCUMULATOR ? "sotto" : "sopra") + " lo strike");
+            throw new IllegalStateException("Accumulator " + label() + ": the knock-in barrier must be "
+                    + (accumulatorType == AccumulatorType.ACCUMULATOR ? "below" : "above") + " the strike");
         }
     }
 
