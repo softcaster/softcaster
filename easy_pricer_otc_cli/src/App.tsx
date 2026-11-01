@@ -86,7 +86,8 @@ const MainLayout = () => {
     // la chiave di un nodo foglia e' il percorso + '-key'
     const currentKey = location.pathname.substring(1) + '-key';
 
-    const [expandedKeys, setExpandedKeys] = useState<TreeExpandedKeysType>({ trades: true, 'cash-flow': true, forex: true, commodity: true });
+    // all'avvio tutte le cartelle chiuse, come nel client degli strumenti quotati
+    const [expandedKeys, setExpandedKeys] = useState<TreeExpandedKeysType>({});
 
     return (
         <div className="flex h-screen overflow-hidden bg-white">

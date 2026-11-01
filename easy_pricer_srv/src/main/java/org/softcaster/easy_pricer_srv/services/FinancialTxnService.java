@@ -83,13 +83,15 @@ public class FinancialTxnService {
     }
 
     /**
+     * @param newTxnDto
      * @param termsChanged l'anagrafica del deal e' cambiata (contratti OTC):
      *                     l'amend storna e riprocessa anche se i dati della
      *                     transazione sono invariati
+     * @return 
      */
     public FinancialTxnDto saveOrUpdateTransaction(FinancialTxnDto newTxnDto, boolean termsChanged) {
         // Avviamo una transazione esplicita tramite il template. Tutto il blocco è atomico (tutto o niente).
-        return transactionTemplate.execute(status -> {
+        return transactionTemplate.execute((var status) -> {
 
             // 1. Recuperiamo l'oggetto DTO originale prima che il mapper lo modifichi in memoria
             FinancialTxnDto oldTxnDto = null;
@@ -176,6 +178,8 @@ public class FinancialTxnService {
      * Transazione da modificare con il deal capture OTC: solo PENDING (si
      * aggiorna) o EXECUTED (amend: storno e nuova transazione). Da chiamare in
      * transazione.
+     * @param idFinancialTxn
+     * @return 
      */
     public FinancialTxn findAmendable(Integer idFinancialTxn) {
         FinancialTxn txn = dao.findByIdFinancialTxn(idFinancialTxn);
@@ -202,6 +206,15 @@ public class FinancialTxnService {
     /**
      * Amend di un deal OTC con i nuovi dati della transazione; l'anagrafica e'
      * gia' stata aggiornata, quindi una transazione eseguita si storna sempre.
+     * @param txn
+     * @param description
+     * @param side
+     * @param counterpartyId
+     * @param positionMdId
+     * @param tradeDate
+     * @param quantity
+     * @param price
+     * @return 
      */
     public FinancialTxnDto amendOtcDeal(FinancialTxn txn, String description, TxnSide side, Integer counterpartyId,
             Integer positionMdId, LocalDate tradeDate, double quantity, double price) {
