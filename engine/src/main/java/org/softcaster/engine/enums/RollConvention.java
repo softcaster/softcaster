@@ -9,11 +9,11 @@ package org.softcaster.engine.enums;
  * @author ep
  */
 public enum RollConvention  implements IdentifiableEnum {
-    PREVIOUS(1, "PREVIOUS", "Previus"), 
-    PREVIOUS_MODIFIED(2, "PREVIOUS-MODIFIED", "Previus Following"),
-    FORWARD(3, "FORWARD", "Following"), 
-    FORWARD_MODIFIED(4, "FORWARD-MODIFIED", "Modified Following"),
-    UNADJUSTED(100, "UNADJUSTED", "Unadjuster");
+    PREVIOUS(1, "PREVIOUS", "Preceding"),
+    PREVIOUS_MODIFIED(2, "PREVIOUS-MODIFIED", "Modified preceding"),
+    FORWARD(3, "FORWARD", "Following"),
+    FORWARD_MODIFIED(4, "FORWARD-MODIFIED", "Modified following"),
+    UNADJUSTED(100, "UNADJUSTED", "Unadjusted");
 
     private final int id;
     private final String code;

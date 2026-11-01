@@ -5,7 +5,7 @@
 package org.softcaster.engine.dto;
 
 public sealed interface CashFlowInput extends PricingInput
-        permits XRBInput, FRBInput /*, DepositInput, LoanInput */ {
+        permits XRBInput, FRBInput, LoanInput /*, DepositInput */ {
 
     CashFlowSchedule schedule();
 }

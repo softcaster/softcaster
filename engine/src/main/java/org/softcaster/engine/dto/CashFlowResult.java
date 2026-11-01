@@ -5,6 +5,6 @@
 package org.softcaster.engine.dto;
 
 public sealed interface CashFlowResult extends PricingResult
-        permits XRBResult, FRBResult {
+        permits XRBResult, FRBResult, LoanResult {
     CashFlowAnalytics analytics();
 }

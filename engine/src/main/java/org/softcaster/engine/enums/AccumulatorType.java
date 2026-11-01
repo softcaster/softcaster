@@ -7,8 +7,8 @@ package org.softcaster.engine.enums;
  * decumulator), il knock-in dalla parte opposta.
  */
 public enum AccumulatorType implements IdentifiableEnum {
-    ACCUMULATOR(1, "ACCUMULATOR", "Accumulator (buys at strike, KO above)", 1),
-    DECUMULATOR(2, "DECUMULATOR", "Decumulator (sells at strike, KO below)", -1);
+    ACCUMULATOR(1, "ACCUMULATOR", "Accumulator", 1), // compra allo strike, KO sopra
+    DECUMULATOR(2, "DECUMULATOR", "Decumulator", -1); // vende allo strike, KO sotto
 
     private final int id;
     private final String code;

@@ -37,7 +37,7 @@ public abstract class AccumulatorTxnProcessor extends AbstractTxnProcessor imple
     public void process(FinancialTxn txn, PositionDetail position) {
 
         if (!(Hibernate.unproxy(txn.getMasterData()) instanceof AccumulatorMasterData amd)) {
-            throw new TxnProcessingException("Invalid processor: " + txn.getMasterData().getCode() + " non e' un accumulator");
+            throw new TxnProcessingException("Invalid processor: " + txn.getMasterData().getCode() + " is not an accumulator");
         }
 
         ProcInputData input = new ProcInputData();

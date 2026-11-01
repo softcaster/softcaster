@@ -1,9 +1,14 @@
 package org.softcaster.easy_pricer_srv.services;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import org.hibernate.Hibernate;
+import org.softcaster.core.data.FinancialTxn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.AccumulatorFixing;
@@ -22,10 +27,13 @@ import org.softcaster.easy_pricer_mds_core.dto.AccumulatorPricingResponse;
 import org.softcaster.easy_pricer_srv.dto.AccumulatorDealRequest;
 import org.softcaster.easy_pricer_srv.dto.AccumulatorDealResponse;
 import org.softcaster.easy_pricer_srv.dto.AccumulatorDto;
+import org.softcaster.engine.cashflow.AccumulatorFixingDate;
+import org.softcaster.engine.cashflow.AccumulatorScheduleGenerator;
 import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.AccumulatorType;
 import org.softcaster.engine.enums.BarrierObservation;
 import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.GuaranteeType;
 import org.softcaster.engine.enums.KnockInEffect;
 import org.softcaster.engine.enums.SettlementType;
 import org.softcaster.engine.enums.TxnSide;
@@ -52,6 +60,10 @@ public class AccumulatorDealService {
     private static final List<String> ASSET_CLASSES = List.of(
             AccumulatorMasterData.FX_ASSET_CLASS, AccumulatorMasterData.COMMODITY_ASSET_CLASS);
 
+    private final AccumulatorScheduleGenerator scheduleGenerator = new AccumulatorScheduleGenerator();
+
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
     private TransactionTemplate transactionTemplate;
     @Autowired
@@ -100,9 +112,8 @@ public class AccumulatorDealService {
             TxnSide side = TxnSide.fromCode(require(request.side, "side"));
             require(request.counterpartyId, "counterpartyId");
             require(request.positionMdId, "positionMdId");
-            double premium = request.premium == null ? 0. : request.premium;
-
             AccumulatorMasterData amd = accumulatorDAO.create(build(request));
+            double premium = premium(request, amd);
 
             FinancialTxnDto txn = new FinancialTxnDto(0, amd.getDescription(),
                     request.counterpartyId, null, null,
@@ -120,6 +131,68 @@ public class AccumulatorDealService {
     }
 
     /**
+     * Modifica di un deal registrato: termini e calendario dell'anagrafica
+     * (stesso id; il codice cambia col sottostante) e transazione (PENDING
+     * aggiornata, EXECUTED -> TO_AMEND con storno e nuova transazione). Le
+     * rilevazioni gia' registrate restano sui fixing con la stessa data; la
+     * asset class (cambio o commodity) non cambia.
+     */
+    public AccumulatorDealResponse amend(Integer txnId, AccumulatorDealRequest request) {
+        return transactionTemplate.execute(status -> {
+            TxnSide side = TxnSide.fromCode(require(request.side, "side"));
+            require(request.counterpartyId, "counterpartyId");
+            require(request.positionMdId, "positionMdId");
+            FinancialTxn txn = financialTxnService.findAmendable(txnId);
+            if (!(Hibernate.unproxy(txn.getMasterData()) instanceof AccumulatorMasterData)) {
+                throw new IllegalArgumentException("Trade " + txnId + " is not an accumulator");
+            }
+            AccumulatorMasterData amd = (AccumulatorMasterData) Hibernate.unproxy(
+                    accumulatorDAO.getById(txn.getMasterData().getIdMasterData()));
+            String assetClass = amd.getAssetClass().getCode();
+            // dati non presenti nel form: restano quelli del contratto
+            if (request.spotLag == null) {
+                request.spotLag = amd.getBusinessDays();
+            }
+            if (request.fixingTime == null) {
+                request.fixingTime = amd.getFixingTime();
+                request.fixingTimeZone = amd.getFixingTimeZone();
+            }
+            // descrizione generata dai vecchi termini: si rigenera
+            if (amd.getDescription().equals(request.description) && amd.getDescription().equals(description(amd))) {
+                request.description = null;
+            }
+
+            Map<java.sql.Date, AccumulatorFixing> recorded = new HashMap<>();
+            amd.getFixings().stream()
+                    .filter(f -> f.getFixingPrice() != null || f.getAccumulatedQuantity() != null)
+                    .forEach(f -> recorded.put(f.getFixingDate(), f));
+            // calendario sostituito: prima le cancellazioni
+            amd.getFixings().clear();
+            entityManager.flush();
+            fill(amd, request);
+            if (!assetClass.equals(amd.getAssetClass().getCode())) {
+                throw new IllegalArgumentException("The underlying of " + amd.getCode() + " must stay a "
+                        + (AccumulatorMasterData.FX_ASSET_CLASS.equals(assetClass) ? "currency pair" : "commodity future"));
+            }
+            for (AccumulatorFixing f : amd.getFixings()) {
+                AccumulatorFixing old = recorded.get(f.getFixingDate());
+                if (old != null) {
+                    f.setFixingPrice(old.getFixingPrice());
+                    f.setAccumulatedQuantity(old.getAccumulatedQuantity());
+                }
+            }
+            amd.setCode(amd.contractCode());
+            entityManager.flush();
+
+            double premium = premium(request, amd);
+            financialTxnService.amendOtcDeal(txn, amd.getDescription(), side, request.counterpartyId,
+                    request.positionMdId, tradeDate(request), 1., premium);
+            return new AccumulatorDealResponse(AccumulatorDto.of(amd, true), side.getCode(), 1., premium,
+                    valuationAtBooking(amd, request));
+        });
+    }
+
+    /**
      * Valutazione alla data dell'operazione, informativa: senza volatilita'
      * (indicata o da superficie) o curve il deal resta registrato senza
      * valutazione.
@@ -129,7 +202,7 @@ public class AccumulatorDealService {
             return accumulatorCalculator.accumulatorValuation(amd, tradeDate(request), request.spot,
                     request.volatility, request.domesticRCurve, request.foreignRCurve, request.paths);
         } catch (IllegalArgumentException | NoSuchElementException ex) {
-            log.warn("Accumulator {} registrato senza valutazione: {}", amd.getCode(), ex.getMessage());
+            log.warn("Accumulator {} booked without valuation: {}", amd.getCode(), ex.getMessage());
             return null;
         }
     }
@@ -154,13 +227,22 @@ public class AccumulatorDealService {
      * future su commodity -> CMA (valuta del future).
      */
     private AccumulatorMasterData build(AccumulatorDealRequest r) {
+        AccumulatorMasterData amd = new AccumulatorMasterData();
+        fill(amd, r);
+        return amd;
+    }
+
+    /**
+     * Termini e calendario della richiesta su un contratto nuovo o registrato
+     * (i fixing si aggiungono: per un contratto registrato vanno tolti prima).
+     */
+    private void fill(AccumulatorMasterData amd, AccumulatorDealRequest r) {
         MasterData underlying = masterDataDAO.findByCode(require(r.underlyingCode, "underlyingCode"));
         if (underlying == null) {
-            throw new NoSuchElementException("Sottostante non trovato: " + r.underlyingCode);
+            throw new NoSuchElementException("Underlying not found: " + r.underlyingCode);
         }
         underlying = (MasterData) Hibernate.unproxy(underlying);
 
-        AccumulatorMasterData amd = new AccumulatorMasterData();
         amd.setUnderlying(underlying);
         if (underlying instanceof ForexMasterData pair) {
             amd.setAssetClass(assetClassDAO.findByCode(AccumulatorMasterData.FX_ASSET_CLASS));
@@ -169,8 +251,8 @@ public class AccumulatorDealService {
             amd.setAssetClass(assetClassDAO.findByCode(AccumulatorMasterData.COMMODITY_ASSET_CLASS));
             amd.setCurrency(underlying.getCurrency());
         } else {
-            throw new IllegalArgumentException("Sottostante " + underlying.getCode()
-                    + " non gestito: serve una coppia di cambi o un future su commodity");
+            throw new IllegalArgumentException("Underlying " + underlying.getCode()
+                    + " not supported: a currency pair or a commodity future is required");
         }
 
         amd.setAccumulatorType(AccumulatorType.fromCode(require(r.accumulatorType, "accumulatorType")));
@@ -183,32 +265,82 @@ public class AccumulatorDealService {
         amd.setKiBarrier(r.kiBarrier);
         amd.setKiEffect(r.kiEffect == null || r.kiEffect.isBlank() ? null : KnockInEffect.fromCode(r.kiEffect));
         amd.setLeverage(r.leverage == null ? 1. : r.leverage);
-        amd.setDailyQuantity(require(r.dailyQuantity, "dailyQuantity"));
         LocalDate first = require(r.firstFixingDate, "firstFixingDate");
         LocalDate last = require(r.lastFixingDate, "lastFixingDate");
         amd.setFirstFixingDate(java.sql.Date.valueOf(first));
         amd.setLastFixingDate(java.sql.Date.valueOf(last));
-        amd.setGuaranteedFixings(r.guaranteedFixings == null ? 0 : r.guaranteedFixings);
+        int guaranteedPeriods = r.guaranteedPeriods == null ? 0 : r.guaranteedPeriods;
+        if (guaranteedPeriods < 0) {
+            throw new IllegalArgumentException("Negative guaranteedPeriods");
+        }
+        amd.setGuaranteedPeriods(guaranteedPeriods);
+        if (guaranteedPeriods == 0) {
+            if (r.guaranteeType != null && !r.guaranteeType.isBlank() && !"NONE".equals(r.guaranteeType)) {
+                throw new IllegalArgumentException("guaranteeType " + r.guaranteeType + " without guaranteed periods");
+            }
+            amd.setGuaranteeType(GuaranteeType.NONE);
+        } else {
+            GuaranteeType type = r.guaranteeType == null || r.guaranteeType.isBlank()
+                    ? GuaranteeType.LEVERAGED : GuaranteeType.fromCode(r.guaranteeType);
+            if (type == GuaranteeType.NONE) {
+                throw new IllegalArgumentException("guaranteeType NONE with " + guaranteedPeriods + " guaranteed periods");
+            }
+            amd.setGuaranteeType(type);
+        }
         amd.setKoAccrual(Boolean.TRUE.equals(r.koAccrual));
         amd.setFixingTime(r.fixingTime);
         amd.setFixingTimeZone(r.fixingTimeZone);
 
         LocalDate tradeDate = tradeDate(r);
-        if (!first.isAfter(tradeDate)) {
-            throw new IllegalArgumentException("Il primo fixing (" + first + ") deve seguire la data dell'operazione (" + tradeDate + ")");
+        // il primo fixing puo' essere il giorno dell'operazione (fixing al cut, dopo la conclusione)
+        if (first.isBefore(tradeDate)) {
+            throw new IllegalArgumentException("The first fixing (" + first + ") is before the trade date (" + tradeDate + ")");
         }
         int spotLag = r.spotLag != null ? r.spotLag
                 : underlying.getBusinessDays() != null ? underlying.getBusinessDays() : 2;
-        List<AccumulatorFixing> fixings = AccumulatorCalculator.schedule(first, last, frequency, spotLag,
-                new Calendar(amd.getCurrencyList()));
-        amd.getFixings().addAll(fixings);
+        // fixing sul calendario della valuta del fixing (base della coppia), regolamento su entrambe
+        Calendar settlementCalendar = new Calendar(amd.getCurrencyList());
+        Calendar fixingCalendar = underlying instanceof ForexMasterData pair ? new Calendar(pair.getBcy()) : settlementCalendar;
+        List<AccumulatorFixingDate> schedule = scheduleGenerator.generate(first, last, frequency, spotLag,
+                fixingCalendar, settlementCalendar);
+        schedule.forEach(d -> amd.getFixings().add(new AccumulatorFixing(d.fixingDate(), d.settlementDate())));
+        amd.setDailyQuantity(dailyQuantity(r, schedule.size()));
 
         amd.setIssueDate(java.sql.Date.valueOf(tradeDate));
-        amd.setMaturityDate(fixings.get(fixings.size() - 1).getSettlementDate());
+        amd.setMaturityDate(java.sql.Date.valueOf(schedule.get(schedule.size() - 1).settlementDate()));
         amd.setBusinessDays(spotLag);
         amd.setMultiplier(1.);
         amd.setDescription(r.description != null && !r.description.isBlank() ? r.description : description(amd));
-        return amd;
+    }
+
+    /**
+     * Quantita' per fixing: indicata (dailyQuantity) oppure quantita' massima
+     * totale senza leva divisa per il numero di fixing (maxQuantity 100.000 su
+     * 22 fixing -> 4.545,45).
+     */
+    private static double dailyQuantity(AccumulatorDealRequest r, int fixings) {
+        boolean daily = r.dailyQuantity != null && r.dailyQuantity > 0;
+        boolean max = r.maxQuantity != null && r.maxQuantity > 0;
+        if (daily == max) {
+            throw new IllegalArgumentException("Provide either the quantity per fixing (dailyQuantity) or the maximum quantity (maxQuantity)");
+        }
+        return daily ? r.dailyQuantity : r.maxQuantity / fixings;
+    }
+
+    /**
+     * Premio iniziale per contratto: importo (premium) oppure percentuale
+     * (premiumPercent) dell'importo massimo nella seconda valuta = quantita'
+     * massima x strike (-0,282713% di 115.000 USD -> -325,12 USD).
+     */
+    private static double premium(AccumulatorDealRequest r, AccumulatorMasterData amd) {
+        boolean amount = r.premium != null && r.premium != 0.;
+        if (r.premiumPercent == null) {
+            return amount ? r.premium : 0.;
+        }
+        if (amount) {
+            throw new IllegalArgumentException("Provide the premium either as an amount (premium) or as a percentage (premiumPercent)");
+        }
+        return r.premiumPercent / 100. * amd.getMaxQuantity() * amd.getStrike();
     }
 
     private static String description(AccumulatorMasterData amd) {
@@ -224,7 +356,7 @@ public class AccumulatorDealService {
 
     private static <T> T require(T value, String name) {
         if (value == null || (value instanceof String s && s.isBlank())) {
-            throw new IllegalArgumentException("Campo obbligatorio mancante: " + name);
+            throw new IllegalArgumentException("Missing required field: " + name);
         }
         return value;
     }

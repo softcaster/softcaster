@@ -2,7 +2,6 @@ package org.softcaster.easy_pricer_mds_core.calc;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -16,7 +15,6 @@ import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntityDAO;
-import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.dto.AccumulatorPricingResponse;
 import org.softcaster.engine.analytics.AccumulatorPricer;
@@ -26,7 +24,6 @@ import org.softcaster.engine.dto.AccumulatorInput;
 import org.softcaster.engine.dto.AccumulatorPendingSettlement;
 import org.softcaster.engine.dto.AccumulatorResult;
 import org.softcaster.engine.enums.CurveRole;
-import org.softcaster.engine.enums.Frequency;
 import org.softcaster.provider.enums.RequestType;
 
 /**
@@ -42,6 +39,8 @@ import org.softcaster.provider.enums.RequestType;
  *
  * Calendario alla data di valutazione V:
  *  - fixing dopo V: futuri, simulati;
+ *  - fixing a V non ancora rilevato (es. primo fixing = data dell'operazione):
+ *    futuro con tempo 0, al forward corrente;
  *  - fixing fino a V rilevati e regolati dopo V: quantita' da regolare;
  *  - fixing fino a V rilevati e gia' regolati: fuori dalla valutazione;
  *  - fixing fino a V non rilevati: errore (vanno registrati prima).
@@ -58,7 +57,7 @@ import org.softcaster.provider.enums.RequestType;
  */
 public class AccumulatorCalculator {
 
-    public static final String MODEL = "Monte Carlo lognormale (GK/Black)";
+    public static final String MODEL = "Monte Carlo lognormal (GK/Black)";
 
     private final AcDcBcyLinkDAO acDcBcyLinkDAO;
     private final YieldCurveEntityDAO yieldCurveEntityDAO;
@@ -102,72 +101,8 @@ public class AccumulatorCalculator {
         }
         return volatilityProvider.surface(underlying.getIdMasterData(), valuationDate)
                 .map(s -> new Volatility(null, s))
-                .orElseThrow(() -> new IllegalArgumentException("Volatilita' mancante: indicare volatility o caricare "
-                        + "la superficie di volatilita' di " + underlying.getCode() + " al " + valuationDate));
-    }
-
-    // ------------------------------------------------------------------------
-    // -- Calendario dei fixing
-    // ------------------------------------------------------------------------
-
-    /**
-     * Calendario dei fixing: tutti i giorni lavorativi tra la prima e
-     * l'ultima data. Il regolamento di un periodo e' l'ultimo fixing del
-     * periodo + spot lag giorni lavorativi. Periodi: il giorno (DAILY), la
-     * settimana ISO (WEEKLY), blocchi di mesi dal primo fixing (MONTHLY,
-     * QUARTERLY...), tutto il contratto (NONE).
-     *
-     * @param calendar festivita' delle valute del sottostante e di regolamento
-     */
-    public static List<AccumulatorFixing> schedule(LocalDate firstFixing, LocalDate lastFixing, Frequency frequency,
-                                                   int spotLag, Calendar calendar) {
-        Objects.requireNonNull(firstFixing, "firstFixing");
-        Objects.requireNonNull(lastFixing, "lastFixing");
-        Objects.requireNonNull(frequency, "frequency");
-        if (lastFixing.isBefore(firstFixing)) {
-            throw new IllegalArgumentException("Ultimo fixing precedente al primo");
-        }
-        if (frequency == Frequency.CUSTOM) {
-            throw new IllegalArgumentException("Frequenza di regolamento CUSTOM non gestita");
-        }
-
-        List<LocalDate> dates = new ArrayList<>();
-        for (LocalDate d = firstFixing; !d.isAfter(lastFixing); d = d.plusDays(1)) {
-            if (calendar.isBusinessDay(d)) {
-                dates.add(d);
-            }
-        }
-        if (dates.isEmpty()) {
-            throw new IllegalArgumentException("Nessun giorno lavorativo tra " + firstFixing + " e " + lastFixing);
-        }
-
-        List<AccumulatorFixing> fixings = new ArrayList<>();
-        int periodStart = 0;
-        for (int i = 0; i < dates.size(); i++) {
-            boolean lastOfPeriod = i == dates.size() - 1
-                    || period(dates.get(i + 1), firstFixing, frequency) != period(dates.get(i), firstFixing, frequency);
-            if (lastOfPeriod) {
-                LocalDate settlement = calendar.getNextBusinessDate(dates.get(i), spotLag);
-                for (int j = periodStart; j <= i; j++) {
-                    fixings.add(new AccumulatorFixing(dates.get(j), settlement));
-                }
-                periodStart = i + 1;
-            }
-        }
-        return fixings;
-    }
-
-    /**
-     * Indice del periodo di regolamento di una data.
-     */
-    private static long period(LocalDate date, LocalDate first, Frequency frequency) {
-        return switch (frequency) {
-            case DAILY -> date.toEpochDay();
-            case WEEKLY -> date.get(IsoFields.WEEK_BASED_YEAR) * 100L + date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
-            case NONE -> 0L;
-            default -> ChronoUnit.MONTHS.between(first.withDayOfMonth(1), date.withDayOfMonth(1))
-                    / (12 / frequency.getYearFraction());
-        };
+                .orElseThrow(() -> new IllegalArgumentException("Missing volatility: provide volatility or load "
+                        + "the volatility surface of " + underlying.getCode() + " at " + valuationDate));
     }
 
     // ------------------------------------------------------------------------
@@ -219,7 +154,9 @@ public class AccumulatorCalculator {
             AccumulatorFixing f = schedule.get(i);
             LocalDate fixingDate = f.getFixingLocalDate();
             LocalDate settlementDate = f.getSettlementLocalDate();
-            if (fixingDate.isAfter(valuationDate)) {
+            // fixing del giorno non ancora rilevato: futuro con tempo 0 (al forward corrente)
+            boolean pendingToday = fixingDate.equals(valuationDate) && !f.isFixed();
+            if (fixingDate.isAfter(valuationDate) || pendingToday) {
                 if (amd.isKnockedOut()) {
                     continue;
                 }
@@ -242,13 +179,13 @@ public class AccumulatorCalculator {
             }
         }
         if (!missing.isEmpty()) {
-            throw new IllegalArgumentException("Accumulator " + amd.getCode() + ": fixing non rilevati al "
+            throw new IllegalArgumentException("Accumulator " + amd.getCode() + ": fixings not recorded at "
                     + valuationDate + " " + missing);
         }
 
         AccumulatorInput input = new AccumulatorInput(amd.getCode(), valuationDate, amd.getAccumulatorType(), amd.getStrike(),
                 amd.getKoBarrier(), amd.getKoObservation(), amd.getKiBarrier(), amd.getKiEffect(),
-                amd.getLeverage(), amd.getDailyQuantity(), amd.getGuaranteedFixings(),
+                amd.getLeverage(), amd.getDailyQuantity(), amd.getGuaranteedFixings(), amd.getGuaranteeType(),
                 Boolean.TRUE.equals(amd.getKoAccrual()), amd.isKnockedIn(), s, future, pending,
                 paths != null && paths > 1 ? paths : AccumulatorInput.DEFAULT_PATHS, AccumulatorInput.DEFAULT_SEED);
         return new Prepared(input, vol == null ? "" : vol.source());
@@ -325,8 +262,8 @@ public class AccumulatorCalculator {
     private String discountCurveCode(AccumulatorMasterData amd) {
         AcDcBcyLink link = acDcBcyLinkDAO.find(amd.getAssetClass().getIdAssetClass(),
                 amd.getCurrency().getIdCurrency(), CurveRole.DISCOUNT)
-                .orElseThrow(() -> new IllegalArgumentException("Curva di sconto mancante (domesticRCurve) e nessuna curva "
-                        + "DISCOUNT configurata per " + amd.getAssetClass().getCode() + "/" + amd.getCurrency().getIsoCode()));
+                .orElseThrow(() -> new IllegalArgumentException("Missing discount curve (domesticRCurve) and no "
+                        + "DISCOUNT curve configured for " + amd.getAssetClass().getCode() + "/" + amd.getCurrency().getIsoCode()));
         return link.isSpreadCurve()
                 ? spreadCurveEntityDAO.findByIdWithBase(link.getSpreadCurve()).getCode()
                 : yieldCurveEntityDAO.findByIdYieldCurve(link.getCurveId()).getCode();
@@ -337,22 +274,22 @@ public class AccumulatorCalculator {
                 ? price
                 : marketDataService.getSpotPrice(underlying.getIdMasterData(), RequestType.MIDDLE);
         if (p <= 0) {
-            throw new IllegalArgumentException("Prezzo del sottostante " + underlying.getCode() + " mancante");
+            throw new IllegalArgumentException("Missing price of underlying " + underlying.getCode());
         }
         return p;
     }
 
     private DiscountCurve loadCurve(String curveCode, LocalDate valuationDate) {
         if (blank(curveCode)) {
-            throw new IllegalArgumentException("Codice curva mancante");
+            throw new IllegalArgumentException("Missing curve code");
         }
         DiscountCurve curve = marketDataService.getDiscountCurve(curveCode);
         if (curve == null) {
-            throw new NoSuchElementException("Curva non trovata: " + curveCode);
+            throw new NoSuchElementException("Curve not found: " + curveCode);
         }
         if (curve.getValuationDate().isAfter(valuationDate)) {
-            throw new IllegalArgumentException("La curva " + curveCode + " ha data "
-                    + curve.getValuationDate() + ", successiva alla valuationDate " + valuationDate);
+            throw new IllegalArgumentException("Curve " + curveCode + " is dated "
+                    + curve.getValuationDate() + ", after valuationDate " + valuationDate);
         }
         return curve;
     }

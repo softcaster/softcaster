@@ -156,7 +156,7 @@ public class OptionCalculator {
         if (underlying instanceof SecurityMasterData bond) {
             return getBondOptionInput(somd, bond, valuationDate, underlyingPrice, curveCode, rate, volatility);
         }
-        throw new IllegalArgumentException("Sottostante " + underlying.getCode() + " non gestito per " + omd.getCode());
+        throw new IllegalArgumentException("Underlying " + underlying.getCode() + " not supported for " + omd.getCode());
     }
 
     /**
@@ -181,7 +181,7 @@ public class OptionCalculator {
             FxFutureMasterData fmd = fxFutureMasterDataDAO.getByCodeOrIsin(underlying.getCode());
             curve = loadCurve(fmd.getUnderlying().getCcyIrc(), valuationDate);
         } else {
-            throw new IllegalArgumentException("Curva o tasso di sconto del premio mancante (domesticRCurve / domesticRate) per "
+            throw new IllegalArgumentException("Missing premium discount curve or rate (domesticRCurve / domesticRate) for "
                     + omd.getCode());
         }
 
@@ -301,8 +301,8 @@ public class OptionCalculator {
             // senza volatilita' ne' premio: superficie del sottostante
             Optional<VolatilityProvider.SurfaceData> surface = surface(request.isin, valuationDate);
             volatility = surfaceVolatility(request.isin, valuationDate).orElseThrow(() -> new IllegalArgumentException(
-                    "Volatilita' (volatility) o premio di mercato (optionPrice) mancante, e nessuna superficie di "
-                    + "volatilita' per il sottostante al " + valuationDate));
+                    "Missing volatility (volatility) or market premium (optionPrice), and no "
+                    + "volatility surface for the underlying at " + valuationDate));
             volatilitySource = surface.map(VolatilityProvider.SurfaceData::describe).orElse("surface");
         }
 
@@ -347,7 +347,7 @@ public class OptionCalculator {
             try {
                 return spotOptionMasterDataDAO.getByCodeOrIsin(code);
             } catch (NoSuchElementException ex2) {
-                throw new NoSuchElementException("Opzione non trovata: " + code);
+                throw new NoSuchElementException("Option not found: " + code);
             }
         }
     }
@@ -360,7 +360,7 @@ public class OptionCalculator {
                 ? price
                 : marketDataService.getSpotPrice(underlying.getIdMasterData(), RequestType.MIDDLE);
         if (p <= 0) {
-            throw new IllegalArgumentException("Prezzo del sottostante " + underlying.getCode() + " mancante");
+            throw new IllegalArgumentException("Missing price of underlying " + underlying.getCode());
         }
         return p;
     }
@@ -372,10 +372,10 @@ public class OptionCalculator {
      */
     private static OptionContract contract(OptionMasterData omd) {
         if (omd.getExerciseStyle() == ExerciseStyle.BERMUDAN) {
-            throw new IllegalArgumentException("Opzione bermudan senza date di esercizio in anagrafica: " + omd.getCode());
+            throw new IllegalArgumentException("Bermudan option without exercise dates in master data: " + omd.getCode());
         }
         if (omd.getStrike() == null || omd.getExpiryLocalDate() == null) {
-            throw new IllegalArgumentException("Strike o scadenza mancanti per " + omd.getCode());
+            throw new IllegalArgumentException("Missing strike or expiry for " + omd.getCode());
         }
         double contractValue = omd.getContractValue() != null && omd.getContractValue() > 0 ? omd.getContractValue() : 1.0;
         double multiplier = omd.getMultiplier() != null && omd.getMultiplier() > 0 ? omd.getMultiplier() : 1.0;
@@ -386,7 +386,7 @@ public class OptionCalculator {
 
     private static PremiumStyle premiumStyle(OptionMasterData omd) {
         if (omd.getPremiumStyle() == null) {
-            throw new IllegalArgumentException("Stile del premio mancante per " + omd.getCode());
+            throw new IllegalArgumentException("Missing premium style for " + omd.getCode());
         }
         return omd.getPremiumStyle();
     }
@@ -397,15 +397,15 @@ public class OptionCalculator {
      */
     private DiscountCurve loadCurve(String curveCode, LocalDate valuationDate) {
         if (curveCode == null || curveCode.isBlank()) {
-            throw new IllegalArgumentException("Codice curva mancante");
+            throw new IllegalArgumentException("Missing curve code");
         }
         DiscountCurve curve = marketDataService.getDiscountCurve(curveCode);
         if (curve == null) {
-            throw new NoSuchElementException("Curva non trovata: " + curveCode);
+            throw new NoSuchElementException("Curve not found: " + curveCode);
         }
         if (curve.getValuationDate().isAfter(valuationDate)) {
-            throw new IllegalArgumentException("La curva " + curveCode + " ha data "
-                    + curve.getValuationDate() + ", successiva alla valuationDate " + valuationDate);
+            throw new IllegalArgumentException("Curve " + curveCode + " is dated "
+                    + curve.getValuationDate() + ", after valuationDate " + valuationDate);
         }
         return curve;
     }

@@ -5,6 +5,7 @@
 package org.softcaster.easy_pricer_mtm.evaluators;
 
 import org.softcaster.core.data.PositionDetail;
+import org.softcaster.easy_pricer_mds_core.PnlCalc;
 
 /**
  *
@@ -12,20 +13,13 @@ import org.softcaster.core.data.PositionDetail;
  */
 public class AbstractEvaluator {
     
+    /**
+     * P&L non realizzato sulla quantita' netta, con la stessa formula del
+     * processor (PnlCalc): posizione lunga contro il prezzo medio di acquisto,
+     * corta contro il prezzo medio di vendita.
+     */
     protected double calcUnrealizedPL(double mktPrice, PositionDetail position) {
-       
-        // Calcolo solo su qty buy rimanente o potenziale
-        double capacity = position.getBuyQty() - position.getSellQty();
-        if (capacity < 0.) {
-            capacity *= (-1.);
-        }
-
-        double avgBuyPrice = mktPrice;
-        if (position.getBuyQty() > 0) {
-            avgBuyPrice = position.getNotionalValueBuy() / position.getBuyQty();
-        }
-        double unrealizedPnL = (mktPrice - avgBuyPrice) * capacity;
-        
-        return unrealizedPnL;
+        return PnlCalc.unrealized(position.getBuyQty(), position.getSellQty(),
+                position.getNotionalValueBuy(), position.getNotionalValueSell(), mktPrice);
     }
 }

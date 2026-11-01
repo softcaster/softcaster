@@ -20,17 +20,20 @@ public class ForwardScheduleGenerator implements ScheduleGenerator {
     @Override
     public List<PaymentPeriod> generate(LocalDate effectiveDate, LocalDate terminationDate, Frequency frequency, BusinessDayConvention bdc, DaycountBasis daycount, HolidayCalendar calendar) {
         if (!frequency.isCouponFrequency()) {
-            throw new IllegalArgumentException("Frequenza " + frequency.getCode() + " non ammessa per un piano cedolare");
+            throw new IllegalArgumentException("Frequency " + frequency.getCode() + " not allowed for a coupon schedule");
         }
         List<PaymentPeriod> periods = new ArrayList<>();
         LocalDate currentStart = effectiveDate;
         int monthsToStep = 12 / frequency.getYearFraction();
+        int step = 0;
 
         // Ciclo in avanti: finché la fine del periodo non raggiunge la scadenza
         while (currentStart.isBefore(terminationDate)) {
-            
-            // Calcoliamo la fine teorica aggiungendo i mesi
-            LocalDate theoreticalEnd = currentStart.plusMonths(monthsToStep);
+
+            // Fine teorica dalla data iniziale (non dalla precedente): dopo un fine mese
+            // corto (28/2) il giorno torna quello originale (30/3, non 28/3)
+            step++;
+            LocalDate theoreticalEnd = effectiveDate.plusMonths((long) monthsToStep * step);
             
             // Se superiamo la scadenza finale, la tagliamo (gestione stub finale)
             LocalDate actualEnd = theoreticalEnd.isAfter(terminationDate) ? terminationDate : theoreticalEnd;

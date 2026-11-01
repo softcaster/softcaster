@@ -14,12 +14,12 @@ import org.softcaster.engine.utils.DayCountCalculators;
  */
 public enum DaycountBasis implements IdentifiableEnum {
 
-    NASD_30_360(1, "NASD_30_360", "30 days per month / 360 days per year. Following NASD rules for end-of-month adjustments", DayCountCalculators.NASD_30_360),
-    ACT_360(2, "ACT_360", "Actual number of days between dates / 360 days per year. Common in money market instruments", DayCountCalculators.ACT_360),
-    ACT_365(3, "ACT_365", "Actual number of days between dates / 365 days per year (Fixed year)", DayCountCalculators.ACT_365),
-    ACT_ACT_ISDA(4, "ACT_ACT_ISDA", "Actual/Actual ISDA - Standard for derivatives", DayCountCalculators.ACT_ACT_ISDA),
-    ACT_ACT_ICMA(5, "ACT_ACT_ICMA", "Actual/Actual ICMA - Standard for government bonds", DayCountCalculators.ACT_ACT_ICMA),
-    EUR_30_360(6, "EUR_30_360", "30/360 Eurobond\", \"30 days per month / 360 days per year. Following European Bond basis conventions", DayCountCalculators.EUR_30_360);
+    NASD_30_360(1, "NASD_30_360", "30/360 US (NASD)", DayCountCalculators.NASD_30_360), // 30 giorni al mese / 360, fine mese secondo le regole NASD
+    ACT_360(2, "ACT_360", "ACT/360", DayCountCalculators.ACT_360), // giorni effettivi / 360, mercato monetario
+    ACT_365(3, "ACT_365", "ACT/365 Fixed", DayCountCalculators.ACT_365), // giorni effettivi / 365 (anno fisso)
+    ACT_ACT_ISDA(4, "ACT_ACT_ISDA", "ACT/ACT ISDA", DayCountCalculators.ACT_ACT_ISDA), // standard dei derivati
+    ACT_ACT_ICMA(5, "ACT_ACT_ICMA", "ACT/ACT ICMA", DayCountCalculators.ACT_ACT_ICMA), // standard dei titoli di stato
+    EUR_30_360(6, "EUR_30_360", "30/360 European", DayCountCalculators.EUR_30_360); // 30 giorni al mese / 360, convenzione Eurobond
 
     private final int id;
     private final String code;

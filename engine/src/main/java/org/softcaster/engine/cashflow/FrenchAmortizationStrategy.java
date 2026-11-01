@@ -55,7 +55,12 @@ public class FrenchAmortizationStrategy implements AmortizationStrategy {
         return flows;
     }
 
+    /**
+     * Mesi del periodo arrotondati: ChronoUnit.MONTHS conta i mesi interi e
+     * a fine mese da' 0 (31/10 -> 30/11), con tasso periodico nullo e rata NaN.
+     */
     private int getMonthsBetween(PaymentPeriod p) {
-        return (int) java.time.temporal.ChronoUnit.MONTHS.between(p.accrualStart(), p.accrualEnd());
+        long days = java.time.temporal.ChronoUnit.DAYS.between(p.accrualStart(), p.accrualEnd());
+        return (int) Math.max(1, Math.round(days / (365.25 / 12)));
     }
 }

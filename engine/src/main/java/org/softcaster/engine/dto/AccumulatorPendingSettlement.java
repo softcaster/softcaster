@@ -15,10 +15,10 @@ public record AccumulatorPendingSettlement(
 
     public AccumulatorPendingSettlement {
         if (quantity < 0) {
-            throw new IllegalArgumentException("quantity deve essere >= 0");
+            throw new IllegalArgumentException("quantity must be >= 0");
         }
         if (settlementForward <= 0 || discountFactor <= 0) {
-            throw new IllegalArgumentException("settlementForward e discountFactor devono essere > 0");
+            throw new IllegalArgumentException("settlementForward and discountFactor must be > 0");
         }
     }
 }

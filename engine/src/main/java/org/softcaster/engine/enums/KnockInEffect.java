@@ -6,7 +6,7 @@ package org.softcaster.engine.enums;
  * contratto (prima del knock-in non si accumula).
  */
 public enum KnockInEffect implements IdentifiableEnum {
-    LEVERAGE(1, "LEVERAGE", "Activates the leverage on unfavourable fixings"),
+    LEVERAGE(1, "LEVERAGE", "Activates the leverage"),
     CONTRACT(2, "CONTRACT", "Activates the contract");
 
     private final int id;

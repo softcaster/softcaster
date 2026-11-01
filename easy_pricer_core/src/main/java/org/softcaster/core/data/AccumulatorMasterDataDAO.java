@@ -24,10 +24,10 @@ public class AccumulatorMasterDataDAO extends AbstractMasterDataDAO<AccumulatorM
     @Transactional
     public AccumulatorMasterData create(AccumulatorMasterData amd) {
         if (amd.getIdMasterData() != null) {
-            throw new IllegalArgumentException("Contratto " + amd.getCode() + " gia' salvato");
+            throw new IllegalArgumentException("Contract " + amd.getCode() + " already saved");
         }
         if (amd.getFixings().isEmpty()) {
-            throw new IllegalArgumentException("Calendario dei fixing vuoto");
+            throw new IllegalArgumentException("Empty fixing schedule");
         }
         amd.setCode("NEW-" + UUID.randomUUID().toString().substring(0, 18));
         AccumulatorMasterData saved = repository.saveAndFlush(amd);
@@ -38,16 +38,16 @@ public class AccumulatorMasterDataDAO extends AbstractMasterDataDAO<AccumulatorM
     @Transactional(readOnly = true)
     public AccumulatorMasterData getByCode(String code) {
         if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("Codice accumulator mancante");
+            throw new IllegalArgumentException("Missing accumulator code");
         }
         return repository.findByCodeWithFixings(code)
-                .orElseThrow(() -> new NoSuchElementException("Accumulator non trovato: " + code));
+                .orElseThrow(() -> new NoSuchElementException("Accumulator not found: " + code));
     }
 
     @Transactional(readOnly = true)
     public AccumulatorMasterData getById(Integer id) {
         return repository.findByIdWithFixings(id)
-                .orElseThrow(() -> new NoSuchElementException("Accumulator non trovato: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Accumulator not found: " + id));
     }
 
     @Transactional(readOnly = true)

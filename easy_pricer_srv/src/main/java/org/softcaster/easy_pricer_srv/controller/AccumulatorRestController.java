@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +42,15 @@ public class AccumulatorRestController {
     @PostMapping(value = "/otc/accumulator/deal", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccumulatorDealResponse> book(@RequestBody AccumulatorDealRequest request) {
         return ResponseEntity.ok(service.book(request));
+    }
+
+    /**
+     * Modifica di un deal registrato (anagrafica e transazione): PENDING
+     * aggiornata, EXECUTED -> TO_AMEND.
+     */
+    @PutMapping(value = "/otc/accumulator/deal/{txnId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AccumulatorDealResponse> amend(@PathVariable("txnId") Integer txnId, @RequestBody AccumulatorDealRequest request) {
+        return ResponseEntity.ok(service.amend(txnId, request));
     }
 
     @GetMapping("/otc/accumulator/r01")

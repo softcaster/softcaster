@@ -27,11 +27,13 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.softcaster.core.data.converters.AccumulatorTypeConverter;
 import org.softcaster.core.data.converters.BarrierObservationConverter;
 import org.softcaster.core.data.converters.FrequencyConverter;
+import org.softcaster.core.data.converters.GuaranteeTypeConverter;
 import org.softcaster.core.data.converters.KnockInEffectConverter;
 import org.softcaster.core.data.converters.SettlementTypeConverter;
 import org.softcaster.engine.enums.AccumulatorType;
 import org.softcaster.engine.enums.BarrierObservation;
 import org.softcaster.engine.enums.Frequency;
+import org.softcaster.engine.enums.GuaranteeType;
 import org.softcaster.engine.enums.KnockInEffect;
 import org.softcaster.engine.enums.SettlementType;
 
@@ -41,7 +43,9 @@ import org.softcaster.engine.enums.SettlementType;
  *
  * A ogni fixing chi detiene il contratto compra (accumulator) o vende
  * (decumulator) dailyQuantity allo strike, leverage volte nei fixing
- * sfavorevoli. Knock-out obbligatorio dalla parte favorevole; knock-in
+ * sfavorevoli. Nei primi guaranteedPeriods periodi di regolamento il
+ * knock-out non e' attivo (garanzia LEVERAGED: leva normale; UNLEVERAGED:
+ * quantita' base su ogni fixing). Knock-out obbligatorio dalla parte favorevole; knock-in
  * facoltativo dalla parte opposta, che attiva la leva o il contratto.
  *
  * Asset class FXA (sottostante una coppia di cambi) o CMA (uno strumento
@@ -118,8 +122,13 @@ public class AccumulatorMasterData extends MasterData {
     @Column(name = "last_fixing_date", nullable = false)
     private java.sql.Date lastFixingDate;
 
-    @Column(name = "guaranteed_fixings", nullable = false)
-    private Integer guaranteedFixings = 0;
+    // primi periodi di regolamento garantiti (knock-out non attivo)
+    @Column(name = "guaranteed_periods", nullable = false)
+    private Integer guaranteedPeriods = 0;
+
+    @Convert(converter = GuaranteeTypeConverter.class)
+    @Column(name = "guarantee_type", nullable = false)
+    private GuaranteeType guaranteeType = GuaranteeType.NONE;
 
     @Column(name = "ko_accrual", nullable = false)
     private Boolean koAccrual = false;
@@ -147,7 +156,7 @@ public class AccumulatorMasterData extends MasterData {
      * codice del sottostante si accorcia per stare nei 25 caratteri.
      */
     public String contractCode() {
-        Objects.requireNonNull(getIdMasterData(), "Contratto non ancora salvato");
+        Objects.requireNonNull(getIdMasterData(), "Contract not saved yet");
         String prefix = getAssetClass().getCode() + "-";
         String suffix = "-" + getIdMasterData();
         String underlyingCode = underlying.getCode();
@@ -161,25 +170,28 @@ public class AccumulatorMasterData extends MasterData {
     @PrePersist
     @PreUpdate
     private void checkContract() {
-        Objects.requireNonNull(underlying, "Accumulator " + label() + ": sottostante mancante");
-        Objects.requireNonNull(accumulatorType, "Accumulator " + label() + ": tipo mancante");
-        Objects.requireNonNull(strike, "Accumulator " + label() + ": strike mancante");
-        Objects.requireNonNull(koBarrier, "Accumulator " + label() + ": barriera di knock-out mancante");
+        Objects.requireNonNull(underlying, "Accumulator " + label() + ": missing underlying");
+        Objects.requireNonNull(accumulatorType, "Accumulator " + label() + ": missing type");
+        Objects.requireNonNull(strike, "Accumulator " + label() + ": missing strike");
+        Objects.requireNonNull(koBarrier, "Accumulator " + label() + ": missing knock-out barrier");
         String assetClass = getAssetClass() == null ? null : getAssetClass().getCode();
         if (FX_ASSET_CLASS.equals(assetClass) && !(Hibernate.unproxy(underlying) instanceof ForexMasterData)) {
-            throw new IllegalStateException("Accumulator " + label() + ": il sottostante " + underlying.getCode()
-                    + " non e' una coppia di cambi");
+            throw new IllegalStateException("Accumulator " + label() + ": underlying " + underlying.getCode()
+                    + " is not a currency pair");
         }
         if (!accumulatorType.isFavourable(koBarrier, strike)) {
-            throw new IllegalStateException("Accumulator " + label() + ": la barriera di knock-out deve stare "
-                    + (accumulatorType == AccumulatorType.ACCUMULATOR ? "sopra" : "sotto") + " lo strike");
+            throw new IllegalStateException("Accumulator " + label() + ": the knock-out barrier must be "
+                    + (accumulatorType == AccumulatorType.ACCUMULATOR ? "above" : "below") + " the strike");
+        }
+        if ((guaranteeType == null || guaranteeType == GuaranteeType.NONE) != (guaranteedPeriods == null || guaranteedPeriods == 0)) {
+            throw new IllegalStateException("Accumulator " + label() + ": guaranteed periods and guarantee type are inconsistent");
         }
         if ((kiBarrier == null) != (kiEffect == null)) {
-            throw new IllegalStateException("Accumulator " + label() + ": livello ed effetto del knock-in vanno indicati insieme");
+            throw new IllegalStateException("Accumulator " + label() + ": knock-in level and effect must be given together");
         }
         if (kiBarrier != null && !accumulatorType.isFavourable(strike, kiBarrier)) {
-            throw new IllegalStateException("Accumulator " + label() + ": la barriera di knock-in deve stare "
-                    + (accumulatorType == AccumulatorType.ACCUMULATOR ? "sotto" : "sopra") + " lo strike");
+            throw new IllegalStateException("Accumulator " + label() + ": the knock-in barrier must be "
+                    + (accumulatorType == AccumulatorType.ACCUMULATOR ? "below" : "above") + " the strike");
         }
     }
 
@@ -327,12 +339,44 @@ public class AccumulatorMasterData extends MasterData {
         return lastFixingDate == null ? null : lastFixingDate.toLocalDate();
     }
 
-    public Integer getGuaranteedFixings() {
-        return guaranteedFixings;
+    public Integer getGuaranteedPeriods() {
+        return guaranteedPeriods;
     }
 
-    public void setGuaranteedFixings(Integer guaranteedFixings) {
-        this.guaranteedFixings = guaranteedFixings;
+    public void setGuaranteedPeriods(Integer guaranteedPeriods) {
+        this.guaranteedPeriods = guaranteedPeriods;
+    }
+
+    public GuaranteeType getGuaranteeType() {
+        return guaranteeType;
+    }
+
+    public void setGuaranteeType(GuaranteeType guaranteeType) {
+        this.guaranteeType = guaranteeType;
+    }
+
+    /**
+     * Fixing garantiti: quelli dei primi guaranteedPeriods periodi di
+     * regolamento del calendario (un periodo = fixing con la stessa data di
+     * regolamento).
+     */
+    public int getGuaranteedFixings() {
+        if (guaranteedPeriods == null || guaranteedPeriods <= 0) {
+            return 0;
+        }
+        int periods = 0;
+        java.sql.Date current = null;
+        for (int i = 0; i < fixings.size(); i++) {
+            java.sql.Date settlement = fixings.get(i).getSettlementDate();
+            if (!settlement.equals(current)) {
+                if (periods == guaranteedPeriods) {
+                    return i;
+                }
+                periods++;
+                current = settlement;
+            }
+        }
+        return fixings.size();
     }
 
     public Boolean getKoAccrual() {

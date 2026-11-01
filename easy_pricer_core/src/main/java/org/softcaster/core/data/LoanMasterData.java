@@ -1,84 +1,141 @@
 package org.softcaster.core.data;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.engine.enums.FeeTiming;
 
+/**
+ * Mutuo OTC: ogni contratto e' un'anagrafica (asset class XRM a tasso fisso,
+ * FRM a tasso variabile con FltLoanMasterData), creata dal deal capture.
+ *
+ * Dal livello cash flow: tasso (interest_rate, punti percentuali), frequenza
+ * delle rate, daycount, tipo di piano (AmortizationSchedule: SAS francese,
+ * SLP italiano, IOL bullet) e piano delle rate (cashFlows). In master_data:
+ * issue_date = erogazione, maturity_date = ultima rata.
+ *
+ * Qui: capitale finanziato, prima rata, rate di preammortamento (solo
+ * interessi), spese (LoanFee: importo o percentuale, una tantum o per rata)
+ * e condizioni di servizio fuori dal prezzo (mora, penale per rata).
+ */
 @Entity
 @Table(name = "loan_master_data")
 @SuppressWarnings("PersistenceUnitPresent")
-
+@NamedEntityGraph(
+        name = "LoanMasterData.fullGraph",
+        attributeNodes = {
+            @NamedAttributeNode(value = "currency", subgraph = "currencyGraph"),
+            @NamedAttributeNode("assetClass"),
+            @NamedAttributeNode("instrumentValuation"),
+            // un'unica collezione in join (i flussi, una List): le spese con SUBSELECT
+            @NamedAttributeNode("cashFlows")
+        },
+        subgraphs = {
+            @NamedSubgraph(name = "currencyGraph", attributeNodes = @NamedAttributeNode("calendar"))
+        }
+)
 public class LoanMasterData extends CashFlowMasterData {
 
-    @Column(name = "description")
-    private String description;
+    public static final String FIXED_ASSET_CLASS = "XRM";
+    public static final String FLOATING_ASSET_CLASS = "FRM";
 
     @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "processing_fees")
-    private Double processingFees;
+    @Column(name = "principal_amount", nullable = false)
+    private Double principalAmount;
 
+    // vuota = erogazione + un periodo
+    @Column(name = "first_payment_date")
+    private java.sql.Date firstPaymentDate;
+
+    // rate iniziali di soli interessi
+    @Column(name = "pre_amortization_periods", nullable = false)
+    private Integer preAmortizationPeriods = 0;
+
+    // tasso di mora, punti percentuali (fuori dal prezzo)
     @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "management_fees")
-    private Double managementFees;
+    @Column(name = "default_interest", nullable = false)
+    private Double defaultInterest = 0.;
 
+    // penale per rata pagata in ritardo, importo (fuori dal prezzo)
     @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "incidental_expenses")
-    private Double incidentalExpenses;
+    @Column(name = "late_payment_fee", nullable = false)
+    private Double latePaymentFee = 0.;
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "default_interest")
-    private Double defaultInterest;
+    // fuori dagli entity graph (che caricano gia' i flussi): SUBSELECT in transazione
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JoinColumn(name = "master_data", nullable = false) // FK in child table loan_fee
+    private Set<LoanFee> fees = new LinkedHashSet<>();
 
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "late_payment_fee")
-    private Double latePaymentFee;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "underwriting_fee")
-    private Double underwritingFee;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "insurance_premium")
-    private Double insurancePremium;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "tax_charges")
-    private Double taxCharges;
-
-    @Override
-    public String getDescription() {
-        return description;
+    /**
+     * Codice del contratto: asset class e id (XRM-123).
+     */
+    public String contractCode() {
+        Objects.requireNonNull(getIdMasterData(), "Loan not saved yet");
+        return getAssetClass().getCode() + "-" + getIdMasterData();
     }
 
-    @Override
-    public void setDescription(String description) {
-        this.description = description;
+    /**
+     * Spese una tantum all'erogazione, in valuta.
+     */
+    public double upfrontFees() {
+        return fees.stream()
+                .filter(f -> f.getFeeTiming() == FeeTiming.UPFRONT)
+                .mapToDouble(f -> f.getFeeBasis().amount(f.getValue(), principalAmount))
+                .sum();
     }
 
-    public Double getProcessingFees() {
-        return processingFees;
+    /**
+     * Spese di una rata, dato il debito residuo a inizio periodo.
+     */
+    public double installmentFees(double outstanding) {
+        return fees.stream()
+                .filter(f -> f.getFeeTiming() == FeeTiming.PER_INSTALLMENT)
+                .mapToDouble(f -> f.getFeeBasis().amount(f.getValue(), outstanding))
+                .sum();
     }
 
-    public void setProcessingFees(Double processingFees) {
-        this.processingFees = processingFees;
+    public Double getPrincipalAmount() {
+        return principalAmount;
     }
 
-    public Double getManagementFees() {
-        return managementFees;
+    public void setPrincipalAmount(Double principalAmount) {
+        this.principalAmount = principalAmount;
     }
 
-    public void setManagementFees(Double managementFees) {
-        this.managementFees = managementFees;
+    public java.sql.Date getFirstPaymentDate() {
+        return firstPaymentDate;
     }
 
-    public Double getIncidentalExpenses() {
-        return incidentalExpenses;
+    public void setFirstPaymentDate(java.sql.Date firstPaymentDate) {
+        this.firstPaymentDate = firstPaymentDate;
     }
 
-    public void setIncidentalExpenses(Double incidentalExpenses) {
-        this.incidentalExpenses = incidentalExpenses;
+    public LocalDate getFirstPaymentLocalDate() {
+        return firstPaymentDate == null ? null : firstPaymentDate.toLocalDate();
+    }
+
+    public Integer getPreAmortizationPeriods() {
+        return preAmortizationPeriods;
+    }
+
+    public void setPreAmortizationPeriods(Integer preAmortizationPeriods) {
+        this.preAmortizationPeriods = preAmortizationPeriods;
     }
 
     public Double getDefaultInterest() {
@@ -97,28 +154,16 @@ public class LoanMasterData extends CashFlowMasterData {
         this.latePaymentFee = latePaymentFee;
     }
 
-    public Double getUnderwritingFee() {
-        return underwritingFee;
+    public Set<LoanFee> getFees() {
+        return fees;
     }
 
-    public void setUnderwritingFee(Double underwritingFee) {
-        this.underwritingFee = underwritingFee;
+    public void setFees(Set<LoanFee> fees) {
+        this.fees = fees;
     }
 
-    public Double getInsurancePremium() {
-        return insurancePremium;
+    @Override
+    public String toString() {
+        return getCode();
     }
-
-    public void setInsurancePremium(Double insurancePremium) {
-        this.insurancePremium = insurancePremium;
-    }
-
-    public Double getTaxCharges() {
-        return taxCharges;
-    }
-
-    public void setTaxCharges(Double taxCharges) {
-        this.taxCharges = taxCharges;
-    }
-
 }

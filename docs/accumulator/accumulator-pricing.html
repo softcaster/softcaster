@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Accumulator: dal payoff al prezzo</title>
+<style>
+  @page { size: A4; margin: 17mm 15mm 17mm 15mm; }
+  :root { --ink: #1d2733; --muted: #5b6878; --accent: #1f5f99; --line: #d5dbe3; --soft: #f3f6fa; --good: #2e7d32; --bad: #b3261e; }
+  body { font-family: "Segoe UI", Calibri, Arial, sans-serif; color: var(--ink); font-size: 10.3pt; line-height: 1.45; margin: 0; }
+  h1 { font-size: 21pt; margin: 0 0 4pt 0; color: var(--accent); }
+  h2 { font-size: 13.5pt; color: var(--accent); border-bottom: 1.5px solid var(--accent); padding-bottom: 2pt; margin: 16pt 0 7pt 0; page-break-after: avoid; }
+  h3 { font-size: 11.2pt; margin: 11pt 0 4pt 0; page-break-after: avoid; }
+  p { margin: 0 0 6pt 0; }
+  .subtitle { color: var(--muted); font-size: 11pt; margin-bottom: 12pt; }
+  .box { background: var(--soft); border-left: 4px solid var(--accent); padding: 7pt 10pt; margin: 8pt 0; page-break-inside: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt 0; font-size: 9.2pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 2.5pt 5pt; text-align: left; vertical-align: top; }
+  th { background: var(--soft); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.small { font-size: 8.2pt; }
+  table.small td, table.small th { padding: 1.5pt 4pt; }
+  .pos { color: var(--good); } .neg { color: var(--bad); }
+  .formula { font-family: "Cambria Math", Cambria, serif; font-size: 11.5pt; text-align: center; margin: 7pt 0; page-break-inside: avoid; }
+  .formula small { font-family: "Segoe UI", Arial, sans-serif; font-size: 9pt; color: var(--muted); }
+  code { font-family: Consolas, monospace; font-size: 9pt; background: var(--soft); padding: 0 2pt; }
+  figure { margin: 8pt 0 12pt 0; page-break-inside: avoid; }
+  figcaption { color: var(--muted); font-size: 9pt; text-align: center; margin-top: 2pt; }
+  .pb { page-break-before: always; }
+  ul, ol { margin: 0 0 6pt 0; padding-left: 18pt; }
+  li { margin: 1.5pt 0; }
+  .two { display: flex; gap: 10pt; }
+  .two > div { flex: 1; }
+  tr.tot td { font-weight: 600; background: #fafbfd; }
+</style>
+</head>
+<body>
+
+<h1>Accumulator: dal payoff al prezzo</h1>
+<div class="subtitle">Forward, scomposizione in forward e put, knock-out e Monte Carlo, con i calcoli completi su due esempi EUR/USD</div>
+
+<p>Questo documento completa la guida al contratto: parte da due contratti valutati con Easy Pricer e ricostruisce passo per passo da dove viene il valore. Tutti i numeri sono ricalcolati con le classi dell'engine (<code>AccumulatorScheduleGenerator</code>, <code>AccumulatorPricer</code>) e coincidono con l'output di <code>TestPricer.testAccumulatorCalculator</code>.</p>
+
+<h2>1. I due esempi</h2>
+<div class="two">
+<div>
+<table>
+  <tr><th colspan="2">Dati comuni</th></tr>
+  <tr><td>Data di valutazione (conclusione)</td><td>23/9/2026</td></tr>
+  <tr><td>Spot EUR/USD (S)</td><td>1,166</td></tr>
+  <tr><td>Tasso USD (domestico, r<sub>d</sub>)</td><td>3,6% continuo ACT/365</td></tr>
+  <tr><td>Tasso EUR (estero, r<sub>f</sub>)</td><td>1,9% continuo ACT/365</td></tr>
+  <tr><td>Volatilità (σ)</td><td>6,85% piatta</td></tr>
+  <tr><td>Fixing</td><td>23/9 – 22/10, 22 giorni lavorativi EUR</td></tr>
+  <tr><td>Regolamento</td><td>settimanale, esercizio + 2 giorni</td></tr>
+  <tr><td>Quantità</td><td>max 100.000 EUR → q = 4.545,45 per fixing</td></tr>
+  <tr><td>Leva</td><td>2</td></tr>
+  <tr><td>Garanzia</td><td>2 settimane senza leva = 10 fixing</td></tr>
+  <tr><td>Knock-out</td><td>osservato in continuo</td></tr>
+</table>
+</div>
+<div>
+<table>
+  <tr><th></th><th class="num">Caso A</th><th class="num">Caso B</th></tr>
+  <tr><td>Strike K</td><td class="num">1,15</td><td class="num">1,17</td></tr>
+  <tr><td>Barriera KO</td><td class="num">1,17</td><td class="num">1,20</td></tr>
+  <tr><td>Strike rispetto allo spot</td><td class="num">−1,4%</td><td class="num">+0,3%</td></tr>
+  <tr><td>KO rispetto allo spot</td><td class="num">+0,3%</td><td class="num">+2,9%</td></tr>
+  <tr><td>Importo massimo in USD (100.000 × K)</td><td class="num">115.000</td><td class="num">117.000</td></tr>
+  <tr class="tot"><td>Valore per il cliente (USD)</td><td class="num pos">647,84</td><td class="num neg">−936,38</td></tr>
+  <tr><td>in % dell'importo massimo</td><td class="num">0,563%</td><td class="num">−0,800%</td></tr>
+  <tr><td>Errore standard Monte Carlo</td><td class="num">2,49</td><td class="num">3,38</td></tr>
+  <tr><td>Probabilità di knock-out</td><td class="num">70,4%</td><td class="num">14,6%</td></tr>
+</table>
+</div>
+</div>
+<p>Il caso A è un accumulator "classico": strike sotto il mercato, barriera vicina. Il caso B ha lo strike sopra il mercato e la barriera lontana: il cliente compra a un prezzo peggiore e il contratto vale negativo per lui.</p>
+
+<h2>2. Il forward di cambio</h2>
+<h3>Parità coperta dei tassi</h3>
+<p>Il prezzo oggi per consegnare 1 EUR contro USD a una data futura t non è lo spot: dipende dalla differenza tra i tassi delle due valute. Si ricava senza ipotesi sul futuro, solo per arbitraggio. Due modi di avere 1 EUR alla data t:</p>
+<ol>
+  <li><b>a pronti</b>: oggi compro e<sup>−r<sub>f</sub>t</sup> EUR pagando S · e<sup>−r<sub>f</sub>t</sup> USD, e li investo al tasso EUR: alla data t ho 1 EUR. Per pagarli ho preso a prestito dollari al tasso USD: alla data t restituisco S · e<sup>(r<sub>d</sub>−r<sub>f</sub>)t</sup> USD;</li>
+  <li><b>a termine</b>: concordo oggi di comprare 1 EUR alla data t al prezzo F, senza esborsi oggi.</li>
+</ol>
+<p>Le due strategie danno lo stesso risultato (1 EUR alla data t, nessun esborso oggi), quindi devono costare uguale alla data t:</p>
+<div class="formula">F(t) = S · e<sup>(r<sub>d</sub> − r<sub>f</sub>) t</sup> &nbsp;&nbsp; <small>con le curve: F(t) = S · DF<sub>EUR</sub>(t) / DF<sub>USD</sub>(t)</small></div>
+<p>Il tasso USD è più alto di quello EUR, quindi il forward è sopra lo spot (punti a termine positivi): chi tiene dollari rinuncia a un rendimento maggiore e il prezzo a termine dell'euro lo compensa. Con t in anni ACT/365 dalla data di valutazione:</p>
+<table>
+  <tr><th>Data</th><th class="num">Giorni</th><th class="num">t</th><th class="num">e<sup>(0,036−0,019)·t</sup></th><th class="num">F(t)</th></tr>
+  <tr><td>23/9 (oggi)</td><td class="num">0</td><td class="num">0,00000</td><td class="num">1,000000</td><td class="num">1,16600</td></tr>
+  <tr><td>1/10 (1° regolamento)</td><td class="num">8</td><td class="num">0,02192</td><td class="num">1,000373</td><td class="num">1,16643</td></tr>
+  <tr><td>22/10 (ultimo fixing)</td><td class="num">29</td><td class="num">0,07945</td><td class="num">1,001352</td><td class="num">1,16758</td></tr>
+  <tr><td>26/10 (ultimo regolamento)</td><td class="num">33</td><td class="num">0,09041</td><td class="num">1,001538</td><td class="num">1,16779</td></tr>
+</table>
+<h3>Due forward per ogni fixing: al fixing e al regolamento</h3>
+<p>Al fixing si decide la quantità (confrontando il prezzo del giorno S<sub>i</sub> con lo strike), ma gli euro si consegnano alla data di regolamento del periodo. Per questo ogni fixing ha due forward:</p>
+<ul>
+  <li><b>F<sub>i</sub></b>, forward alla data di fixing: è il valore atteso di S<sub>i</sub> e decide se il fixing sarà favorevole o sfavorevole;</li>
+  <li><b>Fs<sub>i</sub></b>, forward alla data di regolamento: è quanto valgono, alla data di valutazione, gli euro consegnati al regolamento.</li>
+</ul>
+<p>Il valore oggi di ricevere 1 EUR al regolamento pagando K USD è <b>DF<sub>i</sub> · (Fs<sub>i</sub> − K)</b>, con DF<sub>i</sub> = e<sup>−r<sub>d</sub> ts<sub>i</sub></sup> il fattore di sconto in USD (la valuta in cui si paga) dalla valutazione al regolamento. Nella simulazione, il prezzo al regolamento visto dal fixing è S<sub>i</sub> · Fs<sub>i</sub> / F<sub>i</sub>: tra fixing e regolamento passano pochi giorni e si applica il solo differenziale dei tassi.</p>
+
+<h2 class="pb">3. Il valore di un fixing: forward più put</h2>
+<h3>Il payoff</h3>
+<p>Per un accumulator con leva L, al fixing i con prezzo S:</p>
+<div class="formula">payoff = q · (S − K) &nbsp;se S ≥ K &nbsp;&nbsp;&nbsp;&nbsp; payoff = L · q · (S − K) &nbsp;se S &lt; K</div>
+<h3>La scomposizione</h3>
+<p>Riscrivo il caso S &lt; K separando la prima unità dalle altre L − 1:</p>
+<div class="formula">L · q · (S − K) = q · (S − K) − (L − 1) · q · (K − S)</div>
+<p>Il primo termine è lo stesso del caso S ≥ K. Il secondo esiste solo quando S &lt; K, cioè vale (K − S)<sup>+</sup> = max(K − S, 0), che è esattamente il payoff di una <b>put</b> con strike K. Quindi, per ogni prezzo:</p>
+<div class="formula">payoff = q · (S − K) &nbsp;−&nbsp; (L − 1) · q · (K − S)<sup>+</sup></div>
+<div class="box">
+<b>Perché compare la put.</b> Il primo termine è un <b>acquisto a termine</b> di q euro allo strike: lo farebbe anche un contratto senza leva. Il secondo è l'obbligo aggiuntivo di comprare altri (L − 1) · q euro allo strike, ma solo quando il prezzo è sotto lo strike: è ciò che succede a chi ha <b>venduto una put</b> con strike K (se il compratore esercita, devo comprare a K un bene che vale meno). Il cliente, accettando la leva, vende alla banca (L − 1) put per ogni fixing: il premio di quelle put è ciò che "finanzia" lo strike vantaggioso. Il segno meno dice che per il cliente quella componente vale negativo.
+</div>
+<h3>Il valore oggi</h3>
+<p>Il valore del forward lo conosciamo (sezione 2). La put si valuta con Black sul forward (equivalente a Garman-Kohlhagen per i cambi), adattata al fatto che l'euro si consegna al regolamento:</p>
+<div class="formula">Put<sub>i</sub> = K · N(−d<sub>2</sub>) − Fs<sub>i</sub> · N(−d<sub>1</sub>) &nbsp;&nbsp;&nbsp; d<sub>1</sub> = [ ln(F<sub>i</sub>/K) + ½σ²t<sub>i</sub> ] / (σ√t<sub>i</sub>), &nbsp; d<sub>2</sub> = d<sub>1</sub> − σ√t<sub>i</sub></div>
+<div class="formula">Valore fixing<sub>i</sub> = q · DF<sub>i</sub> · [ (Fs<sub>i</sub> − K) − (L − 1) · Put<sub>i</sub> ]</div>
+<p>N è la funzione di ripartizione normale standard; N(−d<sub>2</sub>) è la probabilità (sotto la misura di valutazione) che il fixing finisca sotto lo strike. Senza barriera, questa formula è esatta: è il controllo con cui il Monte Carlo è verificato.</p>
+<h3>Esempio: ultimo fixing (22/10) del caso B</h3>
+<table>
+  <tr><th>Passo</th><th>Calcolo</th><th class="num">Risultato</th></tr>
+  <tr><td>Tempi</td><td>t = 29/365, ts = 33/365</td><td class="num">0,07945 / 0,09041</td></tr>
+  <tr><td>Forward</td><td>F = 1,166 · e<sup>0,017·0,07945</sup>, Fs = 1,166 · e<sup>0,017·0,09041</sup></td><td class="num">1,16758 / 1,16779</td></tr>
+  <tr><td>Sconto</td><td>DF = e<sup>−0,036·0,09041</sup></td><td class="num">0,99675</td></tr>
+  <tr><td>Deviazione standard</td><td>σ√t = 0,0685 · √0,07945</td><td class="num">0,019308</td></tr>
+  <tr><td>d<sub>1</sub>, d<sub>2</sub></td><td>[ln(1,16758/1,17) + ½ · 0,019308²] / 0,019308</td><td class="num">−0,0976 / −0,1169</td></tr>
+  <tr><td>Probabilità</td><td>N(−d<sub>2</sub>), N(−d<sub>1</sub>)</td><td class="num">0,5465 / 0,5389</td></tr>
+  <tr><td>Put per EUR</td><td>1,17 · 0,5465 − 1,16779 · 0,5389</td><td class="num">0,01015</td></tr>
+  <tr><td>Forward</td><td>4.545,45 · 0,99675 · (1,16779 − 1,17)</td><td class="num neg">−10,00 USD</td></tr>
+  <tr><td>Put venduta (L − 1 = 1)</td><td>− 4.545,45 · 0,99675 · 0,01015</td><td class="num neg">−45,98 USD</td></tr>
+  <tr class="tot"><td>Fixing</td><td>senza barriera</td><td class="num neg">−55,98 USD</td></tr>
+</table>
+<p>Il forward è di poco negativo (si compra a 1,17 un euro che a termine vale 1,1678), ma la put pesa quattro volte tanto: è quasi "a soldi" (lo strike è vicino al forward) e quindi ha molto valore temporale. Il 55% di probabilità di finire sotto lo strike significa che più di metà delle volte il cliente comprerà il doppio.</p>
+
+<h3>La garanzia senza leva</h3>
+<p>Nei fixing garantiti senza leva il cliente compra q a K qualunque sia il prezzo: il payoff è sempre q · (S − K), cioè un <b>forward puro</b>, senza put e senza knock-out. Valore: q · DF<sub>i</sub> · (Fs<sub>i</sub> − K). Primo fixing del caso A: 4.545,45 · 0,999211 · (1,16643 − 1,15) = <b>74,64 USD</b>.</p>
+
+<h2 class="pb">4. Il knock-out</h2>
+<h3>Perché non c'è una formula chiusa</h3>
+<p>La scomposizione della sezione 3 vale fixing per fixing perché ogni fixing dipende solo dal prezzo di quel giorno. Il knock-out rompe questa indipendenza: il fixing di venerdì esiste solo se nei giorni precedenti il prezzo non ha mai toccato la barriera. Il valore dipende dall'intero <b>percorso</b> del prezzo, e la somma di opzioni con barriera su date diverse, con leva e garanzia, non ha una formula chiusa pratica. Si usa la simulazione.</p>
+<h3>Osservazione continua</h3>
+<p>Nel caso dei due esempi la barriera è osservata in continuo ("American"): basta un istante sopra 1,17. La simulazione però genera il prezzo solo ai fixing. La correzione di Broadie-Glasserman-Kou avvicina la barriera di un fattore e<sup>−0,5826 · σ√Δt</sup>, dove Δt è il tempo tra due fixing: per un giorno, 0,5826 · 0,0685 · √(1/365) = 0,21%, quindi la barriera effettiva del caso A è circa <b>1,1676</b>, praticamente il forward. Dopo un fine settimana (Δt = 3 giorni) la correzione è 0,36%.</p>
+<h3>In che direzione sposta il valore</h3>
+<p>Il knock-out avviene quando il prezzo sale, cioè proprio negli scenari favorevoli al cliente: i fixing successivi, che avrebbero comprato sotto mercato, spariscono. Spariscono anche le put vendute, ma in quegli scenari valgono poco (il prezzo è lontano sopra lo strike). Il saldo è quasi sempre negativo per il cliente: è il "prezzo" del knock-out, che va alla banca.</p>
+
+<h2>5. Il Monte Carlo</h2>
+<ol>
+  <li>Si simulano N percorsi (50.000) del cambio ai 22 fixing con un modello lognormale coerente con i forward: S<sub>i</sub> = F<sub>i</sub> · e<sup>X<sub>i</sub> − ½V<sub>i</sub></sup>, dove V<sub>i</sub> = σ²t<sub>i</sub> è la varianza totale e X è un moto browniano costruito per incrementi (con volatilità diverse per scadenza, da superficie, la varianza cresce di σ<sub>i</sub>²t<sub>i</sub> − σ<sub>i−1</sub>²t<sub>i−1</sub>).</li>
+  <li>Su ogni percorso si applicano le regole: knock-out (fuori dalla garanzia), knock-in, quantità (q, L·q, o q nei fixing garantiti senza leva) e si somma il valore dei fixing, q · (S<sub>i</sub>·Fs<sub>i</sub>/F<sub>i</sub> − K) · DF<sub>i</sub>.</li>
+  <li>Il valore è la media sui percorsi. Ogni percorso è accoppiato con il suo "antitetico" (stessi numeri casuali con segno opposto): riduce la varianza. Il seme è fisso: stesso input, stesso risultato.</li>
+  <li>L'<b>errore standard</b> misura la precisione: con 50.000 percorsi è 2,49 USD nel caso A. L'intervallo valore ± 2 errori standard contiene il valore "vero" del modello con circa il 95% di probabilità.</li>
+</ol>
+<div class="box"><b>Verifica.</b> Togliendo la barriera (KO a 100) il Monte Carlo deve coincidere con la formula chiusa della sezione 3: caso A 1.600,40 ± 1,01 contro 1.599,77; caso B −783,55 ± 1,61 contro −785,27. Coincidono entro l'errore statistico.</div>
+
+<h2 class="pb">6. Scomposizione dei due valori</h2>
+<table>
+  <tr><th>Componente (USD, per il cliente)</th><th class="num">Caso A<br>K 1,15 · KO 1,17</th><th class="num">Caso B<br>K 1,17 · KO 1,20</th><th>Come si calcola</th></tr>
+  <tr><td>1. Fixing garantiti (10): forward puri</td><td class="num pos">+754,81</td><td class="num neg">−153,25</td><td>Σ q·DF·(Fs − K), formula chiusa</td></tr>
+  <tr><td>2. Fixing non garantiti (12): forward</td><td class="num pos">+949,50</td><td class="num neg">−138,53</td><td>Σ q·DF·(Fs − K), formula chiusa</td></tr>
+  <tr><td>3. Fixing non garantiti: put vendute</td><td class="num neg">−104,54</td><td class="num neg">−493,49</td><td>− Σ (L−1)·q·DF·Put, formula chiusa</td></tr>
+  <tr class="tot"><td>Totale senza knock-out (1+2+3)</td><td class="num">1.599,77</td><td class="num">−785,27</td><td>formula chiusa</td></tr>
+  <tr><td>Monte Carlo senza knock-out (controllo)</td><td class="num">1.600,40</td><td class="num">−783,55</td><td>simulazione, KO a 100</td></tr>
+  <tr><td>4. Effetto del knock-out</td><td class="num neg">−952,56</td><td class="num neg">−152,83</td><td>differenza tra le due simulazioni</td></tr>
+  <tr class="tot"><td>Valore del contratto</td><td class="num pos">647,84</td><td class="num neg">−936,38</td><td>simulazione con barriera</td></tr>
+</table>
+<h3>Lettura del caso A</h3>
+<p>Lo strike è 1,6 centesimi sotto il forward: ogni fixing come forward vale circa +75-80 USD, in totale +1.704 (righe 1 e 2). Le put vendute valgono poco (−105) perché sono lontane dai soldi. Ma la barriera è a 1,17, appena sopra il forward: il contratto esce nel 70% dei casi e il knock-out si porta via −953, quasi tutto il valore dei fixing non garantiti. Resta soprattutto il valore della garanzia (+755): <b>647,84</b>.</p>
+<h3>Lettura del caso B</h3>
+<p>Lo strike è sopra il forward: i forward valgono negativo (−292 in totale). Le put sono quasi a soldi e valgono molto (−493). La barriera è lontana (P(KO) 15%), quindi il suo effetto è minore (−153). Totale <b>−936,38</b>: per uno scambio equo la banca dovrebbe pagare al cliente circa 936 USD, oppure abbassare lo strike.</p>
+<h3>Lo strike "a costo zero"</h3>
+<p>Fissati barriera, leva, garanzia e durata, il valore per il cliente cala al crescere dello strike (forward meno convenienti e put più care). Lo strike che azzera il valore è lo strike "zero cost": si trova ripetendo la valutazione e cambiando solo lo strike finché il valore si annulla, con un risolutore come quello della volatilità implicita. I due casi hanno barriere diverse, quindi non bastano a individuarlo. La banca sceglie lo strike un po' più alto dello zero cost, in modo che il contratto valga leggermente negativo per il cliente: è il suo margine.</p>
+
+<h2>7. Le altre grandezze dell'output</h2>
+<table>
+  <tr><th>Grandezza</th><th class="num">A</th><th class="num">B</th><th>Significato</th></tr>
+  <tr><td>Importo massimo USD</td><td class="num">115.000</td><td class="num">117.000</td><td>quantità massima senza leva × strike: i dollari pagati se si accumulassero tutti i 100.000 EUR; base del premio in percentuale</td></tr>
+  <tr><td>Valore in %</td><td class="num">0,563%</td><td class="num">−0,800%</td><td>valore / importo massimo: la convenzione del sistema di riferimento per il premio</td></tr>
+  <tr><td>Quantità attesa (EUR)</td><td class="num">75.323</td><td class="num">125.867</td><td>media degli euro accumulati. Massimo senza leva 100.000, con leva 10·4.545 + 12·9.091 = 154.545. In A il knock-out la riduce, in B la leva la alza</td></tr>
+  <tr><td>Probabilità di KO</td><td class="num">70,4%</td><td class="num">14,6%</td><td>quota di percorsi usciti per barriera</td></tr>
+  <tr><td>Delta</td><td class="num">63.707</td><td class="num">113.157</td><td>variazione del valore per 1 USD di variazione del cambio, cioè posizione equivalente in EUR. Per coprirsi, la banca (controparte) compra circa questi euro</td></tr>
+  <tr><td>Gamma</td><td class="num">−1,7 mln</td><td class="num">−2,3 mln</td><td>variazione del delta: negativa perché il cliente ha venduto opzionalità (put e knock-out). Un movimento di 0,01 del cambio sposta il delta di circa 17.000 (A) o 23.000 (B) EUR</td></tr>
+  <tr><td>Vega (USD per punto)</td><td class="num">−95,93</td><td class="num">−132,07</td><td>variazione del valore per +1 punto di volatilità: negativa, il cliente perde se la volatilità sale (le put vendute valgono di più, il knock-out è più probabile)</td></tr>
+</table>
+<p>Le greche sono calcolate dal Monte Carlo spostando lo spot di ±1% (delta, gamma) e la volatilità di ±1 punto (vega), con gli stessi numeri casuali, così le differenze non sono coperte dal rumore statistico.</p>
+
+<h2 class="pb">8. Riepilogo delle formule</h2>
+<table>
+  <tr><th style="width:30%">Grandezza</th><th>Formula</th></tr>
+  <tr><td>Tempo</td><td>t = giorni dalla valutazione / 365 (ACT/365); t = 0 per il fixing del giorno non ancora rilevato</td></tr>
+  <tr><td>Forward di cambio</td><td>F(t) = S · e<sup>(r<sub>d</sub>−r<sub>f</sub>)t</sup> = S · DF<sub>f</sub>(t) / DF<sub>d</sub>(t)</td></tr>
+  <tr><td>Fattore di sconto</td><td>DF = e<sup>−r<sub>d</sub>·ts</sup> (valuta di regolamento, data di regolamento)</td></tr>
+  <tr><td>Quantità per fixing</td><td>q = quantità massima / numero di fixing</td></tr>
+  <tr><td>Payoff del fixing (accumulator)</td><td>q·(S−K) − (L−1)·q·(K−S)<sup>+</sup>; decumulator: q·(K−S) − (L−1)·q·(S−K)<sup>+</sup> (call vendute)</td></tr>
+  <tr><td>Put sul forward</td><td>K·N(−d<sub>2</sub>) − Fs·N(−d<sub>1</sub>), d<sub>1</sub> = [ln(F/K) + ½σ²t] / (σ√t), d<sub>2</sub> = d<sub>1</sub> − σ√t</td></tr>
+  <tr><td>Fixing senza barriera</td><td>q·DF·[(Fs − K) − (L−1)·Put]</td></tr>
+  <tr><td>Fixing garantito senza leva</td><td>q·DF·(Fs − K)</td></tr>
+  <tr><td>Barriera continua</td><td>KO effettiva = KO · e<sup>−0,5826·σ√Δt</sup> (accumulator; decumulator con segno opposto)</td></tr>
+  <tr><td>Simulazione</td><td>S<sub>i</sub> = F<sub>i</sub>·e<sup>X<sub>i</sub>−½V<sub>i</sub></sup>, V<sub>i</sub> = σ<sub>i</sub>²t<sub>i</sub>, X incrementi gaussiani di varianza V<sub>i</sub>−V<sub>i−1</sub></td></tr>
+  <tr><td>Valore del contratto</td><td>media sui percorsi di Σ<sub>i</sub> q<sub>i</sub>·(S<sub>i</sub>·Fs<sub>i</sub>/F<sub>i</sub> − K)·DF<sub>i</sub>, fino al knock-out</td></tr>
+  <tr><td>Valore in %</td><td>valore / (quantità massima × K)</td></tr>
+</table>
+
+<h2>Appendice: i 22 fixing</h2>
+<table class="small">
+  <tr><th>#</th><th>Fixing</th><th>Regol.</th><th class="num">t</th><th class="num">F</th><th class="num">Fs</th><th class="num">DF</th><th class="num">Fwd A</th><th class="num">Put A</th><th class="num">Fwd B</th><th class="num">Put B</th></tr>
+  <tr><td>0*</td><td>23/9</td><td>1/10</td><td class="num">0,00000</td><td class="num">1,16600</td><td class="num">1,16643</td><td class="num">0,999211</td><td class="num">74,64</td><td class="num">0,00</td><td class="num">−16,19</td><td class="num">16,19</td></tr>
+  <tr><td>1*</td><td>24/9</td><td>1/10</td><td class="num">0,00274</td><td class="num">1,16605</td><td class="num">1,16643</td><td class="num">0,999211</td><td class="num">74,64</td><td class="num">0,00</td><td class="num">−16,19</td><td class="num">18,26</td></tr>
+  <tr><td>2*</td><td>25/9</td><td>1/10</td><td class="num">0,00548</td><td class="num">1,16611</td><td class="num">1,16643</td><td class="num">0,999211</td><td class="num">74,64</td><td class="num">0,02</td><td class="num">−16,19</td><td class="num">20,70</td></tr>
+  <tr><td>3*</td><td>28/9</td><td>1/10</td><td class="num">0,01370</td><td class="num">1,16627</td><td class="num">1,16643</td><td class="num">0,999211</td><td class="num">74,64</td><td class="num">0,65</td><td class="num">−16,19</td><td class="num">26,28</td></tr>
+  <tr><td>4*</td><td>29/9</td><td>1/10</td><td class="num">0,01644</td><td class="num">1,16633</td><td class="num">1,16643</td><td class="num">0,999211</td><td class="num">74,64</td><td class="num">1,03</td><td class="num">−16,19</td><td class="num">27,80</td></tr>
+  <tr><td>5*</td><td>30/9</td><td>8/10</td><td class="num">0,01918</td><td class="num">1,16638</td><td class="num">1,16681</td><td class="num">0,998522</td><td class="num">76,32</td><td class="num">1,36</td><td class="num">−14,46</td><td class="num">28,11</td></tr>
+  <tr><td>6*</td><td>1/10</td><td>8/10</td><td class="num">0,02192</td><td class="num">1,16643</td><td class="num">1,16681</td><td class="num">0,998522</td><td class="num">76,32</td><td class="num">1,82</td><td class="num">−14,46</td><td class="num">29,44</td></tr>
+  <tr><td>7*</td><td>2/10</td><td>8/10</td><td class="num">0,02466</td><td class="num">1,16649</td><td class="num">1,16681</td><td class="num">0,998522</td><td class="num">76,32</td><td class="num">2,31</td><td class="num">−14,46</td><td class="num">30,70</td></tr>
+  <tr><td>8*</td><td>5/10</td><td>8/10</td><td class="num">0,03288</td><td class="num">1,16665</td><td class="num">1,16681</td><td class="num">0,998522</td><td class="num">76,32</td><td class="num">3,90</td><td class="num">−14,46</td><td class="num">34,13</td></tr>
+  <tr><td>9*</td><td>6/10</td><td>8/10</td><td class="num">0,03562</td><td class="num">1,16671</td><td class="num">1,16681</td><td class="num">0,998522</td><td class="num">76,32</td><td class="num">4,46</td><td class="num">−14,46</td><td class="num">35,18</td></tr>
+  <tr><td>10</td><td>7/10</td><td>15/10</td><td class="num">0,03836</td><td class="num">1,16676</td><td class="num">1,16720</td><td class="num">0,997832</td><td class="num">77,99</td><td class="num">4,77</td><td class="num">−12,72</td><td class="num">35,17</td></tr>
+  <tr><td>11</td><td>8/10</td><td>15/10</td><td class="num">0,04110</td><td class="num">1,16681</td><td class="num">1,16720</td><td class="num">0,997832</td><td class="num">77,99</td><td class="num">5,32</td><td class="num">−12,72</td><td class="num">36,15</td></tr>
+  <tr><td>12</td><td>9/10</td><td>15/10</td><td class="num">0,04384</td><td class="num">1,16687</td><td class="num">1,16720</td><td class="num">0,997832</td><td class="num">77,99</td><td class="num">5,87</td><td class="num">−12,72</td><td class="num">37,10</td></tr>
+  <tr><td>13</td><td>12/10</td><td>15/10</td><td class="num">0,05205</td><td class="num">1,16703</td><td class="num">1,16720</td><td class="num">0,997832</td><td class="num">77,99</td><td class="num">7,52</td><td class="num">−12,72</td><td class="num">39,79</td></tr>
+  <tr><td>14</td><td>13/10</td><td>15/10</td><td class="num">0,05479</td><td class="num">1,16709</td><td class="num">1,16720</td><td class="num">0,997832</td><td class="num">77,99</td><td class="num">8,07</td><td class="num">−12,72</td><td class="num">40,64</td></tr>
+  <tr><td>15</td><td>14/10</td><td>22/10</td><td class="num">0,05753</td><td class="num">1,16714</td><td class="num">1,16758</td><td class="num">0,997144</td><td class="num">79,66</td><td class="num">8,30</td><td class="num">−10,99</td><td class="num">40,48</td></tr>
+  <tr><td>16</td><td>15/10</td><td>22/10</td><td class="num">0,06027</td><td class="num">1,16720</td><td class="num">1,16758</td><td class="num">0,997144</td><td class="num">79,66</td><td class="num">8,83</td><td class="num">−10,99</td><td class="num">41,30</td></tr>
+  <tr><td>17</td><td>16/10</td><td>22/10</td><td class="num">0,06301</td><td class="num">1,16725</td><td class="num">1,16758</td><td class="num">0,997144</td><td class="num">79,66</td><td class="num">9,37</td><td class="num">−10,99</td><td class="num">42,09</td></tr>
+  <tr><td>18</td><td>19/10</td><td>22/10</td><td class="num">0,07123</td><td class="num">1,16741</td><td class="num">1,16758</td><td class="num">0,997144</td><td class="num">79,66</td><td class="num">10,95</td><td class="num">−10,99</td><td class="num">44,38</td></tr>
+  <tr><td>19</td><td>20/10</td><td>22/10</td><td class="num">0,07397</td><td class="num">1,16747</td><td class="num">1,16758</td><td class="num">0,997144</td><td class="num">79,66</td><td class="num">11,47</td><td class="num">−10,99</td><td class="num">45,11</td></tr>
+  <tr><td>20</td><td>21/10</td><td>26/10</td><td class="num">0,07671</td><td class="num">1,16752</td><td class="num">1,16779</td><td class="num">0,996750</td><td class="num">80,62</td><td class="num">11,78</td><td class="num">−10,00</td><td class="num">45,28</td></tr>
+  <tr><td>21</td><td>22/10</td><td>26/10</td><td class="num">0,07945</td><td class="num">1,16758</td><td class="num">1,16779</td><td class="num">0,996750</td><td class="num">80,62</td><td class="num">12,29</td><td class="num">−10,00</td><td class="num">45,98</td></tr>
+</table>
+<p style="font-size:8.8pt;color:#5b6878">* fixing garantiti senza leva: contano solo come forward, la loro put non entra nel valore. Fwd = q·DF·(Fs − K); Put = valore della put venduta, q·DF·Put (da sottrarre), in USD. Il fixing 0 è a t = 0: il prezzo è lo spot, senza incertezza.</p>
+
+</body>
+</html>

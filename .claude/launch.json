@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "otc-cli",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "easy_pricer_otc_cli", "run", "dev", "--", "--open", "false"],
+      "port": 3001
+    }
+  ]
+}

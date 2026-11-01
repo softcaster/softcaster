@@ -26,7 +26,7 @@ public class VolatilityProvider {
     public record SurfaceData(String code, LocalDate referenceDate, VolatilitySurface surface) {
 
         public String describe() {
-            return code + " del " + referenceDate;
+            return code + " as of " + referenceDate;
         }
     }
 

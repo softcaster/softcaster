@@ -13,6 +13,7 @@ import org.softcaster.engine.dto.AccumulatorPendingSettlement;
 import org.softcaster.engine.dto.AccumulatorResult;
 import org.softcaster.engine.enums.AccumulatorType;
 import org.softcaster.engine.enums.BarrierObservation;
+import org.softcaster.engine.enums.GuaranteeType;
 import org.softcaster.engine.enums.KnockInEffect;
 import org.softcaster.engine.math.Gaussian;
 
@@ -79,9 +80,40 @@ class AccumulatorPricerTest {
     }
 
     @Test
+    void leveragedGuaranteeOnAllFixingsIgnoresKnockOut() {
+        // barriera vicina ma tutti i fixing garantiti: come senza barriera, con la leva
+        AccumulatorInput in = input(AccumulatorType.ACCUMULATOR, 1.10, 1.16, null, null, 2., FIXINGS, GuaranteeType.LEVERAGED);
+        AccumulatorResult r = pricer.calculate(in);
+        assertEquals(analytic(in), r.value(), 4 * r.standardError());
+        assertEquals(0., r.knockOutProbability(), 0.);
+    }
+
+    @Test
+    void unleveragedGuaranteeOnAllFixingsIsAForwardStrip() {
+        // quantita' base su ogni fixing: serie di forward allo strike, q (Fs - K) DF
+        AccumulatorInput in = input(AccumulatorType.ACCUMULATOR, 1.10, 1.16, null, null, 2., FIXINGS, GuaranteeType.UNLEVERAGED);
+        AccumulatorResult r = pricer.calculate(in);
+        double expected = in.fixings().stream()
+                .mapToDouble(f -> in.dailyQuantity() * (f.settlementForward() - in.strike()) * f.discountFactor())
+                .sum();
+        assertEquals(expected, r.value(), 4 * r.standardError() + 1e-6);
+        assertEquals(FIXINGS * in.dailyQuantity(), r.expectedQuantity(), 1e-6);
+    }
+
+    @Test
+    void guaranteeRaisesValueOfInTheMoneyAccumulator() {
+        double none = pricer.calculate(input(AccumulatorType.ACCUMULATOR, 1.12, 1.17, null, null, 2.)).value();
+        double leveraged = pricer.calculate(input(AccumulatorType.ACCUMULATOR, 1.12, 1.17, null, null, 2., 10,
+                GuaranteeType.LEVERAGED)).value();
+        double unleveraged = pricer.calculate(input(AccumulatorType.ACCUMULATOR, 1.12, 1.17, null, null, 2., 10,
+                GuaranteeType.UNLEVERAGED)).value();
+        assertTrue(none < leveraged && leveraged < unleveraged, none + " < " + leveraged + " < " + unleveraged);
+    }
+
+    @Test
     void pendingSettlementIsAForward() {
         AccumulatorInput in = new AccumulatorInput("T", TODAY, AccumulatorType.ACCUMULATOR, 1.10, 1.20,
-                BarrierObservation.FIXING, null, null, 2., 100_000., 0, false, false, SPOT,
+                BarrierObservation.FIXING, null, null, 2., 100_000., 0, GuaranteeType.NONE, false, false, SPOT,
                 List.of(),List.of(new AccumulatorPendingSettlement(1_000_000., 1.16, 0.99)), PATHS, 1L);
         AccumulatorResult r = pricer.calculate(in);
         assertEquals(1_000_000. * 0.06 * 0.99, r.value(), 1e-6);
@@ -93,6 +125,11 @@ class AccumulatorPricerTest {
      */
     private static AccumulatorInput input(AccumulatorType type, double strike, double ko, Double ki,
             KnockInEffect kiEffect, double leverage) {
+        return input(type, strike, ko, ki, kiEffect, leverage, 0, GuaranteeType.NONE);
+    }
+
+    private static AccumulatorInput input(AccumulatorType type, double strike, double ko, Double ki,
+            KnockInEffect kiEffect, double leverage, int guaranteed, GuaranteeType guaranteeType) {
         List<AccumulatorFixingInput> fixings = new ArrayList<>();
         for (int i = 0; i < FIXINGS; i++) {
             int days = 7 * (i / 5) + i % 5 + 1;
@@ -102,7 +139,7 @@ class AccumulatorPricerTest {
                     volatility(t)));
         }
         return new AccumulatorInput("T", TODAY, type, strike, ko, BarrierObservation.FIXING, ki, kiEffect,
-                leverage, 100_000., 0, false, false, SPOT, fixings, List.of(), PATHS, 42L);
+                leverage, 100_000., guaranteed, guaranteeType, false, false, SPOT, fixings, List.of(), PATHS, 42L);
     }
 
     /**

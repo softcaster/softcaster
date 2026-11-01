@@ -12,7 +12,8 @@ import java.time.LocalTime;
  * Codici degli enum come nel database: accumulatorType ACCUMULATOR /
  * DECUMULATOR, settlementType PHYSICAL / CASH, settlementFrequency DAILY /
  * WEEKLY / MONTHLY / NONE, koObservation FIXING / CONTINUOUS / SETTLEMENT,
- * kiEffect LEVERAGE / CONTRACT, side BUY / SELL.
+ * kiEffect LEVERAGE / CONTRACT, guaranteeType LEVERAGED / UNLEVERAGED,
+ * side BUY / SELL.
  */
 public class AccumulatorDealRequest {
 
@@ -28,10 +29,17 @@ public class AccumulatorDealRequest {
     public Double kiBarrier;
     public String kiEffect;
     public Double leverage = 1.;
+    // quantita' per fixing oppure (in alternativa) quantita' massima totale senza
+    // leva, divisa per il numero di fixing: 100.000 su 22 fixing -> 4.545,45
     public Double dailyQuantity;
+    public Double maxQuantity;
     public LocalDate firstFixingDate;
     public LocalDate lastFixingDate;
-    public Integer guaranteedFixings = 0;
+    // primi periodi di regolamento garantiti (knock-out non attivo) e tipo di
+    // garanzia: LEVERAGED (default se ci sono periodi garantiti, leva normale)
+    // o UNLEVERAGED (quantita' base su ogni fixing); 0 periodi = nessuna garanzia
+    public Integer guaranteedPeriods = 0;
+    public String guaranteeType;
     public Boolean koAccrual = false;
     // spot lag del regolamento; null = giorni di regolamento del sottostante
     public Integer spotLag;
@@ -46,6 +54,9 @@ public class AccumulatorDealRequest {
     public Integer positionMdId;
     // premio iniziale per contratto, valuta di regolamento, pagato da chi compra (0 = zero cost)
     public Double premium = 0.;
+    // in alternativa: percentuale dell'importo massimo nella seconda valuta
+    // (quantita' massima x strike): -0,282713 su 115.000 USD -> -325,12 USD
+    public Double premiumPercent;
 
     // -- pricing
     public Double spot;

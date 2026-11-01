@@ -14,7 +14,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Objects;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -29,6 +31,7 @@ import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_srv.exceptions.FinancialTxnException;
 import org.softcaster.engine.enums.AccountingPhase;
+import org.softcaster.engine.enums.TxnSide;
 import org.softcaster.engine.enums.TxnStatus;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -76,6 +79,15 @@ public class FinancialTxnService {
     }
 
     public FinancialTxnDto saveOrUpdateTransaction(FinancialTxnDto newTxnDto) {
+        return saveOrUpdateTransaction(newTxnDto, false);
+    }
+
+    /**
+     * @param termsChanged l'anagrafica del deal e' cambiata (contratti OTC):
+     *                     l'amend storna e riprocessa anche se i dati della
+     *                     transazione sono invariati
+     */
+    public FinancialTxnDto saveOrUpdateTransaction(FinancialTxnDto newTxnDto, boolean termsChanged) {
         // Avviamo una transazione esplicita tramite il template. Tutto il blocco è atomico (tutto o niente).
         return transactionTemplate.execute(status -> {
 
@@ -124,7 +136,7 @@ public class FinancialTxnService {
                 }
                 case TO_AMEND -> {
                     // Se la modifica tocca dati contabili o strutturali importanti
-                    if (!updateOnly(oldTxnDto, newTxnDto)) {
+                    if (termsChanged || !updateOnly(oldTxnDto, newTxnDto)) {
 
                         // lo stato del vecchio record a TO_AMEND
                         FinancialTxn oldTxnToCancel = dao.findByIdFinancialTxn(oldTxnDto.financialTxnId());
@@ -158,6 +170,50 @@ public class FinancialTxnService {
 
             return newTxnDto;
         });
+    }
+
+    /**
+     * Transazione da modificare con il deal capture OTC: solo PENDING (si
+     * aggiorna) o EXECUTED (amend: storno e nuova transazione). Da chiamare in
+     * transazione.
+     */
+    public FinancialTxn findAmendable(Integer idFinancialTxn) {
+        FinancialTxn txn = dao.findByIdFinancialTxn(idFinancialTxn);
+        if (txn == null) {
+            throw new NoSuchElementException("Trade not found: " + idFinancialTxn);
+        }
+        amendStatus(txn);
+        return txn;
+    }
+
+    /**
+     * Stato con cui risalvare una transazione modificata (come il client
+     * degli strumenti quotati): PENDING resta PENDING, EXECUTED -> TO_AMEND.
+     */
+    private static TxnStatus amendStatus(FinancialTxn txn) {
+        return switch (txn.getTxnStatus()) {
+            case PENDING -> TxnStatus.PENDING;
+            case EXECUTED -> TxnStatus.TO_AMEND;
+            default -> throw new IllegalArgumentException("Trade " + txn.getIdFinancialTxn() + " is "
+                    + txn.getTxnStatus().getDescription() + ": only pending or executed trades can be changed");
+        };
+    }
+
+    /**
+     * Amend di un deal OTC con i nuovi dati della transazione; l'anagrafica e'
+     * gia' stata aggiornata, quindi una transazione eseguita si storna sempre.
+     */
+    public FinancialTxnDto amendOtcDeal(FinancialTxn txn, String description, TxnSide side, Integer counterpartyId,
+            Integer positionMdId, LocalDate tradeDate, double quantity, double price) {
+        FinancialTxnDto dto = new FinancialTxnDto(txn.getIdFinancialTxn(), description,
+                counterpartyId, null, null,
+                positionMdId, null,
+                txn.getMasterData().getIdMasterData(), txn.getMasterData().getCode(), description,
+                amendStatus(txn).getId(), null, null,
+                txn.getRefId(), (short) side.getId(),
+                java.sql.Date.valueOf(tradeDate), null,
+                quantity, price, txn.getFxRate(), txn.getTxnAcctPhase().getId());
+        return saveOrUpdateTransaction(dto, true);
     }
 
     private boolean updateOnly(FinancialTxnDto oldDto, FinancialTxnDto newDto) {

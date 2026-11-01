@@ -1,0 +1,351 @@
+/* Font e base */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 13px;
+    margin: 0;
+}
+
+/* --- GESTIONE BORDI (Meno marcati) --- */
+.border-bottom-1,
+.border-right-1,
+.surface-border {
+    border-color: #f0f0f0 !important;
+    /* Grigio molto tenue */
+}
+
+.p-splitter {
+    border: none;
+}
+
+.p-splitter-gutter {
+    background: #f8f9fa !important;
+    /* Quasi invisibile finché non ci passi sopra */
+    height: 4px !important;
+}
+
+/* --- SIDEBAR DARK MODE --- */
+.custom-sidebar {
+    background-color: #2c3e50 !important;
+    border-right: 1px solid #1a252f !important;
+}
+
+.custom-sidebar .p-tree {
+    background: transparent !important;
+    border: none;
+    padding: 0;
+}
+
+/* Testi e Icone Sidebar */
+.custom-sidebar .p-treenode-label,
+.custom-sidebar .p-treenode-icon,
+.custom-sidebar .font-bold {
+    color: #bdc3c7 !important;
+}
+
+/* Hover e Selezione Sidebar */
+.custom-sidebar .p-treenode-content:hover {
+    background: #34495e !important;
+}
+
+.custom-sidebar .p-treenode-content.p-highlight {
+    background: #3498db !important;
+    /* Blu scuro integrato */
+    color: white !important;
+}
+
+.custom-sidebar .p-treenode-content.p-highlight .p-treenode-label,
+.custom-sidebar .p-treenode-content.p-highlight .p-treenode-icon {
+    color: white !important;
+}
+
+/* --- MAIN CONTENT (AREA BIANCA) --- */
+
+/* Rimuoviamo i bordi arrotondati ovunque */
+.p-tree,
+.p-datatable,
+.p-column-header-content,
+.p-inputtext,
+.p-button {
+    border-radius: 0 !important;
+}
+
+/* Toolbar Desktop Style */
+.p-toolbar {
+    padding: 0.2rem 0.5rem !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.p-toolbar .p-button {
+    width: 28px;
+    height: 28px;
+    color: #555 !important;
+}
+
+/* Tabella Professionale */
+.p-datatable.p-datatable-sm .p-datatable-thead>tr>th {
+    background-color: #f8f9fa;
+    color: #444;
+    border: 1px solid #f0f0f0;
+    font-weight: 600;
+}
+
+.p-datatable.p-datatable-sm .p-datatable-tbody>tr>td {
+    border: 1px solid #f5f5f5;
+    padding: 0.4rem;
+}
+
+/* Selezione riga Tabella (Blu Windows) */
+.p-datatable-tbody>tr.p-highlight {
+    background: #0078d7 !important;
+    color: white !important;
+}
+
+/* Sostituisce il bordo nero di PrimeFlex con uno quasi invisibile */
+.border-right-1,
+.border-bottom-1,
+.surface-border {
+    border-color: #f0f0f0 !important;
+}
+
+/* Rende l'header della tabella meno pesante */
+.p-datatable .p-datatable-thead>tr>th {
+    border-color: #f0f0f0 !important;
+    background-color: #fafafa !important;
+}
+
+/* Toglie l'alone azzurro di focus dai pulsanti della toolbar */
+.p-button:focus {
+    box-shadow: none !important;
+}
+
+/* Rende il pulsante del calendario più sobrio e grigio */
+.p-datepicker-trigger {
+    background: #f8f9fa !important;
+    border-color: #ced4da !important;
+    color: #6c757d !important;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite ease-in-out;
+}
+
+/* Colore del testo base per i nodi del tree */
+.custom-sidebar .p-treenode-label {
+    color: #ecf0f1 !important; /* Bianco platino */
+}
+
+/* Colore del testo quando passi il mouse (Hover) */
+.custom-sidebar .p-treenode-content:hover .p-treenode-label {
+    color: #ffffff !important;
+}
+
+/* Colore del testo quando la voce è selezionata */
+.custom-sidebar .p-treenode-content.p-highlight .p-treenode-label {
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+/* Colore delle freccette (toggler) */
+.custom-sidebar .p-tree-toggler {
+    color: #bdc3c7 !important;
+}
+
+/* --- OTTIMIZZAZIONE FORM --- */
+.p-fluid .field label, 
+.p-fluid label {
+    font-size: 0.75rem !important; /* Circa 11-12px */
+    color: #666;
+    margin-bottom: 0.25rem !important;
+}
+
+/* --- OTTIMIZZAZIONE TABELLA --- */
+.p-datatable {
+    font-size: 0.85rem !important;
+}
+
+/* Riduce l'altezza delle righe (modalità compatta manuale) */
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.4rem 0.5rem !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+    padding: 0.5rem !important;
+    font-size: 0.8rem;
+}
+/* --- OTTIMIZZAZIONE DROPDOWN --- */
+
+/* Riduce l'altezza del contenitore principale */
+.p-dropdown {
+    height: 34px !important; /* Forza un'altezza compatta */
+    align-items: center;
+}
+
+/* Riduce il padding del testo all'interno della combo */
+.p-dropdown .p-dropdown-label {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.85rem !important;
+}
+
+/* Riduce la dimensione dell'icona (la freccetta) per proporzione */
+.p-dropdown .p-dropdown-trigger {
+    width: 2.5rem !important;
+}
+
+/* Riduce il padding degli elementi nella lista quando la apri */
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.85rem !important;
+}
+
+/* Allineamento SideSelector */
+.p-selectbutton .p-button {
+    height: 34px !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.85rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Rende le icone Buy/Sell un po' più piccole per stare nei 34px */
+.p-selectbutton .p-button i {
+    font-size: 0.9rem !important;
+}
+
+/* 1. Reset universale per altezza campi a 34px */
+.p-inputtext, 
+.p-dropdown, 
+.p-calendar .p-inputtext, 
+.p-inputnumber .p-inputtext,
+.p-datepicker-trigger {
+    height: 34px !important;
+    font-size: 0.85rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box; /* Fondamentale per includere i bordi nell'altezza */
+}
+
+/* 2. Specifico per Calendar con Bottone */
+.p-calendar.p-calendar-w-btn {
+    height: 34px !important;
+    display: flex;
+    align-items: stretch;
+}
+
+.p-calendar.p-calendar-w-btn .p-inputtext {
+    flex: 1 1 auto;
+    width: 1%; /* Forza il ridimensionamento corretto in Flex */
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.p-calendar.p-calendar-w-btn .p-datepicker-trigger {
+    width: 34px !important;
+    min-width: 34px !important;
+    padding: 0 !important;
+    justify-content: center;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    background: #f8f9fa !important;
+    border-color: #ced4da !important;
+    color: #6c757d !important;
+}
+
+/* 3. Correzione icone interne */
+.p-datepicker-trigger span,
+.p-dropdown-trigger span {
+    font-size: 0.9rem !important;
+}
+
+/* Forza la visualizzazione del bordo superiore colorato nelle Card */
+.p-card.border-top-3 {
+    border-top-style: solid !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-radius: 4px !important;
+}
+
+/* Colori specifici (se PrimeFlex non li applica correttamente) */
+.border-blue-500 { border-top-color: #3b82f6 !important; }
+.border-orange-500 { border-top-color: #f97316 !important; }
+.border-green-500 { border-top-color: #22c55e !important; }
+
+/* Rendi il titolo della card più professionale */
+.p-card .p-card-title {
+    font-size: 0.8rem !important;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Riduci un po' il padding interno per renderle più compatte */
+.p-card .p-card-body {
+    padding: 1rem !important;
+}
+
+/* --- LOGIN DIALOG CUSTOM STYLE --- */
+.login-dialog-custom .p-dialog-header {
+    background-color: #2c3e50 !important; /* Stesso blu della sidebar */
+    color: #bdc3c7 !important;
+    padding: 1.5rem !important;
+}
+
+.login-dialog-custom .p-dialog-header .p-dialog-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- FIX ATOMICO LARGHEZZA LOGIN --- */
+
+/* 1. Obblighiamo i contenitori a occupare tutto lo spazio orizzontale */
+.login-dialog-custom .p-float-label,
+.login-dialog-custom .p-password,
+.login-dialog-custom .p-inputtext {
+    display: block !important;
+    width: 100% !important;
+}
+
+/* 2. Pareggiamo l'altezza per evitare lo schiacciamento delle label */
+.login-dialog-custom .p-inputtext,
+.login-dialog-custom .p-password input {
+    height: 42px !important;
+    padding: 0.75rem !important;
+}
+
+/* 3. Posizionamento label (corregge il salto visivo) */
+.login-dialog-custom .p-float-label label {
+    margin-top: -10px !important;
+}
+
+.login-dialog-custom .p-float-label input:focus ~ label,
+.login-dialog-custom .p-float-label input.p-filled ~ label,
+.login-dialog-custom .p-float-label .p-inputwrapper-focus ~ label,
+.login-dialog-custom .p-float-label .p-inputwrapper-filled ~ label {
+    margin-top: 0 !important;
+    top: -0.75rem !important;
+    background-color: white;
+    padding: 0 5px;
+}

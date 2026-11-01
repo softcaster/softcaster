@@ -6,7 +6,8 @@ package org.softcaster.engine.dto;
  *
  * @param index             posizione nel calendario completo (0 = primo
  *                          fixing del contratto): serve per i fixing garantiti
- * @param time              anni dalla data di valutazione al fixing (ACT/365)
+ * @param time              anni dalla data di valutazione al fixing (ACT/365);
+ *                          0 = fixing del giorno non ancora rilevato, al forward
  * @param forward           forward del sottostante alla data di fixing
  * @param settlementForward forward del sottostante alla data di regolamento
  *                          del periodo
@@ -28,17 +29,17 @@ public record AccumulatorFixingInput(
         double volatility) {
 
     public AccumulatorFixingInput {
-        if (time <= 0) {
-            throw new IllegalArgumentException("fixing " + index + ": time deve essere > 0 (fixing futuro)");
+        if (time < 0) {
+            throw new IllegalArgumentException("fixing " + index + ": time must be >= 0 (future or same-day fixing)");
         }
         if (forward <= 0 || settlementForward <= 0) {
-            throw new IllegalArgumentException("fixing " + index + ": forward deve essere > 0");
+            throw new IllegalArgumentException("fixing " + index + ": forward must be > 0");
         }
         if (discountFactor <= 0) {
-            throw new IllegalArgumentException("fixing " + index + ": discountFactor deve essere > 0");
+            throw new IllegalArgumentException("fixing " + index + ": discountFactor must be > 0");
         }
         if (volatility < 0) {
-            throw new IllegalArgumentException("fixing " + index + ": volatility deve essere >= 0");
+            throw new IllegalArgumentException("fixing " + index + ": volatility must be >= 0");
         }
     }
 }

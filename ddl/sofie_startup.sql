@@ -2,36 +2,36 @@
 -- ----------------------------------------------------------------------------
 -- daycount
 -- ----------------------------------------------------------------------------
-INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'NASD_30_360','30/360 NASD');
-INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_360','Actual/360');
-INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_365','Actual/365');
-INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_ACT_ISDA','Actual/Actual ISDA');
-INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_ACT_ICMA','Actual/Actual ICMA');
-INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'EUR_30_360','30/360 EUR');
+INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'NASD_30_360','30/360 US (NASD)');
+INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_360','ACT/360');
+INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_365','ACT/365 Fixed');
+INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_ACT_ISDA','ACT/ACT ISDA');
+INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'ACT_ACT_ICMA','ACT/ACT ICMA');
+INSERT INTO daycount(id_daycount,code, description) VALUES (nextval('daycount_s'),'EUR_30_360','30/360 European');
 
 -- ----------------------------------------------------------------------------
 -- roll_convention
 -- ----------------------------------------------------------------------------
-INSERT INTO roll_convention(id_roll_convention,code, description) VALUES (nextval('roll_convention_s'),'PREVIOUS','Previus');
-INSERT INTO roll_convention(id_roll_convention,code, description) VALUES (nextval('roll_convention_s'),'PREVIOUS-MODIFIED','Previus Following');
+INSERT INTO roll_convention(id_roll_convention,code, description) VALUES (nextval('roll_convention_s'),'PREVIOUS','Preceding');
+INSERT INTO roll_convention(id_roll_convention,code, description) VALUES (nextval('roll_convention_s'),'PREVIOUS-MODIFIED','Modified preceding');
 INSERT INTO roll_convention(id_roll_convention,code, description) VALUES (nextval('roll_convention_s'),'FORWARD','Following');
-INSERT INTO roll_convention(id_roll_convention,code, description) VALUES (nextval('roll_convention_s'),'FORWARD-MODIFIED','Modified Following');
+INSERT INTO roll_convention(id_roll_convention,code, description) VALUES (nextval('roll_convention_s'),'FORWARD-MODIFIED','Modified following');
 INSERT INTO roll_convention(id_roll_convention,code, description) VALUES (100,'UNADJUSTED','Unadjusted');
 
 -- ----------------------------------------------------------------------------
 -- frequency
 -- ----------------------------------------------------------------------------
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'ANNUAL','Annual',1);
-INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'SEMI-ANNUAL','Semi Annual',2);
+INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'SEMI-ANNUAL','Semi-annual',2);
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'E4M','Every 4 months',3);
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'QUARTERLY','Quarterly',4);
-INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'BI-MONTHLY','Every two months',6);
+INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'BI-MONTHLY','Bi-monthly',6);
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (nextval('frequency_s'),'MONTHLY','Monthly',12);
 -- id fissi come l'enum Frequency; settimanale e giornaliera solo per i regolamenti periodici
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (7,'CUSTOM','Custom',0);
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (8,'WEEKLY','Weekly',52);
 INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (9,'DAILY','Daily',365);
-INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (100,'NONE','None',0);
+INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (100,'NONE','At maturity only',0);
 
 -- ----------------------------------------------------------------------------
 -- form
@@ -39,6 +39,7 @@ INSERT INTO frequency(id_frequency,code, description,year_fraction) VALUES (100,
 INSERT INTO form(id_form,code, description) VALUES (nextval('form_s'),'BEARER','Bearer');
 INSERT INTO form(id_form,code, description) VALUES (nextval('form_s'),'REGISTERED','Registered');
 INSERT INTO form(id_form,code, description) VALUES (nextval('form_s'),'BOOK-ENTRY-BOND','Book-entry Bond');
+INSERT INTO form(id_form,code, description) VALUES (100,'NONE','None');
 
 -- ----------------------------------------------------------------------------
 -- type_of_interest
@@ -60,25 +61,26 @@ INSERT INTO type_of_interest(id_type_of_interest,code, description) VALUES (100,
 -- ----------------------------------------------------------------------------
 -- accrual_schedule_type
 -- ----------------------------------------------------------------------------
-INSERT INTO accrual_schedule_type(id_accrual_schedule_type,code, description) VALUES (100,'NONE','None');
+INSERT INTO accrual_schedule_type(id_accrual_schedule_type,code, description) VALUES (100,'AST_NONE','None');
 
 -- ----------------------------------------------------------------------------
 -- compounding
 -- ----------------------------------------------------------------------------
 INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'SIMPLE','Linear');
 INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'COMPOUNDED','Compounded');
+-- id come l'enum Compounding: 3 = SIMPLE-THEN-COMPOUNDED, 4 = CONTINUOUS
+INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'SIMPLE-THEN-COMPOUNDED','Linear then Compounded');
 INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'CONTINUOUS','Continuous');
-INSERT INTO compounding(id_compounding,code, description) VALUES (nextval('compounding_s'),'SIMPLE_THEN_COMPOUNDED','Linear then Compounded');
 
 -- ----------------------------------------------------------------------------
 -- amortization_schedule
 -- ----------------------------------------------------------------------------
 -- Piano Francese
-INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (nextval('amortization_schedule_s'),'SAS','Standard Amortization Schedule');
+INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (nextval('amortization_schedule_s'),'SAS','French (level installment)');
 -- Piano Italiano
-INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (nextval('amortization_schedule_s'),'SLP','Straight-line Principal');
+INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (nextval('amortization_schedule_s'),'SLP','Italian (level principal)');
 -- Piano Bullet
-INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (nextval('amortization_schedule_s'),'IOL','Interest Only Loan');
+INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (nextval('amortization_schedule_s'),'IOL','Bullet (principal at maturity)');
 -- None
 INSERT INTO amortization_schedule(id_amortization_schedule,code, description) VALUES (100,'NONE','None');
 
@@ -120,8 +122,8 @@ INSERT INTO asset_class(id_asset_class,code, description, super_class) VALUES (n
 -- ----------------------------------------------------------------------------
 -- settlement_type - tipo consegna
 -- ----------------------------------------------------------------------------
-INSERT INTO settlement_type(id_settlement_type,code, description) VALUES (nextval('settlement_type_s'),'PHYSICAL','Physical Settlement');
-INSERT INTO settlement_type(id_settlement_type,code, description) VALUES (nextval('settlement_type_s'),'CASH','Cash Settlement');
+INSERT INTO settlement_type(id_settlement_type,code, description) VALUES (nextval('settlement_type_s'),'PHYSICAL','Physical');
+INSERT INTO settlement_type(id_settlement_type,code, description) VALUES (nextval('settlement_type_s'),'CASH','Cash');
 
 -- ----------------------------------------------------------------------------
 -- txn_status
@@ -174,6 +176,7 @@ INSERT INTO txn_component_types(component_type_id,code, description) VALUES (4, 
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (5, 'OPTION_PREMIUM', 'Option Premium Paid or Written');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (6, 'BOND_ACCRUAL', 'Bond Accrual');
 INSERT INTO txn_component_types(component_type_id,code, description) VALUES (7, 'EFFECTIVE_INTEREST_RATE', 'Internal rate of return calculated at trade date for amortized cost accounting');
+INSERT INTO txn_component_types(component_type_id,code, description) VALUES (8, 'LOAN_FEE', 'Loan fees charged at disbursement');
 
 -- ----------------------------------------------------------------------------
 -- counterparty_roles
@@ -406,6 +409,8 @@ INSERT INTO cash_flow_status(cash_flow_status_id,code, description) VALUES (3,'P
 
 INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (1,'LAST_COUPON','Last Coupon');
 INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (2,'FORWARD_CURVE','Forward Curve');
+INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (3,'HIST_SERIE','Historical Serie');
+INSERT INTO coupon_pm(coupon_pm_id,code, description) VALUES (4,'NONE','None');
 
 INSERT INTO tenor (tenor_id, code, description) VALUES
 (1, 'ON',  'Overnight'),
@@ -441,13 +446,26 @@ INSERT INTO premium_style VALUES (1, 'EQUITY_STYLE', 'Premium paid upfront');
 INSERT INTO premium_style VALUES (2, 'FUTURES_STYLE', 'Premium margined daily like a future');
 INSERT INTO option_type VALUES (1, 'CALL', 'Call Option');
 INSERT INTO option_type VALUES (2, 'PUT', 'Put Option');
-INSERT INTO accumulator_type VALUES (1, 'ACCUMULATOR', 'Accumulator (buys at strike, KO above)');
-INSERT INTO accumulator_type VALUES (2, 'DECUMULATOR', 'Decumulator (sells at strike, KO below)');
+INSERT INTO accumulator_type VALUES (1, 'ACCUMULATOR', 'Accumulator');
+INSERT INTO accumulator_type VALUES (2, 'DECUMULATOR', 'Decumulator');
 INSERT INTO barrier_observation VALUES (1, 'FIXING', 'At each fixing');
 INSERT INTO barrier_observation VALUES (2, 'CONTINUOUS', 'Continuous');
 INSERT INTO barrier_observation VALUES (3, 'SETTLEMENT', 'At settlement dates');
-INSERT INTO knock_in_effect VALUES (1, 'LEVERAGE', 'Activates the leverage on unfavourable fixings');
+INSERT INTO knock_in_effect VALUES (1, 'LEVERAGE', 'Activates the leverage');
 INSERT INTO knock_in_effect VALUES (2, 'CONTRACT', 'Activates the contract');
+INSERT INTO guarantee_type VALUES (1, 'NONE', 'No guarantee');
+INSERT INTO guarantee_type VALUES (2, 'LEVERAGED', 'Leveraged');
+INSERT INTO guarantee_type VALUES (3, 'UNLEVERAGED', 'Unleveraged');
+INSERT INTO loan_fee_type VALUES (1, 'PROCESSING', 'Processing fee');
+INSERT INTO loan_fee_type VALUES (2, 'UNDERWRITING', 'Underwriting / appraisal fee');
+INSERT INTO loan_fee_type VALUES (3, 'TAX', 'Tax charges');
+INSERT INTO loan_fee_type VALUES (4, 'INCIDENTAL', 'Incidental expenses');
+INSERT INTO loan_fee_type VALUES (5, 'MANAGEMENT', 'Management / collection fee');
+INSERT INTO loan_fee_type VALUES (6, 'INSURANCE', 'Insurance premium');
+INSERT INTO fee_basis VALUES (1, 'AMOUNT', 'Amount');
+INSERT INTO fee_basis VALUES (2, 'PERCENT', '% (points)');
+INSERT INTO fee_timing VALUES (1, 'UPFRONT', 'Upfront');
+INSERT INTO fee_timing VALUES (2, 'PER_INSTALLMENT', 'Per installment');
 
 INSERT INTO delivery_period_type VALUES (1, 'YEAR', 'Year Future - annual delivery contract');
 INSERT INTO delivery_period_type VALUES (2, 'QUARTER', 'Quarter Future - quarterly delivery contract');

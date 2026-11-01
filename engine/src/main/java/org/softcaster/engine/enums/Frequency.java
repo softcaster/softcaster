@@ -16,10 +16,10 @@ import java.time.Period;
  */
 public enum Frequency implements IdentifiableEnum {
     ANNUAL(1, "ANNUAL", "Annual", 1, Period.ofMonths(12)),
-    SEMI_ANNUAL(2, "SEMI-ANNUAL", "Semi Annual", 2, Period.ofMonths(6)),
+    SEMI_ANNUAL(2, "SEMI-ANNUAL", "Semi-annual", 2, Period.ofMonths(6)),
     E4M(3, "E4M", "Every 4 months", 3, Period.ofMonths(4)),
     QUARTERLY(4, "QUARTERLY", "Quarterly", 4, Period.ofMonths(3)),
-    BI_MONTHLY(5, "BI-MONTHLY", "Every two months", 6, Period.ofMonths(2)),
+    BI_MONTHLY(5, "BI-MONTHLY", "Bi-monthly", 6, Period.ofMonths(2)),
     MONTHLY(6, "MONTHLY", "Monthly", 12, Period.ofMonths(1)),
     CUSTOM(7, "CUSTOM", "Custom", 0, Period.ZERO),
     WEEKLY(8, "WEEKLY", "Weekly", 52, Period.ofWeeks(1)),
