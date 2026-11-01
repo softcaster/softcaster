@@ -23,12 +23,14 @@ public record LoanDto(
         String frequency,
         String amortization,
         String daycount,
+        String rollConvention,
         int preAmortizationPeriods,
         int installments,
         List<Fee> fees,
         Double spread,
         Double floor,
-        Double cap) {
+        Double cap,
+        String indexCode) {
 
     public record Fee(String type, String basis, String timing, double value) {
     }
@@ -42,11 +44,14 @@ public record LoanDto(
                 lmd.getCurrency().getIsoCode(), lmd.getPrincipalAmount(), lmd.getInterestRate(),
                 lmd.getIssueDate().toLocalDate(), lmd.getFirstPaymentLocalDate(), lmd.getMaturityDate().toLocalDate(),
                 lmd.getFrequency().getCode(), lmd.getAmortizationSchedule().getCode(), lmd.getDaycount().getCode(),
+                lmd.getRollConvention() == null ? null : lmd.getRollConvention().getCode(),
                 lmd.getPreAmortizationPeriods(), lmd.getCashFlows().size(),
                 lmd.getFees().stream().map(f -> new Fee(f.getFeeType().getCode(), f.getFeeBasis().getCode(),
                         f.getFeeTiming().getCode(), f.getValue())).toList(),
                 flt == null ? null : flt.getFloatingTerms().getSpread(),
                 flt == null ? null : flt.getFloatingTerms().getFloor(),
-                flt == null ? null : flt.getFloatingTerms().getCap());
+                flt == null ? null : flt.getFloatingTerms().getCap(),
+                flt == null || flt.getFloatingTerms().getProjectionIndex() == null ? null
+                        : flt.getFloatingTerms().getProjectionIndex().getCode());
     }
 }

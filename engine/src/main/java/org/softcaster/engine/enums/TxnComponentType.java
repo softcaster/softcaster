@@ -15,7 +15,8 @@ public enum TxnComponentType implements IdentifiableEnum {
     MAINTENANCE_MARGIN(4, "MAINTENANCE_MARGIN", "Maintenance Margin Requirement"),
     OPTION_PREMIUM(5, "OPTION_PREMIUM", "Option Premium Paid or Written"),
     BOND_ACCRUAL(6, "BOND_ACCRUAL", "Bond Accrual"),
-    EFFECTIVE_INTEREST_RATE(7, "EFFECTIVE_INTEREST_RATE", "Internal rate of return calculated at trade date for amortized cost accounting");
+    EFFECTIVE_INTEREST_RATE(7, "EFFECTIVE_INTEREST_RATE", "Internal rate of return calculated at trade date for amortized cost accounting"),
+    LOAN_FEE(8, "LOAN_FEE", "Loan fees charged at disbursement");
 
     private final int id;
     private final String code;

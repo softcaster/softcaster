@@ -1,11 +1,15 @@
 package org.softcaster.easy_pricer_srv.services;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.hibernate.Hibernate;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.CurrencyDAO;
+import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FltLoanMasterData;
 import org.softcaster.core.data.FloatingRateTerms;
 import org.softcaster.core.data.LoanFee;
@@ -53,6 +57,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 public class LoanDealService {
 
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
     private TransactionTemplate transactionTemplate;
     @Autowired
@@ -114,6 +120,47 @@ public class LoanDealService {
     }
 
     /**
+     * Modifica di un deal registrato: termini, spese e piano dell'anagrafica
+     * (stesso codice) e transazione (PENDING aggiornata, EXECUTED -> TO_AMEND
+     * con storno e nuova transazione). Il tipo di tasso non cambia.
+     */
+    public LoanDto amend(Integer txnId, LoanDealRequest r) {
+        return transactionTemplate.execute(status -> {
+            TxnSide side = TxnSide.fromCode(require(r.side, "side"));
+            require(r.counterpartyId, "counterpartyId");
+            require(r.positionMdId, "positionMdId");
+            FinancialTxn txn = financialTxnService.findAmendable(txnId);
+            if (!(Hibernate.unproxy(txn.getMasterData()) instanceof LoanMasterData)) {
+                throw new IllegalArgumentException("Trade " + txnId + " is not a loan");
+            }
+            // la transazione puo' aver gia' caricato l'anagrafica come proxy
+            LoanMasterData lmd = (LoanMasterData) Hibernate.unproxy(loanDAO.getById(txn.getMasterData().getIdMasterData()));
+            boolean floating = "FLOATING".equals(require(r.rateType, "rateType"));
+            if (floating != (lmd instanceof FltLoanMasterData)) {
+                throw new IllegalArgumentException("The rate type of " + lmd.getCode() + " cannot change");
+            }
+            // descrizione generata dai vecchi termini: si rigenera
+            String oldDescription = lmd.getDescription();
+            if (oldDescription.equals(r.description) && oldDescription.equals(description(lmd, lmd.getAmortizationSchedule()))) {
+                r.description = null;
+            }
+
+            // spese e piano si sostituiscono: prima le cancellazioni (spesa univoca per tipo)
+            lmd.getFees().clear();
+            lmd.getCashFlows().clear();
+            entityManager.flush();
+            fill(lmd, r);
+            lmd.getCashFlows().addAll(LoanCalculator.toItems(loanCalculator.generateSchedule(lmd, calendar(lmd))));
+            entityManager.flush();
+
+            LocalDate tradeDate = r.tradeDate != null ? r.tradeDate : lmd.getIssueDate().toLocalDate();
+            financialTxnService.amendOtcDeal(txn, lmd.getDescription(), side, r.counterpartyId, r.positionMdId,
+                    tradeDate, lmd.getPrincipalAmount(), 100.);
+            return LoanDto.of(lmd);
+        });
+    }
+
+    /**
      * Valutazione di un mutuo registrato sul suo piano salvato.
      */
     public LoanPricingResponse value(String code, LoanDealRequest pricing) {
@@ -151,6 +198,16 @@ public class LoanDealService {
         boolean floating = "FLOATING".equals(require(r.rateType, "rateType"));
         LoanMasterData lmd = floating ? new FltLoanMasterData() : new LoanMasterData();
         lmd.setAssetClass(assetClassDAO.findByCode(floating ? LoanMasterData.FLOATING_ASSET_CLASS : LoanMasterData.FIXED_ASSET_CLASS));
+        fill(lmd, r);
+        return lmd;
+    }
+
+    /**
+     * Termini e spese della richiesta su un mutuo nuovo o registrato (le
+     * spese si aggiungono: per un mutuo registrato vanno tolte prima).
+     */
+    private void fill(LoanMasterData lmd, LoanDealRequest r) {
+        boolean floating = lmd instanceof FltLoanMasterData;
         Currency currency = currencyDAO.findByIsoCode(require(r.currency, "currency"));
         if (currency == null) {
             throw new NoSuchElementException("Currency not found: " + r.currency);
@@ -214,15 +271,13 @@ public class LoanDealService {
             terms.setFixingLagDays(r.fixingLagDays == null ? 2 : r.fixingLagDays);
             terms.setFixingDayType(FixingDayType.BUSINESS_DAYS);
             terms.setCouponPm(CouponProjectionMethod.LAST_COUPON);
-            if (r.indexCode != null && !r.indexCode.isBlank()) {
-                terms.setProjectionIndex(refRateIndexDAO.findAll().stream()
-                        .filter(i -> r.indexCode.equals(i.getCode())).findFirst()
-                        .orElseThrow(() -> new NoSuchElementException("Index not found: " + r.indexCode)));
-            }
+            terms.setProjectionIndex(r.indexCode == null || r.indexCode.isBlank() ? null
+                    : refRateIndexDAO.findAll().stream()
+                            .filter(i -> r.indexCode.equals(i.getCode())).findFirst()
+                            .orElseThrow(() -> new NoSuchElementException("Index not found: " + r.indexCode)));
         }
 
         lmd.setDescription(r.description != null && !r.description.isBlank() ? r.description : description(lmd, amortization));
-        return lmd;
     }
 
     private static String description(LoanMasterData lmd, AmortizationSchedule amortization) {

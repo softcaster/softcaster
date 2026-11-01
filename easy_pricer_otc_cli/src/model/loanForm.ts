@@ -61,7 +61,7 @@ export const newLoanForm = (rateType = 'FIXED'): LoanFormState => {
     };
 };
 
-/** Form di un mutuo registrato (termini in sola lettura, valutazione modificabile). */
+/** Form di un mutuo registrato: termini e spese dell'anagrafica, valutazione invariata. */
 export const loanFormFromDto = (dto: LoanDto, current: LoanFormState): LoanFormState => ({
     ...current,
     rateType: dto.assetClass === 'FRM' ? 'FLOATING' : 'FIXED',
@@ -74,12 +74,14 @@ export const loanFormFromDto = (dto: LoanDto, current: LoanFormState): LoanFormS
     frequency: dto.frequency,
     amortization: dto.amortization,
     daycount: dto.daycount,
+    rollConvention: dto.rollConvention ?? current.rollConvention,
     preAmortizationPeriods: dto.preAmortizationPeriods,
     description: dto.description,
     fees: dto.fees.map((f) => ({ ...f })),
     spreadPct: dto.spread === null ? null : dto.spread * 100,
     floorPct: dto.floor === null ? null : dto.floor * 100,
     capPct: dto.cap === null ? null : dto.cap * 100,
+    indexCode: dto.indexCode ?? '',
 });
 
 export const loanRequest = (f: LoanFormState, reg?: Registration): LoanDealRequest => ({

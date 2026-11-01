@@ -33,7 +33,7 @@ const ToolbarWrapper = () => {
                 className="p-button-text p-button-danger p-1"
                 onClick={() => {
                     confirmDialog({
-                        message: 'Are you sure you want to delete this contract?',
+                        message: 'Delete the selected trade? It will be marked To Cancel.',
                         header: 'Confirm Deletion',
                         icon: 'pi pi-exclamation-triangle',
                         acceptClassName: 'p-button-danger',

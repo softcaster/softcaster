@@ -1,9 +1,14 @@
 package org.softcaster.easy_pricer_srv.services;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import org.hibernate.Hibernate;
+import org.softcaster.core.data.FinancialTxn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.AccumulatorFixing;
@@ -57,6 +62,8 @@ public class AccumulatorDealService {
 
     private final AccumulatorScheduleGenerator scheduleGenerator = new AccumulatorScheduleGenerator();
 
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
     private TransactionTemplate transactionTemplate;
     @Autowired
@@ -124,6 +131,68 @@ public class AccumulatorDealService {
     }
 
     /**
+     * Modifica di un deal registrato: termini e calendario dell'anagrafica
+     * (stesso id; il codice cambia col sottostante) e transazione (PENDING
+     * aggiornata, EXECUTED -> TO_AMEND con storno e nuova transazione). Le
+     * rilevazioni gia' registrate restano sui fixing con la stessa data; la
+     * asset class (cambio o commodity) non cambia.
+     */
+    public AccumulatorDealResponse amend(Integer txnId, AccumulatorDealRequest request) {
+        return transactionTemplate.execute(status -> {
+            TxnSide side = TxnSide.fromCode(require(request.side, "side"));
+            require(request.counterpartyId, "counterpartyId");
+            require(request.positionMdId, "positionMdId");
+            FinancialTxn txn = financialTxnService.findAmendable(txnId);
+            if (!(Hibernate.unproxy(txn.getMasterData()) instanceof AccumulatorMasterData)) {
+                throw new IllegalArgumentException("Trade " + txnId + " is not an accumulator");
+            }
+            AccumulatorMasterData amd = (AccumulatorMasterData) Hibernate.unproxy(
+                    accumulatorDAO.getById(txn.getMasterData().getIdMasterData()));
+            String assetClass = amd.getAssetClass().getCode();
+            // dati non presenti nel form: restano quelli del contratto
+            if (request.spotLag == null) {
+                request.spotLag = amd.getBusinessDays();
+            }
+            if (request.fixingTime == null) {
+                request.fixingTime = amd.getFixingTime();
+                request.fixingTimeZone = amd.getFixingTimeZone();
+            }
+            // descrizione generata dai vecchi termini: si rigenera
+            if (amd.getDescription().equals(request.description) && amd.getDescription().equals(description(amd))) {
+                request.description = null;
+            }
+
+            Map<java.sql.Date, AccumulatorFixing> recorded = new HashMap<>();
+            amd.getFixings().stream()
+                    .filter(f -> f.getFixingPrice() != null || f.getAccumulatedQuantity() != null)
+                    .forEach(f -> recorded.put(f.getFixingDate(), f));
+            // calendario sostituito: prima le cancellazioni
+            amd.getFixings().clear();
+            entityManager.flush();
+            fill(amd, request);
+            if (!assetClass.equals(amd.getAssetClass().getCode())) {
+                throw new IllegalArgumentException("The underlying of " + amd.getCode() + " must stay a "
+                        + (AccumulatorMasterData.FX_ASSET_CLASS.equals(assetClass) ? "currency pair" : "commodity future"));
+            }
+            for (AccumulatorFixing f : amd.getFixings()) {
+                AccumulatorFixing old = recorded.get(f.getFixingDate());
+                if (old != null) {
+                    f.setFixingPrice(old.getFixingPrice());
+                    f.setAccumulatedQuantity(old.getAccumulatedQuantity());
+                }
+            }
+            amd.setCode(amd.contractCode());
+            entityManager.flush();
+
+            double premium = premium(request, amd);
+            financialTxnService.amendOtcDeal(txn, amd.getDescription(), side, request.counterpartyId,
+                    request.positionMdId, tradeDate(request), 1., premium);
+            return new AccumulatorDealResponse(AccumulatorDto.of(amd, true), side.getCode(), 1., premium,
+                    valuationAtBooking(amd, request));
+        });
+    }
+
+    /**
      * Valutazione alla data dell'operazione, informativa: senza volatilita'
      * (indicata o da superficie) o curve il deal resta registrato senza
      * valutazione.
@@ -158,13 +227,22 @@ public class AccumulatorDealService {
      * future su commodity -> CMA (valuta del future).
      */
     private AccumulatorMasterData build(AccumulatorDealRequest r) {
+        AccumulatorMasterData amd = new AccumulatorMasterData();
+        fill(amd, r);
+        return amd;
+    }
+
+    /**
+     * Termini e calendario della richiesta su un contratto nuovo o registrato
+     * (i fixing si aggiungono: per un contratto registrato vanno tolti prima).
+     */
+    private void fill(AccumulatorMasterData amd, AccumulatorDealRequest r) {
         MasterData underlying = masterDataDAO.findByCode(require(r.underlyingCode, "underlyingCode"));
         if (underlying == null) {
             throw new NoSuchElementException("Underlying not found: " + r.underlyingCode);
         }
         underlying = (MasterData) Hibernate.unproxy(underlying);
 
-        AccumulatorMasterData amd = new AccumulatorMasterData();
         amd.setUnderlying(underlying);
         if (underlying instanceof ForexMasterData pair) {
             amd.setAssetClass(assetClassDAO.findByCode(AccumulatorMasterData.FX_ASSET_CLASS));
@@ -233,7 +311,6 @@ public class AccumulatorDealService {
         amd.setBusinessDays(spotLag);
         amd.setMultiplier(1.);
         amd.setDescription(r.description != null && !r.description.isBlank() ? r.description : description(amd));
-        return amd;
     }
 
     /**

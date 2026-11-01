@@ -133,6 +133,21 @@ export interface LoanPricingResponse {
     schedule: LoanInstallment[];
 }
 
+/** Valuta dell'anagrafica (/currency/r01: si usano solo codice e descrizione). */
+export interface CurrencyDto {
+    idCurrency: number;
+    isoCode: string;
+    description: string | null;
+}
+
+/** Curva di sconto (yield_curve o spread_curve), DiscountCurveDto. */
+export interface DiscountCurveDto {
+    code: string;
+    description: string | null;
+    kind: 'YIELD' | 'SPREAD';
+    currency: string | null;
+}
+
 export interface LoanDto {
     masterDataId: number;
     code: string;
@@ -147,12 +162,14 @@ export interface LoanDto {
     frequency: string;
     amortization: string;
     daycount: string;
+    rollConvention: string | null;
     preAmortizationPeriods: number;
     installments: number;
     fees: { type: string; basis: string; timing: string; value: number }[];
     spread: number | null;
     floor: number | null;
     cap: number | null;
+    indexCode: string | null;
 }
 
 // ---------------------------------------------------------------------------

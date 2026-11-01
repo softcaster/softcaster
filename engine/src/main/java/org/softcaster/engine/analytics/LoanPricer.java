@@ -53,7 +53,7 @@ public class LoanPricer extends AbstractFixedIncomePricer<LoanInput, LoanResult>
         CashFlow next = future.isEmpty() ? null : future.get(0);
         double installment = flows.stream().filter(cf -> cf.principal() > 0)
                 .findFirst().map(CashFlow::getTotalAmount).orElse(0.);
-        double yield = future.isEmpty() ? 0. : rateOf(future, pv, v);
+        double yield = future.isEmpty() ? 0. : internalRate(future, pv, v);
 
         List<CashFlowDetail> details = new ArrayList<>();
         for (CashFlow cf : future) {
@@ -107,9 +107,10 @@ public class LoanPricer extends AbstractFixedIncomePricer<LoanInput, LoanResult>
 
     /**
      * Tasso annuo composto che rende il valore attuale dei flussi uguale a
-     * price (t ACT/365 da base).
+     * price (t ACT/365 da base). Usato anche per il tasso interno al prezzo
+     * di un deal (LoanCalculator.dealValuation).
      */
-    private static double rateOf(List<CashFlow> flows, double price, LocalDate base) {
+    public static double internalRate(List<CashFlow> flows, double price, LocalDate base) {
         DoubleUnaryOperator npv = i -> {
             double sum = 0.;
             for (CashFlow cf : flows) {

@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
-import type { LoanFeeInput } from '../api/types';
+import { fetchCurrencies, fetchDiscountCurves } from '../api/services';
+import type { CurrencyDto, DiscountCurveDto, LoanFeeInput } from '../api/types';
 import { Choice, Field, FormTabs, Grid, NumberInput, type TabDef } from '../components/ui';
 import { useEnums } from '../model/enums';
 import type { LoanFormState } from '../model/loanForm';
@@ -14,13 +15,15 @@ import { RATE_TYPES } from '../model/options';
  * (booking, solo per un contratto nuovo), valutazione e risultati.
  * readOnly blocca i termini (contratto registrato); la valutazione resta
  * modificabile. rateTypeLocked nasconde la scelta fisso/variabile
- * (viste Loan Fixed e Loan Floating).
+ * (viste Loan Fixed e Loan Floating). pricing = false toglie valutazione e
+ * risultati (data entry dei trade: il pricing ha le sue pagine).
  */
-export const LoanFormTabs = ({ value, onChange, readOnly = false, rateTypeLocked = false, booking, cashFlows, results, tab, onTabChange }: {
+export const LoanFormTabs = ({ value, onChange, readOnly = false, rateTypeLocked = false, pricing = true, booking, cashFlows, results, tab, onTabChange }: {
     value: LoanFormState;
     onChange: (v: LoanFormState) => void;
     readOnly?: boolean;
     rateTypeLocked?: boolean;
+    pricing?: boolean;
     booking?: ReactNode;
     /** piano salvato, solo per un contratto registrato */
     cashFlows?: ReactNode;
@@ -32,6 +35,34 @@ export const LoanFormTabs = ({ value, onChange, readOnly = false, rateTypeLocked
     const setFee = (index: number, fee: LoanFeeInput) => set('fees', value.fees.map((x, i) => (i === index ? fee : x)));
     const floating = value.rateType === 'FLOATING';
     const enums = useEnums('amortizationSchedule', 'loanFrequency', 'daycountBasis', 'rollConvention', 'loanFeeType', 'feeBasis', 'feeTiming');
+    const [curves, setCurves] = useState<DiscountCurveDto[]>([]);
+    const [currencies, setCurrencies] = useState<CurrencyDto[]>([]);
+
+    useEffect(() => {
+        fetchCurrencies()
+            .then((list) => setCurrencies([...list].sort((a, b) => a.isoCode.localeCompare(b.isoCode))))
+            .catch(() => setCurrencies([]));
+    }, []);
+
+    // valute dell'anagrafica; quella del form resta visibile anche se la lista non e' caricata
+    const currencyOptions = (currencies.some((c) => c.isoCode === value.currency) || !value.currency
+        ? currencies
+        : [{ idCurrency: 0, isoCode: value.currency, description: null }, ...currencies])
+        .map((c) => ({ label: c.isoCode, value: c.isoCode }));
+
+    useEffect(() => {
+        if (pricing) {
+            fetchDiscountCurves().then(setCurves).catch(() => setCurves([]));
+        }
+    }, [pricing]);
+
+    // curve nella valuta del mutuo (o senza valuta), piu' quella gia' scelta
+    const curveOptions = curves
+        .filter((c) => !c.currency || c.currency === value.currency || c.code === value.discountCurve)
+        .map((c) => ({
+            label: `${c.code}${c.description ? ` — ${c.description}` : ''}${c.kind === 'SPREAD' ? ' (spread)' : ''}`,
+            value: c.code,
+        }));
 
     const terms = (
         <Grid>
@@ -44,7 +75,7 @@ export const LoanFormTabs = ({ value, onChange, readOnly = false, rateTypeLocked
                 <NumberInput value={value.principalAmount} disabled={readOnly} onChange={(v) => set('principalAmount', v)} />
             </Field>
             <Field label="Currency" col={2}>
-                <InputText value={value.currency} disabled={readOnly} onChange={(e) => set('currency', e.target.value.toUpperCase())} maxLength={3} />
+                <Dropdown value={value.currency} options={currencyOptions} disabled={readOnly} filter onChange={(e) => set('currency', e.value)} />
             </Field>
             <Field label={floating ? 'Current rate %' : 'Nominal rate %'} col={2}
                 hint={floating ? 'Index + spread at the date: applied to future installments' : 'Annual nominal rate'}>
@@ -140,8 +171,9 @@ export const LoanFormTabs = ({ value, onChange, readOnly = false, rateTypeLocked
             <Field label="Date" col={3} hint="Empty = official date">
                 <Calendar value={value.valuationDate} onChange={(e) => set('valuationDate', e.value ?? null)} dateFormat="dd/mm/yy" showIcon showButtonBar />
             </Field>
-            <Field label="Discount curve" col={3} hint="Empty = configured DISCOUNT curve, otherwise the flat rate">
-                <InputText value={value.discountCurve} onChange={(e) => set('discountCurve', e.target.value)} />
+            <Field label="Discount curve" col={3} hint="Yield and spread curves in the loan currency. Empty = configured DISCOUNT curve, otherwise the flat rate">
+                <Dropdown value={value.discountCurve || null} options={curveOptions} filter showClear placeholder="Configured curve"
+                    emptyMessage={`No curves in ${value.currency}`} onChange={(e) => set('discountCurve', e.value ?? '')} />
             </Field>
             <Field label="Discount rate %" col={3} hint="Continuous, used when there is no curve">
                 <NumberInput value={value.discountRatePct} onChange={(v) => set('discountRatePct', v)} digits={4} />
@@ -158,8 +190,10 @@ export const LoanFormTabs = ({ value, onChange, readOnly = false, rateTypeLocked
         { key: 'fees', header: `Fees (${value.fees.length})`, icon: 'pi pi-wallet', content: fees },
         ...(booking ? [{ key: 'booking', header: 'Booking', icon: 'pi pi-book', content: booking }] : []),
         ...(cashFlows ? [{ key: 'cashflows', header: 'Cash flows', icon: 'pi pi-list', content: cashFlows }] : []),
-        { key: 'valuation', header: 'Valuation', icon: 'pi pi-sliders-h', content: valuation },
-        { key: 'results', header: 'Results', icon: 'pi pi-chart-bar', content: results, disabled: !results },
+        ...(pricing ? [
+            { key: 'valuation', header: 'Valuation', icon: 'pi pi-sliders-h', content: valuation },
+            { key: 'results', header: 'Results', icon: 'pi pi-chart-bar', content: results, disabled: !results },
+        ] : []),
     ];
 
     return <FormTabs tabs={tabs} active={tab} onChange={onTabChange} />;

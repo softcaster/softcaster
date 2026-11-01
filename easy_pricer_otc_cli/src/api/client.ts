@@ -10,6 +10,10 @@ export const apiGet = async <T>(url: string): Promise<T> => (await apiClient.get
 
 export const apiPost = async <T>(url: string, body: unknown): Promise<T> => (await apiClient.post<T>(url, body)).data;
 
+export const apiPut = async <T>(url: string, body: unknown): Promise<T> => (await apiClient.put<T>(url, body)).data;
+
+export const apiDelete = async <T>(url: string): Promise<T> => (await apiClient.delete<T>(url)).data;
+
 /**
  * Messaggio leggibile da un errore REST: i controller OTC rispondono
  * {"Error": "..."} con 400 / 404.

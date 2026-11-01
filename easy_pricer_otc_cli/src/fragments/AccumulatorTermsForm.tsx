@@ -30,10 +30,12 @@ export const AccumulatorPremium = ({ value, onChange, readOnly = false }: FormPr
 /**
  * Form a schede di un accumulator: contratto, barriere e garanzia,
  * registrazione (booking, solo per un contratto nuovo), valutazione e
- * risultati. readOnly blocca i termini (contratto registrato).
+ * risultati. readOnly blocca i termini (contratto registrato); pricing =
+ * false toglie valutazione e risultati (data entry dei trade).
  */
-export const AccumulatorFormTabs = ({ value, onChange, assetClass, readOnly = false, booking, results, tab, onTabChange }: FormProps & {
+export const AccumulatorFormTabs = ({ value, onChange, assetClass, readOnly = false, pricing = true, booking, results, tab, onTabChange }: FormProps & {
     assetClass: string;
+    pricing?: boolean;
     booking?: ReactNode;
     results?: ReactNode;
     tab: string;
@@ -137,8 +139,10 @@ export const AccumulatorFormTabs = ({ value, onChange, assetClass, readOnly = fa
         { key: 'terms', header: 'Contract', icon: 'pi pi-file-edit', content: contract },
         { key: 'barriers', header: 'Barriers & guarantee', icon: 'pi pi-shield', content: barriers },
         ...(booking ? [{ key: 'booking', header: 'Booking', icon: 'pi pi-book', content: booking }] : []),
-        { key: 'valuation', header: 'Valuation', icon: 'pi pi-sliders-h', content: valuation },
-        { key: 'results', header: 'Results', icon: 'pi pi-chart-bar', content: results, disabled: !results },
+        ...(pricing ? [
+            { key: 'valuation', header: 'Valuation', icon: 'pi pi-sliders-h', content: valuation },
+            { key: 'results', header: 'Results', icon: 'pi pi-chart-bar', content: results, disabled: !results },
+        ] : []),
     ];
 
     return <FormTabs tabs={tabs} active={tab} onChange={onTabChange} />;

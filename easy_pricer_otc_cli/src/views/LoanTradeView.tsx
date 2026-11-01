@@ -3,15 +3,15 @@ import { Message } from 'primereact/message';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { Tag } from 'primereact/tag';
 import { errorMessage } from '../api/client';
-import { bookLoan, fetchLoanCashFlows, fetchLoans, fetchTxns, priceLoan, valueLoan } from '../api/services';
-import type { FinancialTxnDto, LoanCashFlow, LoanDto, LoanPricingResponse } from '../api/types';
+import { amendLoan, bookLoan, cancelTxn, fetchLoanCashFlows, fetchLoans, fetchTxns } from '../api/services';
+import type { FinancialTxnDto, LoanCashFlow, LoanDto } from '../api/types';
 import { RegistrationPanel, type Registration } from '../components/RegistrationPanel';
 import { TxnTable } from '../components/TxnTable';
 import { useActions } from '../context/ActionContext';
-import { LoanCashFlows, LoanResults } from '../fragments/LoanResults';
+import { LoanCashFlows } from '../fragments/LoanResults';
 import { LoanFormTabs } from '../fragments/LoanTermsForm';
 import { loanFormFromDto, loanRequest, newLoanForm } from '../model/loanForm';
-import { registrationFromTxn } from '../model/txn';
+import { isEditableTxn, registrationFromTxn } from '../model/txn';
 
 const NEW_REGISTRATION: Registration = { side: 'BUY', counterpartyId: null, positionMdId: null, tradeDate: null };
 
@@ -19,8 +19,11 @@ const NEW_REGISTRATION: Registration = { side: 'BUY', counterpartyId: null, posi
  * Deal capture dei mutui di un tipo di tasso (Loan Fixed = XRM, Loan
  * Floating = FRM): in alto il contratto, in basso le transazioni registrate;
  * la transazione selezionata carica i suoi dati e l'anagrafica collegata.
- * Toolbar: Nuovo, Salva (registra un contratto nuovo), Aggiorna, Calcola
- * (simula i termini o valuta il contratto selezionato).
+ * Toolbar: Nuovo, Salva (registra un contratto nuovo o modifica quello
+ * selezionato: PENDING aggiornato, EXECUTED -> TO_AMEND), Cancella
+ * (TO_CANCEL), Aggiorna. Dopo Salva e Cancella il form torna vuoto. Solo
+ * data entry: simulazione e valutazione sono nelle pagine Pricing e
+ * Contracts.
  */
 const LoanTradeView = ({ rateType }: { rateType: 'FIXED' | 'FLOATING' }) => {
     const assetClass = rateType === 'FIXED' ? 'XRM' : 'FRM';
@@ -30,7 +33,6 @@ const LoanTradeView = ({ rateType }: { rateType: 'FIXED' | 'FLOATING' }) => {
     const [loans, setLoans] = useState<LoanDto[]>([]);
     const [txns, setTxns] = useState<FinancialTxnDto[]>([]);
     const [selectedTxn, setSelectedTxn] = useState<FinancialTxnDto | null>(null);
-    const [result, setResult] = useState<LoanPricingResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [tab, setTab] = useState('terms');
     // piano salvato del contratto selezionato, con il codice a cui si riferisce
@@ -39,6 +41,8 @@ const LoanTradeView = ({ rateType }: { rateType: 'FIXED' | 'FLOATING' }) => {
     // anagrafica collegata alla transazione selezionata
     const selected = selectedTxn ? loans.find((l) => l.code === selectedTxn.masterDataCode) ?? null : null;
     const selectedCode = selected?.code;
+    // contratto nuovo, oppure transazione PENDING / EXECUTED
+    const editable = !selectedTxn || isEditableTxn(selectedTxn);
 
     useEffect(() => {
         if (!selectedCode) {
@@ -79,37 +83,40 @@ const LoanTradeView = ({ rateType }: { rateType: 'FIXED' | 'FLOATING' }) => {
         setSelectedTxn(null);
         setForm(newLoanForm(rateType));
         setRegistration(NEW_REGISTRATION);
-        setResult(null);
         setError(null);
         setTab('terms');
-    };
-
-    const calculate = async () => {
-        setError(null);
-        try {
-            setResult(selected
-                ? await valueLoan(selected.code, loanRequest(form))
-                : await priceLoan(loanRequest(form)));
-            setTab('results');
-        } catch (e) {
-            setError(errorMessage(e));
-        }
     };
 
     const save = async () => {
         setError(null);
         try {
-            const response = await bookLoan(loanRequest(form, registration));
-            setResult(response);
-            setTab('results');
-            showToast({ severity: 'success', summary: 'Loan booked', detail: response.code ?? '' });
-            const allTxns = await load();
-            const txn = allTxns.filter((t) => t.masterDataCode === response.code)
-                .sort((a, b) => b.financialTxnId - a.financialTxnId)[0];
-            if (txn) {
-                setSelectedTxn(txn);
-                setRegistration(registrationFromTxn(txn));
+            if (selectedTxn) {
+                const loan = await amendLoan(selectedTxn.financialTxnId, loanRequest(form, registration));
+                showToast({
+                    severity: 'success', summary: selectedTxn.txnStatusId === 1 ? 'Trade updated' : 'Trade amended (To Amend)',
+                    detail: loan.code,
+                });
+            } else {
+                const response = await bookLoan(loanRequest(form, registration));
+                showToast({ severity: 'success', summary: 'Loan booked', detail: response.code ?? '' });
             }
+            await load();
+            newDeal();
+        } catch (e) {
+            setError(errorMessage(e));
+        }
+    };
+
+    const del = async () => {
+        if (!selectedTxn) {
+            return;
+        }
+        setError(null);
+        try {
+            await cancelTxn(selectedTxn.financialTxnId);
+            showToast({ severity: 'success', summary: 'Trade deleted (To Cancel)', detail: selectedTxn.masterDataCode ?? '' });
+            await load();
+            newDeal();
         } catch (e) {
             setError(errorMessage(e));
         }
@@ -122,7 +129,6 @@ const LoanTradeView = ({ rateType }: { rateType: 'FIXED' | 'FLOATING' }) => {
         }
         setSelectedTxn(txn);
         setRegistration(registrationFromTxn(txn));
-        setResult(null);
         const dto = loans.find((l) => l.code === txn.masterDataCode);
         if (dto) {
             setForm((f) => loanFormFromDto(dto, f));
@@ -130,17 +136,16 @@ const LoanTradeView = ({ rateType }: { rateType: 'FIXED' | 'FLOATING' }) => {
         } else {
             setError(`Master data ${txn.masterDataCode ?? '?'} of trade ${txn.financialTxnId} not found`);
         }
-        // i risultati non valgono per la transazione selezionata
-        setTab((t) => (t === 'results' ? 'terms' : t));
     };
 
-    const canSave = !selectedTxn && registration.counterpartyId !== null && registration.positionMdId !== null;
+    const canSave = editable && registration.counterpartyId !== null && registration.positionMdId !== null;
+    const canDelete = !!selectedTxn && editable;
 
     useEffect(() => {
-        setAction({ new: newDeal, save: canSave ? save : undefined, calculate, refresh });
+        setAction({ new: newDeal, save: canSave ? save : undefined, del: canDelete ? del : undefined, refresh });
         // le azioni della toolbar si aggiornano con lo stato del form
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [form, registration, selectedTxn, loans, canSave]);
+    }, [form, registration, selectedTxn, loans, canSave, canDelete]);
 
     // toolbar vuota quando si lascia la vista
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,10 +162,9 @@ const LoanTradeView = ({ rateType }: { rateType: 'FIXED' | 'FLOATING' }) => {
                             : <Tag value="New contract" severity="success" />}
                     </div>
                     {error && <Message severity="error" text={error} className="w-full mb-2" />}
-                    <LoanFormTabs value={form} onChange={setForm} readOnly={!!selectedTxn} rateTypeLocked tab={tab} onTabChange={setTab}
-                        booking={<RegistrationPanel value={registration} onChange={setRegistration} readOnly={!!selectedTxn} sideHint="BUY = the bank lends" />}
-                        cashFlows={selected && cashFlows?.code === selected.code ? <LoanCashFlows items={cashFlows.items} /> : undefined}
-                        results={result ? <LoanResults result={result} /> : undefined} />
+                    <LoanFormTabs value={form} onChange={setForm} readOnly={!editable} rateTypeLocked pricing={false} tab={tab} onTabChange={setTab}
+                        booking={<RegistrationPanel value={registration} onChange={setRegistration} readOnly={!editable} sideHint="BUY = the bank lends" />}
+                        cashFlows={selected && cashFlows?.code === selected.code ? <LoanCashFlows items={cashFlows.items} /> : undefined} />
                 </SplitterPanel>
                 <SplitterPanel size={35} minSize={15} className="p-2 flex flex-column overflow-hidden">
                     <TxnTable data={txns} selection={selectedTxn} onSelectionChange={select} emptyMessage="No loan trades" />

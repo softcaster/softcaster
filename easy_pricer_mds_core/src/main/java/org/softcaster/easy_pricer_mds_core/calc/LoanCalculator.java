@@ -15,6 +15,7 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.dto.LoanPricingResponse;
 import org.softcaster.engine.analytics.LoanPricer;
 import org.softcaster.engine.cashflow.CashFlow;
+import org.softcaster.engine.cashflow.CashFlowHelper;
 import org.softcaster.engine.cashflow.HolidayCalendar;
 import org.softcaster.engine.cashflow.LoanScheduleBuilder;
 import org.softcaster.engine.cashflow.PaymentPeriod;
@@ -136,19 +137,49 @@ public class LoanCalculator {
             throw new IllegalArgumentException("Missing discount curve (discountCurve) or rate (discountRate) and no "
                     + "DISCOUNT curve configured for " + lmd.getAssetClass().getCode() + "/" + lmd.getCurrency().getIsoCode());
         }
-        List<Double> fees = new ArrayList<>();
-        double outstanding = lmd.getPrincipalAmount();
-        for (CashFlow cf : flows) {
-            fees.add(lmd.installmentFees(outstanding));
-            outstanding -= cf.principal();
-        }
-        return new LoanInput(lmd.getCode(), valuationDate, lmd.getPrincipalAmount(), lmd.getIssueDate().toLocalDate(),
-                lmd.getInterestRate() / 100., new CashFlowSchedule(flows, lmd.getDaycount(), lmd.getFrequency(), lmd.getCompounding()),
-                lmd.upfrontFees(), fees, curve, rate, creditSpread == null ? 0. : creditSpread);
+        return loanInput(lmd, flows, valuationDate, curve, rate, creditSpread == null ? 0. : creditSpread);
     }
 
     public LoanResult valuation(LoanInput input) {
         return loanPricer.calculate(Objects.requireNonNull(input, "input"));
+    }
+
+    /**
+     * Valutazione al prezzo di un deal (processor), sul piano salvato: tasso
+     * interno (effective interest rate del costo ammortizzato) che rende le
+     * rate future uguali al controvalore, cioe' price % del debito residuo
+     * piu' il rateo, al netto delle spese all'erogazione se il deal non e'
+     * successivo all'erogazione (le incassa chi presta). Yield, duration e
+     * DV01 sono a quel tasso; nessun dato di mercato.
+     *
+     * @param price prezzo secco in percentuale del debito residuo (100 = alla pari)
+     */
+    public LoanResult dealValuation(LoanMasterData lmd, LocalDate tradeDate, double price) {
+        List<CashFlow> flows = fromItems(lmd);
+        List<CashFlow> future = CashFlowHelper.futureFlows(flows, tradeDate);
+        if (future.isEmpty()) {
+            throw new IllegalArgumentException("Loan " + lmd.getCode() + " has no installments after " + tradeDate);
+        }
+        // residuo e rateo non dipendono dallo sconto
+        LoanResult atZero = valuation(loanInput(lmd, flows, tradeDate, null, 0., 0.));
+        double amount = atZero.outstandingPrincipal() * price / 100. + atZero.analytics().accruedInterest();
+        if (!tradeDate.isAfter(lmd.getIssueDate().toLocalDate())) {
+            amount -= lmd.upfrontFees();
+        }
+        double eir = LoanPricer.internalRate(future, amount, tradeDate);
+        return valuation(loanInput(lmd, flows, tradeDate, null, Math.log1p(eir), 0.));
+    }
+
+    /**
+     * Debito residuo dopo le rate pagate fino a date compresa, dal piano
+     * salvato (come LoanPricer).
+     */
+    public static double outstanding(LoanMasterData lmd, LocalDate date) {
+        double paid = lmd.getCashFlows().stream()
+                .filter(item -> !item.getEnddate().toLocalDate().isAfter(date))
+                .mapToDouble(CashFlowItem::getAmount)
+                .sum();
+        return Math.max(lmd.getPrincipalAmount() - paid, 0.);
     }
 
     public LoanPricingResponse loanValuation(LoanMasterData lmd, List<CashFlow> flows, LocalDate valuationDate,
@@ -191,6 +222,19 @@ public class LoanCalculator {
     // ------------------------------------------------------------------------
     // -- Helper privati
     // ------------------------------------------------------------------------
+
+    private static LoanInput loanInput(LoanMasterData lmd, List<CashFlow> flows, LocalDate valuationDate,
+            DiscountCurve curve, double rate, double creditSpread) {
+        List<Double> fees = new ArrayList<>();
+        double outstanding = lmd.getPrincipalAmount();
+        for (CashFlow cf : flows) {
+            fees.add(lmd.installmentFees(outstanding));
+            outstanding -= cf.principal();
+        }
+        return new LoanInput(lmd.getCode(), valuationDate, lmd.getPrincipalAmount(), lmd.getIssueDate().toLocalDate(),
+                lmd.getInterestRate() / 100., new CashFlowSchedule(flows, lmd.getDaycount(), lmd.getFrequency(), lmd.getCompounding()),
+                lmd.upfrontFees(), fees, curve, rate, creditSpread);
+    }
 
     private String linkedCurveCode(LoanMasterData lmd) {
         return acDcBcyLinkDAO.find(lmd.getAssetClass().getIdAssetClass(), lmd.getCurrency().getIdCurrency(), CurveRole.DISCOUNT)
