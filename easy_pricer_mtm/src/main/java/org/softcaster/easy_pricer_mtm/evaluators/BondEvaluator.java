@@ -58,12 +58,15 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
 
                     XRBResult output = calculate(smd, mktPrice, mtmHelper.getOfficialDate());
                     if (output != null) {
-                        currentValuation.setMarketPrice(output.analytics().dirtyPrice());
+                        // prezzo secco, come il prezzo medio della posizione (BondTxnProcessor):
+                        // il rateo e' a parte (accruedInterest) e la contabilita' lo registra
+                        // con gli eventi ACCRUAL, quindi non deve entrare nell'unrealized
+                        currentValuation.setMarketPrice(mktPrice);
                         currentValuation.setYtm(output.analytics().yield());
                         currentValuation.setDuration(output.analytics().modifiedDuration());
                         currentValuation.setModDuration(output.analytics().modifiedDuration());
                         currentValuation.setAccruedInterest(output.analytics().accruedInterest());
-                        currentValuation.setTheoreticalPrice(output.analytics().dirtyPrice());
+                        currentValuation.setTheoreticalPrice(mktPrice);
                         currentValuation.setValuationDate(output.valuationDate());
                         currentValuation.setDv01(output.analytics().dv01());
                     }

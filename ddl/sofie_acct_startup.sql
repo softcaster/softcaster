@@ -163,6 +163,28 @@ INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_accoun
 INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'OBS_CLEARING',
     (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), (SELECT account_id FROM gl_accounts WHERE code = '600090'));
 
+-- 130030 Fair Value Adjustment - Debt Securities (ddl/mtm_snapshot.sql)
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'BOND_FV_ADJUSTMENT',
+    (SELECT id_currency FROM currency WHERE iso_code = 'EUR'), (SELECT account_id FROM gl_accounts WHERE code = '130030'));
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'BOND_FV_ADJUSTMENT',
+    (SELECT id_currency FROM currency WHERE iso_code = 'USD'), (SELECT account_id FROM gl_accounts WHERE code = '130030'));
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'BOND_FV_ADJUSTMENT',
+    (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), (SELECT account_id FROM gl_accounts WHERE code = '130030'));
+-- 420070 Unrealized Gain on Debt Securities
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'BOND_UNREALIZED_GAIN',
+    (SELECT id_currency FROM currency WHERE iso_code = 'EUR'), (SELECT account_id FROM gl_accounts WHERE code = '420070'));
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'BOND_UNREALIZED_GAIN',
+    (SELECT id_currency FROM currency WHERE iso_code = 'USD'), (SELECT account_id FROM gl_accounts WHERE code = '420070'));
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'BOND_UNREALIZED_GAIN',
+    (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), (SELECT account_id FROM gl_accounts WHERE code = '420070'));
+-- 520070 Unrealized Loss on Debt Securities
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'BOND_UNREALIZED_LOSS',
+    (SELECT id_currency FROM currency WHERE iso_code = 'EUR'), (SELECT account_id FROM gl_accounts WHERE code = '520070'));
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'BOND_UNREALIZED_LOSS',
+    (SELECT id_currency FROM currency WHERE iso_code = 'USD'), (SELECT account_id FROM gl_accounts WHERE code = '520070'));
+INSERT INTO account_mapping(account_mapping_id, mapping_key, currency, gl_account) VALUES (nextval('account_mapping_s'), 'BOND_UNREALIZED_LOSS',
+    (SELECT id_currency FROM currency WHERE iso_code = 'CHF'), (SELECT account_id FROM gl_accounts WHERE code = '520070'));
+
 -- asset_class_script_mapping: strategia Groovy per asset class (event_type NULL = tutti gli eventi);
 -- senza riga si usa lo script col codice dell'asset class (es. FSP.groovy).
 -- Titoli fissi e variabili: XRB.groovy; future marginati: FUT.groovy.

@@ -8,7 +8,11 @@ import jakarta.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +26,13 @@ import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.easy_pricer_mtm.services.EngineStateManager;
+import org.softcaster.easy_pricer_mtm.services.EodMtmResult;
+import org.softcaster.easy_pricer_mtm.services.EodMtmService;
 import org.softcaster.easy_pricer_mtm.services.MtmService;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -45,6 +52,12 @@ public class MtMPollingJob implements IMtmDataHelper {
     private PositionMasterDataDAO positionMasterDataDAO;
     @Autowired
     private InstrumentValuationDAO instrumentValuationDAO;
+    @Autowired
+    private EodMtmService eodMtmService;
+
+    // asset class contabilizzate a MTM di fine giornata (script con l'evento MTM)
+    @Value("#{'${mtm.eod.asset-classes:XRB,XRN,FRB,FRN,BFU,FFU}'.split(',')}")
+    private Set<String> eodAssetClasses;
 
     @Autowired
     @Qualifier("marketDataService")
@@ -123,25 +136,80 @@ public class MtMPollingJob implements IMtmDataHelper {
         fetchPosition(context);
 
         // SALVATAGGIO FINALE DELLE VALUTAZIONI (Esterno al ciclo delle posizioni)
-        Collection<InstrumentValuation> valuationsToSave = context.getValuationCache().values();
-        if (!valuationsToSave.isEmpty()) {
-            for (InstrumentValuation valuation : valuationsToSave) {
-                try {
-                    // Sfruttare l'Upsert nativo (ON CONFLICT DO UPDATE) a fine ciclo è la scelta vincente 
-                    // in questo tipo di architetture asincrone.
-                    // azzera i problemi causati dai proxy di Hibernate nel multithreading, 
-                    // garantisce prestazioni elevate e mantiene il database perfettamente ordinato, 
-                    // con gli ID delle valutazioni saldamente ancorati a quelli delle anagrafiche
-                    instrumentValuationDAO.upsertValuation(valuation);
-                    return true;
-                } catch (Exception e) {
-                    log.error("### MTM error saving valuation instrument Id {}: {}",
-                            valuation.getMasterData().getIdMasterData(), e.getMessage());
-                    return false;
-                }
+        // tutte le valutazioni: un errore su uno strumento non ferma le altre
+        return saveValuations(context);
+    }
+
+    /**
+     * MtM di fine giornata: valuta tutte le posizioni (non solo quelle non
+     * ricalcolate da 15 secondi, come il polling), salva le valutazioni e
+     * scrive la fotografia per la contabilita' (EodMtmService) delle posizioni
+     * valutate senza errori, alla data ufficiale. Da lanciare dopo il
+     * caricamento dei prezzi di chiusura.
+     */
+    public EodMtmResult executeEod() {
+        ValuationContext context = new ValuationContext();
+        // la data ufficiale e' in cache (businessCalendar): il fine giornata la rilegge
+        marketDataService.refreshOfficialDate();
+        refreshSpotPrices();
+        refreshDiscountCurves();
+        LocalDate valuationDate = getOfficialDate();
+
+        List<PositionDetail> details = positionDetailDAO.findAll();
+        Set<Integer> failed = new HashSet<>();
+        for (PositionDetail detail : details) {
+            try {
+                elabPosition(detail, context);
+            } catch (Exception e) {
+                failed.add(detail.getIdPositionDetail());
+                log.error("### EOD MTM ERROR FOR POSITION DETAIL ID {}: {}", detail.getIdPositionDetail(), e.getMessage());
             }
         }
-        return true;
+        saveValuations(context);
+
+        Map<EodMtmService.Outcome, Integer> counts = new EnumMap<>(EodMtmService.Outcome.class);
+        int snapshotErrors = 0;
+        for (PositionDetail detail : details) {
+            if (failed.contains(detail.getIdPositionDetail())) {
+                continue;
+            }
+            try {
+                counts.merge(eodMtmService.recordSnapshot(detail.getIdPositionDetail(), valuationDate, eodAssetClasses), 1, Integer::sum);
+            } catch (Exception e) {
+                snapshotErrors++;
+                log.error("### EOD MTM SNAPSHOT ERROR FOR POSITION DETAIL ID {}: {}", detail.getIdPositionDetail(), e.getMessage());
+            }
+        }
+        EodMtmResult result = new EodMtmResult(valuationDate, details.size(), failed.size(),
+                counts.getOrDefault(EodMtmService.Outcome.CREATED, 0), counts.getOrDefault(EodMtmService.Outcome.UPDATED, 0),
+                counts.getOrDefault(EodMtmService.Outcome.ALREADY_POSTED, 0), counts.getOrDefault(EodMtmService.Outcome.UNCHANGED, 0),
+                counts.getOrDefault(EodMtmService.Outcome.NOT_ACCOUNTED, 0), snapshotErrors);
+        log.info("=== [MMS] EOD MTM {} ===", result);
+        return result;
+    }
+
+    /**
+     * Upsert di tutte le valutazioni del ciclo; false se almeno una non e'
+     * stata salvata.
+     */
+    private boolean saveValuations(ValuationContext context) {
+        boolean allSaved = true;
+        Collection<InstrumentValuation> valuationsToSave = context.getValuationCache().values();
+        for (InstrumentValuation valuation : valuationsToSave) {
+            try {
+                // Sfruttare l'Upsert nativo (ON CONFLICT DO UPDATE) a fine ciclo è la scelta vincente
+                // in questo tipo di architetture asincrone.
+                // azzera i problemi causati dai proxy di Hibernate nel multithreading,
+                // garantisce prestazioni elevate e mantiene il database perfettamente ordinato,
+                // con gli ID delle valutazioni saldamente ancorati a quelli delle anagrafiche
+                instrumentValuationDAO.upsertValuation(valuation);
+            } catch (Exception e) {
+                log.error("### MTM error saving valuation instrument Id {}: {}",
+                        valuation.getMasterData().getIdMasterData(), e.getMessage());
+                allSaved = false;
+            }
+        }
+        return allSaved;
     }
 
     @Scheduled(fixedDelay = 60000)
@@ -164,22 +232,7 @@ public class MtMPollingJob implements IMtmDataHelper {
         fetchPosition(context);
 
         // SALVATAGGIO FINALE DELLE VALUTAZIONI (Esterno al ciclo delle posizioni)
-        Collection<InstrumentValuation> valuationsToSave = context.getValuationCache().values();
-        if (!valuationsToSave.isEmpty()) {
-            for (InstrumentValuation valuation : valuationsToSave) {
-                try {
-                    // Sfruttare l'Upsert nativo (ON CONFLICT DO UPDATE) a fine ciclo è la scelta vincente 
-                    // in questo tipo di architetture asincrone.
-                    // azzera i problemi causati dai proxy di Hibernate nel multithreading, 
-                    // garantisce prestazioni elevate e mantiene il database perfettamente ordinato, 
-                    // con gli ID delle valutazioni saldamente ancorati a quelli delle anagrafiche
-                    instrumentValuationDAO.upsertValuation(valuation);
-                } catch (Exception e) {
-                    log.error("### MTM error saving valuation instrument Id {}: {}",
-                            valuation.getMasterData().getIdMasterData(), e.getMessage());
-                }
-            }
-        }
+        saveValuations(context);
         log.info("=== [MMS] MTM Service terminated ===\n");
     }
 

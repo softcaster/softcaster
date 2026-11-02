@@ -31,6 +31,7 @@ public class BondFutureTxnProcessor extends AbstractTxnProcessor implements ITxn
 
         ProcInputData input = new ProcInputData();
         input.setPrice(txn.getPrice() * bfmd.getMultiplier());
+        input.setPriceMultiplier(bfmd.getMultiplier());
         input.setQuantity(txn.getQuantity() * bfmd.getContractValue());
         input.setSide(txn.getTxnSide());
         input.setStatus(txn.getTxnStatusPreElab());

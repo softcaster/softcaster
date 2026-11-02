@@ -84,17 +84,20 @@ case EventType.TRADE_EXECUTED:
 case EventType.MTM:
 
     /*
-     * Evento di posizione (nessuna transazione): il Daily Mark-to-Market
-     * viene regolato tramite Variation Margin, il P&L è quindi REALIZED.
+     * Evento di posizione del MtM di fine giornata (nessuna transazione): il
+     * Daily Mark-to-Market viene regolato tramite Variation Margin, il P&L è
+     * quindi REALIZED.
      *
-     * ctx.getRealizedPnl() = variation margin della giornata nella
-     * settlement currency del Future, dal punto di vista della posizione.
+     * ctx.getMtmVariation() = variazione del risultato della posizione
+     * (realizzato + non realizzato) dall'ultima fotografia contabilizzata:
+     * è il margine della giornata, compreso l'ultimo giorno di una posizione
+     * chiusa (prezzo di chiusura). Nella settlement currency del Future.
      *
      * Perdita:   DR FUT_REALIZED_LOSS   CR VARIATION_MARGIN
      * Profitto:  DR VARIATION_MARGIN    CR FUT_REALIZED_GAIN
      */
 
-    BigDecimal dailyPnl = money(ctx.getRealizedPnl())
+    BigDecimal dailyPnl = money(ctx.getMtmVariation())
 
     if (dailyPnl.signum() < 0) {
         ctx.journal.debit(accFutureRealizedLoss, dailyPnl.abs(), settlementCcy)

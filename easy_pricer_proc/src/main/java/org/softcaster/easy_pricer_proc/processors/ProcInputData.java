@@ -16,6 +16,9 @@ public class ProcInputData {
     private double quantity = 0;
     // 
     private double price = 0;
+    // da prezzo quotato (sulla posizione: market_price) a prezzo unitario:
+    // il multiplier dell'anagrafica quando price = prezzo del deal x multiplier
+    private double priceMultiplier = 1;
     private TxnSide side = TxnSide.BUY;
     private TxnStatus status = TxnStatus.PENDING;
 
@@ -45,6 +48,14 @@ public class ProcInputData {
      */
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public double getPriceMultiplier() {
+        return priceMultiplier;
+    }
+
+    public void setPriceMultiplier(double priceMultiplier) {
+        this.priceMultiplier = priceMultiplier;
     }
 
     /**

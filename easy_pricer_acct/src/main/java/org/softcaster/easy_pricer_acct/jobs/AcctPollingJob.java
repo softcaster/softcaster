@@ -16,6 +16,7 @@ import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.easy_pricer_acct.services.AccrualAccountingEventService;
 import org.softcaster.easy_pricer_acct.services.CouponAccountingEventService;
 import org.softcaster.easy_pricer_acct.services.EngineStateManager;
+import org.softcaster.easy_pricer_acct.services.MtmAccountingEventService;
 import org.softcaster.engine.enums.EventSourceType;
 import org.softcaster.engine.enums.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,10 @@ public class AcctPollingJob {
     
     @Autowired
     private CouponAccountingEventService couponAccountingEventService;
-    
+
+    @Autowired
+    private MtmAccountingEventService mtmAccountingEventService;
+
     @Autowired
     @Qualifier("acctEventExecutor")
     private TaskExecutor taskExecutor;
@@ -224,6 +228,29 @@ public class AcctPollingJob {
         }
     }
 
+    /**
+     * MTM di fine giornata: uno alla volta e in ordine di creazione, perche'
+     * ogni evento registra la variazione rispetto all'ultima fotografia gia'
+     * contabilizzata della stessa posizione.
+     */
+    protected void pollPendingMtmEvents() {
+        List<AccountingEvent> mtmEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.POSITION_DETAIL,
+                EventType.MTM);
+
+        if (!mtmEvents.isEmpty()) {
+            log.info("=== [BATCH START] find {} MTM event(s) ===", mtmEvents.size());
+            for (AccountingEvent event : mtmEvents) {
+                try {
+                    mtmAccountingEventService.processEvent(event);
+                } catch (Exception e) {
+                    log.error("### ERROR MTM ID {}: {}", event.getEventId(), e.getMessage());
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                }
+            }
+            log.info("=== [BATCH END] Processing completed ===\n");
+        }
+    }
+
     @Scheduled(fixedDelay = 15000)
     public void pollAccountinEvents() {
         if (engineStateManager.isSuspended()) {
@@ -234,6 +261,7 @@ public class AcctPollingJob {
         pollPendingSettlementTradeEvents();
         pollPendingAccrualEvents();
         pollPendingCouponEvents();
+        pollPendingMtmEvents();
     }
 
 }

@@ -12,6 +12,7 @@ import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventAccruals;
+import org.softcaster.core.data.account.AccountingEventMtm;
 import org.softcaster.core.data.account.JournalEntryLines;
 import org.softcaster.core.data.account.JournalEntryLinesDAO;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
@@ -31,6 +32,8 @@ public class AccountingContext {
     private final Integer settlementCurrency;
     // decimali della settlement currency (currency.decimal_places)
     private final int currencyScale;
+    // evento MTM: ultima fotografia gia' contabilizzata della posizione
+    private AccountingEventMtm previousMtm;
 
     public AccountingContext(FinancialTxn txn, JournalDsl journal, Currency masterDataCurrency, Currency settlementCurrency, AccountingEvent event) {
         this.txn = txn;
@@ -239,26 +242,50 @@ public class AccountingContext {
     }
 
     /**
-     * P&L realizzato della giornata per l'evento MTM dei future (variation
-     * margin), nella settlement currency e dal punto di vista della posizione:
-     * importo dell'evento (accounting_event_accruals.accrual_amount, come
-     * l'importo della cedola per COUPON); 0 per gli altri eventi.
+     * Ultima fotografia MTM gia' contabilizzata della stessa posizione
+     * (MtmAccountingEventService), null se e' la prima.
      */
-    public double getRealizedPnl() {
-        if (event.getEventType() == EventType.MTM && event instanceof AccountingEventAccruals eventMtm
-                && eventMtm.getAccrualAmount() != null) {
-            return eventMtm.getAccrualAmount();
+    public void setPreviousMtm(AccountingEventMtm previousMtm) {
+        this.previousMtm = previousMtm;
+    }
+
+    /**
+     * Variazione del risultato complessivo della posizione (realizzato + non
+     * realizzato) rispetto all'ultima fotografia contabilizzata: per i future
+     * e' il margine di variazione da regolare. 0 per gli eventi non MTM.
+     */
+    public double getMtmVariation() {
+        if (!(event instanceof AccountingEventMtm current)) {
+            return 0.;
         }
-        return 0.;
+        return current.totalPnl() - (previousMtm == null ? 0. : previousMtm.totalPnl());
+    }
+
+    /**
+     * Variazione del non realizzato rispetto all'ultima fotografia
+     * contabilizzata: per i titoli e' la rettifica di fair value del giorno
+     * (il realizzato passa dalla vendita). 0 per gli eventi non MTM.
+     */
+    public double getUnrealizedVariation() {
+        if (!(event instanceof AccountingEventMtm current)) {
+            return 0.;
+        }
+        return nz(current.getUnrealizedPnl()) - (previousMtm == null ? 0. : nz(previousMtm.getUnrealizedPnl()));
+    }
+
+    private static double nz(Double value) {
+        return value == null ? 0. : value;
     }
 
     public TxnSide getPositionSide() {
         TxnSide side = TxnSide.BUY;
         if (txn != null) {
             side = txn.getTxnSide();
+        } else if (event instanceof AccountingEventMtm mtm) {
+            side = nz(mtm.getNetQuantity()) < 0. ? TxnSide.SELL : TxnSide.BUY;
         } else {
             switch (event.getEventType()) {
-                case COUPON, ACCRUAL, MTM -> side = getOutstandingNominal() > 0. ? TxnSide.BUY : TxnSide.SELL;
+                case COUPON, ACCRUAL -> side = getOutstandingNominal() > 0. ? TxnSide.BUY : TxnSide.SELL;
                 default -> {
                 }
             }

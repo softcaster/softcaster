@@ -48,6 +48,7 @@ public abstract class OptionTxnProcessor extends AbstractTxnProcessor implements
 
         ProcInputData input = new ProcInputData();
         input.setPrice(txn.getPrice() * omd.getMultiplier());
+        input.setPriceMultiplier(omd.getMultiplier());
         input.setQuantity(txn.getQuantity() * omd.getContractValue());
         input.setSide(txn.getTxnSide());
         input.setStatus(txn.getTxnStatusPreElab());

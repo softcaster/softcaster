@@ -51,8 +51,10 @@ public abstract class AbstractTxnProcessor {
             p.setRealizedPnl(current + realizedAfter - realizedBefore);
         }
 
-        // Mark: market price se disponibile, altrimenti prezzo del deal
-        double mark = (p.getMarketPrice() != null && p.getMarketPrice() > 0.) ? p.getMarketPrice() : input.getPrice();
+        // Mark: market price se disponibile (quotato, portato a unitario come il
+        // prezzo del deal), altrimenti prezzo del deal
+        double mark = (p.getMarketPrice() != null && p.getMarketPrice() > 0.)
+                ? p.getMarketPrice() * input.getPriceMultiplier() : input.getPrice();
         p.setUnrealizedPnl(PnlCalc.unrealized(p.getBuyQty(), p.getSellQty(),
                 p.getNotionalValueBuy(), p.getNotionalValueSell(), mark));
 

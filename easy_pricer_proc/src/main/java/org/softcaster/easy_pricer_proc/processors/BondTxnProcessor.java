@@ -51,6 +51,7 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
         // componente accrual calcolata a parte, andranno a CE come Interessi Attivi/Passivi
         // o competenze cedolari attive/passive. Utilizzo il prezzo base unitaria
         input.setPrice(txn.getPrice() * smd.getMultiplier());
+        input.setPriceMultiplier(smd.getMultiplier());
         input.setQuantity(txn.getQuantity());
         input.setSide(txn.getTxnSide());
         input.setStatus(txn.getTxnStatusPreElab());
@@ -115,7 +116,8 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
         LocalDate maturity = smd.getMaturityDate().toLocalDate();
         double timeToMaturity = smd.getDaycount().calculate(bondOutputData.valuationDate(), maturity, smd.getFrequency());
         position.setTimeToMaturity(timeToMaturity);
-        position.setTheoreticalPrice(txn.getPrice() + bondOutputData.analytics().accruedInterest());
+        // prezzi secchi in base 100, come BondEvaluator (il rateo e' a parte)
+        position.setTheoreticalPrice(txn.getPrice());
         // sulla posizione tengo market price normalizzato a base 100
         position.setMarketPrice(txn.getPrice());
     }

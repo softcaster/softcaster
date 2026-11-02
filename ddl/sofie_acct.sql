@@ -238,6 +238,25 @@ CREATE TABLE accounting_event_accruals (
 ALTER TABLE accounting_event_accruals OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
+-- accounting_event_mtm - fotografia della posizione del MtM di fine giornata
+-- (ddl/mtm_snapshot.sql): la contabilita' registra la variazione rispetto
+-- all'ultima fotografia PROCESSED della stessa posizione
+-- ----------------------------------------------------------------------------
+CREATE TABLE accounting_event_mtm (
+    event_id        INTEGER NOT NULL,
+    valuation_date  DATE NOT NULL,               -- data ufficiale del MtM di fine giornata
+    market_price    NUMERIC(23, 10) NOT NULL,    -- prezzo quotato (titoli: secco, base 100)
+    net_quantity    NUMERIC(23, 5) NOT NULL,     -- con segno: negativa = posizione corta
+    average_price   NUMERIC(23, 10) NOT NULL,    -- prezzo medio unitario del lato aperto, 0 se chiusa
+    realized_pnl    NUMERIC(23, 5) NOT NULL,     -- realizzato cumulato della posizione
+    unrealized_pnl  NUMERIC(23, 5) NOT NULL,     -- non realizzato al prezzo di mercato
+    CONSTRAINT pk_accounting_event_mtm PRIMARY KEY (event_id),
+    CONSTRAINT fk_accounting_event_mtm_event
+        FOREIGN KEY (event_id) REFERENCES accounting_events (event_id) ON DELETE CASCADE
+);
+ALTER TABLE accounting_event_mtm OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
 -- journal_entry_status
 -- ----------------------------------------------------------------------------
 CREATE TABLE journal_entry_status (

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.easy_pricer_mtm.jobs.MtMPollingJob;
 import org.softcaster.easy_pricer_mtm.services.EngineStateManager;
+import org.softcaster.easy_pricer_mtm.services.EodMtmResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +55,18 @@ public class InternalSystem {
         return new ResponseEntity<>(response, status);
     }
     
+    /**
+     * MtM di fine giornata alla data ufficiale: valutazione di tutte le
+     * posizioni e fotografie per la contabilita' (eventi MTM). Da lanciare
+     * dopo il caricamento dei prezzi di chiusura.
+     */
+    @PostMapping(value = "/internal/mtm/eod")
+    public ResponseEntity<EodMtmResult> executeEod() {
+        EodMtmResult result = mtMPollingJob.executeEod();
+        HttpStatus status = result.valuationErrors() + result.snapshotErrors() == 0 ? HttpStatus.OK : HttpStatus.MULTI_STATUS;
+        return new ResponseEntity<>(result, status);
+    }
+
     @GetMapping(value = "/internal/system/alive")
     public ResponseEntity<String> getOfficialDate() {
         return new ResponseEntity<>("Mtm Service Alive", HttpStatus.OK);
