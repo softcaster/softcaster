@@ -24,3 +24,5 @@
 /easy_pricer_lc/target/
 /easy_pricer_incubator/target/
 *.xlsx
+*.xlsx#
+*.xlsx#

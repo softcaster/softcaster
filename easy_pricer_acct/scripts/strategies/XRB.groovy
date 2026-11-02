@@ -290,7 +290,7 @@ case EventType.ACCRUAL:
         ctx.journal.credit(accAccruedInterest,accrualAmount,settlementCcy)
 
     } else {
-        throw new IllegalStateException("Unsupported bond position side for ACCRUAL: "+ positionSide)
+        throw new IllegalStateException("Unsupported bond position side for ACCRUAL: "+ ctx.getPositionSide())
     }
 
     ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
@@ -336,7 +336,7 @@ case EventType.COUPON:
         ctx.journal.debit(accCash,couponAmount,settlementCcy)
         ctx.journal.credit(accAccruedInterest,couponAmount,settlementCcy)
 
-    } else if (positionSide == "SELL") {
+    } else if (ctx.getPositionSide() == TxnSide.SELL) {
 
         /*
          * Posizione SHORT
@@ -347,7 +347,7 @@ case EventType.COUPON:
         ctx.journal.credit(accCash,couponAmount,settlementCcy)
 
     } else {
-        throw new IllegalStateException("Unsupported bond position side for COUPON: "+ positionSide)
+        throw new IllegalStateException("Unsupported bond position side for COUPON: "+ ctx.getPositionSide())
     }
 
 

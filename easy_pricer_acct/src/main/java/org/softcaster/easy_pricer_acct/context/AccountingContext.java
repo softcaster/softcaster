@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_acct.context;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnComponent;
 import org.softcaster.core.data.account.AccountingEvent;
@@ -28,15 +29,20 @@ public class AccountingContext {
     private AccountingPhase accountingPhase;
     private final Integer masterDatacurrency;
     private final Integer settlementCurrency;
+    // decimali della settlement currency (currency.decimal_places)
+    private final int currencyScale;
 
-    public AccountingContext(FinancialTxn txn, JournalDsl journal, Integer masterDatacurrency, Integer settlementCurrency, AccountingEvent event) {
+    public AccountingContext(FinancialTxn txn, JournalDsl journal, Currency masterDataCurrency, Currency settlementCurrency, AccountingEvent event) {
         this.txn = txn;
         this.journal = journal;
-        this.masterDatacurrency = masterDatacurrency;
-        this.settlementCurrency = settlementCurrency;
+        this.masterDatacurrency = masterDataCurrency.getIdCurrency();
+        this.settlementCurrency = settlementCurrency.getIdCurrency();
+        this.currencyScale = settlementCurrency.getDecimalPlaces() == null ? DEFAULT_SCALE : settlementCurrency.getDecimalPlaces();
         this.event = event;
         this.accountingPhase = AccountingPhase.NONE;
     }
+
+    private static final int DEFAULT_SCALE = 2;
 
     /**
      * @return the txn
@@ -174,17 +180,32 @@ public class AccountingContext {
         }
     }
 
-    // TO_DO
+    /**
+     * Decimali degli importi nella settlement currency (currency.decimal_places,
+     * 2 se non indicati: JPY 0, EUR 2...). isAccounting non distingue ancora
+     * una scala diversa per la contabilita'.
+     */
     public int getCurrencyScale(boolean isAccounting) {
-        return 2;
+        return currencyScale;
     }
 
-    // TO_DO
+    /**
+     * Cambio della transazione verso la System Currency (financial_txn.fx_rate,
+     * fissato all'inserimento); 1 se l'evento non ha transazione o il cambio
+     * manca.
+     */
     public double getFxRate() {
-        return 1.;
+        if (txn == null || txn.getFxRate() == null || txn.getFxRate() <= 0.) {
+            return 1.;
+        }
+        return txn.getFxRate();
     }
 
-    // TO_DO
+    /**
+     * Nominale della posizione per gli eventi di posizione (accrual, cedola,
+     * scadenza, MTM): accounting_nominal dell'evento, con segno (negativo =
+     * posizione corta); 0 per gli eventi di trade.
+     */
     public double getOutstandingNominal() {
         double outstandingNominal = 0.;
         if (event instanceof AccountingEventAccruals eventAccrual) {
@@ -217,13 +238,27 @@ public class AccountingContext {
         return couponAmount;
     }
 
+    /**
+     * P&L realizzato della giornata per l'evento MTM dei future (variation
+     * margin), nella settlement currency e dal punto di vista della posizione:
+     * importo dell'evento (accounting_event_accruals.accrual_amount, come
+     * l'importo della cedola per COUPON); 0 per gli altri eventi.
+     */
+    public double getRealizedPnl() {
+        if (event.getEventType() == EventType.MTM && event instanceof AccountingEventAccruals eventMtm
+                && eventMtm.getAccrualAmount() != null) {
+            return eventMtm.getAccrualAmount();
+        }
+        return 0.;
+    }
+
     public TxnSide getPositionSide() {
         TxnSide side = TxnSide.BUY;
         if (txn != null) {
             side = txn.getTxnSide();
         } else {
             switch (event.getEventType()) {
-                case COUPON, ACCRUAL -> side = getOutstandingNominal() > 0. ? TxnSide.BUY : TxnSide.SELL;
+                case COUPON, ACCRUAL, MTM -> side = getOutstandingNominal() > 0. ? TxnSide.BUY : TxnSide.SELL;
                 default -> {
                 }
             }

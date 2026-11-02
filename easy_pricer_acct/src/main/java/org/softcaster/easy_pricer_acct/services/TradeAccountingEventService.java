@@ -17,7 +17,6 @@ import org.softcaster.core.data.FinancialTxnDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.JournalEntries;
 import org.softcaster.easy_pricer_acct.context.AccountingContext;
-import org.softcaster.easy_pricer_acct.context.AccountingScriptResolver;
 import org.softcaster.easy_pricer_acct.context.JournalDsl;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
 import org.softcaster.engine.enums.AccountingEventStatus;
@@ -32,9 +31,6 @@ public class TradeAccountingEventService extends BaseAccountingEventService {
 
     @Autowired
     private FinancialTxnDAO financialTxnDAO;
-
-    @Autowired
-    private AccountingScriptResolver accountingScriptResolver;
 
     /**
      *
@@ -58,8 +54,8 @@ public class TradeAccountingEventService extends BaseAccountingEventService {
 
             // Inizializzazione del DSL contabile e del contesto
             JournalDsl dsl = new JournalDsl();
-            AccountingContext ctx = new AccountingContext(txn, dsl, txn.getMasterData().getMasterDataCcy().getIdCurrency(),
-                    txn.getMasterData().getSettlementCcy().getIdCurrency(), event);
+            AccountingContext ctx = new AccountingContext(txn, dsl, txn.getMasterData().getMasterDataCcy(),
+                    txn.getMasterData().getSettlementCcy(), event);
 
             // Predisposizione dei Bindings condivisibili dagli script
             Bindings bindings = new SimpleBindings();
@@ -72,18 +68,13 @@ public class TradeAccountingEventService extends BaseAccountingEventService {
 
             // Esecuzione dinamica della strategia specifica di Asset Class
             if (txn.getMasterData() != null && txn.getMasterData().getAssetClass() != null) {
-                String assetCode = txn.getMasterData().getAssetClass().getCode();
-
                 // Recuperiamo la strategia pre-compilata dalla cache
-                String scriptCode = accountingScriptResolver.resolveScriptCode(
-                        txn.getMasterData().getAssetClass(),
-                        event.getEventType()
-                );
+                String scriptCode = strategyCode(txn.getMasterData().getAssetClass(), event.getEventType());
                 CompiledScript assetStrategy = cachedStrategies.get(scriptCode);
 
                 if (assetStrategy != null) {
                     // Aggiorna il FILENAME con il percorso specifico della sotto-strategia prima del lancio
-                    String strategyDebugPath = "strategies" + File.separator + assetCode + ".groovy";
+                    String strategyDebugPath = "strategies" + File.separator + scriptCode + ".groovy";
                     // Eseguiamo la sotto-strategia condividendo lo stesso contesto contabile
                     bindings.put(ScriptEngine.FILENAME, strategyDebugPath);
                     assetStrategy.eval(bindings);

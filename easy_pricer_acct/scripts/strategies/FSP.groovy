@@ -86,33 +86,15 @@ case EventType.SETTLEMENT:
     ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED        
     break
 
-case EventType.MTM:
-    double unrealizedAmt = ctx.getUnrealizedPnl() 
-    if (unrealizedAmt < 0) {
-        String accUnrealizedLoss = accountResolver.resolve("UNREALIZED_FX_LOSS", 1)
-        ctx.journal.debit(accUnrealizedLoss, Math.abs(unrealizedAmt), 1)
-        ctx.journal.credit(accPosition, Math.abs(unrealizedAmt), quoteCcy)
-    } else if (unrealizedAmt > 0) {
-        String accUnrealizedGain = accountResolver.resolve("UNREALIZED_FX_GAIN", 1)
-        ctx.journal.debit(accPosition, unrealizedAmt, quoteCcy)
-        ctx.journal.credit(accUnrealizedGain, unrealizedAmt, 1)
-    }
-
-    ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
-    break
-
-case EventType.ROLLOVER:
-    String accRealizedLoss = accountResolver.resolve("REALIZED_FX_LOSS", quoteCcy)
-    double swapCost = ctx.getSwapPointsCost() 
-    ctx.journal.debit(accRealizedLoss, swapCost, quoteCcy)
-    ctx.journal.credit(accPosition, swapCost, quoteCcy)
-
-    ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
-    break
-
 case EventType.TRADE_AMENDED:
 case EventType.TRADE_CANCELED:
     ctx.accountingPhase = txn.txnAcctPhase
     ctx.reverseJournal()
     break
+
+// MTM (rivalutazione in System Currency) e ROLLOVER (punti swap) non sono
+// ancora definiti: la bozza precedente usava un conto inesistente
+// (accPosition) e righe in due valute senza quadratura. Nessuno li genera.
+default:
+    throw new IllegalArgumentException("Unsupported FSP accounting event: " + event.eventType)
 }

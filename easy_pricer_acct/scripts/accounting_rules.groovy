@@ -36,12 +36,20 @@ if (txn != null) {
         throw new IllegalArgumentException("Validation error: transaction quantity must be greater than zero. Txn ID: ${txn.idFinancialTxn}")
     }
 
-    if (txn.price == null || txn.price <= 0) {
-        throw new IllegalArgumentException("Validation error: transaction price must be greater than zero. Txn ID: ${txn.idFinancialTxn}")
-    }
-
     if (!txn.masterData?.assetClass?.getCode()) {
         throw new IllegalArgumentException("Validation error: missing Asset Class code for transaction ID: ${txn.idFinancialTxn}")
+    }
+
+    // Accumulator OTC: il prezzo e' il premio iniziale, che puo' essere nullo
+    // o negativo (incassato da chi compra)
+    def premiumAssetClasses = ['FXA', 'CMA']
+
+    if (txn.price == null) {
+        throw new IllegalArgumentException("Validation error: transaction price is null. Txn ID: ${txn.idFinancialTxn}")
+    }
+
+    if (txn.price <= 0 && !premiumAssetClasses.contains(txn.masterData.assetClass.getCode())) {
+        throw new IllegalArgumentException("Validation error: transaction price must be greater than zero. Txn ID: ${txn.idFinancialTxn}")
     }
 }
 // 3. Centralized Logging / Audit Trail

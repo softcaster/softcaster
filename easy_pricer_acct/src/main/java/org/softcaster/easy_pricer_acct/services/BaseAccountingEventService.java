@@ -22,6 +22,7 @@ import javax.script.ScriptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.account.AccountingEventDAO;
 import org.softcaster.core.data.account.AssetClassScriptMapping;
 import org.softcaster.core.data.account.AssetClassScriptMappingRepository;
@@ -33,8 +34,10 @@ import org.softcaster.core.data.account.JournalEntries;
 import org.softcaster.core.data.account.JournalEntriesDAO;
 import org.softcaster.core.data.account.JournalEntryLines;
 import org.softcaster.easy_pricer_acct.context.AccountingContext;
+import org.softcaster.easy_pricer_acct.context.AccountingScriptResolver;
 import org.softcaster.easy_pricer_acct.context.JournalLine;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
+import org.softcaster.engine.enums.EventType;
 import org.softcaster.engine.enums.JournalEntryStatus;
 import org.softcaster.engine.enums.JournalEntryType;
 import org.softcaster.engine.enums.NormalBalance;
@@ -80,6 +83,9 @@ public abstract class BaseAccountingEventService {
 
     @Autowired
     protected AssetClassScriptMappingRepository mappingRepository;
+
+    @Autowired
+    protected AccountingScriptResolver accountingScriptResolver;
 
     @PostConstruct
     public void init() {
@@ -141,9 +147,20 @@ public abstract class BaseAccountingEventService {
 
     protected abstract void completeJournalEntries(JournalEntries entry, AccountingContext ctx);
 
+    /**
+     * Codice dello script della strategia per asset class ed evento
+     * (asset_class_script_mapping, altrimenti il codice dell'asset class):
+     * stessa regola per eventi di trade, ratei e cedole.
+     */
+    protected String strategyCode(AssetClass assetClass, EventType eventType) {
+        return accountingScriptResolver.resolveScriptCode(assetClass, eventType);
+    }
+
     protected void addJournalEntries(AccountingContext ctx) {
         List<JournalLine> lines = ctx.getJournal().build();
+        // evento senza scritture (es. SETTLEMENT dei future, margine nullo): niente testata vuota
         if (lines.isEmpty()) {
+            return;
         }
 
         checkCurrencyBalancing(lines);

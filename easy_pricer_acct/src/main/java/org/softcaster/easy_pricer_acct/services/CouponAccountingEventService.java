@@ -61,8 +61,8 @@ public class CouponAccountingEventService extends BaseAccountingEventService {
                 }
                 // Inizializzazione del DSL contabile e del contesto
                 JournalDsl dsl = new JournalDsl();
-                AccountingContext ctx = new AccountingContext(null, dsl, masterData.getMasterDataCcy().getIdCurrency(), 
-                        masterData.getSettlementCcy().getIdCurrency(), eventAccrual);
+                AccountingContext ctx = new AccountingContext(null, dsl, masterData.getMasterDataCcy(),
+                        masterData.getSettlementCcy(), eventAccrual);
 
                 // Predisposizione dei Bindings condivisibili dagli script
                 Bindings bindings = new SimpleBindings();
@@ -76,12 +76,13 @@ public class CouponAccountingEventService extends BaseAccountingEventService {
                 // Esecuzione dinamica della strategia specifica di Asset Class
                 String assetClass = masterData.getAssetClass().getCode();
                 if (!assetClass.isBlank()) {
-                    // Recuperiamo la strategia pre-compilata dalla cache
-                    CompiledScript assetStrategy = cachedStrategies.get(assetClass);
+                    // Recuperiamo la strategia pre-compilata dalla cache (asset_class_script_mapping)
+                    String scriptCode = strategyCode(masterData.getAssetClass(), event.getEventType());
+                    CompiledScript assetStrategy = cachedStrategies.get(scriptCode);
 
                     if (assetStrategy != null) {
                         // Aggiorna il FILENAME con il percorso specifico della sotto-strategia prima del lancio
-                        String strategyDebugPath = "strategies" + File.separator + assetClass + ".groovy";
+                        String strategyDebugPath = "strategies" + File.separator + scriptCode + ".groovy";
                         // Eseguiamo la sotto-strategia condividendo lo stesso contesto contabile
                         bindings.put(ScriptEngine.FILENAME, strategyDebugPath);
                         assetStrategy.eval(bindings);
@@ -92,7 +93,8 @@ public class CouponAccountingEventService extends BaseAccountingEventService {
                         event.setEventStatus(AccountingEventStatus.PROCESSED);
                         accountingEventDAO.saveOrUpdate(event);
                     } else {
-                        log.warn("No specific strategy script found cached for Asset Class: {}", assetClass);
+                        log.warn("No specific strategy script found cached for scriptCode: {} (assetClass={}, eventType={})",
+                                scriptCode, assetClass, event.getEventType());
                     }
                 } else {
                     // Chiamiamo un metodo dedicato per marcare l'evento come FAILED su una transazione pulita ed autonoma
