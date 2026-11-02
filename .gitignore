@@ -24,3 +24,4 @@
 /easy_pricer_lc/target/
 /easy_pricer_incubator/target/
 *.xlsx
+easy_pricer_otc_cli/package-lock.json
