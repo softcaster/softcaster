@@ -18,6 +18,7 @@ import org.softcaster.easy_pricer_lc.schedulers.SchedulerDispatcher;
 import org.softcaster.engine.enums.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccrualLyfeCycleService implements LifeCycleHandler {
@@ -30,6 +31,8 @@ public class AccrualLyfeCycleService implements LifeCycleHandler {
     @Autowired
     SchedulerDispatcher schedulerDispatcher;
 
+    // in transazione: lo scheduler legge i flussi (LAZY) dell'anagrafica
+    @Transactional(readOnly = true)
     @Override
     public List<AccountingEvent> generateEvents(EventInfo info) throws LifeCycleException {
         if (!(info instanceof AccrualEventInfo accrualEventInfo)) {

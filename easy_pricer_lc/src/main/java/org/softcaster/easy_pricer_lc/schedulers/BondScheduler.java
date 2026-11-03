@@ -51,13 +51,14 @@ public class BondScheduler implements IScheduler {
             double memoAmount = positionTxnLinksDAO.sumQuantityByPhase(detail.getIdPositionDetail(),
                     AccountingPhase.MEMO_POSTED);
             double operationalAmount = (detail.getBuyQty() - detail.getSellQty());
-            double accrualAmount = (operationalAmount - memoAmount) * smd.getMultiplier();
+            // nominale con segno, senza multiplier (PositionAccountingEvent)
+            double nominal = operationalAmount - memoAmount;
             // accrual in base 100
             double accrualsFrom = bondCalculator.getAccruals(smd, from);
             double accrualsTo = bondCalculator.getAccruals(smd, to);
-            double accruals = (accrualsTo - accrualsFrom) * accrualAmount;
+            double accruals = (accrualsTo - accrualsFrom) * nominal * smd.getMultiplier();
             accountingEvent.setAccrualAmount(accruals);
-            accountingEvent.setAccountingNominal(accrualAmount);
+            accountingEvent.setAccountingNominal(nominal);
             accountingEvent.setCouponRate(smd.getInterestRate());
             accountingEvent.setDaycount(smd.getAccrualDaycount());
             long days = ChronoUnit.DAYS.between(from, to);

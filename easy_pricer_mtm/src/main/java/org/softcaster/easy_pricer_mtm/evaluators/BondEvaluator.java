@@ -12,6 +12,7 @@ import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
+import org.softcaster.easy_pricer_mtm.exceptions.MtmException;
 import org.softcaster.engine.dto.XRBInput;
 import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.provider.enums.RequestType;
@@ -88,6 +89,9 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
 
                 // Aggiorna il legame bidirezionale nell'anagrafica (opzionale, utile per JPA)
                 masterData.setInstrumentValuation(valuation);
+            } else {
+                // mai saltare in silenzio: la posizione resterebbe al prezzo precedente
+                throw new MtmException(masterData.getCode() + " is not a security");
             }
         }
     }

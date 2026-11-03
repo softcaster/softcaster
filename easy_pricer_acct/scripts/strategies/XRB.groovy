@@ -254,6 +254,9 @@ case EventType.ACCRUAL:
      *     DR INTEREST_EXPENSE
      *        CR ACCRUED_INTEREST
      *
+     * L'importo dell'evento ha il segno della posizione (nominale con segno):
+     * per una posizione corta si cambia segno, la spesa maturata è positiva.
+     *
      * Tutto nella valuta del bond.
      */
 
@@ -286,8 +289,8 @@ case EventType.ACCRUAL:
          *    CR ACCRUED_INTEREST
          */
 
-        ctx.journal.debit(accInterestExpense,accrualAmount,settlementCcy)
-        ctx.journal.credit(accAccruedInterest,accrualAmount,settlementCcy)
+        ctx.journal.debit(accInterestExpense,accrualAmount.negate(),settlementCcy)
+        ctx.journal.credit(accAccruedInterest,accrualAmount.negate(),settlementCcy)
 
     } else {
         throw new IllegalStateException("Unsupported bond position side for ACCRUAL: "+ ctx.getPositionSide())
@@ -316,6 +319,9 @@ case EventType.COUPON:
      *     DR ACCRUED_INTEREST
      *        CR CASH
      *
+     * L'importo dell'evento ha il segno della posizione (nominale con segno):
+     * per una posizione corta si cambia segno, il pagamento è positivo.
+     *
      * Nessuna conversione nella System Currency.
      */
 
@@ -343,8 +349,8 @@ case EventType.COUPON:
          * Pagamento cedola.
          */
 
-        ctx.journal.debit(accAccruedInterest,couponAmount,settlementCcy)
-        ctx.journal.credit(accCash,couponAmount,settlementCcy)
+        ctx.journal.debit(accAccruedInterest,couponAmount.negate(),settlementCcy)
+        ctx.journal.credit(accCash,couponAmount.negate(),settlementCcy)
 
     } else {
         throw new IllegalStateException("Unsupported bond position side for COUPON: "+ ctx.getPositionSide())

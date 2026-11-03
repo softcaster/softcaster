@@ -246,7 +246,7 @@ CREATE TABLE accounting_event_mtm (
     event_id        INTEGER NOT NULL,
     valuation_date  DATE NOT NULL,               -- data ufficiale del MtM di fine giornata
     market_price    NUMERIC(23, 10) NOT NULL,    -- prezzo quotato (titoli: secco, base 100)
-    net_quantity    NUMERIC(23, 5) NOT NULL,     -- con segno: negativa = posizione corta
+    accounting_nominal NUMERIC(23, 5) NOT NULL,  -- con segno: negativo = posizione corta, senza multiplier
     average_price   NUMERIC(23, 10) NOT NULL,    -- prezzo medio unitario del lato aperto, 0 se chiusa
     realized_pnl    NUMERIC(23, 5) NOT NULL,     -- realizzato cumulato della posizione
     unrealized_pnl  NUMERIC(23, 5) NOT NULL,     -- non realizzato al prezzo di mercato

@@ -13,11 +13,7 @@ import org.softcaster.engine.enums.DaycountBasis;
 @Table(name = "accounting_event_accruals")
 @SuppressWarnings("PersistenceUnitPresent")
 
-public class AccountingEventAccruals extends AccountingEvent {
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "accounting_nominal")
-    private Double accountingNominal;
+public class AccountingEventAccruals extends PositionAccountingEvent {
 
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "accrual_amount")
@@ -33,14 +29,6 @@ public class AccountingEventAccruals extends AccountingEvent {
 
     @Column(name = "days")
     private Integer days;
-
-    public Double getAccountingNominal() {
-        return accountingNominal;
-    }
-
-    public void setAccountingNominal(Double accountingNominal) {
-        this.accountingNominal = accountingNominal;
-    }
 
     public Double getAccrualAmount() {
         return accrualAmount;

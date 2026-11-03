@@ -113,14 +113,11 @@ public class BackdatedTxnProcessor {
                                     event.setPositionDetail(positionDetailId);
                                     event.setGeneratedBy(txn.getMasterData().getIdMasterData());
                                     event.setGeneratedRef(smd.getCode());
-                                    double operationalAmount = txn.getQuantity();
-                                    if (txn.getTxnSide() == TxnSide.SELL) {
-                                        operationalAmount *= -1;
-                                    }
-                                    double accrualAmount = (operationalAmount * item.getInterest() * smd.getMultiplier());
+                                    double nominal = signedNominal(txn);
+                                    double accrualAmount = (nominal * item.getInterest() * smd.getMultiplier());
                                     // Intero coupon
                                     event.setAccrualAmount(accrualAmount);
-                                    event.setAccountingNominal(operationalAmount);
+                                    event.setAccountingNominal(nominal);
                                     event.setCouponRate(item.getInterest());
                                     event.setDaycount(smd.getAccrualDaycount());
                                     LocalDate to = item.getEnddate().toLocalDate();
@@ -138,6 +135,12 @@ public class BackdatedTxnProcessor {
                 }
             }
         }
+    }
+
+    // Nominale della transazione con segno, senza multiplier (PositionAccountingEvent):
+    // negativo per una vendita
+    private static double signedNominal(FinancialTxn txn) {
+        return txn.getTxnSide() == TxnSide.SELL ? -txn.getQuantity() : txn.getQuantity();
     }
 
     // Ho 2 casi
@@ -161,14 +164,14 @@ public class BackdatedTxnProcessor {
                                 }
                                 if (end.isAfter(lastEndDate) && end.isBefore(officialDate)) {
                                     AccountingEventAccruals accountingEvent = new AccountingEventAccruals();
-                                    double accrualAmount = txn.getQuantity() * smd.getMultiplier();
+                                    double nominal = signedNominal(txn);
                                     // accrual fino a settlement txn
                                     double accrualsFrom = bondCalculator.getAccruals(smd, lastEndDate);
                                     // A scadenza cedola rateo pieno
                                     double accrualsTo = item.getInterest();
-                                    double accruals = (accrualsTo - accrualsFrom) * accrualAmount;
+                                    double accruals = (accrualsTo - accrualsFrom) * nominal * smd.getMultiplier();
                                     accountingEvent.setAccrualAmount(accruals);
-                                    accountingEvent.setAccountingNominal(accrualAmount);
+                                    accountingEvent.setAccountingNominal(nominal);
                                     accountingEvent.setCouponRate(smd.getInterestRate());
                                     accountingEvent.setDaycount(smd.getAccrualDaycount());
                                     long days = ChronoUnit.DAYS.between(lastEndDate, end);
@@ -194,13 +197,13 @@ public class BackdatedTxnProcessor {
                         // da settlement a official date, se almeno una cedola stacca accrual da ultima end
                         // date cedola a official date
                         AccountingEventAccruals accountingEvent = new AccountingEventAccruals();
-                        double accrualAmount = txn.getQuantity() * smd.getMultiplier();
+                        double nominal = signedNominal(txn);
                         // accrual in base 100
                         double accrualsFrom = bondCalculator.getAccruals(smd, lastEndDate);
                         double accrualsTo = bondCalculator.getAccruals(smd, officialDate);
-                        double accruals = (accrualsTo - accrualsFrom) * accrualAmount;
+                        double accruals = (accrualsTo - accrualsFrom) * nominal * smd.getMultiplier();
                         accountingEvent.setAccrualAmount(accruals);
-                        accountingEvent.setAccountingNominal(accrualAmount);
+                        accountingEvent.setAccountingNominal(nominal);
                         accountingEvent.setCouponRate(smd.getInterestRate());
                         accountingEvent.setDaycount(smd.getAccrualDaycount());
                         long days = ChronoUnit.DAYS.between(lastEndDate, officialDate);

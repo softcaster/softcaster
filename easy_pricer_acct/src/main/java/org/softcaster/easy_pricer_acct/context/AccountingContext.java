@@ -15,6 +15,7 @@ import org.softcaster.core.data.account.AccountingEventAccruals;
 import org.softcaster.core.data.account.AccountingEventMtm;
 import org.softcaster.core.data.account.JournalEntryLines;
 import org.softcaster.core.data.account.JournalEntryLinesDAO;
+import org.softcaster.core.data.account.PositionAccountingEvent;
 import org.softcaster.easy_pricer_acct.exceptions.AccountingException;
 import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.EventType;
@@ -205,18 +206,19 @@ public class AccountingContext {
     }
 
     /**
-     * Nominale della posizione per gli eventi di posizione (accrual, cedola,
-     * scadenza, MTM): accounting_nominal dell'evento, con segno (negativo =
-     * posizione corta); 0 per gli eventi di trade.
+     * Nominale con segno (negativo = posizione corta), senza multiplier: quello
+     * dell'evento di posizione (PositionAccountingEvent: ratei, cedole, MTM),
+     * altrimenti la quantita' della transazione. Senza nessuno dei due
+     * l'evento fallisce, per non contabilizzare silenziosamente a zero.
      */
     public double getOutstandingNominal() {
-        double outstandingNominal = 0.;
-        if (event instanceof AccountingEventAccruals eventAccrual) {
-            if (eventAccrual != null) {
-                outstandingNominal = eventAccrual.getAccountingNominal();
-            }
+        if (event instanceof PositionAccountingEvent positionEvent && positionEvent.getAccountingNominal() != null) {
+            return positionEvent.getAccountingNominal();
         }
-        return outstandingNominal;
+        if (txn != null) {
+            return txn.getTxnSide() == TxnSide.SELL ? -txn.getQuantity() : txn.getQuantity();
+        }
+        throw new AccountingException("No nominal for accounting event: " + event.getEventId());
     }
 
     public double getAccruedInterestAmount() {
@@ -281,14 +283,8 @@ public class AccountingContext {
         TxnSide side = TxnSide.BUY;
         if (txn != null) {
             side = txn.getTxnSide();
-        } else if (event instanceof AccountingEventMtm mtm) {
-            side = nz(mtm.getNetQuantity()) < 0. ? TxnSide.SELL : TxnSide.BUY;
-        } else {
-            switch (event.getEventType()) {
-                case COUPON, ACCRUAL -> side = getOutstandingNominal() > 0. ? TxnSide.BUY : TxnSide.SELL;
-                default -> {
-                }
-            }
+        } else if (event instanceof PositionAccountingEvent) {
+            side = getOutstandingNominal() < 0. ? TxnSide.SELL : TxnSide.BUY;
         }
         return side;
     }

@@ -5,6 +5,7 @@
 package org.softcaster.easy_pricer_mtm.services;
 
 import jakarta.transaction.Transactional;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.MasterData;
@@ -41,7 +42,8 @@ public class MtmService {
             throw new MtmException("Invalid position");
         });
 
-        MasterData masterData = masterDataDAO.findByIdMasterData(masterDataId);
+        // classe reale: gli evaluator distinguono il tipo di anagrafica
+        MasterData masterData = (MasterData) Hibernate.unproxy(masterDataDAO.findByIdMasterData(masterDataId));
         String assetClass = masterData.getAssetClass().getCode();
 
         IPositionEvaluator evaluator = evaluatorDispatcher.dispatch(assetClass);

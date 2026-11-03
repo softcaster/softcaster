@@ -109,7 +109,7 @@ public class EodMtmService {
         event.setCreatedAt(LocalDateTime.now());
         event.setValuationDate(valuationDate);
         event.setMarketPrice(nz(p.getMarketPrice()));
-        event.setNetQuantity(buyQty - sellQty);
+        event.setAccountingNominal(buyQty - sellQty);
         event.setAveragePrice(averagePrice(p, buyQty, sellQty, flat));
         event.setRealizedPnl(realized);
         event.setUnrealizedPnl(unrealized);

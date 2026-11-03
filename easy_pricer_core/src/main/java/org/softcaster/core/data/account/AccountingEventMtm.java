@@ -20,7 +20,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Entity
 @Table(name = "accounting_event_mtm")
 @SuppressWarnings("PersistenceUnitPresent")
-public class AccountingEventMtm extends AccountingEvent {
+public class AccountingEventMtm extends PositionAccountingEvent {
 
     @Column(name = "valuation_date")
     private LocalDate valuationDate;
@@ -29,11 +29,6 @@ public class AccountingEventMtm extends AccountingEvent {
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "market_price")
     private Double marketPrice;
-
-    // quantita' netta con segno (negativa = posizione corta)
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "net_quantity")
-    private Double netQuantity;
 
     // prezzo medio unitario del lato aperto (0 se la posizione e' chiusa)
     @JdbcTypeCode(Types.NUMERIC)
@@ -71,14 +66,6 @@ public class AccountingEventMtm extends AccountingEvent {
 
     public void setMarketPrice(Double marketPrice) {
         this.marketPrice = marketPrice;
-    }
-
-    public Double getNetQuantity() {
-        return netQuantity;
-    }
-
-    public void setNetQuantity(Double netQuantity) {
-        this.netQuantity = netQuantity;
     }
 
     public Double getAveragePrice() {
