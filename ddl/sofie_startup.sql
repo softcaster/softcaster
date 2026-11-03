@@ -363,11 +363,14 @@ INSERT INTO yield_curve (id_yield_curve, code, description, currency, calendar, 
 -- ----------------------------------------------------------------------------
 -- system_business_calendar
 -- ----------------------------------------------------------------------------
-INSERT INTO system_business_calendar(sbc_id,description,calendar,status,official_date) 
+-- All'avvio last_official_date = official_date; next_business_date la valorizza il
+-- servizio EOD (official_date + 1 giorno lavorativo) e la azzera a fine chiusura
+INSERT INTO system_business_calendar(sbc_id,description,calendar,status,official_date,last_official_date)
     VALUES (1,
         'SO.FI.E Buiness Calendar',
         (SELECT id_calendar FROM calendar WHERE code='EUR' LIMIT 1),
         (SELECT sbc_status_id FROM sbc_status WHERE code='OPEN' LIMIT 1),
+         NOW(),
          NOW()
 );
 

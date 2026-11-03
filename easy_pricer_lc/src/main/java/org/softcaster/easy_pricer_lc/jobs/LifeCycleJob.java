@@ -4,8 +4,8 @@
  */
 package org.softcaster.easy_pricer_lc.jobs;
 
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -37,7 +37,6 @@ import org.springframework.stereotype.Component;
 public class LifeCycleJob {
 
     private static final Logger log = LoggerFactory.getLogger(LifeCycleJob.class);
-    private SystemBusinessCalendar sbc = null;
 
     @Autowired
     private PositionDetailDAO positionDetailDAO;
@@ -64,11 +63,6 @@ public class LifeCycleJob {
 
     @Autowired
     private AccrualLyfeCycleService alc;
-
-    @PostConstruct
-    public void init() {
-        sbc = sbcDAO.findBySbcId(1);
-    }
 
     public String runSettlementLyfeCycleOnLine() {
         String result = "";
@@ -100,7 +94,7 @@ public class LifeCycleJob {
     // -------------------------------------------------------------------------
     private void runSettlementLyfeCycle() {
         try {
-            List<PositionTxnLinks> links = positionTxnLinksDAO.fetchAndClaimLinks(sbc.getOfficialDate());
+            List<PositionTxnLinks> links = positionTxnLinksDAO.fetchAndClaimLinks(sbcDAO.findBySbcId(1).getOfficialDate());
             if (!links.isEmpty()) {
                 for (PositionTxnLinks link : links) {
                     generateSettlementEvent(link);
@@ -132,21 +126,28 @@ public class LifeCycleJob {
     // -------------------------------------------------------------------------
     //  Accrual LifeCycle
     // -------------------------------------------------------------------------
+    // Rateo della chiusura di T0: da official_date (T0) a next_business_date (T+1),
+    // che il servizio EOD valorizza prima di lanciare il lifecycle. I retrodatati
+    // registrati a T0 hanno gia' il rateo fino a T0 (BackdatedTxnProcessor).
     private void runAccrualLyfeCycle() {
         try {
-            fetchPosition();
+            SystemBusinessCalendar sbc = sbcDAO.findBySbcId(1);
+            if (sbc.getNextBusinessDate() == null) {
+                throw new LifeCycleException("next_business_date not set: the accrual life cycle runs during the EOD");
+            }
+            fetchPosition(sbc.getOfficialDate(), sbc.getNextBusinessDate());
         } catch (Exception ex) {
             throw ex;
         }
     }
 
-    private void fetchPosition() {
+    private void fetchPosition(LocalDate from, LocalDate to) {
         List<PositionMasterData> positions = positionMasterDataDAO.findAll();
 
         try {
             if (!positions.isEmpty()) {
                 for (PositionMasterData pmd : positions) {
-                    fetchPositionDetails(pmd);
+                    fetchPositionDetails(pmd, from, to);
                 }
             }
         } catch (Exception ex) {
@@ -154,7 +155,7 @@ public class LifeCycleJob {
         }
     }
 
-    private void fetchPositionDetails(PositionMasterData pmd) {
+    private void fetchPositionDetails(PositionMasterData pmd, LocalDate from, LocalDate to) {
         List<PositionDetail> details = positionDetailDAO.fetchAndClaimByPositionMasterData(pmd).orElse(null);
 
         if (details != null && !details.isEmpty()) {
@@ -163,7 +164,7 @@ public class LifeCycleJob {
             for (PositionDetail detail : details) {
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
-                        generateAccrualEvent(detail);
+                        generateAccrualEvent(detail, from, to);
                     } catch (Exception ex) {
                         log.error("### Life Cycle error for position {}: {}", detail.getIdPositionDetail(), ex.getMessage());
                         throw ex;
@@ -175,17 +176,22 @@ public class LifeCycleJob {
         }
     }
 
-    private void generateAccrualEvent(PositionDetail detail) {
+    private void generateAccrualEvent(PositionDetail detail, LocalDate from, LocalDate to) {
         try {
             AccrualEventInfo info = new AccrualEventInfo();
             info.setDetail(detail);
-            info.setFrom(sbc.getLastOfficialDate());
-            info.setTo(sbc.getOfficialDate());
+            info.setFrom(from);
+            info.setTo(to);
             List<AccountingEvent> events = alc.generateEvents(info);
             if (events != null && !events.isEmpty()) {
                 for (AccountingEvent event : events) {
                     if (event instanceof AccountingEventAccruals aea) {
                         if (!NumberUtils.isZero(aea.getAccrualAmount())) {
+                            // rilancio della stessa chiusura: il rateo del periodo c'e' gia'
+                            if (accountingEventDAO.findByEventKey(event.getEventKey()) != null) {
+                                log.warn("Accrual event already generated: {}", event.getEventKey());
+                                continue;
+                            }
                             accountingEventDAO.saveOrUpdate(event);
                         }
                     }
