@@ -6,6 +6,7 @@ package org.softcaster.easy_pricer_lc.services;
 
 import java.time.LocalDate;
 import org.softcaster.core.data.PositionDetail;
+import org.softcaster.engine.enums.EventType;
 
 /**
  *
@@ -15,6 +16,16 @@ public class AccrualEventInfo extends EventInfo {
     private PositionDetail detail;
     private LocalDate from;
     private LocalDate to;
+    // eventi da generare sul periodo: ACCRUAL o COUPON
+    private EventType eventType = EventType.ACCRUAL;
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
 
     /**
      * @return the detail

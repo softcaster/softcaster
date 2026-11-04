@@ -39,19 +39,32 @@ public class BackdatedTxnProcessor {
         return eventKey;
     }
 
-    private String getEventKeyCoupon(MasterData masterData, Integer positionDetailId, LocalDate endDate) {
-        String eventKey = masterData.getCode() + " [" + positionDetailId + "] " + "[" + EventType.COUPON.getCode() + "]" + endDate;
+    // Con la transazione: piu' deal retrodatati sulla stessa posizione hanno i propri
+    // eventi, distinti anche da quelli della chiusura (BondScheduler)
+    private String getEventKeyCoupon(MasterData masterData, Integer positionDetailId, LocalDate endDate, FinancialTxn txn) {
+        String eventKey = masterData.getCode() + " [" + positionDetailId + "] " + "[" + EventType.COUPON.getCode() + "]" + endDate + " txn " + txn.getIdFinancialTxn();
         return eventKey;
     }
 
-    public List<AccountingEvent> generateEvents(FinancialTxn txn, Integer positionDetailId, LocalDate officialDate) throws TxnProcessingException {
+    private String getEventKeyAccrual(MasterData masterData, Integer positionDetailId, LocalDate endDate, FinancialTxn txn) {
+        String eventKey = masterData.getCode() + " [" + positionDetailId + "] " + "[" + EventType.ACCRUAL.getCode() + "]" + endDate + " txn " + txn.getIdFinancialTxn();
+        return eventKey;
+    }
+
+    /**
+     * @param officialDate     il rateo del deal arriva a questa data
+     * @param lastOfficialDate le cedole fino a questa data sono del deal; quelle
+     *                         in (lastOfficialDate, officialDate] le genera la
+     *                         chiusura, sulla posizione che comprende il deal
+     */
+    public List<AccountingEvent> generateEvents(FinancialTxn txn, Integer positionDetailId, LocalDate officialDate, LocalDate lastOfficialDate) throws TxnProcessingException {
 
         List<AccountingEvent> events = new ArrayList<>();
         try {
             // Evento di settlement
             generateSettlementEvent(txn, positionDetailId, events);
             // Eventuali cedole antergate
-            generateCouponEvents(officialDate, txn, positionDetailId, events);
+            generateCouponEvents(officialDate, lastOfficialDate, txn, positionDetailId, events);
             // Ultimo rateo
             generateAccrualEvents(officialDate, txn, positionDetailId, events);
         } catch (Exception e) {
@@ -87,7 +100,7 @@ public class BackdatedTxnProcessor {
         }
     }
 
-    private void generateCouponEvents(LocalDate officialDate, FinancialTxn txn, Integer positionDetailId, List<AccountingEvent> events) {
+    private void generateCouponEvents(LocalDate officialDate, LocalDate lastOfficialDate, FinancialTxn txn, Integer positionDetailId, List<AccountingEvent> events) {
         if (txn != null && events != null) {
             if (txn.getMasterData() instanceof SecurityMasterData smd) {
                 if (smd != null) {
@@ -102,13 +115,13 @@ public class BackdatedTxnProcessor {
                                 if (start.isAfter(officialDate)) {
                                     break;
                                 }
-                                if (end.isAfter(settlement) && end.isBefore(officialDate)) {
+                                if (end.isAfter(settlement) && !end.isAfter(lastOfficialDate)) {
                                     event = new AccountingEventAccruals();
                                     event.setSourceId(txn.getIdFinancialTxn());
                                     event.setEventStatus(AccountingEventStatus.NEW);
                                     event.setEventType(EventType.COUPON);
                                     event.setSourceType(EventSourceType.INSTRUMENT);
-                                    event.setEventKey(getEventKeyCoupon(smd, positionDetailId, item.getEnddate().toLocalDate()));
+                                    event.setEventKey(getEventKeyCoupon(smd, positionDetailId, item.getEnddate().toLocalDate(), txn));
                                     event.setCreatedAt(LocalDateTime.now());
                                     event.setPositionDetail(positionDetailId);
                                     event.setGeneratedBy(txn.getMasterData().getIdMasterData());
@@ -162,7 +175,8 @@ public class BackdatedTxnProcessor {
                                 if (start.isAfter(officialDate)) {
                                     break;
                                 }
-                                if (end.isAfter(lastEndDate) && end.isBefore(officialDate)) {
+                                // Stacco alla data ufficiale compreso: il rateo arriva alla cedola piena
+                                if (end.isAfter(lastEndDate) && !end.isAfter(officialDate)) {
                                     AccountingEventAccruals accountingEvent = new AccountingEventAccruals();
                                     double nominal = signedNominal(txn);
                                     // accrual fino a settlement txn
@@ -182,7 +196,7 @@ public class BackdatedTxnProcessor {
                                     accountingEvent.setPositionDetail(positionDetailId);
                                     accountingEvent.setSourceId(positionDetailId);
                                     accountingEvent.setSourceType(EventSourceType.INSTRUMENT);
-                                    accountingEvent.setEventKey(smd.getCode() + " [" + positionDetailId + "] " + "[" + EventType.ACCRUAL.getCode() + "]" + end);
+                                    accountingEvent.setEventKey(getEventKeyAccrual(smd, positionDetailId, end, txn));
                                     accountingEvent.setGeneratedBy(smd.getIdMasterData());
                                     accountingEvent.setGeneratedRef(smd.getCode());
                                     accountingEvent.setSourceId(positionDetailId);
@@ -191,6 +205,11 @@ public class BackdatedTxnProcessor {
                                     lastEndDate = end;
                                 }
                             }
+                        }
+
+                        // Cedola staccata proprio alla data ufficiale: rateo gia' completo
+                        if (!lastEndDate.isBefore(officialDate)) {
+                            return;
                         }
 
                         // genero evento di accrual se nessuna cedola stacca nell' intervallo allora accrual
@@ -214,7 +233,7 @@ public class BackdatedTxnProcessor {
                         accountingEvent.setPositionDetail(positionDetailId);
                         accountingEvent.setSourceId(positionDetailId);
                         accountingEvent.setSourceType(EventSourceType.INSTRUMENT);
-                        accountingEvent.setEventKey(smd.getCode() + " [" + positionDetailId + "] " + "[" + EventType.ACCRUAL.getCode() + "]" + officialDate);
+                        accountingEvent.setEventKey(getEventKeyAccrual(smd, positionDetailId, officialDate, txn));
                         accountingEvent.setGeneratedBy(smd.getIdMasterData());
                         accountingEvent.setGeneratedRef(smd.getCode());
                         accountingEvent.setSourceId(positionDetailId);
