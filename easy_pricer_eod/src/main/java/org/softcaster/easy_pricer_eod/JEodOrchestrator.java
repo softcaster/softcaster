@@ -398,9 +398,24 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     private javax.swing.JToolBar toolBar;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Durante la chiusura di giornata i servizi non si avviano, fermano o
+     * sospendono dalla console: li governa il batch.
+     */
+    private boolean isLocked() {
+        if (eodFacade.getEodBatchRunner().isRunning()) {
+            JOptionPane.showMessageDialog(this, "The end of day is running: services cannot be changed.",
+                    TITLE, JOptionPane.WARNING_MESSAGE);
+            return true;
+        }
+        return false;
+    }
+
     private void exitAction() {
+        String question = eodFacade.getEodBatchRunner().isRunning()
+                ? "The end of day is running and would be interrupted. Are you sure?" : "Are you sure?";
         if (JOptionPane.showConfirmDialog(this,
-                "Are you sure?", TITLE,
+                question, TITLE,
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
             LoggerMgr.logInfo("Bye bye!");
@@ -425,6 +440,9 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     }
 
     private void startAction() {
+        if (isLocked()) {
+            return;
+        }
         ServicePanel activePanel = getActiveCard();
         if (activePanel != null) {
             activePanel.startService();
@@ -432,6 +450,9 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     }
 
     private void stopAction() {
+        if (isLocked()) {
+            return;
+        }
         ServicePanel activePanel = getActiveCard();
         if (activePanel != null) {
             activePanel.stopService();
@@ -448,6 +469,9 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     }
 
     private void suspendAction() {
+        if (isLocked()) {
+            return;
+        }
         ServicePanel activePanel = getActiveCard();
         if (activePanel != null) {
             activePanel.suspendService();
@@ -455,6 +479,9 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     }
 
     private void restoreAction() {
+        if (isLocked()) {
+            return;
+        }
         ServicePanel activePanel = getActiveCard();
         if (activePanel != null) {
             activePanel.restoreService();

@@ -5,7 +5,6 @@
 package org.softcaster.easy_pricer_proc.processors;
 
 import org.softcaster.engine.enums.TxnSide;
-import org.softcaster.engine.enums.TxnStatus;
 
 /**
  *
@@ -20,7 +19,6 @@ public class ProcInputData {
     // il multiplier dell'anagrafica quando price = prezzo del deal x multiplier
     private double priceMultiplier = 1;
     private TxnSide side = TxnSide.BUY;
-    private TxnStatus status = TxnStatus.PENDING;
 
     /**
      * @return the quantity
@@ -70,20 +68,6 @@ public class ProcInputData {
      */
     public void setSide(TxnSide side) {
         this.side = side;
-    }
-
-    /**
-     * @return the status
-     */
-    public TxnStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * @param status the status to set
-     */
-    public void setStatus(TxnStatus status) {
-        this.status = status;
     }
 
 }

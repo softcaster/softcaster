@@ -28,6 +28,11 @@ public class FinancialTxnDAO {
     }
 
     @Transactional(readOnly = true)
+    public long countByTxnStatus(java.util.Collection<TxnStatus> statuses) {
+        return repository.countByTxnStatusIn(statuses);
+    }
+
+    @Transactional(readOnly = true)
     public List<FinancialTxn> findAll() {
         return repository.findAll();
     }

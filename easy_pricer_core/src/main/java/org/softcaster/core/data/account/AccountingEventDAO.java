@@ -32,6 +32,11 @@ public class AccountingEventDAO {
         return repository.findByEventKey(eventKey);
     }
 
+    @Transactional(readOnly = true)
+    public long countByEventStatus(java.util.Collection<AccountingEventStatus> statuses) {
+        return repository.countByEventStatusIn(statuses);
+    }
+
     // Manteniamo la firma originale del metodo per non rompere altre chiamate esterne
     @Transactional
     public List<AccountingEvent> findTradeEvents(EventSourceType sourceType,

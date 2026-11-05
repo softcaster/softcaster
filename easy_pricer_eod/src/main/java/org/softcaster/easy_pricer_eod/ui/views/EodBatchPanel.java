@@ -4,24 +4,22 @@
  */
 package org.softcaster.easy_pricer_eod.ui.views;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 import javax.swing.border.EmptyBorder;
+import org.softcaster.core.data.EodRun;
 import org.softcaster.easy_pricer_eod.EODFacade;
-import org.softcaster.easy_pricer_eod.services.RestServiceDescriptor;
-import org.softcaster.engine.enums.ServiceType;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClient;
+import org.softcaster.easy_pricer_eod.services.EodBatchRunner;
 
 /**
+ * Lancio della chiusura di giornata: la esegue EodBatchRunner, qui solo la
+ * conferma dell'operatore e i messaggi.
  *
  * @author ep
  */
 public final class EodBatchPanel extends javax.swing.JPanel implements ServicePanel, ServiceInfo {
 
-    private final List<RestServiceDescriptor> serviceDescriptorList = new ArrayList<>();
     private final EODFacade eodFacade;
 
     // Il modello che gestisce fisicamente i dati della lista
@@ -37,7 +35,6 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
         this.eodFacade = eodFacade;
         messageList.setModel(listModel);
         messageList.setBorder(new EmptyBorder(10, 15, 10, 15));
-        loadDescriptors();
         appendMessage("Eod Batch ready...");
     }
 
@@ -67,13 +64,36 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
 
     @Override
     public void startService() {
-        suspendAllServices();
-        doMtmBatch();
+        EodBatchRunner runner = eodFacade.getEodBatchRunner();
+        try {
+            Optional<EodRun> interrupted = runner.findInterruptedRun();
+            if (interrupted.isPresent()) {
+                EodRun run = interrupted.get();
+                if (!confirm("The end of day of " + run.getBusinessDate() + " started at " + run.getStartedAt()
+                        + " was left running.\nMake sure no other console is running it.\nMark it as failed and continue?")) {
+                    return;
+                }
+                runner.failInterruptedRun(run);
+                appendMessage("Run " + run.getEodRunId() + " marked as failed");
+            }
+            if (!confirm("Start the end of day?")) {
+                return;
+            }
+            if (!runner.start(this::appendMessage)) {
+                appendMessage("The end of day is already running");
+            }
+        } catch (Exception e) {
+            appendMessage("End of day not started: " + e.getLocalizedMessage());
+        }
+    }
+
+    private boolean confirm(String message) {
+        return JOptionPane.showConfirmDialog(this, message, "End of day",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
     }
 
     @Override
     public void stopService() {
-        System.out.println("stopService");
     }
 
     @Override
@@ -95,14 +115,17 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
 
     @Override
     public void clear() {
+        java.awt.EventQueue.invokeLater(listModel::clear);
     }
 
     @Override
     public void logInfo(String info) {
+        appendMessage(info);
     }
 
     @Override
     public void logError(String error) {
+        appendMessage(error);
     }
 
 
@@ -123,96 +146,5 @@ public final class EodBatchPanel extends javax.swing.JPanel implements ServicePa
                 messageList.ensureIndexIsVisible(lastIndex);
             }
         });
-    }
-
-    private void suspendeService(RestServiceDescriptor descriptor) {
-        // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
-        new Thread(() -> {
-            try {
-                appendMessage("Sending suspension request via HTTP to " + descriptor.getServiceName() + " service...");
-                RestClient restClient = RestClient.create();
-                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/suspend";
-                restClient.post()
-                        .uri(baseUrl)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .retrieve()
-                        .toBodilessEntity(); // Invia la richiesta e attende la risposta (200 OK)
-
-                appendMessage("Service " + descriptor.getServiceName() + " suspended successfully via HTTP.");
-
-            } catch (Exception e) {
-                // Gestione dell'errore se il server è già spento o irraggiungibile
-                logError("HTTP suspension failed: " + e.getLocalizedMessage());
-                appendMessage(e.getLocalizedMessage());
-
-            }
-        }).start();
-
-    }
-
-    private void suspendAllServices() {
-        appendMessage("Suspend all services!");
-        for (RestServiceDescriptor descriptor : serviceDescriptorList) {
-            suspendeService(descriptor);
-        }
-    }
-
-    private void loadService(ServiceType type) {
-
-        RestServiceDescriptor descriptor = eodFacade.getMicroserviceDispatcher().getDescriptor(type);
-        if (descriptor != null) {
-            descriptor.setServiceInfo(this);
-            serviceDescriptorList.add(descriptor);
-        }
-    }
-
-    private void loadDescriptors() {
-        loadService(ServiceType.TSRV);
-        loadService(ServiceType.PSRV);
-        loadService(ServiceType.MSRV);
-        loadService(ServiceType.ASRV);
-        loadService(ServiceType.LSRV);
-    }
-
-    private RestServiceDescriptor getMtmServiceDescriptor() {
-        for (RestServiceDescriptor descriptor : serviceDescriptorList) {
-            if (descriptor.getServiceName().equals("MSRV")) {
-                return descriptor;
-            }
-        }
-        return null;
-    }
-
-    private void doMtmBatch() {
-
-        RestServiceDescriptor descriptor = getMtmServiceDescriptor();
-        if (descriptor != null) {
-
-            // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
-            new Thread(() -> {
-                try {
-                    appendMessage("Sending Execute Job request via HTTP to " + descriptor.getServiceName() + " service...");
-                    RestClient restClient = RestClient.create();
-                    String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/execute";
-                    ResponseEntity<String> response = restClient.post()
-                            .uri(baseUrl)
-                            .accept(MediaType.APPLICATION_JSON)
-                            .retrieve()
-                            .toEntity(String.class);
-                    String message = "Mtm Job termitated successfully";
-                    if (!response.getBody().equals("OK")) {
-                        message = "Mtm Job termitated with errors";
-                    }
-                    appendMessage(message);
-
-                } catch (Exception e) {
-                    // Gestione dell'errore se il server è già spento o irraggiungibile
-                    logError("HTTP suspension failed: " + e.getLocalizedMessage());
-                    appendMessage(e.getLocalizedMessage());
-
-                }
-            }).start();
-
-        }
     }
 }

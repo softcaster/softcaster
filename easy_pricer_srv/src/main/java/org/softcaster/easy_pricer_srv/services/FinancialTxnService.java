@@ -31,6 +31,7 @@ import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_srv.exceptions.FinancialTxnException;
 import org.softcaster.engine.enums.AccountingPhase;
+import org.softcaster.engine.enums.SbcStatus;
 import org.softcaster.engine.enums.TxnOrigin;
 import org.softcaster.engine.enums.TxnSide;
 import org.softcaster.engine.enums.TxnStatus;
@@ -62,6 +63,7 @@ public class FinancialTxnService {
     // Cancellazione logica marca solamente la transazione a TO_CANCEL ma
     // non la rimuove fisicamente da DB
     public FinancialTxnDto logicalDelete(Integer idFinancialTxn) {
+        requireOpenDay();
 
         return transactionTemplate.execute(status -> {
             FinancialTxnDto txnDto = null;
@@ -92,6 +94,7 @@ public class FinancialTxnService {
      * @return 
      */
     public FinancialTxnDto saveOrUpdateTransaction(FinancialTxnDto newTxnDto, boolean termsChanged) {
+        requireOpenDay();
         // Avviamo una transazione esplicita tramite il template. Tutto il blocco è atomico (tutto o niente).
         return transactionTemplate.execute((var status) -> {
 
@@ -126,15 +129,14 @@ public class FinancialTxnService {
                         financialTxn.setIdFinancialTxn(null);
                         financialTxn.setTxnStatus(TxnStatus.PENDING);
                         financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
-                        java.sql.Date settlementDate = calcSettlementDate(financialTxn);
-                        financialTxn.setSettlement(settlementDate);
-                        financialTxn.setValueDate(settlementDate);
+                        setSettlementDate(financialTxn);
                         financialTxn.setTxnAcctPhase(AccountingPhase.NONE);
                         financialTxn.setFxRate(getFxRate(financialTxn));
                     } else {
                         financialTxn.setIdFinancialTxn(oldTxnDto.financialTxnId());
                         financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
                         financialTxn.setVersion(version);
+                        setSettlementDate(financialTxn);
                     }
                     // Usiamo il DAO coerentemente con il resto dello switch
                     dao.saveOrUpdate(financialTxn);
@@ -156,6 +158,7 @@ public class FinancialTxnService {
                         financialTxn.setTxnStatus(TxnStatus.PENDING);
                         financialTxn.setTxnStatusPreElab(TxnStatus.PENDING);
                         financialTxn.setTxnAcctPhase(AccountingPhase.NONE);
+                        setSettlementDate(financialTxn);
                         financialTxn.setFxRate(getFxRate(financialTxn));
 
                         dao.saveOrUpdate(financialTxn);
@@ -234,6 +237,18 @@ public class FinancialTxnService {
     }
 
     /**
+     * Durante la chiusura di giornata i deal non si inseriscono e non si
+     * modificano: entrerebbero a meta' dei conteggi.
+     */
+    private void requireOpenDay() {
+        SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
+        if (sbc.getStatus() != SbcStatus.OPEN) {
+            throw new IllegalArgumentException("End of day in progress (" + sbc.getStatus().getDescription()
+                    + "): trades cannot be changed");
+        }
+    }
+
+    /**
      * I deal generati da un processo (es. chiusura di giornata) non si
      * modificano e non si cancellano da deal capture.
      */
@@ -277,6 +292,13 @@ public class FinancialTxnService {
             LoggerMgr.logError(ex.getLocalizedMessage());
             throw new FinancialTxnException(ex.getLocalizedMessage());
         }
+    }
+
+    // fromDto mette la trade date: settlement e valuta dipendono dallo strumento (T+n)
+    private void setSettlementDate(FinancialTxn financialTxn) {
+        Date settlementDate = calcSettlementDate(financialTxn);
+        financialTxn.setSettlement(settlementDate);
+        financialTxn.setValueDate(settlementDate);
     }
 
     private Date calcSettlementDate(FinancialTxn financialTxn) {

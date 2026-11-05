@@ -40,13 +40,7 @@ public abstract class AccumulatorTxnProcessor extends AbstractTxnProcessor imple
             throw new TxnProcessingException("Invalid processor: " + txn.getMasterData().getCode() + " is not an accumulator");
         }
 
-        ProcInputData input = new ProcInputData();
-        input.setPrice(txn.getPrice());
-        input.setQuantity(txn.getQuantity());
-        input.setSide(txn.getTxnSide());
-        input.setStatus(txn.getTxnStatusPreElab());
-
-        super.process(input, position);
+        super.process(positionInput(amd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide()), position);
 
         if (txn.getTxnStatusPreElab() != TxnStatus.PENDING && txn.getTxnStatusPreElab() != TxnStatus.RESTARTING) {
             return;
@@ -64,6 +58,15 @@ public abstract class AccumulatorTxnProcessor extends AbstractTxnProcessor imple
             premium.setAmount(BigDecimal.valueOf(Math.abs(amount)));
             txn.addTxnComponent(premium);
         }
+    }
+
+    @Override
+    protected ProcInputData positionInput(org.softcaster.core.data.MasterData masterData, double quantity, double price, TxnSide side) {
+        ProcInputData input = new ProcInputData();
+        input.setPrice(price);
+        input.setQuantity(quantity);
+        input.setSide(side);
+        return input;
     }
 
     /**

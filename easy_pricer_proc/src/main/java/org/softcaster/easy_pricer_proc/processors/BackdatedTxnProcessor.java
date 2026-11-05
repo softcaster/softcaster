@@ -75,6 +75,32 @@ public class BackdatedTxnProcessor {
         return events;
     }
 
+    /**
+     * Storno di ratei e cedole di un deal cancellato o sostituito da un amend:
+     * cio' che il deal ha maturato dal settlement a oggi, nelle chiusure insieme
+     * alla posizione o da retrodatato. Sono gli stessi periodi di generateEvents.
+     * Il nominale resta quello del deal e cambia segno solo l'importo: storno in
+     * negativo sugli stessi conti (un nominale opposto andrebbe sui conti della
+     * posizione corta).
+     */
+    public List<AccountingEvent> generateReversalEvents(FinancialTxn txn, Integer positionDetailId, LocalDate officialDate, LocalDate lastOfficialDate) throws TxnProcessingException {
+        List<AccountingEvent> events = new ArrayList<>();
+        try {
+            generateCouponEvents(officialDate, lastOfficialDate, txn, positionDetailId, events);
+            generateAccrualEvents(officialDate, txn, positionDetailId, events);
+        } catch (Exception e) {
+            log.error("### Error reversing txn: " + txn.getIdFinancialTxn());
+            throw new TxnProcessingException(e.getLocalizedMessage());
+        }
+        for (AccountingEvent event : events) {
+            if (event instanceof AccountingEventAccruals accrual) {
+                accrual.setAccrualAmount(-accrual.getAccrualAmount());
+                accrual.setEventKey(accrual.getEventKey() + " REV");
+            }
+        }
+        return events;
+    }
+
     private void generateSettlementEvent(FinancialTxn txn, Integer positionDetailId, List<AccountingEvent> events) {
         if (txn != null && events != null) {
             AccountingEvent event = null;

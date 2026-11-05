@@ -5,7 +5,9 @@ import jakarta.persistence.QueryHint;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.softcaster.core.dto.PositionDealRow;
 import org.softcaster.engine.enums.AccountingPhase;
+import org.softcaster.engine.enums.TxnComponentType;
 import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -23,7 +25,9 @@ public interface PositionTxnLinksRepository extends JpaRepository<PositionTxnLin
     @Query("SELECT ptl FROM PositionTxnLinks ptl "
             // + "WHERE ptl.txnAcctPhase NOT IN :phases "
             + "WHERE ptl.txnAcctPhase <> AccountingPhase.OFFICIAL_POSTED "
-            + "AND ptl.settlement <= :officialDate")
+            + "AND ptl.settlement <= :officialDate "
+            // solo deal vivi: quelli cancellati o sostituiti da un amend tengono il link
+            + "AND ptl.financialTxn IN (SELECT t.idFinancialTxn FROM FinancialTxn t WHERE t.txnStatus = TxnStatus.EXECUTED)")
     public List<PositionTxnLinks> fetchAndClaimLinks(
             //@Param("phases") Collection<AccountingPhase> phases, -> se dovessi usare una collection
             @Param("officialDate") LocalDate officialDate);
@@ -42,6 +46,7 @@ public interface PositionTxnLinksRepository extends JpaRepository<PositionTxnLin
         from PositionTxnLinks p
         where p.positionDetail = :positionDetailId
           and p.txnAcctPhase = :phase
+          and p.financialTxn in (select t.idFinancialTxn from FinancialTxn t where t.txnStatus = TxnStatus.EXECUTED)
     """)
     double sumQuantityByPhase(
             @Param("positionDetailId") Integer positionDetailId,
@@ -60,5 +65,21 @@ public interface PositionTxnLinksRepository extends JpaRepository<PositionTxnLin
             @Param("date") java.sql.Date date,
             @Param("status") TxnStatus status);
     
+    // Nell'ordine in cui sono entrati in posizione. Riga leggera, nessuna entita'
+    // caricata: una posizione puo' avere molti deal
+    @Query("""
+        select new org.softcaster.core.dto.PositionDealRow(p.quantity, p.price, c.amount)
+        from PositionTxnLinks p
+        join FinancialTxn t on t.idFinancialTxn = p.financialTxn
+        left join t.components c on c.componentType = :accrualType
+        where p.positionDetail = :positionDetailId
+          and t.txnStatus = :status
+        order by p.posTxnLinkId
+    """)
+    List<PositionDealRow> findDeals(
+            @Param("positionDetailId") Integer positionDetailId,
+            @Param("status") TxnStatus status,
+            @Param("accrualType") TxnComponentType accrualType);
+
     public boolean existsByFinancialTxn(Integer financialTxn);
 }

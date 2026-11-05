@@ -1776,6 +1776,9 @@ CREATE TABLE position_txn_links (
 );
 ALTER TABLE position_txn_links OWNER TO sofie;
 
+-- Link di una posizione nell'ordine in cui i deal vi sono entrati
+CREATE INDEX idx_position_txn_links_detail ON position_txn_links (position_detail, pos_txn_link_id);
+
 -- Creo sequenza
 CREATE SEQUENCE position_txn_links_s
    START WITH 1
@@ -1884,6 +1887,8 @@ CREATE TABLE financial_txn_components (
 );
 
 ALTER TABLE financial_txn_components OWNER TO sofie;
+
+CREATE INDEX idx_financial_txn_components_txn ON financial_txn_components (financial_txn);
 
 -- Creo sequenza
 CREATE SEQUENCE financial_txn_components_s

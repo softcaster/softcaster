@@ -35,6 +35,14 @@ public class Calendar implements HolidayCalendar {
                 .collect(Collectors.toSet());
     }
 
+    // Calendario di sistema (system_business_calendar.calendar), non legato a una valuta
+    public Calendar(org.softcaster.core.data.Calendar calendar) {
+        if (calendar == null) {
+            throw new IllegalArgumentException("Calendar cannot be null");
+        }
+        this.holidays = Set.copyOf(calendar.getHolidays());
+    }
+
     // Costruttore alternativo "comodo" (Varargs) per passargli le valute separate da virgola
     // Esempio: new Calendar(eur, usd, gbp);
     public Calendar(Currency... currencies) {

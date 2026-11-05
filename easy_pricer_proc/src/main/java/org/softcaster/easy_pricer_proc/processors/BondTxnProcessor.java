@@ -46,15 +46,7 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
             throw new TxnProcessingException("Invalid processor");
         }
 
-        ProcInputData input = new ProcInputData();
-        // Per calcolo realized/unrealized si utilizza sempre clean price
-        // componente accrual calcolata a parte, andranno a CE come Interessi Attivi/Passivi
-        // o competenze cedolari attive/passive. Utilizzo il prezzo base unitaria
-        input.setPrice(txn.getPrice() * smd.getMultiplier());
-        input.setPriceMultiplier(smd.getMultiplier());
-        input.setQuantity(txn.getQuantity());
-        input.setSide(txn.getTxnSide());
-        input.setStatus(txn.getTxnStatusPreElab());
+        ProcInputData input = positionInput(smd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide());
         // trasformo prezzo di mercato in base unitaria per calcolo utili unrealized
         super.process(input, position);
 
@@ -75,14 +67,7 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
         double effectiveInterestRate = bondOutputData.analytics().yield();
 
         // Per accrual stessa gestione di quantity e notionalValue
-        // Se transazione cancellata o modificata, inverto quantita, 
-        // mantenendo pero il side
-        double quantity = input.getQuantity();
-        if (input.getStatus() == TxnStatus.TO_CANCEL
-                || input.getStatus() == TxnStatus.TO_AMEND) {
-            quantity = quantity * (-1.);
-        }
-        double accruals = bondOutputData.analytics().accruedInterest()* quantity * smd.getMultiplier();
+        double accruals = bondOutputData.analytics().accruedInterest() * input.getQuantity() * smd.getMultiplier();
         switch (input.getSide()) {
             case BUY -> {
                 position.setBuyAccrual(position.getBuyAccrual() + accruals);
@@ -120,6 +105,23 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
         position.setTheoreticalPrice(txn.getPrice());
         // sulla posizione tengo market price normalizzato a base 100
         position.setMarketPrice(txn.getPrice());
+    }
+
+    /**
+     * Per calcolo realized/unrealized si utilizza sempre clean price, in base
+     * unitaria; il rateo e' a parte, va a CE come interessi attivi/passivi o
+     * competenze cedolari.
+     */
+    @Override
+    protected ProcInputData positionInput(org.softcaster.core.data.MasterData masterData, double quantity, double price,
+            org.softcaster.engine.enums.TxnSide side) {
+        SecurityMasterData smd = (SecurityMasterData) masterData;
+        ProcInputData input = new ProcInputData();
+        input.setPrice(price * smd.getMultiplier());
+        input.setPriceMultiplier(smd.getMultiplier());
+        input.setQuantity(quantity);
+        input.setSide(side);
+        return input;
     }
 
     @Override

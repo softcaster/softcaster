@@ -29,4 +29,6 @@ public interface AccountingEventRepository extends JpaRepository<AccountingEvent
     List<AccountingEvent> findAllByIds(@Param("ids") Collection<Integer> ids);
 
     public AccountingEvent findByEventKey(String eventKey);
+
+    public long countByEventStatusIn(Collection<AccountingEventStatus> statuses);
 }

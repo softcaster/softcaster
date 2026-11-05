@@ -7,11 +7,13 @@ package org.softcaster.easy_pricer_mtm.controllers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.dto.EodTaskResult;
+import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mtm.jobs.MtMPollingJob;
 import org.softcaster.easy_pricer_mtm.services.EngineStateManager;
 import org.softcaster.engine.enums.EodStatus;
 import org.softcaster.engine.enums.EodStep;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +29,19 @@ public class InternalSystem {
     private MtMPollingJob mtMPollingJob;
     @Autowired
     private EngineStateManager stateManager;
+    @Autowired
+    @Qualifier("marketDataService")
+    private MarketDataService marketDataService;
+
+    /**
+     * Dopo il cambio data della chiusura di giornata: rilegge la data ufficiale.
+     * Le curve le ricostruisce il prossimo giro di polling.
+     */
+    @PostMapping(value = "/internal/system/refresh_date")
+    public ResponseEntity<String> refreshDate() {
+        marketDataService.refreshOfficialDate();
+        return new ResponseEntity<>("Official date refreshed", HttpStatus.OK);
+    }
 
     @PostMapping(value = "/internal/system/suspend")
     public ResponseEntity<String> suspend() {

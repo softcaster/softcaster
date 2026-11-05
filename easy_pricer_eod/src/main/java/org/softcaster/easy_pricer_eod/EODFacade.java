@@ -8,6 +8,7 @@ import org.softcaster.core.data.CalendarDAO;
 import org.softcaster.core.data.CurrencyDAO;
 import org.softcaster.core.data.DescriptorsDAO;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
+import org.softcaster.easy_pricer_eod.services.EodBatchRunner;
 import org.softcaster.easy_pricer_eod.services.MicroserviceDispatcher;
 import org.softcaster.easy_pricer_eod.services.MicroserviceLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,13 @@ public class EODFacade {
     private SystemBusinessCalendarDAO systemBusinessCalendarDAO;
     @Autowired
     private DescriptorsDAO descriptorsDAO;
+    @Autowired
+    private EodBatchRunner eodBatchRunner;
+
+    public EodBatchRunner getEodBatchRunner() {
+        return eodBatchRunner;
+    }
+
     /**
      * @return the microserviceLauncher
      */

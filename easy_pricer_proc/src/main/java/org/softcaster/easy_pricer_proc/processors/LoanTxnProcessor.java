@@ -66,19 +66,11 @@ public abstract class LoanTxnProcessor extends AbstractTxnProcessor implements I
         }
 
         double unitPrice = txn.getPrice() / 100.;
-        ProcInputData input = new ProcInputData();
-        input.setPrice(unitPrice);
-        input.setQuantity(txn.getQuantity());
-        input.setSide(txn.getTxnSide());
-        input.setStatus(txn.getTxnStatusPreElab());
-
+        ProcInputData input = positionInput(lmd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide());
         super.process(input, position);
 
-        // rateo della quota di capitale negoziata; cancel/amend invertono la quantita'
+        // rateo della quota di capitale negoziata
         double quantity = input.getQuantity();
-        if (input.getStatus() == TxnStatus.TO_CANCEL || input.getStatus() == TxnStatus.TO_AMEND) {
-            quantity = -quantity;
-        }
         double outstanding = result.outstandingPrincipal();
         double accruals = outstanding > 0 ? result.analytics().accruedInterest() * quantity / outstanding : 0.;
         switch (input.getSide()) {
@@ -124,6 +116,15 @@ public abstract class LoanTxnProcessor extends AbstractTxnProcessor implements I
         // sulla posizione prezzo unitario, come il mark di AbstractTxnProcessor
         position.setTheoreticalPrice(unitPrice);
         position.setMarketPrice(unitPrice);
+    }
+
+    @Override
+    protected ProcInputData positionInput(org.softcaster.core.data.MasterData masterData, double quantity, double price, TxnSide side) {
+        ProcInputData input = new ProcInputData();
+        input.setPrice(price / 100.);
+        input.setQuantity(quantity);
+        input.setSide(side);
+        return input;
     }
 
     /**

@@ -28,6 +28,14 @@ public class EodStepRunDAO {
         return repository.findStepsByBusinessDateAndStatusIn(businessDate, List.of(EodStatus.OK, EodStatus.WARNING));
     }
 
+    /**
+     * Almeno uno step con warning per la data, in qualunque lancio.
+     */
+    @Transactional(readOnly = true)
+    public boolean hasWarnings(LocalDate businessDate) {
+        return !repository.findStepsByBusinessDateAndStatusIn(businessDate, List.of(EodStatus.WARNING)).isEmpty();
+    }
+
     @Transactional
     public EodStepRun saveOrUpdate(EodStepRun eodStepRun) {
         return repository.save(eodStepRun);

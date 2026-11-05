@@ -4,8 +4,11 @@
  */
 package org.softcaster.easy_pricer_proc.processors;
 
+import java.util.List;
 import org.softcaster.core.data.FinancialTxn;
+import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
+import org.softcaster.core.dto.PositionDealRow;
 
 /**
  *
@@ -14,4 +17,6 @@ import org.softcaster.core.data.PositionDetail;
 public interface ITxnProcessor {
 
     void process(FinancialTxn txn, PositionDetail position);
+
+    void rebuildPosition(PositionDetail position, MasterData masterData, List<PositionDealRow> deals);
 }

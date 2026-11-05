@@ -2,7 +2,9 @@ package org.softcaster.core.data;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.softcaster.core.dto.PositionDealRow;
 import org.softcaster.engine.enums.AccountingPhase;
+import org.softcaster.engine.enums.TxnComponentType;
 import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +65,15 @@ public class PositionTxnLinksDAO {
         return repository.sumQuantitySettledBefore(positionDetailId, java.sql.Date.valueOf(date), TxnStatus.EXECUTED);
     }
     
+    /**
+     * Deal vivi della posizione (non cancellati ne' sostituiti da un amend),
+     * nell'ordine in cui sono entrati in posizione.
+     */
+    @Transactional(readOnly = true)
+    public List<PositionDealRow> findLiveDeals(Integer positionDetailId) {
+        return repository.findDeals(positionDetailId, TxnStatus.EXECUTED, TxnComponentType.BOND_ACCRUAL);
+    }
+
     @Transactional(readOnly = true)
     public boolean existsByFinancialTxn(Integer financialTxn) {
         return repository.existsByFinancialTxn(financialTxn);

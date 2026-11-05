@@ -53,17 +53,13 @@ public class PositionDetailDAO {
         return Optional.of(details);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Optional<List<PositionDetail>> fetchAndClaimByPositionMasterData(PositionMasterData pmd) {
-
-        // 1. Legge e blocca i dettagli scaduti, ignorando quelli bloccatida eventuale altro server
-        List<PositionDetail> details = repository.getAndLockByPositionMasterData(pmd.getIdPosition());
-
-        if (details.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.of(details);
+    /**
+     * Tutti i dettagli della posizione, senza lock: la chiusura di giornata non
+     * puo' saltare una riga bloccata in quel momento da un altro processo.
+     */
+    @Transactional(readOnly = true)
+    public List<PositionDetail> findByPositionMasterData(PositionMasterData pmd) {
+        return repository.findByPositionMdOrderByIdPositionDetail(pmd.getIdPosition());
     }
 
     @Transactional(readOnly = true)

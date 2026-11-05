@@ -4,10 +4,12 @@
  */
 package org.softcaster.easy_pricer_proc.processors;
 
+import java.util.List;
+import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
+import org.softcaster.core.dto.PositionDealRow;
 import org.softcaster.easy_pricer_mds_core.PnlCalc;
-import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
-import org.softcaster.engine.enums.TxnStatus;
+import org.softcaster.engine.enums.TxnSide;
 
 /**
  *
@@ -17,12 +19,39 @@ public abstract class AbstractTxnProcessor {
 
     protected abstract boolean shortSellEnabled();
 
+    /**
+     * Prezzo e quantita' del deal in base unitaria per i conti di posizione.
+     */
+    protected abstract ProcInputData positionInput(MasterData masterData, double quantity, double price, TxnSide side);
+
+    /**
+     * Ricostruisce quantita', controvalori, realized e ratei dai deal rimasti,
+     * dopo un cancel o un amend: la posizione e' quella che sarebbe senza il
+     * deal, anche se questo cambia cicli gia' chiusi. Un deal opposto non lo
+     * sarebbe: inciderebbe sui prezzi di carico. I dati di mercato restano, li
+     * aggiorna il MtM.
+     */
+    public void rebuildPosition(PositionDetail p, MasterData masterData, List<PositionDealRow> deals) {
+        p.resetCycleTotals();
+        p.setRealizedPnl(0.);
+        p.setBuyAccrual(0.);
+        p.setSellAccrual(0.);
+        for (PositionDealRow deal : deals) {
+            TxnSide side = deal.quantity() < 0 ? TxnSide.SELL : TxnSide.BUY;
+            process(positionInput(masterData, Math.abs(deal.quantity()), deal.price(), side), p);
+            if (deal.accrual() != null) {
+                double accrual = deal.accrual().doubleValue();
+                if (side == TxnSide.BUY) {
+                    p.setBuyAccrual(p.getBuyAccrual() + accrual);
+                } else {
+                    p.setSellAccrual(p.getSellAccrual() + accrual);
+                }
+            }
+        }
+    }
+
     public void process(ProcInputData input, PositionDetail p) {
         double quantity = input.getQuantity();
-        // Cancel/amend: inverto la quantita', mantengo il side
-        if (input.getStatus() == TxnStatus.TO_CANCEL || input.getStatus() == TxnStatus.TO_AMEND) {
-            quantity = -quantity;
-        }
         double notional = input.getPrice() * quantity;
 
         // f(prima)
@@ -37,11 +66,6 @@ public abstract class AbstractTxnProcessor {
                 p.setSellQty(p.getSellQty() + quantity);
                 p.setNotionalValueSell(p.getNotionalValueSell() + notional);
             }
-        }
-
-        // Guard: un cancel/amend su un ciclo gia' azzerato porterebbe quantita' negative
-        if (p.getBuyQty() < -PnlCalc.QTY_EPS || p.getSellQty() < -PnlCalc.QTY_EPS) {
-            throw new TxnProcessingException("Quantita' negative: cancel/amend su ciclo gia' chiuso, gestire come rettifica");
         }
 
         if (shortSellEnabled()) {

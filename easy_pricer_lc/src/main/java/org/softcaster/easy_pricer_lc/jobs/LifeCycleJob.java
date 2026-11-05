@@ -162,9 +162,9 @@ public class LifeCycleJob {
     }
 
     private void fetchPositionDetails(PositionMasterData pmd, EventType eventType, LocalDate from, LocalDate to, TaskCounters counters) {
-        List<PositionDetail> details = positionDetailDAO.fetchAndClaimByPositionMasterData(pmd).orElse(null);
+        List<PositionDetail> details = positionDetailDAO.findByPositionMasterData(pmd);
 
-        if (details != null && !details.isEmpty()) {
+        if (!details.isEmpty()) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
             for (PositionDetail detail : details) {

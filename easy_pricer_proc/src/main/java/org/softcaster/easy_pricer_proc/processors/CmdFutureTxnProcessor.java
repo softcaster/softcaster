@@ -28,14 +28,7 @@ public class CmdFutureTxnProcessor  extends AbstractTxnProcessor implements ITxn
             throw new TxnProcessingException("Invalid processor");
         }
 
-        ProcInputData input = new ProcInputData();
-        input.setPrice(txn.getPrice() * cfmd.getMultiplier());
-        input.setPriceMultiplier(cfmd.getMultiplier());
-        input.setQuantity(txn.getQuantity() * cfmd.getContractValue());
-        input.setSide(txn.getTxnSide());
-        input.setStatus(txn.getTxnStatusPreElab());
-
-        super.process(input, position);
+        super.process(positionInput(cfmd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide()), position);
 
         // Aggiungo component initial margin
         FinancialTxnComponent initialMargin = new FinancialTxnComponent();
@@ -44,5 +37,17 @@ public class CmdFutureTxnProcessor  extends AbstractTxnProcessor implements ITxn
         initialMargin.setComponentType(TxnComponentType.INITIAL_MARGIN);
         initialMargin.setAmount(BigDecimal.valueOf(txn.getQuantity() * cfmd.getInitialMargin()));
         txn.addTxnComponent(initialMargin);
+    }
+
+    @Override
+    protected ProcInputData positionInput(org.softcaster.core.data.MasterData masterData, double quantity, double price,
+            org.softcaster.engine.enums.TxnSide side) {
+        CmdFutureMasterData cfmd = (CmdFutureMasterData) masterData;
+        ProcInputData input = new ProcInputData();
+        input.setPrice(price * cfmd.getMultiplier());
+        input.setPriceMultiplier(cfmd.getMultiplier());
+        input.setQuantity(quantity * cfmd.getContractValue());
+        input.setSide(side);
+        return input;
     }
 }

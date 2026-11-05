@@ -78,12 +78,5 @@ public interface PositionDetailRepository extends JpaRepository<PositionDetail, 
             @Param("assetClassId") Integer assetClassId
     );
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @QueryHints({
-        @QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2")}) // SKIP LOCKED su Postgres
-    @Query("SELECT pd FROM PositionDetail pd "
-            + "WHERE pd.positionMd = :pmdId "
-            + "ORDER BY pd.idPositionDetail ASC")
-    public List<PositionDetail> getAndLockByPositionMasterData(
-            @Param("pmdId") Integer pmdId);
+    public List<PositionDetail> findByPositionMdOrderByIdPositionDetail(Integer positionMd);
 }

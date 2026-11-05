@@ -20,6 +20,7 @@ import org.softcaster.core.data.SystemBusinessCalendar;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventDAO;
+import org.softcaster.core.dto.PositionDealRow;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.easy_pricer_proc.processors.BackdatedTxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
@@ -64,7 +65,11 @@ public class FinTxnExecutionService {
         try {
             FinancialTxn txn = financialTxnDAO.findByIdWithMasterData(txnId);
             if (txn != null) {
-                txn.setTxnStatus(status);
+                // Cancellazione non riuscita: il deal resta in posizione e deve
+                // continuare il suo ciclo di vita. Il deal di un amend no: il suo
+                // sostituto e' gia' in coda.
+                boolean stillLive = txn.getTxnStatusPreElab() == TxnStatus.TO_CANCEL && wasExecuted(txn);
+                txn.setTxnStatus(stillLive ? TxnStatus.EXECUTED : status);
                 financialTxnDAO.saveOrUpdate(txn);
             }
         } catch (Exception ex) {
@@ -141,7 +146,12 @@ public class FinTxnExecutionService {
     private void elabFinancialTxn(FinancialTxn txn, TxnStatus status) {
 
         PositionDetail position = getPositionDetail(txn);
-        processFinancialTxn(txn, position);
+        if (status == TxnStatus.EXECUTED) {
+            processFinancialTxn(txn, position);
+        } else {
+            // Cancel o amend: il deal non e' piu' EXECUTED, la posizione si ricostruisce senza
+            rebuildPosition(txn, position);
+        }
         position.setLastMtmExecuted(LocalDateTime.now());
         PositionDetail lastSaved = positionDetailDAO.saveOrUpdate(position);
         // A questo punto salvo il link
@@ -157,6 +167,9 @@ public class FinTxnExecutionService {
         String eventKey = txn.getMasterData().getCode() + " [" + txn.getIdFinancialTxn() + "] " + "[" + status.getCode() + "]" + txn.getSettlement();
         return eventKey;
     }
+
+    // Le chiusure maturano ratei e cedole solo per questa asset class (BondScheduler)
+    private static final String ACCRUING_ASSET_CLASS = "XRB";
 
     private boolean isBackdatedTxn(FinancialTxn txn) {
         boolean backdatedTxn = false;
@@ -211,7 +224,13 @@ public class FinTxnExecutionService {
 
             if (isBackdatedTxn(txn)) {
                 SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
-                List<AccountingEvent> events = backdatedTxnProcessor.generateEvents(txn, positionDetailId, sbc.getOfficialDate(), sbc.getLastOfficialDate());
+                List<AccountingEvent> events = null;
+                if (status == TxnStatus.EXECUTED) {
+                    events = backdatedTxnProcessor.generateEvents(txn, positionDetailId, sbc.getOfficialDate(), sbc.getLastOfficialDate());
+                } else if (ACCRUING_ASSET_CLASS.equals(txn.getMasterData().getAssetClass().getCode())) {
+                    // Cancel o amend di un deal gia' regolato: come se non fosse mai esistito
+                    events = backdatedTxnProcessor.generateReversalEvents(txn, positionDetailId, sbc.getOfficialDate(), sbc.getLastOfficialDate());
+                }
                 if (events != null && !events.isEmpty()) {
                     for (AccountingEvent backdatedEvent : events) {
                         accountingEventDAO.saveOrUpdate(backdatedEvent);
@@ -248,14 +267,24 @@ public class FinTxnExecutionService {
     }
 
     private void processFinancialTxn(FinancialTxn txn, PositionDetail position) {
+        processor(txn).process(txn, position);
+    }
 
+    private void rebuildPosition(FinancialTxn txn, PositionDetail position) {
+        long start = System.currentTimeMillis();
+        List<PositionDealRow> deals = positionTxnLinksDAO.findLiveDeals(position.getIdPositionDetail());
+        processor(txn).rebuildPosition(position, txn.getMasterData(), deals);
+        log.info("Position detail {} rebuilt from {} deals in {} ms", position.getIdPositionDetail(), deals.size(),
+                System.currentTimeMillis() - start);
+    }
+
+    private ITxnProcessor processor(FinancialTxn txn) {
         ITxnProcessor processor = processorDispatcher.dispatch(txn.getMasterData().getAssetClass().getCode());
-        if (processor != null) {
-            processor.process(txn, position);
-        } else {
+        if (processor == null) {
             log.error("Invalid ITxnProcessor");
             throw new TxnProcessingException("Invalid ITxnProcessor");
         }
+        return processor;
     }
 
     private boolean wasExecuted(FinancialTxn txn) {

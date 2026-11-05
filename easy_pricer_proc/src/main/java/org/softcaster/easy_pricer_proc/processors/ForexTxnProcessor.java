@@ -27,13 +27,17 @@ public class ForexTxnProcessor extends AbstractTxnProcessor implements ITxnProce
             throw new TxnProcessingException("Invalid processor");
         }
 
-        ProcInputData input = new ProcInputData();
-        input.setPrice(txn.getPrice());
-        input.setQuantity(txn.getQuantity());
-        input.setSide(txn.getTxnSide());
-        input.setStatus(txn.getTxnStatusPreElab());
+        super.process(positionInput(fmd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide()), position);
+    }
 
-        super.process(input, position);
+    @Override
+    protected ProcInputData positionInput(org.softcaster.core.data.MasterData masterData, double quantity, double price,
+            org.softcaster.engine.enums.TxnSide side) {
+        ProcInputData input = new ProcInputData();
+        input.setPrice(price);
+        input.setQuantity(quantity);
+        input.setSide(side);
+        return input;
     }
 
     @Override

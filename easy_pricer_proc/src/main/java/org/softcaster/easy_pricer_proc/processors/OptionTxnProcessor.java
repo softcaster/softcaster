@@ -46,13 +46,7 @@ public abstract class OptionTxnProcessor extends AbstractTxnProcessor implements
             throw new TxnProcessingException("Contract value, multiplier o stile del premio mancanti per " + omd.getCode());
         }
 
-        ProcInputData input = new ProcInputData();
-        input.setPrice(txn.getPrice() * omd.getMultiplier());
-        input.setPriceMultiplier(omd.getMultiplier());
-        input.setQuantity(txn.getQuantity() * omd.getContractValue());
-        input.setSide(txn.getTxnSide());
-        input.setStatus(txn.getTxnStatusPreElab());
-
+        ProcInputData input = positionInput(omd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide());
         super.process(input, position);
 
         if (txn.getTxnStatusPreElab() != TxnStatus.PENDING && txn.getTxnStatusPreElab() != TxnStatus.RESTARTING) {
@@ -79,6 +73,17 @@ public abstract class OptionTxnProcessor extends AbstractTxnProcessor implements
             initialMargin.setAmount(BigDecimal.valueOf(txn.getQuantity() * omd.getInitialMargin()));
             txn.addTxnComponent(initialMargin);
         }
+    }
+
+    @Override
+    protected ProcInputData positionInput(org.softcaster.core.data.MasterData masterData, double quantity, double price, TxnSide side) {
+        OptionMasterData omd = (OptionMasterData) Hibernate.unproxy(masterData);
+        ProcInputData input = new ProcInputData();
+        input.setPrice(price * omd.getMultiplier());
+        input.setPriceMultiplier(omd.getMultiplier());
+        input.setQuantity(quantity * omd.getContractValue());
+        input.setSide(side);
+        return input;
     }
 
     /**

@@ -189,12 +189,6 @@ public class AcctPollingJob {
         }
     }
 
-    protected void pollPendingAccountingTradeEvents() {
-        poolPendingExecutedTradeEvents();
-        poolPendingAmendedTradeEvents();
-        poolPendingCancelledTradeEvents();
-    }
-
     protected void pollPendingSettlementTradeEvents() {
         List<AccountingEvent> settlementEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.TRADE,
                 EventType.SETTLEMENT);
@@ -257,8 +251,11 @@ public class AcctPollingJob {
             log.info("=== [ASRV] Service is suspended ===\n");
             return;
         }
-        pollPendingAccountingTradeEvents();
+        poolPendingExecutedTradeEvents();
         pollPendingSettlementTradeEvents();
+        // Dopo i settlement: lo storno deve trovare tutte le righe del deal
+        poolPendingAmendedTradeEvents();
+        poolPendingCancelledTradeEvents();
         pollPendingAccrualEvents();
         pollPendingCouponEvents();
         pollPendingMtmEvents();

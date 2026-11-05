@@ -13,6 +13,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Integer> {
 
+    public long countByTxnStatusIn(java.util.Collection<TxnStatus> statuses);
+
     // FORZA IL FETCH: Carica la transazione, lo strumento e l'asset class in una sola JOIN
     // @EntityGraph(attributePaths = {"masterData", "masterData.assetClass"})    
     public FinancialTxn findByIdFinancialTxn(Integer idFinancialTxn);

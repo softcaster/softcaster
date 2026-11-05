@@ -127,23 +127,20 @@ public class AccountingContext {
         }
 
         for (JournalEntryLines oldLine : oldLines) {
-            // Manteniamo lo stesso identico BalanceType (DEBIT o CREDIT)
-            NormalBalance sameBalance = (oldLine.getDebitAmount() > 0) ? NormalBalance.DEBIT : NormalBalance.CREDIT;
-
-            // Estraiamo l'importo positivo originario
-            double originalAmount = (oldLine.getDebitAmount() > 0) ? oldLine.getDebitAmount() : oldLine.getCreditAmount();
-
-            // Invertiamo il segno dell'importo (Storno in Nero / Negativo)
-            double negativeAmount = originalAmount * (-1.0);
+            // Stessa colonna (DEBIT o CREDIT), importo col segno invertito (storno in
+            // negativo). L'importo originale puo' essere gia' negativo: le righe con
+            // cui il settlement elimina il memo sono esse stesse storni.
+            double debit = oldLine.getDebitAmount() == null ? 0. : oldLine.getDebitAmount();
+            double credit = oldLine.getCreditAmount() == null ? 0. : oldLine.getCreditAmount();
 
             // Inseriamo la linea di storno nel DSL contabile corrente.
-            // Passiamo l'ID dello slot convertito in stringa con un prefisso speciale "SLOT:" 
+            // Passiamo l'ID dello slot convertito in stringa con un prefisso speciale "SLOT:"
             // per istruire il metodo addJournalEntrie a non fare il lookup del mapping.
             String slotKey = "SLOT:" + oldLine.getAccountSlot() + "@" + oldLine.getDescription();
-            if (sameBalance == NormalBalance.DEBIT) {
-                this.journal.debit(slotKey, negativeAmount, oldLine.getCurrency());
+            if (debit != 0.) {
+                this.journal.debit(slotKey, -debit, oldLine.getCurrency());
             } else {
-                this.journal.credit(slotKey, negativeAmount, oldLine.getCurrency());
+                this.journal.credit(slotKey, -credit, oldLine.getCurrency());
             }
         }
     }
