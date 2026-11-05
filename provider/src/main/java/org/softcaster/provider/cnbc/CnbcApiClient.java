@@ -33,6 +33,8 @@ public class CnbcApiClient {
         return Converter.toDouble(rateStr, false);
     }
 
+    // es richiesta completa
+    // https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=IT3Y&output=json
     public String fetchMarketData(String symbol) {
         return restClient.get()
                 .uri("quote-html-webservice/restQuote/symbolType/symbol?symbols="+symbol+"&output=json")
