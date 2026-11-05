@@ -27,6 +27,7 @@ import org.softcaster.easy_pricer_lc.services.AccrualEventInfo;
 import org.softcaster.easy_pricer_lc.services.AccrualLyfeCycleService;
 import org.softcaster.easy_pricer_lc.services.LinkEventInfo;
 import org.softcaster.easy_pricer_lc.services.SettlementLyfeCycleService;
+import org.softcaster.engine.enums.EventType;
 import org.softcaster.engine.utils.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -84,6 +85,16 @@ public class LifeCycleJob {
         return result;
     }
 
+    public String runCouponLyfeCycleOnLine() {
+        String result = "";
+        try {
+            runCouponLyfeCycle();
+        } catch (Exception ex) {
+            result = ex.getLocalizedMessage();
+        }
+        return result;
+    }
+
     public void runLifeCycles() {
         runAccrualLyfeCycle();
         runSettlementLyfeCycle();
@@ -135,19 +146,26 @@ public class LifeCycleJob {
             if (sbc.getNextBusinessDate() == null) {
                 throw new LifeCycleException("next_business_date not set: the accrual life cycle runs during the EOD");
             }
-            fetchPosition(sbc.getOfficialDate(), sbc.getNextBusinessDate());
+            fetchPosition(EventType.ACCRUAL, sbc.getOfficialDate(), sbc.getNextBusinessDate());
         } catch (Exception ex) {
             throw ex;
         }
     }
 
-    private void fetchPosition(LocalDate from, LocalDate to) {
+    // Cedole della chiusura: staccano in (last_official_date, official_date]. Quelle
+    // fino a last_official_date dei deal retrodatati le genera BackdatedTxnProcessor.
+    private void runCouponLyfeCycle() {
+        SystemBusinessCalendar sbc = sbcDAO.findBySbcId(1);
+        fetchPosition(EventType.COUPON, sbc.getLastOfficialDate(), sbc.getOfficialDate());
+    }
+
+    private void fetchPosition(EventType eventType, LocalDate from, LocalDate to) {
         List<PositionMasterData> positions = positionMasterDataDAO.findAll();
 
         try {
             if (!positions.isEmpty()) {
                 for (PositionMasterData pmd : positions) {
-                    fetchPositionDetails(pmd, from, to);
+                    fetchPositionDetails(pmd, eventType, from, to);
                 }
             }
         } catch (Exception ex) {
@@ -155,7 +173,7 @@ public class LifeCycleJob {
         }
     }
 
-    private void fetchPositionDetails(PositionMasterData pmd, LocalDate from, LocalDate to) {
+    private void fetchPositionDetails(PositionMasterData pmd, EventType eventType, LocalDate from, LocalDate to) {
         List<PositionDetail> details = positionDetailDAO.fetchAndClaimByPositionMasterData(pmd).orElse(null);
 
         if (details != null && !details.isEmpty()) {
@@ -164,7 +182,7 @@ public class LifeCycleJob {
             for (PositionDetail detail : details) {
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
-                        generateAccrualEvent(detail, from, to);
+                        generateAccrualEvent(detail, eventType, from, to);
                     } catch (Exception ex) {
                         log.error("### Life Cycle error for position {}: {}", detail.getIdPositionDetail(), ex.getMessage());
                         throw ex;
@@ -176,10 +194,11 @@ public class LifeCycleJob {
         }
     }
 
-    private void generateAccrualEvent(PositionDetail detail, LocalDate from, LocalDate to) {
+    private void generateAccrualEvent(PositionDetail detail, EventType eventType, LocalDate from, LocalDate to) {
         try {
             AccrualEventInfo info = new AccrualEventInfo();
             info.setDetail(detail);
+            info.setEventType(eventType);
             info.setFrom(from);
             info.setTo(to);
             List<AccountingEvent> events = alc.generateEvents(info);
@@ -187,9 +206,9 @@ public class LifeCycleJob {
                 for (AccountingEvent event : events) {
                     if (event instanceof AccountingEventAccruals aea) {
                         if (!NumberUtils.isZero(aea.getAccrualAmount())) {
-                            // rilancio della stessa chiusura: il rateo del periodo c'e' gia'
+                            // rilancio della stessa chiusura: l'evento del periodo c'e' gia'
                             if (accountingEventDAO.findByEventKey(event.getEventKey()) != null) {
-                                log.warn("Accrual event already generated: {}", event.getEventKey());
+                                log.warn("Event already generated: {}", event.getEventKey());
                                 continue;
                             }
                             accountingEventDAO.saveOrUpdate(event);

@@ -16,6 +16,7 @@ import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.PositionTxnLinks;
 import org.softcaster.core.data.PositionTxnLinksDAO;
+import org.softcaster.core.data.SystemBusinessCalendar;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventDAO;
@@ -209,7 +210,8 @@ public class FinTxnExecutionService {
             accountingEventDAO.saveOrUpdate(event);
 
             if (isBackdatedTxn(txn)) {
-                List<AccountingEvent> events = backdatedTxnProcessor.generateEvents(txn, positionDetailId, systemBusinessCalendarDAO.findBySbcId(1).getOfficialDate());
+                SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
+                List<AccountingEvent> events = backdatedTxnProcessor.generateEvents(txn, positionDetailId, sbc.getOfficialDate(), sbc.getLastOfficialDate());
                 if (events != null && !events.isEmpty()) {
                     for (AccountingEvent backdatedEvent : events) {
                         accountingEventDAO.saveOrUpdate(backdatedEvent);

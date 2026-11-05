@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.softcaster.engine.enums.AccountingPhase;
+import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -45,6 +46,19 @@ public interface PositionTxnLinksRepository extends JpaRepository<PositionTxnLin
     double sumQuantityByPhase(
             @Param("positionDetailId") Integer positionDetailId,
             @Param("phase") AccountingPhase phase);
+
+    @Query("""
+        select coalesce(sum(p.quantity), 0)
+        from PositionTxnLinks p, FinancialTxn t
+        where t.idFinancialTxn = p.financialTxn
+          and p.positionDetail = :positionDetailId
+          and p.settlement < :date
+          and t.txnStatus = :status
+    """)
+    double sumQuantitySettledBefore(
+            @Param("positionDetailId") Integer positionDetailId,
+            @Param("date") java.sql.Date date,
+            @Param("status") TxnStatus status);
     
     public boolean existsByFinancialTxn(Integer financialTxn);
 }

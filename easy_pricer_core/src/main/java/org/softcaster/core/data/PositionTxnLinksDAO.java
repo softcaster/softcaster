@@ -3,6 +3,7 @@ package org.softcaster.core.data;
 import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.engine.enums.AccountingPhase;
+import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,16 @@ public class PositionTxnLinksDAO {
     @Transactional(readOnly = true)
     public double sumQuantityByPhase(Integer positionDetailId, AccountingPhase phase) {
         return repository.sumQuantityByPhase(positionDetailId, phase);
+    }
+
+    /**
+     * Quantita' con segno dei deal eseguiti (non cancellati ne' sostituiti da
+     * un amend) regolati prima della data: chi ha diritto a una cedola che
+     * stacca in quella data.
+     */
+    @Transactional(readOnly = true)
+    public double sumQuantitySettledBefore(Integer positionDetailId, LocalDate date) {
+        return repository.sumQuantitySettledBefore(positionDetailId, java.sql.Date.valueOf(date), TxnStatus.EXECUTED);
     }
     
     @Transactional(readOnly = true)

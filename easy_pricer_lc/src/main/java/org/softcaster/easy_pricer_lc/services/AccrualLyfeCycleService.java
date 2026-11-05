@@ -48,10 +48,10 @@ public class AccrualLyfeCycleService implements LifeCycleHandler {
             throw new LifeCycleException(error);
         }
 
-        return generateAccountingEventAccruals(detail, accrualEventInfo.getFrom(), accrualEventInfo.getTo());
+        return generateAccountingEventAccruals(detail, accrualEventInfo.getEventType(), accrualEventInfo.getFrom(), accrualEventInfo.getTo());
     }
 
-    private List<AccountingEvent> generateAccountingEventAccruals(PositionDetail detail, LocalDate from, LocalDate to) {
+    private List<AccountingEvent> generateAccountingEventAccruals(PositionDetail detail, EventType eventType, LocalDate from, LocalDate to) {
 
         Integer masterDataId = detail.getMasterData();
         if (masterDataId != null && masterDataId > 0) {
@@ -59,7 +59,7 @@ public class AccrualLyfeCycleService implements LifeCycleHandler {
             if (masterData != null) {
                 IScheduler scheduler = schedulerDispatcher.dispatch(masterData.getAssetClass().getCode());
                 if (scheduler != null) {
-                    List<AccountingEvent> events = scheduler.getAccountingEvents(EventType.ACCRUAL, detail, masterData, from, to);
+                    List<AccountingEvent> events = scheduler.getAccountingEvents(eventType, detail, masterData, from, to);
                     return events;
                 }
             }

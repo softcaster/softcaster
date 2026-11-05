@@ -55,6 +55,19 @@ public class InternalSystem {
         }
     }
 
+    @GetMapping("/internal/system/coupon")
+    public ResponseEntity<String> coupon() {
+        try {
+            String result = lcJob.runCouponLyfeCycleOnLine();
+            if(result.isBlank()) {
+                result = "Process CouponLyfeCycle ends successfully!";
+            }
+            return new ResponseEntity(result, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
     @GetMapping("/internal/system/accrual")
     public ResponseEntity<String> accrual() {
         try {

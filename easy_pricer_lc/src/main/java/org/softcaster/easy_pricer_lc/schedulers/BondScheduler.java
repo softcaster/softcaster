@@ -8,7 +8,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionTxnLinksDAO;
@@ -53,10 +55,7 @@ public class BondScheduler implements IScheduler {
             double operationalAmount = (detail.getBuyQty() - detail.getSellQty());
             // nominale con segno, senza multiplier (PositionAccountingEvent)
             double nominal = operationalAmount - memoAmount;
-            // accrual in base 100
-            double accrualsFrom = bondCalculator.getAccruals(smd, from);
-            double accrualsTo = bondCalculator.getAccruals(smd, to);
-            double accruals = (accrualsTo - accrualsFrom) * nominal * smd.getMultiplier();
+            double accruals = accrualPer100(smd, from, to) * nominal * smd.getMultiplier();
             accountingEvent.setAccrualAmount(accruals);
             accountingEvent.setAccountingNominal(nominal);
             accountingEvent.setCouponRate(smd.getInterestRate());
@@ -78,6 +77,62 @@ public class BondScheduler implements IScheduler {
         return accountingEvent;
     }
 
+    /**
+     * Rateo maturato in (from, to], in base 100. A ogni stacco nel periodo il
+     * rateo arriva alla cedola piena e riparte da zero: la differenza semplice
+     * dei ratei a from e a to sarebbe negativa.
+     */
+    private double accrualPer100(SecurityMasterData smd, LocalDate from, LocalDate to) {
+        double accrual = 0.;
+        LocalDate start = from;
+        for (CashFlowItem item : couponsIn(smd, from, to)) {
+            accrual += item.getInterest() - bondCalculator.getAccruals(smd, start);
+            start = item.getEnddate().toLocalDate();
+        }
+        return accrual + bondCalculator.getAccruals(smd, to) - bondCalculator.getAccruals(smd, start);
+    }
+
+    /**
+     * Cedole che staccano in (from, to], in ordine di data.
+     */
+    private static List<CashFlowItem> couponsIn(SecurityMasterData smd, LocalDate from, LocalDate to) {
+        return smd.getCashFlows().stream()
+                .filter(item -> item.getEnddate().toLocalDate().isAfter(from) && !item.getEnddate().toLocalDate().isAfter(to))
+                .sorted(Comparator.comparing(CashFlowItem::getEnddate))
+                .toList();
+    }
+
+    /**
+     * Eventi delle cedole che staccano in (from, to] per chi ha diritto: i deal
+     * regolati prima dello stacco. L'importo ha il segno della posizione.
+     */
+    private List<AccountingEvent> getAccountingEventCoupons(PositionDetail detail, MasterData masterData, LocalDate from, LocalDate to) {
+        List<AccountingEvent> events = new ArrayList<>();
+        if (masterData instanceof SecurityMasterData smd) {
+            for (CashFlowItem item : couponsIn(smd, from, to)) {
+                LocalDate couponDate = item.getEnddate().toLocalDate();
+                double nominal = positionTxnLinksDAO.sumQuantitySettledBefore(detail.getIdPositionDetail(), couponDate);
+                AccountingEventAccruals event = new AccountingEventAccruals();
+                event.setAccrualAmount(nominal * item.getInterest() * smd.getMultiplier());
+                event.setAccountingNominal(nominal);
+                event.setCouponRate(item.getInterest());
+                event.setDaycount(smd.getAccrualDaycount());
+                event.setDays((int) ChronoUnit.DAYS.between(item.getStartDate().toLocalDate(), couponDate));
+                event.setCreatedAt(LocalDateTime.now());
+                event.setEventStatus(AccountingEventStatus.NEW);
+                event.setEventType(EventType.COUPON);
+                event.setPositionDetail(detail.getIdPositionDetail());
+                event.setSourceId(detail.getIdPositionDetail());
+                event.setSourceType(EventSourceType.INSTRUMENT);
+                event.setEventKey(smd.getCode() + " [" + detail.getIdPositionDetail() + "] " + "[" + EventType.COUPON.getCode() + "]" + couponDate);
+                event.setGeneratedBy(smd.getIdMasterData());
+                event.setGeneratedRef(smd.getCode());
+                events.add(event);
+            }
+        }
+        return events;
+    }
+
     @Override
     public List<AccountingEvent> getAccountingEvents(EventType eventType, PositionDetail detail, MasterData masterData, LocalDate from, LocalDate to) {
         List<AccountingEvent> events = null;
@@ -93,6 +148,8 @@ public class BondScheduler implements IScheduler {
                 }
                 break;
             case COUPON:
+                events = getAccountingEventCoupons(detail, masterData, from, to);
+                break;
             case SETTLEMENT:
             case MATURITY:
             default:
