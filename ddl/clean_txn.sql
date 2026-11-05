@@ -1,3 +1,5 @@
+delete from eod_step_run;
+delete from eod_run;
 delete from journal_entry_lines;
 delete from journal_entries;
 delete from accounting_event_accruals;
@@ -45,6 +47,8 @@ delete from accumulator_master_data where id_master_data in (select id_master_da
 delete from master_data where id_master_data in (select id_master_data from otc_md);
 commit;
 
+ALTER SEQUENCE eod_step_run_s RESTART WITH 1;
+ALTER SEQUENCE eod_run_s RESTART WITH 1;
 ALTER SEQUENCE journal_entry_lines_s RESTART WITH 1;
 ALTER SEQUENCE journal_entries_s RESTART WITH 1;
 ALTER SEQUENCE accounting_events_s RESTART WITH 1;

@@ -6,9 +6,11 @@ package org.softcaster.easy_pricer_mtm.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.softcaster.core.dto.EodTaskResult;
 import org.softcaster.easy_pricer_mtm.jobs.MtMPollingJob;
 import org.softcaster.easy_pricer_mtm.services.EngineStateManager;
-import org.softcaster.easy_pricer_mtm.services.EodMtmResult;
+import org.softcaster.engine.enums.EodStatus;
+import org.softcaster.engine.enums.EodStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,9 +63,15 @@ public class InternalSystem {
      * dopo il caricamento dei prezzi di chiusura.
      */
     @PostMapping(value = "/internal/mtm/eod")
-    public ResponseEntity<EodMtmResult> executeEod() {
-        EodMtmResult result = mtMPollingJob.executeEod();
-        HttpStatus status = result.valuationErrors() + result.snapshotErrors() == 0 ? HttpStatus.OK : HttpStatus.MULTI_STATUS;
+    public ResponseEntity<EodTaskResult> executeEod() {
+        EodTaskResult result;
+        try {
+            result = mtMPollingJob.executeEod();
+        } catch (Exception e) {
+            log.error("### EOD MTM failed", e);
+            result = EodTaskResult.failed(EodStep.MTM, null, e.getLocalizedMessage());
+        }
+        HttpStatus status = result.status() == EodStatus.FAILED ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK;
         return new ResponseEntity<>(result, status);
     }
 

@@ -96,11 +96,15 @@ public final class AcctEnginePanel extends javax.swing.JPanel implements Service
     @Override
     public void stopService() {
         appendMessage("Closing Accounting service");
-        eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
+        if (!eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName())) {
+            appendMessage("No process to stop: the service is down or was not started from this console.");
+        }
     }
 
     @Override
     public void refreshStatus() {
+        new Thread(() -> appendMessage(eodFacade.getMicroserviceLauncher().isAlive(descriptor)
+                ? "Accounting service is running." : "Accounting service is not responding.")).start();
     }
 
     @Override
@@ -136,7 +140,7 @@ public final class AcctEnginePanel extends javax.swing.JPanel implements Service
         new Thread(() -> {
             try {
                 RestClient restClient = RestClient.create();
-                String baseUrl = "http://localhost:8082/api/v1/internal/system/suspend";
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/suspend";
                 restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)
@@ -158,5 +162,25 @@ public final class AcctEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void restoreService() {
+        appendMessage("Sending resume request via HTTP to Accounting service...");
+
+        // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
+        new Thread(() -> {
+            try {
+                RestClient restClient = RestClient.create();
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/resume";
+                restClient.post()
+                        .uri(baseUrl)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .toBodilessEntity(); // Invia la richiesta e attende la risposta (200 OK)
+
+                appendMessage("Service resumed successfully via HTTP.");
+
+            } catch (Exception e) {
+                // Il servizio e' spento o irraggiungibile: non c'e' niente da riprendere
+                logError("HTTP resuming failed: " + e.getLocalizedMessage());
+            }
+        }).start();
     }
 }

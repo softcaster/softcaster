@@ -97,11 +97,15 @@ public final class LifeCycleEnginePanel extends javax.swing.JPanel implements Se
     @Override
     public void stopService() {
         appendMessage("Closing LifeCycle service");
-        eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
+        if (!eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName())) {
+            appendMessage("No process to stop: the service is down or was not started from this console.");
+        }
     }
 
     @Override
     public void refreshStatus() {
+        new Thread(() -> appendMessage(eodFacade.getMicroserviceLauncher().isAlive(descriptor)
+                ? "LifeCycle service is running." : "LifeCycle service is not responding.")).start();
     }
 
     @Override
@@ -138,7 +142,7 @@ public final class LifeCycleEnginePanel extends javax.swing.JPanel implements Se
             try {
                 // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
                 RestClient restClient = RestClient.create();
-                String baseUrl = "http://localhost:8084/api/v1/internal/system/suspend";
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/suspend";
 
                 // 3. Esegui la chiamata POST sincrona
                 ResponseEntity<String> response = restClient.post()
@@ -169,7 +173,7 @@ public final class LifeCycleEnginePanel extends javax.swing.JPanel implements Se
             try {
                 // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
                 RestClient restClient = RestClient.create();
-                String baseUrl = "http://localhost:8084/api/v1/internal/system/resume";
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/resume";
 
                 // 3. Esegui la chiamata POST sincrona
                 ResponseEntity<String> response = restClient.post()

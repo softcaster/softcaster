@@ -96,11 +96,15 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
     @Override
     public void stopService() {
         appendMessage("Closing Processor service");
-        eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
+        if (!eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName())) {
+            appendMessage("No process to stop: the service is down or was not started from this console.");
+        }
     }
 
     @Override
     public void refreshStatus() {
+        new Thread(() -> appendMessage(eodFacade.getMicroserviceLauncher().isAlive(descriptor)
+                ? "Processor service is running." : "Processor service is not responding.")).start();
     }
 
     @Override
@@ -138,9 +142,8 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
                 // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
                 RestClient restClient = RestClient.create();
 
-                // 2. Ipotizziamo l'URL del microservizio REST (es. porta 8080)
-                // Puoi anche recuperare la porta dinamicamente da ParamsMgr se configurata lì
-                String baseUrl = "http://localhost:8081/api/v1/internal/system/suspend";
+                // 2. Porta del servizio dal suo descrittore (tabella descriptors)
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/suspend";
 
                 // 3. Esegui la chiamata POST sincrona
                 restClient.post()
@@ -172,9 +175,8 @@ public final class ProcEnginePanel extends javax.swing.JPanel implements Service
                 // 1. Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
                 RestClient restClient = RestClient.create();
 
-                // 2. Ipotizziamo l'URL del microservizio REST (es. porta 8080)
-                // Puoi anche recuperare la porta dinamicamente da ParamsMgr se configurata lì
-                String baseUrl = "http://localhost:8081/api/v1/internal/system/resume";
+                // 2. Porta del servizio dal suo descrittore (tabella descriptors)
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/resume";
 
                 // 3. Esegui la chiamata POST sincrona
                 restClient.post()

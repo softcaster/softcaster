@@ -1574,6 +1574,18 @@ ALTER SEQUENCE portfolio_master_data_s
     OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
+-- bond_valuation - criterio di valutazione dei titoli della posizione
+-- ----------------------------------------------------------------------------
+CREATE TABLE bond_valuation (
+    bond_valuation_id  INTEGER NOT NULL,
+    code               VARCHAR(25) NOT NULL,
+    description        VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_bond_valuation PRIMARY KEY (bond_valuation_id),
+    CONSTRAINT uq_bond_valuation_code UNIQUE (code)
+);
+ALTER TABLE bond_valuation OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
 -- position_master_data - anagrafica posizione
 -- ----------------------------------------------------------------------------
 CREATE TABLE position_master_data (
@@ -1582,8 +1594,11 @@ CREATE TABLE position_master_data (
     currency integer NOT NULL, -- divisa della posizione
     code varchar(25) NOT NULL,
     description varchar(255) NOT NULL, -- legal name
+    fx_rolling boolean NOT NULL DEFAULT FALSE, -- spot FX rollati a ogni chiusura
+    bond_valuation integer NOT NULL DEFAULT 1, -- criterio di valutazione dei titoli
     CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES currency (id_currency) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_portfolio FOREIGN KEY (portfolio) REFERENCES portfolio_master_data (id_portfolio) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_position_bond_valuation FOREIGN KEY (bond_valuation) REFERENCES bond_valuation (bond_valuation_id),
     PRIMARY KEY (id_position)
 );
 
@@ -1688,6 +1703,18 @@ CREATE UNIQUE INDEX idx_acct_phase_code ON txn_accounting_phase (code);
 ALTER TABLE txn_accounting_phase OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
+-- txn_origin - chi ha creato la transazione
+-- ----------------------------------------------------------------------------
+CREATE TABLE txn_origin (
+    txn_origin_id  INTEGER NOT NULL,
+    code           VARCHAR(25) NOT NULL,
+    description    VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_txn_origin PRIMARY KEY (txn_origin_id),
+    CONSTRAINT uq_txn_origin_code UNIQUE (code)
+);
+ALTER TABLE txn_origin OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
 -- financial_txn - transazione finanziaria
 -- ----------------------------------------------------------------------------
 CREATE TABLE financial_txn (
@@ -1708,7 +1735,11 @@ CREATE TABLE financial_txn (
     fx_rate numeric(15, 5) NOT NULL DEFAULT 1, -- cambio al momento del trade
     ref_id integer NOT NULL,
     version integer DEFAULT 0,
+    txn_origin integer NOT NULL DEFAULT 1, -- chi ha creato il deal (USER, EOD)
+    origin_key varchar(100), -- chiave del deal generato da un processo, vuota per gli utenti
     PRIMARY KEY (id_financial_txn),
+    CONSTRAINT fk_txn_origin FOREIGN KEY (txn_origin) REFERENCES txn_origin (txn_origin_id),
+    CONSTRAINT uq_financial_txn_origin_key UNIQUE (origin_key),
     CONSTRAINT fk_counterparty FOREIGN KEY (counterparty) REFERENCES counterparty (id_counterparty) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_position_md FOREIGN KEY (position_md) REFERENCES position_master_data (id_position) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_master_data FOREIGN KEY (master_data) REFERENCES master_data (id_master_data) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -1752,6 +1783,77 @@ CREATE SEQUENCE position_txn_links_s
 
 ALTER SEQUENCE position_txn_links_s
    OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- eod_status, eod_step - lookup della chiusura di giornata (enum EodStatus, EodStep)
+-- ----------------------------------------------------------------------------
+CREATE TABLE eod_status (
+    eod_status_id  INTEGER NOT NULL,
+    code           VARCHAR(25) NOT NULL,
+    description    VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_eod_status PRIMARY KEY (eod_status_id),
+    CONSTRAINT uq_eod_status_code UNIQUE (code)
+);
+ALTER TABLE eod_status OWNER TO sofie;
+
+CREATE TABLE eod_step (
+    eod_step_id  INTEGER NOT NULL,
+    code         VARCHAR(25) NOT NULL,
+    description  VARCHAR(64) NOT NULL,
+    CONSTRAINT pk_eod_step PRIMARY KEY (eod_step_id),
+    CONSTRAINT uq_eod_step_code UNIQUE (code)
+);
+ALTER TABLE eod_step OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- eod_run - un lancio della chiusura di giornata. Una chiusura fallita si rilancia
+-- con una riga nuova. Al massimo un lancio in corso e uno riuscito per data.
+-- ----------------------------------------------------------------------------
+CREATE TABLE eod_run (
+    eod_run_id          INTEGER NOT NULL,
+    business_date       DATE NOT NULL,
+    next_business_date  DATE NOT NULL,
+    status              INTEGER NOT NULL,
+    started_at          TIMESTAMP NOT NULL,
+    ended_at            TIMESTAMP,
+    message             VARCHAR(2000),
+    CONSTRAINT pk_eod_run PRIMARY KEY (eod_run_id),
+    CONSTRAINT fk_eod_run_status FOREIGN KEY (status) REFERENCES eod_status (eod_status_id)
+);
+ALTER TABLE eod_run OWNER TO sofie;
+
+CREATE UNIQUE INDEX uq_eod_run_running ON eod_run ((status)) WHERE status = 1;
+CREATE UNIQUE INDEX uq_eod_run_completed ON eod_run (business_date) WHERE status IN (2, 3);
+
+CREATE SEQUENCE eod_run_s START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+ALTER SEQUENCE eod_run_s OWNER TO sofie;
+
+-- ----------------------------------------------------------------------------
+-- eod_step_run - esecuzione di uno step in un lancio. Al rilancio gli step riusciti
+-- per la stessa data (OK, WARNING) non si rieseguono.
+-- ----------------------------------------------------------------------------
+CREATE TABLE eod_step_run (
+    eod_step_run_id  INTEGER NOT NULL,
+    eod_run          INTEGER NOT NULL,
+    step             INTEGER NOT NULL,
+    status           INTEGER NOT NULL,
+    processed        INTEGER NOT NULL DEFAULT 0,
+    created          INTEGER NOT NULL DEFAULT 0,
+    skipped          INTEGER NOT NULL DEFAULT 0,
+    errors           INTEGER NOT NULL DEFAULT 0,
+    message          VARCHAR(2000),
+    started_at       TIMESTAMP NOT NULL,
+    ended_at         TIMESTAMP,
+    CONSTRAINT pk_eod_step_run PRIMARY KEY (eod_step_run_id),
+    CONSTRAINT fk_eod_step_run_run FOREIGN KEY (eod_run) REFERENCES eod_run (eod_run_id),
+    CONSTRAINT fk_eod_step_run_step FOREIGN KEY (step) REFERENCES eod_step (eod_step_id),
+    CONSTRAINT fk_eod_step_run_status FOREIGN KEY (status) REFERENCES eod_status (eod_status_id),
+    CONSTRAINT uq_eod_step_run UNIQUE (eod_run, step)
+);
+ALTER TABLE eod_step_run OWNER TO sofie;
+
+CREATE SEQUENCE eod_step_run_s START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+ALTER SEQUENCE eod_step_run_s OWNER TO sofie;
 
 -- ----------------------------------------------------------------------------
 -- txn_component_type - tabella lookup component type mappada da enum ComponentType

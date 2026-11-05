@@ -97,11 +97,15 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
     @Override
     public void stopService() {
         appendMessage("Closing Mtm service");
-        eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
+        if (!eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName())) {
+            appendMessage("No process to stop: the service is down or was not started from this console.");
+        }
     }
 
     @Override
     public void refreshStatus() {
+        new Thread(() -> appendMessage(eodFacade.getMicroserviceLauncher().isAlive(descriptor)
+                ? "Mtm service is running." : "Mtm service is not responding.")).start();
     }
 
     @Override
@@ -136,7 +140,7 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
             try {
                 appendMessage("Sending suspension request via HTTP to Mtm service...");
                 RestClient restClient = RestClient.create();
-                String baseUrl = "http://localhost:8082/api/v1/internal/system/suspend";
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/suspend";
                 ResponseEntity<String> response = restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)
@@ -163,7 +167,7 @@ public final class MtmEnginePanel extends javax.swing.JPanel implements ServiceP
             try {
                 appendMessage("Sending restore request via HTTP to Mtm service...");
                 RestClient restClient = RestClient.create();
-                String baseUrl = "http://localhost:8082/api/v1/internal/system/resume";
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/resume";
                 ResponseEntity<String> response = restClient.post()
                         .uri(baseUrl)
                         .accept(MediaType.APPLICATION_JSON)

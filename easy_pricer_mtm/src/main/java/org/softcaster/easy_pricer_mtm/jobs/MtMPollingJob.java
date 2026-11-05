@@ -26,7 +26,9 @@ import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.easy_pricer_mtm.services.EngineStateManager;
-import org.softcaster.easy_pricer_mtm.services.EodMtmResult;
+import org.softcaster.core.dto.EodTaskResult;
+import org.softcaster.engine.enums.EodStatus;
+import org.softcaster.engine.enums.EodStep;
 import org.softcaster.easy_pricer_mtm.services.EodMtmService;
 import org.softcaster.easy_pricer_mtm.services.MtmService;
 import org.softcaster.provider.enums.RequestType;
@@ -147,7 +149,7 @@ public class MtMPollingJob implements IMtmDataHelper {
      * valutate senza errori, alla data ufficiale. Da lanciare dopo il
      * caricamento dei prezzi di chiusura.
      */
-    public EodMtmResult executeEod() {
+    public EodTaskResult executeEod() {
         ValuationContext context = new ValuationContext();
         // la data ufficiale e' in cache (businessCalendar): il fine giornata la rilegge
         marketDataService.refreshOfficialDate();
@@ -165,7 +167,7 @@ public class MtMPollingJob implements IMtmDataHelper {
                 log.error("### EOD MTM ERROR FOR POSITION DETAIL ID {}: {}", detail.getIdPositionDetail(), e.getMessage());
             }
         }
-        saveValuations(context);
+        boolean valuationsSaved = saveValuations(context);
 
         Map<EodMtmService.Outcome, Integer> counts = new EnumMap<>(EodMtmService.Outcome.class);
         int snapshotErrors = 0;
@@ -180,10 +182,21 @@ public class MtMPollingJob implements IMtmDataHelper {
                 log.error("### EOD MTM SNAPSHOT ERROR FOR POSITION DETAIL ID {}: {}", detail.getIdPositionDetail(), e.getMessage());
             }
         }
-        EodMtmResult result = new EodMtmResult(valuationDate, details.size(), failed.size(),
-                counts.getOrDefault(EodMtmService.Outcome.CREATED, 0), counts.getOrDefault(EodMtmService.Outcome.UPDATED, 0),
-                counts.getOrDefault(EodMtmService.Outcome.ALREADY_POSTED, 0), counts.getOrDefault(EodMtmService.Outcome.UNCHANGED, 0),
-                counts.getOrDefault(EodMtmService.Outcome.NOT_ACCOUNTED, 0), snapshotErrors);
+        int snapshotsCreated = counts.getOrDefault(EodMtmService.Outcome.CREATED, 0);
+        int snapshotsUpdated = counts.getOrDefault(EodMtmService.Outcome.UPDATED, 0);
+        int alreadyPosted = counts.getOrDefault(EodMtmService.Outcome.ALREADY_POSTED, 0);
+        int unchanged = counts.getOrDefault(EodMtmService.Outcome.UNCHANGED, 0);
+        int notAccounted = counts.getOrDefault(EodMtmService.Outcome.NOT_ACCOUNTED, 0);
+        String message = "Snapshots: " + snapshotsCreated + " new, " + snapshotsUpdated + " updated, "
+                + alreadyPosted + " already posted, " + unchanged + " unchanged, " + notAccounted + " not accounted at MTM; "
+                + failed.size() + " valuation errors, " + snapshotErrors + " snapshot errors"
+                + (valuationsSaved ? "" : "; some instrument valuations not saved");
+        EodTaskResult result = EodTaskResult.of(EodStep.MTM, valuationDate, details.size(), snapshotsCreated + snapshotsUpdated,
+                alreadyPosted + unchanged + notAccounted, failed.size() + snapshotErrors + (valuationsSaved ? 0 : 1), message);
+        // una fotografia gia' contabilizzata non si aggiorna: i prezzi rivisti dopo non entrano in contabilita'
+        if (result.status() == EodStatus.OK && alreadyPosted > 0) {
+            result = result.asWarning(message);
+        }
         log.info("=== [MMS] EOD MTM {} ===", result);
         return result;
     }

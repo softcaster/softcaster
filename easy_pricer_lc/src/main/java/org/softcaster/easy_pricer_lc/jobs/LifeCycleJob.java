@@ -9,8 +9,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.slf4j.LoggerFactory;
+import org.softcaster.core.dto.EodTaskResult;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.PositionMasterData;
@@ -27,6 +30,7 @@ import org.softcaster.easy_pricer_lc.services.AccrualEventInfo;
 import org.softcaster.easy_pricer_lc.services.AccrualLyfeCycleService;
 import org.softcaster.easy_pricer_lc.services.LinkEventInfo;
 import org.softcaster.easy_pricer_lc.services.SettlementLyfeCycleService;
+import org.softcaster.engine.enums.EodStep;
 import org.softcaster.engine.enums.EventType;
 import org.softcaster.engine.utils.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,58 +69,47 @@ public class LifeCycleJob {
     @Autowired
     private AccrualLyfeCycleService alc;
 
-    public String runSettlementLyfeCycleOnLine() {
-        String result = "";
-        try {
-            runSettlementLyfeCycle();
-        } catch (Exception ex) {
-            result = ex.getLocalizedMessage();
-        }
-        return result;
-    }
+    /**
+     * Contatori di un task: gli elementi girano anche in parallelo e un errore
+     * su uno non ferma gli altri.
+     */
+    private static class TaskCounters {
 
-    public String runAccrualLyfeCycleOnLine() {
-        String result = "";
-        try {
-            runAccrualLyfeCycle();
-        } catch (Exception ex) {
-            result = ex.getLocalizedMessage();
-        }
-        return result;
-    }
+        final AtomicInteger processed = new AtomicInteger();
+        final AtomicInteger created = new AtomicInteger();
+        final AtomicInteger skipped = new AtomicInteger();
+        final AtomicInteger errors = new AtomicInteger();
+        final AtomicReference<String> firstError = new AtomicReference<>();
 
-    public String runCouponLyfeCycleOnLine() {
-        String result = "";
-        try {
-            runCouponLyfeCycle();
-        } catch (Exception ex) {
-            result = ex.getLocalizedMessage();
+        void error(String message) {
+            errors.incrementAndGet();
+            firstError.compareAndSet(null, message);
         }
-        return result;
-    }
 
-    public void runLifeCycles() {
-        runAccrualLyfeCycle();
-        runSettlementLyfeCycle();
+        EodTaskResult toResult(EodStep task, LocalDate businessDate) {
+            String message = firstError.get() == null ? "" : "First error: " + firstError.get();
+            return EodTaskResult.of(task, businessDate, processed.get(), created.get(), skipped.get(), errors.get(), message);
+        }
     }
 
     // -------------------------------------------------------------------------
     //  Settlement LifeCycle
     // -------------------------------------------------------------------------
-    private void runSettlementLyfeCycle() {
-        try {
-            List<PositionTxnLinks> links = positionTxnLinksDAO.fetchAndClaimLinks(sbcDAO.findBySbcId(1).getOfficialDate());
-            if (!links.isEmpty()) {
-                for (PositionTxnLinks link : links) {
-                    generateSettlementEvent(link);
-                }
+    public EodTaskResult runSettlementLyfeCycle() {
+        LocalDate officialDate = sbcDAO.findBySbcId(1).getOfficialDate();
+        TaskCounters counters = new TaskCounters();
+        for (PositionTxnLinks link : positionTxnLinksDAO.fetchAndClaimLinks(officialDate)) {
+            counters.processed.incrementAndGet();
+            try {
+                generateSettlementEvent(link, counters);
+            } catch (Exception ex) {
+                counters.error("txn " + link.getFinancialTxn() + ": " + ex.getLocalizedMessage());
             }
-        } catch (Exception ex) {
-            throw ex;
         }
+        return counters.toResult(EodStep.SETTLEMENT, officialDate);
     }
 
-    void generateSettlementEvent(PositionTxnLinks link) {
+    void generateSettlementEvent(PositionTxnLinks link, TaskCounters counters) {
 
         try {
             LinkEventInfo info = new LinkEventInfo();
@@ -125,7 +118,11 @@ public class LifeCycleJob {
             if (events != null && !events.isEmpty()) {
                 for (AccountingEvent event : events) {
                     accountingEventDAO.saveOrUpdate(event);
+                    counters.created.incrementAndGet();
                 }
+            } else {
+                // rilancio della stessa chiusura: l'evento c'e' gia'
+                counters.skipped.incrementAndGet();
             }
         } catch (Exception e) {
             log.error("### Error processing txn: " + link.getFinancialTxn());
@@ -140,52 +137,44 @@ public class LifeCycleJob {
     // Rateo della chiusura di T0: da official_date (T0) a next_business_date (T+1),
     // che il servizio EOD valorizza prima di lanciare il lifecycle. I retrodatati
     // registrati a T0 hanno gia' il rateo fino a T0 (BackdatedTxnProcessor).
-    private void runAccrualLyfeCycle() {
-        try {
-            SystemBusinessCalendar sbc = sbcDAO.findBySbcId(1);
-            if (sbc.getNextBusinessDate() == null) {
-                throw new LifeCycleException("next_business_date not set: the accrual life cycle runs during the EOD");
-            }
-            fetchPosition(EventType.ACCRUAL, sbc.getOfficialDate(), sbc.getNextBusinessDate());
-        } catch (Exception ex) {
-            throw ex;
+    public EodTaskResult runAccrualLyfeCycle() {
+        SystemBusinessCalendar sbc = sbcDAO.findBySbcId(1);
+        if (sbc.getNextBusinessDate() == null) {
+            return EodTaskResult.failed(EodStep.ACCRUAL, sbc.getOfficialDate(),
+                    "next_business_date not set: the accrual life cycle runs during the EOD");
         }
+        return fetchPosition(EodStep.ACCRUAL, EventType.ACCRUAL, sbc.getOfficialDate(), sbc.getOfficialDate(), sbc.getNextBusinessDate());
     }
 
     // Cedole della chiusura: staccano in (last_official_date, official_date]. Quelle
     // fino a last_official_date dei deal retrodatati le genera BackdatedTxnProcessor.
-    private void runCouponLyfeCycle() {
+    public EodTaskResult runCouponLyfeCycle() {
         SystemBusinessCalendar sbc = sbcDAO.findBySbcId(1);
-        fetchPosition(EventType.COUPON, sbc.getLastOfficialDate(), sbc.getOfficialDate());
+        return fetchPosition(EodStep.COUPON, EventType.COUPON, sbc.getOfficialDate(), sbc.getLastOfficialDate(), sbc.getOfficialDate());
     }
 
-    private void fetchPosition(EventType eventType, LocalDate from, LocalDate to) {
-        List<PositionMasterData> positions = positionMasterDataDAO.findAll();
-
-        try {
-            if (!positions.isEmpty()) {
-                for (PositionMasterData pmd : positions) {
-                    fetchPositionDetails(pmd, eventType, from, to);
-                }
-            }
-        } catch (Exception ex) {
-            throw ex;
+    private EodTaskResult fetchPosition(EodStep task, EventType eventType, LocalDate businessDate, LocalDate from, LocalDate to) {
+        TaskCounters counters = new TaskCounters();
+        for (PositionMasterData pmd : positionMasterDataDAO.findAll()) {
+            fetchPositionDetails(pmd, eventType, from, to, counters);
         }
+        return counters.toResult(task, businessDate);
     }
 
-    private void fetchPositionDetails(PositionMasterData pmd, EventType eventType, LocalDate from, LocalDate to) {
+    private void fetchPositionDetails(PositionMasterData pmd, EventType eventType, LocalDate from, LocalDate to, TaskCounters counters) {
         List<PositionDetail> details = positionDetailDAO.fetchAndClaimByPositionMasterData(pmd).orElse(null);
 
         if (details != null && !details.isEmpty()) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
             for (PositionDetail detail : details) {
+                counters.processed.incrementAndGet();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
-                        generateAccrualEvent(detail, eventType, from, to);
+                        generateAccrualEvent(detail, eventType, from, to, counters);
                     } catch (Exception ex) {
                         log.error("### Life Cycle error for position {}: {}", detail.getIdPositionDetail(), ex.getMessage());
-                        throw ex;
+                        counters.error("position detail " + detail.getIdPositionDetail() + ": " + ex.getMessage());
                     }
                 }, taskExecutor);
                 futures.add(future);
@@ -194,7 +183,7 @@ public class LifeCycleJob {
         }
     }
 
-    private void generateAccrualEvent(PositionDetail detail, EventType eventType, LocalDate from, LocalDate to) {
+    private void generateAccrualEvent(PositionDetail detail, EventType eventType, LocalDate from, LocalDate to, TaskCounters counters) {
         try {
             AccrualEventInfo info = new AccrualEventInfo();
             info.setDetail(detail);
@@ -209,9 +198,11 @@ public class LifeCycleJob {
                             // rilancio della stessa chiusura: l'evento del periodo c'e' gia'
                             if (accountingEventDAO.findByEventKey(event.getEventKey()) != null) {
                                 log.warn("Event already generated: {}", event.getEventKey());
+                                counters.skipped.incrementAndGet();
                                 continue;
                             }
                             accountingEventDAO.saveOrUpdate(event);
+                            counters.created.incrementAndGet();
                         }
                     }
                 }

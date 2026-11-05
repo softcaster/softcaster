@@ -96,11 +96,15 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
     @Override
     public void stopService() {
         appendMessage("Closing Trade Capture service");
-        eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName());
+        if (!eodFacade.getMicroserviceLauncher().stopService(descriptor.getServiceName())) {
+            appendMessage("No process to stop: the service is down or was not started from this console.");
+        }
     }
 
     @Override
     public void refreshStatus() {
+        new Thread(() -> appendMessage(eodFacade.getMicroserviceLauncher().isAlive(descriptor)
+                ? "Trade Capture service is running." : "Trade Capture service is not responding.")).start();
     }
 
     @Override
@@ -138,9 +142,8 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
                 // Istanzia il RestClient (funziona nativamente anche con web-application-type=none)
                 RestClient restClient = RestClient.create();
 
-                // 2. Ipotizziamo l'URL del microservizio REST (es. porta 8080)
-                // Puoi anche recuperare la porta dinamicamente da ParamsMgr se configurata lì
-                String baseUrl = "http://localhost:8080/api/v1/internal/system/suspend";
+                // 2. Porta del servizio dal suo descrittore (tabella descriptors)
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/suspend";
 
                 // 3. Esegui la chiamata POST sincrona
                 restClient.post()
@@ -164,5 +167,25 @@ public final class RestEnginePanel extends javax.swing.JPanel implements Service
 
     @Override
     public void restoreService() {
+        appendMessage("Sending resume request via HTTP to Trade Capture service...");
+
+        // Eseguiamo la chiamata HTTP in un thread separato per evitare di bloccare l'interfaccia grafica Swing
+        new Thread(() -> {
+            try {
+                RestClient restClient = RestClient.create();
+                String baseUrl = "http://localhost:" + descriptor.getPort() + "/api/v1/internal/system/resume";
+                restClient.post()
+                        .uri(baseUrl)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .toBodilessEntity(); // Invia la richiesta e attende la risposta (200 OK)
+
+                appendMessage("Service resumed successfully via HTTP.");
+
+            } catch (Exception e) {
+                // Il servizio e' spento o irraggiungibile: non c'e' niente da riprendere
+                logError("HTTP resuming failed: " + e.getLocalizedMessage());
+            }
+        }).start();
     }
 }

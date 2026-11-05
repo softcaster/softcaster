@@ -36,7 +36,7 @@ public class RestServiceDescriptor implements MicroserviceDescriptor {
     @Override
     public String[] getAdditionalArgs() {
         if (additionalArgs != null) {
-            return (String[]) additionalArgs.toArray();
+            return additionalArgs.toArray(String[]::new);
         } else {
             return null;
         }

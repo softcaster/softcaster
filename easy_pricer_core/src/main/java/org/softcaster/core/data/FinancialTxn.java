@@ -22,9 +22,11 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.softcaster.core.data.converters.AccountingPhaseConverter;
+import org.softcaster.core.data.converters.TxnOriginConverter;
 import org.softcaster.core.data.converters.TxnSideConverter;
 import org.softcaster.core.data.converters.TxnStatusConverter;
 import org.softcaster.engine.enums.AccountingPhase;
+import org.softcaster.engine.enums.TxnOrigin;
 import org.softcaster.engine.enums.TxnSide;
 import org.softcaster.engine.enums.TxnStatus;
 
@@ -75,6 +77,15 @@ public class FinancialTxn implements Serializable {
 
     @Column(name = "ref_id")
     private Integer refId;
+
+    @Convert(converter = TxnOriginConverter.class)
+    @Column(name = "txn_origin", nullable = false)
+    private TxnOrigin txnOrigin = TxnOrigin.USER;
+
+    // chiave univoca del deal generato da un processo (prefisso = processo), vuota
+    // per i deal degli utenti: un rilancio del processo non genera doppioni
+    @Column(name = "origin_key")
+    private String originKey;
 
     @Column(name = "description")
     private String description;
@@ -245,6 +256,22 @@ public class FinancialTxn implements Serializable {
      */
     public void setRefId(Integer refId) {
         this.refId = refId;
+    }
+
+    public TxnOrigin getTxnOrigin() {
+        return txnOrigin;
+    }
+
+    public void setTxnOrigin(TxnOrigin txnOrigin) {
+        this.txnOrigin = txnOrigin;
+    }
+
+    public String getOriginKey() {
+        return originKey;
+    }
+
+    public void setOriginKey(String originKey) {
+        this.originKey = originKey;
     }
 
     /**

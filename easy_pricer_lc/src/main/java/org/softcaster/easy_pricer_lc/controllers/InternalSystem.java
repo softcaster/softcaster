@@ -4,10 +4,14 @@
  */
 package org.softcaster.easy_pricer_lc.controllers;
 
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.softcaster.core.dto.EodTaskResult;
 import org.softcaster.easy_pricer_lc.jobs.LifeCycleJob;
 import org.softcaster.easy_pricer_lc.services.EngineStateManager;
+import org.softcaster.engine.enums.EodStatus;
+import org.softcaster.engine.enums.EodStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,42 +46,36 @@ public class InternalSystem {
         return new ResponseEntity<>("Service resumed", HttpStatus.OK);
     }
 
-    @GetMapping("/internal/system/settlement")
-    public ResponseEntity<String> settlement() {
-        try {
-            String result = lcJob.runSettlementLyfeCycleOnLine();
-            if(result.isBlank()) {
-                result = "Process SettlementLyfeCycle ends successfully!";
-            }
-            return new ResponseEntity(result, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
-        }
+    @GetMapping(value = "/internal/system/alive")
+    public ResponseEntity<String> alive() {
+        return new ResponseEntity<>("LifeCycle Service Alive", HttpStatus.OK);
     }
 
-    @GetMapping("/internal/system/coupon")
-    public ResponseEntity<String> coupon() {
-        try {
-            String result = lcJob.runCouponLyfeCycleOnLine();
-            if(result.isBlank()) {
-                result = "Process CouponLyfeCycle ends successfully!";
-            }
-            return new ResponseEntity(result, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
-        }
+    @PostMapping("/internal/system/settlement")
+    public ResponseEntity<EodTaskResult> settlement() {
+        return runTask(EodStep.SETTLEMENT, lcJob::runSettlementLyfeCycle);
     }
 
-    @GetMapping("/internal/system/accrual")
-    public ResponseEntity<String> accrual() {
+    @PostMapping("/internal/system/coupon")
+    public ResponseEntity<EodTaskResult> coupon() {
+        return runTask(EodStep.COUPON, lcJob::runCouponLyfeCycle);
+    }
+
+    @PostMapping("/internal/system/accrual")
+    public ResponseEntity<EodTaskResult> accrual() {
+        return runTask(EodStep.ACCRUAL, lcJob::runAccrualLyfeCycle);
+    }
+
+    private ResponseEntity<EodTaskResult> runTask(EodStep step, Supplier<EodTaskResult> task) {
+        EodTaskResult result;
         try {
-            String result = lcJob.runAccrualLyfeCycleOnLine();
-            if(result.isBlank()) {
-                result = "Process AccrualLyfeCycle ends successfully!";
-            }
-            return new ResponseEntity(result, HttpStatus.OK);
+            result = task.get();
         } catch (Exception e) {
-            return new ResponseEntity(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
+            log.error("### EOD task {} failed", step, e);
+            result = EodTaskResult.failed(step, null, e.getLocalizedMessage());
         }
+        log.info("=== EOD task {} ===", result);
+        HttpStatus status = result.status() == EodStatus.FAILED ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK;
+        return new ResponseEntity<>(result, status);
     }
 }

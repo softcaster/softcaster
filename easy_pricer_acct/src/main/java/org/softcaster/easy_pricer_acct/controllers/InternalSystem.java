@@ -10,6 +10,7 @@ import org.softcaster.easy_pricer_acct.services.EngineStateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,5 +36,10 @@ public class InternalSystem {
         stateManager.resume();
         log.info("Service resumed...");
         return new ResponseEntity<>("Service resumed", HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/internal/system/alive")
+    public ResponseEntity<String> alive() {
+        return new ResponseEntity<>("Accounting Service Alive", HttpStatus.OK);
     }
 }

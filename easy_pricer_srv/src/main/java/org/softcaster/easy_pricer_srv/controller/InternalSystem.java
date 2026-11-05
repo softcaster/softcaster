@@ -42,6 +42,11 @@ public class InternalSystem {
         return new ResponseEntity<>("Service resumed", HttpStatus.OK);
     }
     
+    @GetMapping(value = "/internal/system/alive")
+    public ResponseEntity<String> alive() {
+        return new ResponseEntity<>("Trade Capture Service Alive", HttpStatus.OK);
+    }
+
     @GetMapping(value = "/internal/system/official_date")
     public ResponseEntity<String> getOfficialDate() {
         String officialDate = systemDateManager.getOfficialBusinessDate().toString();

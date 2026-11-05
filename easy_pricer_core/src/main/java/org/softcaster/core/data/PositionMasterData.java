@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -16,6 +17,8 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.softcaster.core.data.converters.BondValuationConverter;
+import org.softcaster.engine.enums.BondValuation;
 
 @Entity
 @Table(name = "position_master_data")
@@ -42,6 +45,15 @@ public class PositionMasterData implements Serializable {
 
     @Column(name = "description")
     private String description;
+
+    // spot FX della posizione rollati a ogni chiusura invece di regolare a T+2
+    @Column(name = "fx_rolling", nullable = false)
+    private boolean fxRolling = false;
+
+    // criterio di valutazione dei titoli della posizione
+    @Convert(converter = BondValuationConverter.class)
+    @Column(name = "bond_valuation", nullable = false)
+    private BondValuation bondValuation = BondValuation.FAIR_VALUE;
 
     @OneToMany(fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
@@ -70,6 +82,22 @@ public class PositionMasterData implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isFxRolling() {
+        return fxRolling;
+    }
+
+    public void setFxRolling(boolean fxRolling) {
+        this.fxRolling = fxRolling;
+    }
+
+    public BondValuation getBondValuation() {
+        return bondValuation;
+    }
+
+    public void setBondValuation(BondValuation bondValuation) {
+        this.bondValuation = bondValuation;
     }
 
     @Override

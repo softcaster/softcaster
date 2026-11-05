@@ -418,11 +418,10 @@ public class JEodOrchestrator extends javax.swing.JFrame {
     }
 
     private void refreshAction() {
-        // Definisci dove si trova il JAR del servizio MTM (puoi metterlo anche nell'application.properties)
-        String jarPath = "C:/test/rsrv/easy_pricer_srv-1.0.jar";
-
-        // Avvia il servizio
-        //microserviceLauncher.startMtmService(jarPath, "dev");
+        ServicePanel activePanel = getActiveCard();
+        if (activePanel != null) {
+            activePanel.refreshStatus();
+        }
     }
 
     private void startAction() {
