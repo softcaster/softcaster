@@ -198,7 +198,8 @@ option_product        code (EUU), descrizione, exchange_contract_code, asset_cla
 - Corretto: "New Year Day" EUR era 1/8 → 1/1 (DB e `sofie_startup.sql`).
 
 ### Script DDL (`ddl/`)
-- `sofie.sql`, `sofie_acct.sql`, `sofie_func.sql`, `sofie_proc.sql` ricreano **esattamente** il DB (verificato: 1.694 oggetti, 0 differenze, nessun errore). **Fa fede il DB**: ogni modifica fatta su pgAdmin va riportata negli script.
+- Dal 06/11/2026 `sofie_schema.sql`, `sofie_lookup.sql`, `sofie_config.sql` (in quest'ordine) ricreano il DB senza strumenti, curve e quotazioni, che restano nei backup. **Fa fede il DB**: i file si rigenerano con `export_schema.ps1`, una modifica nasce come migrazione provata su una copia e si butta dopo la rigenerazione. Gli script citati nelle righe seguenti sono storici: si trovano nella cronologia di git.
+- Base di test: `sofie-base-*.backup`, ripristinata da `restore_sofie_base.ps1`.
 - Migrazioni applicate il 23/10/2026: `future_product.sql`, `cash_flow_master_data.sql` (eliminate anche 5 righe orfane di `security_master_data`). Storicizzazione quotazioni (`upsert_instrument_quote`, trigger su `instrument_quote_hist`) in commento in `sofie_func.sql`: non presente sul DB.
 - `option_product.sql` (lookup opzioni, asset class FFO, `option_product`, `option_master_data`), applicata il 24/10/2026; `option_branches.sql` (rami future/spot di testate e serie, migra i dati esistenti), applicata il 25/10/2026; `option_spot_asset_classes.sql` (asset class FXO, BDO). Entrambe riportate in `sofie.sql`/`sofie_startup.sql`; i servizi hanno `ddl-auto=validate`, quindi le migrazioni vanno applicate prima di avviarli con il nuovo core.
 - `purge_expired_instruments.sql`: pulizia degli strumenti scaduti (con `dry_run`).

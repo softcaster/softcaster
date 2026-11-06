@@ -1,0 +1,16 @@
+Base di test sofie-base-20261106.backup (pg_dump formato custom)
+
+Stato
+- nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
+- calendario: official_date = last_official_date = 2026-11-06, next_business_date vuota, OPEN
+- fx_rolling spento su tutte le posizioni
+- z-spread ITA_SPREADED calibrati al 2026-11-06, validi fino al 2026-11-13 (max_age_days 7)
+- quotazioni, curve, anagrafiche quotate e piano dei conti del 2026-11-06
+
+Migrazioni comprese, oltre a sofie.sql, sofie_startup.sql e sofie_acct.sql
+- interest_expense_mapping.sql, future_script_mapping.sql, mtm_snapshot.sql, mtm_nominal_column.sql
+- txn_origin_position_params.sql, eod_run.sql
+- position_txn_links_index.sql, financial_txn_components_index.sql
+
+Ripristino: ddl\restore_sofie_base.ps1 (vedi l'intestazione dello script)
+Una migrazione successiva va applicata dopo il ripristino, oppure va rifatto il backup.
