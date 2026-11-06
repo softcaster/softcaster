@@ -8,8 +8,7 @@ import java.util.*;
 
 public class EurexGraphQL {
 
-    public static void main(String[] args) throws Exception {
-        
+    private static void testBondFuture() throws Exception {
         EurexApiClient client = new EurexApiClient("FBTP");
         List<ContractData> data = client.executeQueryIsinPrices();
         int contractId = 0;
@@ -31,5 +30,22 @@ public class EurexGraphQL {
                 }
             }
         }
+    }
+
+    private static void testEuriborFuture() throws Exception {
+        EurexApiClient client = new EurexApiClient("FEU3");
+        List<ContractData> data = client.executeQueryIsinPrices();
+        if (data != null && !data.isEmpty()) {
+            for (ContractData d : data) {
+                System.out.println((100. - d.price()) + "\t" + d.settlementDate());
+            }
+        }
+    }
+
+
+    
+    public static void main(String[] args) throws Exception {
+        //testBondFuture();
+        testEuriborFuture();
     }
 }
