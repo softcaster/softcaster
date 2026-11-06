@@ -222,7 +222,7 @@ public class EodBatchRunner {
      * I deal del rolling devono entrare in posizione prima del MtM di chiusura.
      */
     private EodTaskResult fxRolling(LocalDate date) throws InterruptedException {
-        EodTaskResult result = callTask(EodStep.FX_ROLLING, date, ServiceType.TSRV, "/internal/system/fx_rolling");
+        EodTaskResult result = callTask(EodStep.FX_ROLLING, date, ServiceType.LSRV, "/internal/system/fx_rolling");
         if (result.status() == EodStatus.FAILED) {
             return result;
         }

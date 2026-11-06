@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.softcaster.core.dto.EodTaskResult;
 import org.softcaster.easy_pricer_lc.jobs.LifeCycleJob;
 import org.softcaster.easy_pricer_lc.services.EngineStateManager;
+import org.softcaster.easy_pricer_lc.services.FxRollingService;
 import org.softcaster.engine.enums.EodStatus;
 import org.softcaster.engine.enums.EodStep;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class InternalSystem {
 
     @Autowired
     private LifeCycleJob lcJob;
+
+    @Autowired
+    private FxRollingService fxRollingService;
 
     @PostMapping(value = "/internal/system/suspend")
     public ResponseEntity<String> suspend() {
@@ -64,6 +68,11 @@ public class InternalSystem {
     @PostMapping("/internal/system/accrual")
     public ResponseEntity<EodTaskResult> accrual() {
         return runTask(EodStep.ACCRUAL, lcJob::runAccrualLyfeCycle);
+    }
+
+    @PostMapping("/internal/system/fx_rolling")
+    public ResponseEntity<EodTaskResult> fxRolling() {
+        return runTask(EodStep.FX_ROLLING, fxRollingService::rollPositions);
     }
 
     private ResponseEntity<EodTaskResult> runTask(EodStep step, Supplier<EodTaskResult> task) {

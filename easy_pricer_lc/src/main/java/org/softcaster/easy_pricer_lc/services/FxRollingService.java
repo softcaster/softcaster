@@ -1,4 +1,4 @@
-package org.softcaster.easy_pricer_srv.services;
+package org.softcaster.easy_pricer_lc.services;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -85,7 +85,9 @@ public class FxRollingService {
             return EodTaskResult.failed(EodStep.FX_ROLLING, date, "FX rolling runs only during the end of day");
         }
 
-        // i cambi di chiusura caricati dopo l'avvio del servizio
+        // La data ufficiale e' in cache e questo servizio non riceve il cambio data; i
+        // cambi di chiusura sono caricati dopo il suo avvio
+        marketDataService.refreshOfficialDate();
         marketDataService.loadSpotPrice();
 
         int processed = 0;
