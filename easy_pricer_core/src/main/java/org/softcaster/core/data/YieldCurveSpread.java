@@ -7,13 +7,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.JdbcTypeCode;
 
-import jakarta.persistence.*;        // use javax.persistence.* if your project is still on Java EE
-import java.io.Serializable;
-import java.sql.Types;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import org.hibernate.annotations.JdbcTypeCode;
-
 /**
  * One calibrated z-spread bucket of a spread curve (e.g. ITA_SPREADED at 5 years on a given date).
  * Getters and setters omitted: generate them as for your other entities.

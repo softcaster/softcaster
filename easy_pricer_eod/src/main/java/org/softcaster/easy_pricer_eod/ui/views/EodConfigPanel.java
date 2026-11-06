@@ -267,6 +267,18 @@ public class EodConfigPanel extends javax.swing.JPanel {
             Currency currency = (Currency) cbCurrency.getSelectedItem();
             Calendar calendar = (Calendar) cbCalendar.getSelectedItem();
             if (nextOfficialDate != null) {
+                // Da qui i deal sono bloccati e il pannello non salva piu': serve la conferma
+                int answer = javax.swing.JOptionPane.showConfirmDialog(
+                        this,
+                        "A next official date starts the closing of " + officialDate + ":\n"
+                        + "trades will be blocked and this configuration can no longer be changed.\n"
+                        + "Start the closing, with " + nextOfficialDate + " as the next official date?",
+                        "Start closing",
+                        javax.swing.JOptionPane.YES_NO_OPTION,
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
+                if (answer != javax.swing.JOptionPane.YES_OPTION) {
+                    return;
+                }
                 sbc.setStatus(SbcStatus.CLOSING);
             }
             sbc.setCurrency(currency);
