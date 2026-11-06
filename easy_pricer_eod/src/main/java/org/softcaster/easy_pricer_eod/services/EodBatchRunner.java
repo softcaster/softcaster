@@ -38,9 +38,6 @@ public class EodBatchRunner {
 
     private static final Logger log = LoggerFactory.getLogger(EodBatchRunner.class);
 
-    // Non ancora costruiti: restano in EodStep e in tabella, ma non si eseguono
-    private static final Set<EodStep> NOT_AVAILABLE = Set.of(EodStep.FX_ROLLING);
-
     private static final Set<TxnStatus> OPEN_TXN = Set.of(TxnStatus.PENDING, TxnStatus.VALIDATING, TxnStatus.TO_AMEND,
             TxnStatus.TO_CANCEL, TxnStatus.RESTARTING, TxnStatus.CLAIMED);
     private static final Set<AccountingEventStatus> OPEN_EVENTS = Set.of(AccountingEventStatus.NEW, AccountingEventStatus.PROCESSING);
@@ -154,10 +151,6 @@ public class EodBatchRunner {
                 info(step.getCode() + ": already completed, skipped");
                 continue;
             }
-            if (NOT_AVAILABLE.contains(step)) {
-                info(step.getCode() + ": not available yet, skipped");
-                continue;
-            }
             info(step.getCode() + ": " + step.getDescription() + "...");
             EodStepRun stepRun = store.beginStep(run, step);
 
@@ -196,6 +189,7 @@ public class EodBatchRunner {
                 case COUPON -> callTask(step, date, ServiceType.LSRV, "/internal/system/coupon");
                 case SETTLEMENT -> callTask(step, date, ServiceType.LSRV, "/internal/system/settlement");
                 case ACCRUAL -> callTask(step, date, ServiceType.LSRV, "/internal/system/accrual");
+                case FX_ROLLING -> fxRolling(date);
                 case MTM -> callTask(step, date, ServiceType.MSRV, "/internal/mtm/eod");
                 case WAIT_SETTLEMENT_POSTED, WAIT_EOD_POSTED -> waitForAccounting(step, date);
                 case CONTROLS -> controls(date);
@@ -216,17 +210,41 @@ public class EodBatchRunner {
     private EodTaskResult openClosing(EodRun run) throws InterruptedException {
         store.openClosing(run.getNextBusinessDate());
         // i deal entrati prima del blocco devono arrivare in posizione
+        long open = waitForOpenTrades();
+        if (open > 0) {
+            return EodTaskResult.of(EodStep.OPEN_CLOSING, run.getBusinessDate(), (int) open, 0, 0, (int) open,
+                    open + " trades not processed after " + waitTimeoutSeconds + " seconds");
+        }
+        return EodTaskResult.of(EodStep.OPEN_CLOSING, run.getBusinessDate(), 0, 0, 0, 0, "Trades blocked, none left to process");
+    }
+
+    /**
+     * I deal del rolling devono entrare in posizione prima del MtM di chiusura.
+     */
+    private EodTaskResult fxRolling(LocalDate date) throws InterruptedException {
+        EodTaskResult result = callTask(EodStep.FX_ROLLING, date, ServiceType.TSRV, "/internal/system/fx_rolling");
+        if (result.status() == EodStatus.FAILED) {
+            return result;
+        }
+        long open = waitForOpenTrades();
+        if (open > 0) {
+            return EodTaskResult.of(EodStep.FX_ROLLING, date, result.processed(), result.created(), result.skipped(), (int) open,
+                    open + " trades not processed after " + waitTimeoutSeconds + " seconds");
+        }
+        return result;
+    }
+
+    /**
+     * @return i deal rimasti da elaborare allo scadere del timeout, 0 se finiti
+     */
+    private long waitForOpenTrades() throws InterruptedException {
         long deadline = deadline();
         long open = financialTxnDAO.countByTxnStatus(OPEN_TXN);
-        while (open > 0) {
-            if (System.currentTimeMillis() > deadline) {
-                return EodTaskResult.of(EodStep.OPEN_CLOSING, run.getBusinessDate(), (int) open, 0, 0, (int) open,
-                        open + " trades not processed after " + waitTimeoutSeconds + " seconds");
-            }
+        while (open > 0 && System.currentTimeMillis() <= deadline) {
             Thread.sleep(POLL_MS);
             open = financialTxnDAO.countByTxnStatus(OPEN_TXN);
         }
-        return EodTaskResult.of(EodStep.OPEN_CLOSING, run.getBusinessDate(), 0, 0, 0, 0, "Trades blocked, none left to process");
+        return open;
     }
 
     private EodTaskResult waitForAccounting(EodStep step, LocalDate date) throws InterruptedException {

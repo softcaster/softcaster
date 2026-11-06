@@ -33,6 +33,11 @@ public class FinancialTxnDAO {
     }
 
     @Transactional(readOnly = true)
+    public boolean existsByOriginKey(String originKey) {
+        return repository.existsByOriginKey(originKey);
+    }
+
+    @Transactional(readOnly = true)
     public List<FinancialTxn> findAll() {
         return repository.findAll();
     }

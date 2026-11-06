@@ -6,9 +6,13 @@ package org.softcaster.easy_pricer_srv.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.softcaster.core.dto.EodTaskResult;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_srv.services.EngineStateManager;
+import org.softcaster.easy_pricer_srv.services.FxRollingService;
 import org.softcaster.easy_pricer_srv.services.SystemDateManager;
+import org.softcaster.engine.enums.EodStatus;
+import org.softcaster.engine.enums.EodStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -27,6 +31,9 @@ public class InternalSystem {
 
     @Autowired
     SystemDateManager systemDateManager;
+
+    @Autowired
+    private FxRollingService fxRollingService;
 
     @Autowired
     @Qualifier("marketDataService")
@@ -51,6 +58,23 @@ public class InternalSystem {
     @GetMapping(value = "/internal/system/alive")
     public ResponseEntity<String> alive() {
         return new ResponseEntity<>("Trade Capture Service Alive", HttpStatus.OK);
+    }
+
+    /**
+     * Task FX_ROLLING della chiusura di giornata.
+     */
+    @PostMapping(value = "/internal/system/fx_rolling")
+    public ResponseEntity<EodTaskResult> fxRolling() {
+        EodTaskResult result;
+        try {
+            result = fxRollingService.rollPositions();
+        } catch (Exception e) {
+            log.error("### EOD FX rolling failed", e);
+            result = EodTaskResult.failed(EodStep.FX_ROLLING, null, e.getLocalizedMessage());
+        }
+        log.info("=== EOD task {} ===", result);
+        HttpStatus status = result.status() == EodStatus.FAILED ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK;
+        return new ResponseEntity<>(result, status);
     }
 
     /**

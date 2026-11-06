@@ -15,6 +15,8 @@ public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Inte
 
     public long countByTxnStatusIn(java.util.Collection<TxnStatus> statuses);
 
+    public boolean existsByOriginKey(String originKey);
+
     // FORZA IL FETCH: Carica la transazione, lo strumento e l'asset class in una sola JOIN
     // @EntityGraph(attributePaths = {"masterData", "masterData.assetClass"})    
     public FinancialTxn findByIdFinancialTxn(Integer idFinancialTxn);
