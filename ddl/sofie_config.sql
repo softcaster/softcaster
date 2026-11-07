@@ -186,6 +186,18 @@ INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, g
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (55, 'BOND_UNREALIZED_LOSS', 1, 106);
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (56, 'BOND_UNREALIZED_LOSS', 2, 106);
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (57, 'BOND_UNREALIZED_LOSS', 4, 106);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (58, 'FX_REALIZED_GAIN', 4, 57);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (59, 'FX_REALIZED_GAIN', 1, 57);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (60, 'FX_REALIZED_GAIN', 2, 57);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (61, 'FX_REALIZED_LOSS', 4, 65);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (62, 'FX_REALIZED_LOSS', 1, 65);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (63, 'FX_REALIZED_LOSS', 2, 65);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (64, 'FX_UNREALIZED_GAIN', 4, 58);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (65, 'FX_UNREALIZED_GAIN', 1, 58);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (66, 'FX_UNREALIZED_GAIN', 2, 58);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (67, 'FX_UNREALIZED_LOSS', 4, 66);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (68, 'FX_UNREALIZED_LOSS', 1, 66);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (69, 'FX_UNREALIZED_LOSS', 2, 66);
 
 
 --
@@ -695,7 +707,7 @@ INSERT INTO public.system_business_calendar (sbc_id, description, calendar, stat
 -- Name: account_mapping_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.account_mapping_s', 57, true);
+SELECT pg_catalog.setval('public.account_mapping_s', 69, true);
 
 
 --

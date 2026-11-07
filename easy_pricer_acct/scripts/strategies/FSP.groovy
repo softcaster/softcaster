@@ -1,6 +1,7 @@
 import org.softcaster.engine.enums.TxnSide
 import org.softcaster.engine.enums.EventType
 import org.softcaster.engine.enums.AccountingPhase
+import java.math.RoundingMode
 
 def txn = ctx.txn
 def event = ctx.event
@@ -22,7 +23,27 @@ String accObsClearingQuote = accountResolver.resolve("OBS_CLEARING", quoteCcy)
 String accPositionBase = accountResolver.resolve("POSITION_CONTROL", baseCcy) 
 String accSpotBase = accountResolver.resolve("FX_SPOT_ASSET", baseCcy)     
 String accSpotQuote = accountResolver.resolve("FX_SPOT_ASSET", quoteCcy)    
-String accPositionQuote = accountResolver.resolve("POSITION_CONTROL", quoteCcy) 
+String accPositionQuote = accountResolver.resolve("POSITION_CONTROL", quoteCcy)
+
+int currencyScale = ctx.getCurrencyScale(false)
+def money = { value ->
+    new BigDecimal((value ?: 0).toString()).setScale(currencyScale, RoundingMode.HALF_UP)
+}
+
+/*
+ * Una parte del risultato del MtM: utile o perdita nella valuta di quotazione,
+ * contropartita POSITION_CONTROL. Il settlement porta poi il realizzato sui conti
+ * reali e riazzera POSITION_CONTROL: il risultato non si conta due volte.
+ */
+def postResult = { BigDecimal amount, String gainKey, String lossKey ->
+    if (amount.signum() > 0) {
+        ctx.journal.debit(accPositionQuote, amount, quoteCcy)
+        ctx.journal.credit(accountResolver.resolve(gainKey, quoteCcy), amount, quoteCcy)
+    } else if (amount.signum() < 0) {
+        ctx.journal.debit(accountResolver.resolve(lossKey, quoteCcy), amount.abs(), quoteCcy)
+        ctx.journal.credit(accPositionQuote, amount.abs(), quoteCcy)
+    }
+}
 
 switch(event.eventType) {
 
@@ -92,9 +113,20 @@ case EventType.TRADE_CANCELED:
     ctx.reverseJournal()
     break
 
-// MTM (rivalutazione in System Currency) e ROLLOVER (punti swap) non sono
-// ancora definiti: la bozza precedente usava un conto inesistente
-// (accPosition) e righe in due valute senza quadratura. Nessuno li genera.
+case EventType.MTM:
+    // =========================================================================
+    // FINE GIORNATA: variazione del risultato dall'ultima fotografia contabilizzata,
+    // divisa tra realizzato e non realizzato, nella valuta di quotazione. Il
+    // realizzato comprende le chiusure del rolling, il non realizzato i suoi punti
+    // forward: il rolling non ha scritture proprie. La controvalutazione nella
+    // valuta di sistema e' un processo a valle.
+    // =========================================================================
+    postResult(money(ctx.getRealizedVariation()), "FX_REALIZED_GAIN", "FX_REALIZED_LOSS")
+    postResult(money(ctx.getUnrealizedVariation()), "FX_UNREALIZED_GAIN", "FX_UNREALIZED_LOSS")
+    break
+
+// ROLLOVER: il rolling degli spot passa da due deal ordinari (FxRollingService),
+// nessuno genera questo evento.
 default:
     throw new IllegalArgumentException("Unsupported FSP accounting event: " + event.eventType)
 }

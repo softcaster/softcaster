@@ -272,6 +272,18 @@ public class AccountingContext {
         return nz(current.getUnrealizedPnl()) - (previousMtm == null ? 0. : nz(previousMtm.getUnrealizedPnl()));
     }
 
+    /**
+     * Variazione del realizzato rispetto all'ultima fotografia contabilizzata:
+     * con getUnrealizedVariation divide getMtmVariation tra realizzato e non
+     * realizzato. 0 per gli eventi non MTM.
+     */
+    public double getRealizedVariation() {
+        if (!(event instanceof AccountingEventMtm current)) {
+            return 0.;
+        }
+        return nz(current.getRealizedPnl()) - (previousMtm == null ? 0. : nz(previousMtm.getRealizedPnl()));
+    }
+
     private static double nz(Double value) {
         return value == null ? 0. : value;
     }

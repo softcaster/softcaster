@@ -58,7 +58,7 @@ public class MtMPollingJob implements IMtmDataHelper {
     private EodMtmService eodMtmService;
 
     // asset class contabilizzate a MTM di fine giornata (script con l'evento MTM)
-    @Value("#{'${mtm.eod.asset-classes:XRB,XRN,FRB,FRN,BFU,FFU}'.split(',')}")
+    @Value("#{'${mtm.eod.asset-classes:XRB,XRN,FRB,FRN,BFU,FFU,FSP}'.split(',')}")
     private Set<String> eodAssetClasses;
 
     @Autowired
