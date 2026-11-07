@@ -99,6 +99,24 @@ public class AccountingContext {
                 .orElse(0.0);
     }
 
+    /**
+     * Spese all'erogazione di un mutuo per la quota del deal (componente
+     * LOAN_FEE, importo positivo): incassate da chi presta, pagate da chi
+     * prende a prestito.
+     */
+    public double getLoanFees() {
+        if (txn == null || txn.getComponents() == null || txn.getComponents().isEmpty()) {
+            return 0.0;
+        }
+        return txn.getComponents().stream()
+                .filter(c -> c.getComponentType() == TxnComponentType.LOAN_FEE)
+                .map(FinancialTxnComponent::getAmount)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .map(BigDecimal::doubleValue)
+                .orElse(0.0);
+    }
+
     public double getFutureInitialMargin() {
         if (txn == null || txn.getComponents() == null || txn.getComponents().isEmpty()) {
             return 0.0;

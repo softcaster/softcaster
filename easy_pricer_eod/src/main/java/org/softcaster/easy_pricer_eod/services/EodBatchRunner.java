@@ -186,10 +186,10 @@ public class EodBatchRunner {
         try {
             return switch (step) {
                 case OPEN_CLOSING -> openClosing(run);
-                case COUPON -> callTask(step, date, ServiceType.LSRV, "/internal/system/coupon");
+                case COUPON -> taskWithTrades(step, date, "/internal/system/coupon");
                 case SETTLEMENT -> callTask(step, date, ServiceType.LSRV, "/internal/system/settlement");
                 case ACCRUAL -> callTask(step, date, ServiceType.LSRV, "/internal/system/accrual");
-                case FX_ROLLING -> fxRolling(date);
+                case FX_ROLLING -> taskWithTrades(step, date, "/internal/system/fx_rolling");
                 case MTM -> callTask(step, date, ServiceType.MSRV, "/internal/mtm/eod");
                 case WAIT_SETTLEMENT_POSTED, WAIT_EOD_POSTED -> waitForAccounting(step, date);
                 case CONTROLS -> controls(date);
@@ -219,16 +219,18 @@ public class EodBatchRunner {
     }
 
     /**
-     * I deal del rolling devono entrare in posizione prima del MtM di chiusura.
+     * Task del lifecycle che genera deal: i rimborsi delle rate dei mutui (COUPON)
+     * devono essere in posizione prima di settlement e ratei, i deal del rolling
+     * (FX_ROLLING) prima del MtM di chiusura.
      */
-    private EodTaskResult fxRolling(LocalDate date) throws InterruptedException {
-        EodTaskResult result = callTask(EodStep.FX_ROLLING, date, ServiceType.LSRV, "/internal/system/fx_rolling");
+    private EodTaskResult taskWithTrades(EodStep step, LocalDate date, String path) throws InterruptedException {
+        EodTaskResult result = callTask(step, date, ServiceType.LSRV, path);
         if (result.status() == EodStatus.FAILED) {
             return result;
         }
         long open = waitForOpenTrades();
         if (open > 0) {
-            return EodTaskResult.of(EodStep.FX_ROLLING, date, result.processed(), result.created(), result.skipped(), (int) open,
+            return EodTaskResult.of(step, date, result.processed(), result.created(), result.skipped(), (int) open,
                     open + " trades not processed after " + waitTimeoutSeconds + " seconds");
         }
         return result;

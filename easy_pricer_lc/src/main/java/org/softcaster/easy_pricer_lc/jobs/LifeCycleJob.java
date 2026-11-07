@@ -29,6 +29,7 @@ import org.softcaster.easy_pricer_lc.exceptions.LifeCycleException;
 import org.softcaster.easy_pricer_lc.services.AccrualEventInfo;
 import org.softcaster.easy_pricer_lc.services.AccrualLyfeCycleService;
 import org.softcaster.easy_pricer_lc.services.LinkEventInfo;
+import org.softcaster.easy_pricer_lc.services.LoanRepaymentService;
 import org.softcaster.easy_pricer_lc.services.SettlementLyfeCycleService;
 import org.softcaster.engine.enums.EodStep;
 import org.softcaster.engine.enums.EventType;
@@ -68,6 +69,9 @@ public class LifeCycleJob {
 
     @Autowired
     private AccrualLyfeCycleService alc;
+
+    @Autowired
+    private LoanRepaymentService loanRepaymentService;
 
     /**
      * Contatori di un task: gli elementi girano anche in parallelo e un errore
@@ -148,9 +152,15 @@ public class LifeCycleJob {
 
     // Cedole della chiusura: staccano in (last_official_date, official_date]. Quelle
     // fino a last_official_date dei deal retrodatati le genera BackdatedTxnProcessor.
+    // Per i mutui anche il rimborso della quota capitale delle rate (deal EOD).
     public EodTaskResult runCouponLyfeCycle() {
         SystemBusinessCalendar sbc = sbcDAO.findBySbcId(1);
-        return fetchPosition(EodStep.COUPON, EventType.COUPON, sbc.getOfficialDate(), sbc.getLastOfficialDate(), sbc.getOfficialDate());
+        EodTaskResult coupons = fetchPosition(EodStep.COUPON, EventType.COUPON, sbc.getOfficialDate(), sbc.getLastOfficialDate(), sbc.getOfficialDate());
+        EodTaskResult repayments = loanRepaymentService.generateRepayments();
+        String message = String.join(" ", coupons.message(), repayments.message()).trim();
+        return EodTaskResult.of(EodStep.COUPON, sbc.getOfficialDate(),
+                coupons.processed() + repayments.processed(), coupons.created() + repayments.created(),
+                coupons.skipped() + repayments.skipped(), coupons.errors() + repayments.errors(), message);
     }
 
     private EodTaskResult fetchPosition(EodStep task, EventType eventType, LocalDate businessDate, LocalDate from, LocalDate to) {

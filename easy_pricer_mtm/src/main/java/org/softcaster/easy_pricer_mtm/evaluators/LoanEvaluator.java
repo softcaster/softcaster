@@ -23,11 +23,10 @@ import org.springframework.stereotype.Component;
  * di mercato = teorico = fair value secco (rate future scontate meno rateo),
  * rateo, DV01; yield e duration del fair value.
  *
- * Posizione: quantita' = capitale erogato, prezzo unitario come nel processor.
- * Finche' i rimborsi delle rate non chiudono quantita' (ciclo di vita), il
- * capitale gia' rimborsato vale alla pari: mark = (fair value secco +
- * capitale rimborsato) / capitale, e l'unrealized e' solo l'effetto della
- * valutazione sul residuo.
+ * Posizione: quantita' = debito residuo (i rimborsi delle rate sono deal EOD
+ * alla pari che la riducono), prezzo unitario come nel processor: mark = fair
+ * value secco / 100. Il MtM non e' contabilizzato (mutui al costo
+ * ammortizzato: le asset class XRM / FRM non sono in mtm.eod.asset-classes).
  */
 public abstract class LoanEvaluator extends AbstractEvaluator implements IPositionEvaluator {
 
@@ -84,10 +83,9 @@ public abstract class LoanEvaluator extends AbstractEvaluator implements IPositi
             return currentValuation;
         });
 
-        // prezzo unitario sul capitale erogato, rimborsi alla pari
-        double principal = lmd.getPrincipalAmount();
-        double outstanding = LoanCalculator.outstanding(lmd, officialDate);
-        double mark = 1. - outstanding / principal * (1. - valuation.getMarketPrice() / 100.);
+        // prezzo unitario sul debito residuo: i rimborsi delle rate sono deal EOD
+        // (LoanRepaymentService) che riducono la quantita' in posizione insieme al residuo
+        double mark = valuation.getMarketPrice() / 100.;
 
         position.setMarketPrice(mark);
         position.setTheoreticalPrice(mark);

@@ -51,8 +51,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * piano delle rate, che si simulano (price) o si registrano insieme alla
  * transazione (book).
  *
- * Transazione: quantita' = capitale, prezzo = 100 (percentuale del capitale,
- * come per i titoli); BUY = la banca presta.
+ * Transazione: quantita' = debito residuo alla data operazione (il capitale
+ * all'erogazione), prezzo = 100 (percentuale del residuo, come per i titoli);
+ * BUY = la banca presta, SELL = la banca prende a prestito.
  */
 @Service
 public class LoanDealService {
@@ -112,7 +113,7 @@ public class LoanDealService {
                     TxnStatus.PENDING.getId(), null, null,
                     null, (short) side.getId(),
                     java.sql.Date.valueOf(tradeDate), null,
-                    lmd.getPrincipalAmount(), 100., null, AccountingPhase.NONE.getId());
+                    dealQuantity(lmd, tradeDate), 100., null, AccountingPhase.NONE.getId());
             financialTxnService.saveOrUpdateTransaction(txn);
 
             return loanCalculator.loanValuation(lmd, flows, valuationDate(r), r.discountCurve, r.discountRate, r.creditSpread);
@@ -155,7 +156,7 @@ public class LoanDealService {
 
             LocalDate tradeDate = r.tradeDate != null ? r.tradeDate : lmd.getIssueDate().toLocalDate();
             financialTxnService.amendOtcDeal(txn, lmd.getDescription(), side, r.counterpartyId, r.positionMdId,
-                    tradeDate, lmd.getPrincipalAmount(), 100.);
+                    tradeDate, dealQuantity(lmd, tradeDate), 100.);
             return LoanDto.of(lmd);
         });
     }
@@ -290,6 +291,19 @@ public class LoanDealService {
         return (lmd instanceof FltLoanMasterData ? "Floating " : "Fixed ") + "loan " + plan + " "
                 + String.format("%,.0f", lmd.getPrincipalAmount()) + " " + lmd.getCurrency().getIsoCode()
                 + " " + lmd.getInterestRate() + "% " + lmd.getIssueDate() + "/" + lmd.getMaturityDate();
+    }
+
+    /**
+     * Quantita' del deal: debito residuo alla data operazione (il capitale per
+     * un deal all'erogazione). I rimborsi delle rate successive sono deal EOD
+     * che la riducono (LoanRepaymentService in easy_pricer_lc).
+     */
+    private static double dealQuantity(LoanMasterData lmd, LocalDate tradeDate) {
+        double outstanding = LoanCalculator.outstanding(lmd, tradeDate);
+        if (outstanding <= 0.) {
+            throw new IllegalArgumentException("Loan " + lmd.getCode() + " has no outstanding principal at " + tradeDate);
+        }
+        return Math.round(outstanding * 100.) / 100.;
     }
 
     private static Calendar calendar(LoanMasterData lmd) {

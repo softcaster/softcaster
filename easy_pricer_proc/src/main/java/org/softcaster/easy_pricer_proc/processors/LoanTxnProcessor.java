@@ -12,6 +12,7 @@ import org.softcaster.easy_pricer_mds_core.calc.LoanCalculator;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.engine.dto.LoanResult;
 import org.softcaster.engine.enums.TxnComponentType;
+import org.softcaster.engine.enums.TxnOrigin;
 import org.softcaster.engine.enums.TxnSide;
 import org.softcaster.engine.enums.TxnStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,15 @@ public abstract class LoanTxnProcessor extends AbstractTxnProcessor implements I
         // mutuo con piano e spese
         LoanMasterData lmd = loanMasterDataDAO.getById(txn.getMasterData().getIdMasterData());
         LocalDate tradeDate = txn.getTradeDate().toLocalDate();
+
+        // Rimborso della quota capitale di una rata (LoanRepaymentService): alla pari, in
+        // data di scadenza, senza rateo ne' spese. Non si valuta: dopo l'ultima rata il
+        // mutuo non ha piu' flussi
+        if (txn.getTxnOrigin() == TxnOrigin.EOD) {
+            super.process(positionInput(lmd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide()), position);
+            return;
+        }
+
         LoanResult result;
         try {
             result = loanCalculator.dealValuation(lmd, tradeDate, txn.getPrice());
