@@ -261,27 +261,58 @@ public class AccountingContext {
     }
 
     /**
-     * Variazione del non realizzato rispetto all'ultima fotografia
-     * contabilizzata: per i titoli e' la rettifica di fair value del giorno
-     * (il realizzato passa dalla vendita). 0 per gli eventi non MTM.
+     * Registra la variazione del realizzato dall'ultima fotografia
+     * contabilizzata. Vedi postResultBySign.
      */
-    public double getUnrealizedVariation() {
-        if (!(event instanceof AccountingEventMtm current)) {
-            return 0.;
+    public void postRealizedResult(String counterAccount, String gainAccount, String lossAccount) {
+        if (event instanceof AccountingEventMtm current) {
+            postResultBySign(previousMtm == null ? 0. : nz(previousMtm.getRealizedPnl()), nz(current.getRealizedPnl()),
+                    counterAccount, gainAccount, lossAccount);
         }
-        return nz(current.getUnrealizedPnl()) - (previousMtm == null ? 0. : nz(previousMtm.getUnrealizedPnl()));
     }
 
     /**
-     * Variazione del realizzato rispetto all'ultima fotografia contabilizzata:
-     * con getUnrealizedVariation divide getMtmVariation tra realizzato e non
-     * realizzato. 0 per gli eventi non MTM.
+     * Registra la variazione del non realizzato dall'ultima fotografia
+     * contabilizzata. Vedi postResultBySign.
      */
-    public double getRealizedVariation() {
-        if (!(event instanceof AccountingEventMtm current)) {
-            return 0.;
+    public void postUnrealizedResult(String counterAccount, String gainAccount, String lossAccount) {
+        if (event instanceof AccountingEventMtm current) {
+            postResultBySign(previousMtm == null ? 0. : nz(previousMtm.getUnrealizedPnl()), nz(current.getUnrealizedPnl()),
+                    counterAccount, gainAccount, lossAccount);
         }
-        return nz(current.getRealizedPnl()) - (previousMtm == null ? 0. : nz(previousMtm.getRealizedPnl()));
+    }
+
+    /**
+     * Il conto degli utili contiene la parte positiva del risultato cumulato,
+     * quello delle perdite la parte negativa: un utile che si riduce e' uno
+     * storno dell'utile, non una perdita, e solo il passaggio sotto zero va sul
+     * conto delle perdite. Un deal cancellato riporta a zero anche i singoli
+     * conti, non solo il loro netto. Importi nella settlement currency, arrotondati
+     * ai suoi decimali sul cumulato, cosi' gli arrotondamenti non si sommano.
+     */
+    private void postResultBySign(double previous, double current, String counterAccount, String gainAccount, String lossAccount) {
+        double prev = round(previous);
+        double curr = round(current);
+        double gainPart = round(Math.max(curr, 0.) - Math.max(prev, 0.));
+        double lossPart = round(Math.min(curr, 0.) - Math.min(prev, 0.));
+        if (gainPart > 0.) {
+            journal.debit(counterAccount, gainPart, settlementCurrency);
+            journal.credit(gainAccount, gainPart, settlementCurrency);
+        } else if (gainPart < 0.) {
+            journal.debit(gainAccount, -gainPart, settlementCurrency);
+            journal.credit(counterAccount, -gainPart, settlementCurrency);
+        }
+        if (lossPart < 0.) {
+            journal.debit(lossAccount, -lossPart, settlementCurrency);
+            journal.credit(counterAccount, -lossPart, settlementCurrency);
+        } else if (lossPart > 0.) {
+            journal.debit(counterAccount, lossPart, settlementCurrency);
+            journal.credit(lossAccount, lossPart, settlementCurrency);
+        }
+    }
+
+    private double round(double value) {
+        return BigDecimal.valueOf(value).setScale(currencyScale, java.math.RoundingMode.HALF_UP).doubleValue();
     }
 
     private static double nz(Double value) {

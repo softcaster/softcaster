@@ -405,25 +405,20 @@ case EventType.MTM:
      * titoli al fair value (FVTPL), valutati sul prezzo secco (il rateo è
      * registrato da ACCRUAL / COUPON).
      *
-     * ctx.getUnrealizedVariation() = variazione del non realizzato dall'ultima
-     * fotografia contabilizzata. Una posizione chiusa ha non realizzato 0:
-     * la variazione storna la rettifica accumulata.
+     * Variazione del non realizzato dall'ultima fotografia contabilizzata. Una
+     * posizione chiusa ha non realizzato 0: la variazione storna la rettifica
+     * accumulata.
      *
-     * Utile:    DR BOND_FV_ADJUSTMENT     CR BOND_UNREALIZED_GAIN
-     * Perdita:  DR BOND_UNREALIZED_LOSS   CR BOND_FV_ADJUSTMENT
+     * Il conto segue il segno del non realizzato cumulato (postResultBySign):
+     * un utile che si riduce storna BOND_UNREALIZED_GAIN, solo il passaggio
+     * sotto zero va su BOND_UNREALIZED_LOSS. Contropartita BOND_FV_ADJUSTMENT.
      *
      * Tutto nella valuta del bond.
      */
 
-    BigDecimal fvVariation = money(bd(ctx.getUnrealizedVariation()), currencyScale)
-
-    if (fvVariation.signum() > 0) {
-        ctx.journal.debit(accountResolver.resolve("BOND_FV_ADJUSTMENT", settlementCcy), fvVariation, settlementCcy)
-        ctx.journal.credit(accountResolver.resolve("BOND_UNREALIZED_GAIN", settlementCcy), fvVariation, settlementCcy)
-    } else if (fvVariation.signum() < 0) {
-        ctx.journal.debit(accountResolver.resolve("BOND_UNREALIZED_LOSS", settlementCcy), fvVariation.abs(), settlementCcy)
-        ctx.journal.credit(accountResolver.resolve("BOND_FV_ADJUSTMENT", settlementCcy), fvVariation.abs(), settlementCcy)
-    }
+    ctx.postUnrealizedResult(accountResolver.resolve("BOND_FV_ADJUSTMENT", settlementCcy),
+            accountResolver.resolve("BOND_UNREALIZED_GAIN", settlementCcy),
+            accountResolver.resolve("BOND_UNREALIZED_LOSS", settlementCcy))
     break
 
 

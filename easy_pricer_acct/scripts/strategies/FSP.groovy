@@ -1,7 +1,6 @@
 import org.softcaster.engine.enums.TxnSide
 import org.softcaster.engine.enums.EventType
 import org.softcaster.engine.enums.AccountingPhase
-import java.math.RoundingMode
 
 def txn = ctx.txn
 def event = ctx.event
@@ -25,25 +24,6 @@ String accSpotBase = accountResolver.resolve("FX_SPOT_ASSET", baseCcy)
 String accSpotQuote = accountResolver.resolve("FX_SPOT_ASSET", quoteCcy)    
 String accPositionQuote = accountResolver.resolve("POSITION_CONTROL", quoteCcy)
 
-int currencyScale = ctx.getCurrencyScale(false)
-def money = { value ->
-    new BigDecimal((value ?: 0).toString()).setScale(currencyScale, RoundingMode.HALF_UP)
-}
-
-/*
- * Una parte del risultato del MtM: utile o perdita nella valuta di quotazione,
- * contropartita POSITION_CONTROL. Il settlement porta poi il realizzato sui conti
- * reali e riazzera POSITION_CONTROL: il risultato non si conta due volte.
- */
-def postResult = { BigDecimal amount, String gainKey, String lossKey ->
-    if (amount.signum() > 0) {
-        ctx.journal.debit(accPositionQuote, amount, quoteCcy)
-        ctx.journal.credit(accountResolver.resolve(gainKey, quoteCcy), amount, quoteCcy)
-    } else if (amount.signum() < 0) {
-        ctx.journal.debit(accountResolver.resolve(lossKey, quoteCcy), amount.abs(), quoteCcy)
-        ctx.journal.credit(accPositionQuote, amount.abs(), quoteCcy)
-    }
-}
 
 switch(event.eventType) {
 
@@ -120,9 +100,15 @@ case EventType.MTM:
     // realizzato comprende le chiusure del rolling, il non realizzato i suoi punti
     // forward: il rolling non ha scritture proprie. La controvalutazione nella
     // valuta di sistema e' un processo a valle.
+    //
+    // Contropartita POSITION_CONTROL: il settlement porta poi il realizzato sui
+    // conti reali e la riazzera, il risultato non si conta due volte. Il conto di
+    // utile o perdita segue il segno del risultato cumulato (postResultBySign).
     // =========================================================================
-    postResult(money(ctx.getRealizedVariation()), "FX_REALIZED_GAIN", "FX_REALIZED_LOSS")
-    postResult(money(ctx.getUnrealizedVariation()), "FX_UNREALIZED_GAIN", "FX_UNREALIZED_LOSS")
+    ctx.postRealizedResult(accPositionQuote,
+            accountResolver.resolve("FX_REALIZED_GAIN", quoteCcy), accountResolver.resolve("FX_REALIZED_LOSS", quoteCcy))
+    ctx.postUnrealizedResult(accPositionQuote,
+            accountResolver.resolve("FX_UNREALIZED_GAIN", quoteCcy), accountResolver.resolve("FX_UNREALIZED_LOSS", quoteCcy))
     break
 
 // ROLLOVER: il rolling degli spot passa da due deal ordinari (FxRollingService),
