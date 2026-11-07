@@ -132,6 +132,8 @@ INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postab
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (113, 107, '150010', 'Loans and Advances to Customers', true, 1, 1, 1, '2026-11-07 18:26:34.640532', '2026-11-07 18:26:34.640532');
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (114, 108, '220010', 'Loans Received', true, 1, 2, 2, '2026-11-07 18:26:34.640532', '2026-11-07 18:26:34.640532');
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (115, 109, '430010', 'Loan Fees Received', true, 2, 4, 2, '2026-11-07 18:26:34.640532', '2026-11-07 18:26:34.640532');
+INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (116, 107, '150020', 'Accrued Interest Receivable - Loans', true, 1, 1, 1, '2026-11-07 18:57:28.65387', '2026-11-07 18:57:28.65387');
+INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (117, 108, '220020', 'Accrued Interest Payable - Loans', true, 1, 2, 2, '2026-11-07 18:57:28.65387', '2026-11-07 18:57:28.65387');
 
 
 --
@@ -228,6 +230,12 @@ INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, g
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (88, 'LOAN_LIABILITY', 4, 114);
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (89, 'LOAN_LIABILITY', 1, 114);
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (90, 'LOAN_LIABILITY', 2, 114);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (91, 'LOAN_ACCRUED_INTEREST_PAYABLE', 4, 117);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (92, 'LOAN_ACCRUED_INTEREST_PAYABLE', 1, 117);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (93, 'LOAN_ACCRUED_INTEREST_PAYABLE', 2, 117);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (94, 'LOAN_ACCRUED_INTEREST_RECEIVABLE', 4, 116);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (95, 'LOAN_ACCRUED_INTEREST_RECEIVABLE', 1, 116);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (96, 'LOAN_ACCRUED_INTEREST_RECEIVABLE', 2, 116);
 
 
 --
@@ -725,6 +733,20 @@ INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES 
 INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (411, 112, 5);
 INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (412, 112, 6);
 INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (413, 112, 7);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (414, 116, 1);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (415, 116, 2);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (416, 116, 3);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (417, 116, 4);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (418, 116, 5);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (419, 116, 6);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (420, 116, 7);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (421, 117, 1);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (422, 117, 2);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (423, 117, 3);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (424, 117, 4);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (425, 117, 5);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (426, 117, 6);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (427, 117, 7);
 
 
 --
@@ -781,7 +803,7 @@ INSERT INTO public.system_business_calendar (sbc_id, description, calendar, stat
 -- Name: account_mapping_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.account_mapping_s', 90, true);
+SELECT pg_catalog.setval('public.account_mapping_s', 96, true);
 
 
 --
@@ -844,14 +866,14 @@ SELECT pg_catalog.setval('public.descriptors_s', 1, false);
 -- Name: gl_account_slots_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.gl_account_slots_s', 413, true);
+SELECT pg_catalog.setval('public.gl_account_slots_s', 427, true);
 
 
 --
 -- Name: gl_accounts_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.gl_accounts_s', 115, true);
+SELECT pg_catalog.setval('public.gl_accounts_s', 117, true);
 
 
 --

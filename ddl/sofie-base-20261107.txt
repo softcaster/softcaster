@@ -7,6 +7,7 @@ Stato
 - z-spread ITA_SPREADED calibrati al 2026-11-06, validi fino al 2026-11-13 (max_age_days 7)
 - quotazioni, curve, anagrafiche quotate e piano dei conti del 2026-11-06
 - mapping del MtM degli FX spot: FX_REALIZED_GAIN/LOSS, FX_UNREALIZED_GAIN/LOSS in CHF, EUR, USD
+- aggiunta gestione loan (conti e mappatura)
 
 Schema e dati di sistema coincidono con sofie_schema.sql, sofie_lookup.sql e
 sofie_config.sql del 2026-11-07. Sostituisce sofie-base-20261106 (senza il mapping FX).

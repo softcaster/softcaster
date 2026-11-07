@@ -64,7 +64,9 @@ boolean isRepayment = txn != null && txn.txnOrigin == TxnOrigin.EOD
 // ============================================================================
 String accLoanAsset = accountResolver.resolve("LOAN_ASSET", ccy)
 String accLoanLiability = accountResolver.resolve("LOAN_LIABILITY", ccy)
-String accAccruedInterest = accountResolver.resolve("ACCRUED_INTEREST", ccy)
+// rateo attivo dei mutui erogati, passivo dei finanziamenti ricevuti
+String accAccruedReceivable = accountResolver.resolve("LOAN_ACCRUED_INTEREST_RECEIVABLE", ccy)
+String accAccruedPayable = accountResolver.resolve("LOAN_ACCRUED_INTEREST_PAYABLE", ccy)
 String accInterestIncome = accountResolver.resolve("LOAN_INTEREST_INCOME", ccy)
 String accInterestExpense = accountResolver.resolve("LOAN_INTEREST_EXPENSE", ccy)
 String accFeeIncome = accountResolver.resolve("LOAN_FEE_INCOME", ccy)
@@ -133,7 +135,7 @@ case EventType.SETTLEMENT:
         /*
          * Erogazione (o acquisto) del mutuo
          *     DR LOAN_ASSET
-         *     DR ACCRUED_INTEREST
+         *     DR LOAN_ACCRUED_INTEREST_RECEIVABLE
          *        CR CASH
          * Spese incassate
          *     DR CASH
@@ -141,7 +143,7 @@ case EventType.SETTLEMENT:
          */
         ctx.journal.debit(accLoanAsset, cleanMoney, ccy)
         if (accruedMoney.signum() != 0) {
-            ctx.journal.debit(accAccruedInterest, accruedMoney, ccy)
+            ctx.journal.debit(accAccruedReceivable, accruedMoney, ccy)
         }
         ctx.journal.credit(accCash, totalMoney, ccy)
         if (feeMoney.signum() != 0) {
@@ -153,7 +155,7 @@ case EventType.SETTLEMENT:
          * Finanziamento ricevuto
          *     DR CASH
          *        CR LOAN_LIABILITY
-         *        CR ACCRUED_INTEREST
+         *        CR LOAN_ACCRUED_INTEREST_PAYABLE
          * Spese pagate
          *     DR LOAN_FEE_EXPENSE
          *        CR CASH
@@ -161,7 +163,7 @@ case EventType.SETTLEMENT:
         ctx.journal.debit(accCash, totalMoney, ccy)
         ctx.journal.credit(accLoanLiability, cleanMoney, ccy)
         if (accruedMoney.signum() != 0) {
-            ctx.journal.credit(accAccruedInterest, accruedMoney, ccy)
+            ctx.journal.credit(accAccruedPayable, accruedMoney, ccy)
         }
         if (feeMoney.signum() != 0) {
             ctx.journal.debit(accFeeExpense, feeMoney, ccy)
@@ -184,13 +186,13 @@ case EventType.ACCRUAL:
         break
     }
     if (ctx.getPositionSide() == TxnSide.BUY) {
-        // DR ACCRUED_INTEREST  CR LOAN_INTEREST_INCOME
-        ctx.journal.debit(accAccruedInterest, accrualAmount, ccy)
+        // DR LOAN_ACCRUED_INTEREST_RECEIVABLE  CR LOAN_INTEREST_INCOME
+        ctx.journal.debit(accAccruedReceivable, accrualAmount, ccy)
         ctx.journal.credit(accInterestIncome, accrualAmount, ccy)
     } else {
-        // DR LOAN_INTEREST_EXPENSE  CR ACCRUED_INTEREST
+        // DR LOAN_INTEREST_EXPENSE  CR LOAN_ACCRUED_INTEREST_PAYABLE
         ctx.journal.debit(accInterestExpense, accrualAmount.negate(), ccy)
-        ctx.journal.credit(accAccruedInterest, accrualAmount.negate(), ccy)
+        ctx.journal.credit(accAccruedPayable, accrualAmount.negate(), ccy)
     }
     ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
     break
@@ -206,12 +208,12 @@ case EventType.COUPON:
         break
     }
     if (ctx.getPositionSide() == TxnSide.BUY) {
-        // incasso: DR CASH  CR ACCRUED_INTEREST
+        // incasso: DR CASH  CR LOAN_ACCRUED_INTEREST_RECEIVABLE
         ctx.journal.debit(accCash, interestAmount, ccy)
-        ctx.journal.credit(accAccruedInterest, interestAmount, ccy)
+        ctx.journal.credit(accAccruedReceivable, interestAmount, ccy)
     } else {
-        // pagamento: DR ACCRUED_INTEREST  CR CASH
-        ctx.journal.debit(accAccruedInterest, interestAmount.negate(), ccy)
+        // pagamento: DR LOAN_ACCRUED_INTEREST_PAYABLE  CR CASH
+        ctx.journal.debit(accAccruedPayable, interestAmount.negate(), ccy)
         ctx.journal.credit(accCash, interestAmount.negate(), ccy)
     }
     ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
