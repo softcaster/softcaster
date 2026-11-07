@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -95,6 +96,10 @@ public abstract class CashFlowMasterData extends MasterData {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(value = FetchMode.SUBSELECT)
     @JoinColumn(name = "master_data", nullable = false) // FK in child table cash_flow_item
+    // In ordine di scadenza: i calcoli scorrono il piano e si fermano al primo flusso
+    // futuro. Senza ORDER BY Postgres restituisce le righe nell'ordine fisico, che
+    // cambia a ogni UPDATE (es. fixing di un tasso variabile)
+    @OrderBy("endDate ASC")
     private List<CashFlowItem> cashFlows = new ArrayList<>();
 
     public TypeOfInterest getTypeOfInterest() {
