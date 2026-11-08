@@ -175,11 +175,76 @@ public class LoanCalculator {
      * salvato (come LoanPricer).
      */
     public static double outstanding(LoanMasterData lmd, LocalDate date) {
+        return outstandingAfter(lmd, date);
+    }
+
+    // ------------------------------------------------------------------------
+    // -- Piano salvato per il ciclo di vita (ratei, rate, rimborsi)
+    // ------------------------------------------------------------------------
+    //
+    // cash_flow_item: amount = quota capitale, interest = interessi della rata,
+    // sul capitale intero del contratto. Una posizione ne detiene una quota
+    // (nominale / residuo), che i rimborsi alla pari lasciano invariata.
+
+    private static List<CashFlowItem> sortedItems(LoanMasterData lmd) {
+        return lmd.getCashFlows().stream()
+                .sorted((a, b) -> a.getEnddate().compareTo(b.getEnddate()))
+                .toList();
+    }
+
+    /**
+     * Rate che scadono in (from, to], in ordine di data.
+     */
+    public static List<CashFlowItem> installmentsIn(LoanMasterData lmd, LocalDate from, LocalDate to) {
+        return sortedItems(lmd).stream()
+                .filter(item -> item.getEnddate().toLocalDate().isAfter(from) && !item.getEnddate().toLocalDate().isAfter(to))
+                .toList();
+    }
+
+    /**
+     * Debito residuo dopo le rate scadute fino a date compresa.
+     */
+    public static double outstandingAfter(LoanMasterData lmd, LocalDate date) {
+        return outstanding(lmd, date, true);
+    }
+
+    /**
+     * Debito residuo prima della rata che scade in date.
+     */
+    public static double outstandingBefore(LoanMasterData lmd, LocalDate date) {
+        return outstanding(lmd, date, false);
+    }
+
+    private static double outstanding(LoanMasterData lmd, LocalDate date, boolean inclusive) {
         double paid = lmd.getCashFlows().stream()
-                .filter(item -> !item.getEnddate().toLocalDate().isAfter(date))
+                .filter(item -> {
+                    LocalDate end = item.getEnddate().toLocalDate();
+                    return end.isBefore(date) || (inclusive && end.isEqual(date));
+                })
                 .mapToDouble(CashFlowItem::getAmount)
                 .sum();
         return Math.max(lmd.getPrincipalAmount() - paid, 0.);
+    }
+
+    /**
+     * Interessi del contratto intero maturati in (from, to]: per ogni rata la
+     * parte dei giorni del periodo che cade nell'intervallo (lineare: a fine
+     * periodo si arriva esattamente all'interesse della rata).
+     */
+    public static double interestBetween(LoanMasterData lmd, LocalDate from, LocalDate to) {
+        double interest = 0.;
+        for (CashFlowItem item : sortedItems(lmd)) {
+            LocalDate start = item.getStartDate().toLocalDate();
+            LocalDate end = item.getEnddate().toLocalDate();
+            long periodDays = java.time.temporal.ChronoUnit.DAYS.between(start, end);
+            LocalDate overlapStart = start.isAfter(from) ? start : from;
+            LocalDate overlapEnd = end.isBefore(to) ? end : to;
+            if (periodDays <= 0 || !overlapEnd.isAfter(overlapStart)) {
+                continue;
+            }
+            interest += item.getInterest() * java.time.temporal.ChronoUnit.DAYS.between(overlapStart, overlapEnd) / periodDays;
+        }
+        return interest;
     }
 
     public LoanPricingResponse loanValuation(LoanMasterData lmd, List<CashFlow> flows, LocalDate valuationDate,

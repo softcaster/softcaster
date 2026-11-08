@@ -20,6 +20,8 @@ import org.softcaster.core.dto.FinancialTxnDto;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.LoanCalculator;
+import org.softcaster.easy_pricer_mds_core.calc.RateFixing;
+import org.softcaster.engine.enums.CashFlowStatus;
 import org.softcaster.easy_pricer_mds_core.dto.LoanPricingResponse;
 import org.softcaster.easy_pricer_srv.dto.LoanCashFlowDto;
 import org.softcaster.easy_pricer_srv.dto.LoanDealRequest;
@@ -103,9 +105,10 @@ public class LoanDealService {
             LoanMasterData lmd = build(r);
             List<CashFlow> flows = loanCalculator.generateSchedule(lmd, calendar(lmd));
             lmd.getCashFlows().addAll(LoanCalculator.toItems(flows));
+            markFloatingPeriods(lmd);
             lmd = loanDAO.create(lmd);
 
-            LocalDate tradeDate = r.tradeDate != null ? r.tradeDate : lmd.getIssueDate().toLocalDate();
+            LocalDate tradeDate = tradeDate(r, lmd);
             FinancialTxnDto txn = new FinancialTxnDto(0, lmd.getDescription(),
                     r.counterpartyId, null, null,
                     r.positionMdId, null,
@@ -152,9 +155,10 @@ public class LoanDealService {
             entityManager.flush();
             fill(lmd, r);
             lmd.getCashFlows().addAll(LoanCalculator.toItems(loanCalculator.generateSchedule(lmd, calendar(lmd))));
+            markFloatingPeriods(lmd);
             entityManager.flush();
 
-            LocalDate tradeDate = r.tradeDate != null ? r.tradeDate : lmd.getIssueDate().toLocalDate();
+            LocalDate tradeDate = tradeDate(r, lmd);
             financialTxnService.amendOtcDeal(txn, lmd.getDescription(), side, r.counterpartyId, r.positionMdId,
                     tradeDate, dealQuantity(lmd, tradeDate), 100.);
             return LoanDto.of(lmd);
@@ -291,6 +295,38 @@ public class LoanDealService {
         return (lmd instanceof FltLoanMasterData ? "Floating " : "Fixed ") + "loan " + plan + " "
                 + String.format("%,.0f", lmd.getPrincipalAmount()) + " " + lmd.getCurrency().getIsoCode()
                 + " " + lmd.getInterestRate() + "% " + lmd.getIssueDate() + "/" + lmd.getMaturityDate();
+    }
+
+    /**
+     * Mutuo variabile: il tasso della richiesta (indice corrente + spread) vale
+     * per i periodi gia' fissati, cioe' con data di fixing fino alla data
+     * ufficiale (RECORDED); i successivi restano stimati (ESTIMATED) a quel
+     * tasso e li fissa lo step FIXING della chiusura (RateFixingService).
+     */
+    private void markFloatingPeriods(LoanMasterData lmd) {
+        if (!(lmd instanceof FltLoanMasterData flt)) {
+            return;
+        }
+        LocalDate official = marketDataService.getOfficialDate();
+        Calendar calendar = calendar(lmd);
+        for (org.softcaster.core.data.CashFlowItem item : lmd.getCashFlows()) {
+            LocalDate fixingDate = RateFixing.fixingDate(item.getStartDate().toLocalDate(), flt.getFloatingTerms(), calendar);
+            item.setCashFlowStatus(fixingDate.isAfter(official) ? CashFlowStatus.ESTIMATED : CashFlowStatus.RECORDED);
+        }
+    }
+
+    /**
+     * Data operazione: quella della richiesta, altrimenti l'erogazione; per
+     * un'erogazione futura la data ufficiale (il regolamento resta alla data di
+     * erogazione, FinancialTxnService.calcSettlementDate).
+     */
+    private LocalDate tradeDate(LoanDealRequest r, LoanMasterData lmd) {
+        if (r.tradeDate != null) {
+            return r.tradeDate;
+        }
+        LocalDate disbursement = lmd.getIssueDate().toLocalDate();
+        LocalDate official = marketDataService.getOfficialDate();
+        return disbursement.isAfter(official) ? official : disbursement;
     }
 
     /**

@@ -6,6 +6,8 @@ package org.softcaster.engine.enums;
  */
 public enum EodStep implements IdentifiableEnum {
     OPEN_CLOSING(1, "OPEN_CLOSING", "Set the next business date"),
+    // id dopo DATE_ROLL (aggiunto dopo), posizione di esecuzione prima di cedole e ratei
+    FIXING(11, "FIXING", "Floating rate fixing"),
     COUPON(2, "COUPON", "Coupon events"),
     SETTLEMENT(3, "SETTLEMENT", "Settlement events"),
     WAIT_SETTLEMENT_POSTED(4, "WAIT_SETTLEMENT_POSTED", "Wait for settlement accounting"),

@@ -24,6 +24,7 @@ import org.softcaster.core.dto.PositionDealRow;
 import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.easy_pricer_proc.processors.BackdatedTxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
+import org.softcaster.easy_pricer_proc.processors.LoanLifeCycleEvents;
 import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
 import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.EventSourceType;
@@ -56,6 +57,8 @@ public class FinTxnExecutionService {
     private SystemBusinessCalendarDAO systemBusinessCalendarDAO;
     @Autowired
     private BackdatedTxnProcessor backdatedTxnProcessor;
+    @Autowired
+    private LoanLifeCycleEvents loanLifeCycleEvents;
 
     // Richiede una NUOVA transazione per salvare lo stato di REJECTED 
     // anche se la transazione principale fallisce e fa rollback
@@ -225,11 +228,18 @@ public class FinTxnExecutionService {
             if (isBackdatedTxn(txn)) {
                 SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
                 List<AccountingEvent> events = null;
+                boolean userLoan = LoanLifeCycleEvents.isUserLoanDeal(txn);
                 if (status == TxnStatus.EXECUTED) {
                     events = backdatedTxnProcessor.generateEvents(txn, positionDetailId, sbc.getOfficialDate(), sbc.getLastOfficialDate());
+                    if (userLoan) {
+                        events.addAll(loanLifeCycleEvents.backdatedEvents(txn, positionDetailId, sbc.getOfficialDate(), sbc.getLastOfficialDate()));
+                    }
                 } else if (ACCRUING_ASSET_CLASS.equals(txn.getMasterData().getAssetClass().getCode())) {
                     // Cancel o amend di un deal gia' regolato: come se non fosse mai esistito
                     events = backdatedTxnProcessor.generateReversalEvents(txn, positionDetailId, sbc.getOfficialDate(), sbc.getLastOfficialDate());
+                } else if (userLoan) {
+                    // anche i rimborsi EOD delle rate, che si cancellano
+                    events = loanLifeCycleEvents.reversalEvents(txn, positionDetailId);
                 }
                 if (events != null && !events.isEmpty()) {
                     for (AccountingEvent backdatedEvent : events) {

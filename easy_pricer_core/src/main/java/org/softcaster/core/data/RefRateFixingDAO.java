@@ -17,6 +17,14 @@ public class RefRateFixingDAO {
         return repository.findByRefRateFixingId(refRateFixingId);
     }
 
+    /**
+     * Fixing dell'indice alla data, null se non caricato.
+     */
+    @Transactional(readOnly = true)
+    public RefRateFixing findFixing(Integer refRateIndexId, java.time.LocalDate fixingDate) {
+        return repository.findByRefRateIndexAndFixingDate(refRateIndexId, java.sql.Date.valueOf(fixingDate));
+    }
+
     @Transactional
     public RefRateFixing saveOrUpdate(RefRateFixing refRateFixing) {
         return repository.save(refRateFixing);

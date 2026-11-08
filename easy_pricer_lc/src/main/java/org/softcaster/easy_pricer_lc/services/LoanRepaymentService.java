@@ -20,7 +20,7 @@ import org.softcaster.core.data.PositionTxnLinksDAO;
 import org.softcaster.core.data.SystemBusinessCalendar;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.dto.EodTaskResult;
-import org.softcaster.easy_pricer_lc.schedulers.LoanScheduler;
+import org.softcaster.easy_pricer_mds_core.calc.LoanCalculator;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -114,13 +114,13 @@ public class LoanRepaymentService {
         if (!(masterData instanceof LoanMasterData lmd)) {
             return;
         }
-        for (CashFlowItem item : LoanScheduler.installmentsIn(lmd, from, date)) {
+        for (CashFlowItem item : LoanCalculator.installmentsIn(lmd, from, date)) {
             if (item.getAmount() == null || NumberUtils.isZero(item.getAmount())) {
                 continue; // preammortamento o rata di soli interessi
             }
             LocalDate dueDate = item.getEnddate().toLocalDate();
             double settled = positionTxnLinksDAO.sumQuantitySettledBefore(detail.getIdPositionDetail(), dueDate);
-            double outstanding = LoanScheduler.outstandingBefore(lmd, dueDate);
+            double outstanding = LoanCalculator.outstandingBefore(lmd, dueDate);
             if (NumberUtils.isZero(settled) || outstanding <= 0.) {
                 continue;
             }
@@ -131,7 +131,7 @@ public class LoanRepaymentService {
                 continue;
             }
 
-            boolean last = LoanScheduler.outstandingAfter(lmd, dueDate) <= 0.005;
+            boolean last = LoanCalculator.outstandingAfter(lmd, dueDate) <= 0.005;
             double quantity = last ? Math.abs(settled) : round2(Math.abs(settled) * item.getAmount() / outstanding);
             TxnSide side = settled > 0 ? TxnSide.SELL : TxnSide.BUY;
             financialTxnDAO.saveOrUpdate(repaymentDeal(detail, position, lmd, date, side, quantity, fxRate(lmd, sbc),

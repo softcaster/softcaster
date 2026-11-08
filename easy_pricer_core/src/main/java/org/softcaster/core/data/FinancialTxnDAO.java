@@ -37,6 +37,20 @@ public class FinancialTxnDAO {
         return repository.existsByOriginKey(originKey);
     }
 
+    /**
+     * Deal generati da un processo con origin_key che inizia per prefix (es. i
+     * rimborsi di un mutuo LOAN_REPAY:<detail>:), in ordine di id.
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<FinancialTxn> findByOriginKeyPrefix(String prefix) {
+        return repository.findByOriginKeyStartingWithOrderByIdFinancialTxn(prefix);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<FinancialTxn> findByMasterData(Integer idMasterData) {
+        return repository.findByMasterData_IdMasterDataOrderByIdFinancialTxn(idMasterData);
+    }
+
     @Transactional(readOnly = true)
     public List<FinancialTxn> findAll() {
         return repository.findAll();

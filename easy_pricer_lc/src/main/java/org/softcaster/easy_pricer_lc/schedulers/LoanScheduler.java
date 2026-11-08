@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import org.hibernate.Hibernate;
 import org.softcaster.core.data.CashFlowItem;
@@ -14,6 +13,7 @@ import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionTxnLinksDAO;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventAccruals;
+import org.softcaster.easy_pricer_mds_core.calc.LoanCalculator;
 import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.AccountingPhase;
 import org.softcaster.engine.enums.EventSourceType;
@@ -59,25 +59,11 @@ public abstract class LoanScheduler implements IScheduler {
     private List<AccountingEvent> accrual(PositionDetail detail, LoanMasterData lmd, LocalDate from, LocalDate to) {
         double memo = positionTxnLinksDAO.sumQuantityByPhase(detail.getIdPositionDetail(), AccountingPhase.MEMO_POSTED);
         double nominal = detail.getBuyQty() - detail.getSellQty() - memo;
-        double outstanding = outstandingAfter(lmd, from);
+        double outstanding = LoanCalculator.outstandingAfter(lmd, from);
         if (NumberUtils.isZero(nominal) || outstanding <= 0.) {
             return null;
         }
-        double share = nominal / outstanding;
-
-        double interest = 0.;
-        for (CashFlowItem item : sorted(lmd)) {
-            LocalDate start = item.getStartDate().toLocalDate();
-            LocalDate end = item.getEnddate().toLocalDate();
-            long periodDays = ChronoUnit.DAYS.between(start, end);
-            LocalDate overlapStart = start.isAfter(from) ? start : from;
-            LocalDate overlapEnd = end.isBefore(to) ? end : to;
-            if (periodDays <= 0 || !overlapEnd.isAfter(overlapStart)) {
-                continue;
-            }
-            interest += item.getInterest() * ChronoUnit.DAYS.between(overlapStart, overlapEnd) / periodDays;
-        }
-        double amount = interest * share;
+        double amount = LoanCalculator.interestBetween(lmd, from, to) * nominal / outstanding;
         if (NumberUtils.isZero(amount)) {
             return null;
         }
@@ -91,9 +77,9 @@ public abstract class LoanScheduler implements IScheduler {
 
     private List<AccountingEvent> installments(PositionDetail detail, LoanMasterData lmd, LocalDate from, LocalDate to) {
         List<AccountingEvent> events = new ArrayList<>();
-        for (CashFlowItem item : installmentsIn(lmd, from, to)) {
+        for (CashFlowItem item : LoanCalculator.installmentsIn(lmd, from, to)) {
             LocalDate dueDate = item.getEnddate().toLocalDate();
-            double outstanding = outstandingBefore(lmd, dueDate);
+            double outstanding = LoanCalculator.outstandingBefore(lmd, dueDate);
             double settled = positionTxnLinksDAO.sumQuantitySettledBefore(detail.getIdPositionDetail(), dueDate);
             if (NumberUtils.isZero(settled) || outstanding <= 0.) {
                 continue;
@@ -127,48 +113,6 @@ public abstract class LoanScheduler implements IScheduler {
         event.setGeneratedBy(lmd.getIdMasterData());
         event.setGeneratedRef(lmd.getCode());
         return event;
-    }
-
-    // ------------------------------------------------------------------------
-    // -- Piano
-    // ------------------------------------------------------------------------
-
-    private static List<CashFlowItem> sorted(LoanMasterData lmd) {
-        return lmd.getCashFlows().stream().sorted(Comparator.comparing(CashFlowItem::getEnddate)).toList();
-    }
-
-    /**
-     * Rate che scadono in (from, to], in ordine di data.
-     */
-    public static List<CashFlowItem> installmentsIn(LoanMasterData lmd, LocalDate from, LocalDate to) {
-        return sorted(lmd).stream()
-                .filter(item -> item.getEnddate().toLocalDate().isAfter(from) && !item.getEnddate().toLocalDate().isAfter(to))
-                .toList();
-    }
-
-    /**
-     * Debito residuo dopo le rate scadute fino a date compresa.
-     */
-    public static double outstandingAfter(LoanMasterData lmd, LocalDate date) {
-        return outstanding(lmd, date, true);
-    }
-
-    /**
-     * Debito residuo prima della rata che scade in date.
-     */
-    public static double outstandingBefore(LoanMasterData lmd, LocalDate date) {
-        return outstanding(lmd, date, false);
-    }
-
-    private static double outstanding(LoanMasterData lmd, LocalDate date, boolean inclusive) {
-        double paid = lmd.getCashFlows().stream()
-                .filter(item -> {
-                    LocalDate end = item.getEnddate().toLocalDate();
-                    return end.isBefore(date) || (inclusive && end.isEqual(date));
-                })
-                .mapToDouble(CashFlowItem::getAmount)
-                .sum();
-        return Math.max(lmd.getPrincipalAmount() - paid, 0.);
     }
 
     /**

@@ -22,12 +22,14 @@ import org.springframework.stereotype.Component;
  * Deal su un mutuo OTC: la registrazione e' per asset class, con una
  * sottoclasse per tipo di tasso (XRM fisso, FRM variabile).
  *
- * Ogni contratto e' un'anagrafica: quantita' = capitale, prezzo = percentuale
- * del debito residuo (100 dal deal capture); BUY = la banca presta, SELL =
- * cessione del mutuo. Per realized / unrealized si usa il prezzo unitario
- * (prezzo / 100: il multiplier dei mutui e' 1). Rateo, tasso interno,
- * duration e scadenza residua da LoanCalculator.dealValuation sul piano
- * salvato, al prezzo del deal.
+ * Ogni contratto e' un'anagrafica: quantita' = debito residuo alla data
+ * operazione, prezzo = percentuale del residuo (100 dal deal capture); BUY =
+ * la banca presta, SELL = la banca prende a prestito (es. deposito multi
+ * flusso). Per realized / unrealized si usa il prezzo unitario (prezzo / 100:
+ * il multiplier dei mutui e' 1). Rateo, tasso interno, duration da
+ * LoanCalculator.dealValuation sul piano salvato, al prezzo del deal e alla
+ * data di regolamento (lo scambio di cassa: per un'erogazione futura e' la
+ * data di erogazione).
  *
  * Componenti, solo all'inserimento del deal (PENDING / RESTARTING): rateo
  * (BOND_ACCRUAL, se diverso da zero), spese all'erogazione (LOAN_FEE, importo
@@ -68,9 +70,10 @@ public abstract class LoanTxnProcessor extends AbstractTxnProcessor implements I
             return;
         }
 
+        LocalDate settlementDate = txn.getSettlement() != null ? txn.getSettlement().toLocalDate() : tradeDate;
         LoanResult result;
         try {
-            result = loanCalculator.dealValuation(lmd, tradeDate, txn.getPrice());
+            result = loanCalculator.dealValuation(lmd, settlementDate, txn.getPrice());
         } catch (RuntimeException e) {
             throw new TxnProcessingException("Valuation of " + lmd.getCode() + " failed: " + e.getMessage());
         }
@@ -100,7 +103,7 @@ public abstract class LoanTxnProcessor extends AbstractTxnProcessor implements I
 
             // spese all'erogazione, per la quota di capitale negoziata: le incassa chi presta
             double fees = lmd.upfrontFees() * txn.getQuantity() / lmd.getPrincipalAmount();
-            if (fees != 0. && !tradeDate.isAfter(lmd.getIssueDate().toLocalDate())) {
+            if (fees != 0. && !settlementDate.isAfter(lmd.getIssueDate().toLocalDate())) {
                 FinancialTxnComponent fee = new FinancialTxnComponent();
                 fee.setCurrency(lmd.getCurrency());
                 fee.setDescription("Loan fees " + (txn.getTxnSide() == TxnSide.BUY ? "received" : "paid")

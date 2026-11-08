@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface RefRateFixingRepository extends JpaRepository<RefRateFixing, Integer> {
 
     public RefRateFixing findByRefRateFixingId(Integer refRateFixingId);
+
+    public RefRateFixing findByRefRateIndexAndFixingDate(Integer refRateIndex, java.sql.Date fixingDate);
 }

@@ -18,6 +18,15 @@ public class AccountingEventAccrualsDAO {
         return repository.findByEventId(eventId);
     }
 
+    /**
+     * Ratei e cedole / rate registrati su un position detail, in ordine di id.
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<AccountingEventAccruals> findByPositionDetail(Integer positionDetail,
+            java.util.Collection<org.softcaster.engine.enums.EventType> eventTypes) {
+        return repository.findByPositionDetailAndEventTypeInOrderByEventId(positionDetail, eventTypes);
+    }
+
     @Transactional
     public AccountingEventAccruals saveOrUpdate(AccountingEventAccruals accountingEventAccruals) {
         return repository.save(accountingEventAccruals);

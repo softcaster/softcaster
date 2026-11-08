@@ -17,6 +17,10 @@ public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Inte
 
     public boolean existsByOriginKey(String originKey);
 
+    public java.util.List<FinancialTxn> findByOriginKeyStartingWithOrderByIdFinancialTxn(String prefix);
+
+    public java.util.List<FinancialTxn> findByMasterData_IdMasterDataOrderByIdFinancialTxn(Integer idMasterData);
+
     // FORZA IL FETCH: Carica la transazione, lo strumento e l'asset class in una sola JOIN
     // @EntityGraph(attributePaths = {"masterData", "masterData.assetClass"})    
     public FinancialTxn findByIdFinancialTxn(Integer idFinancialTxn);

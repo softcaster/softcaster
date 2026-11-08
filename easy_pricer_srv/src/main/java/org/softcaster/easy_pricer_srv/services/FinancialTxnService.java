@@ -23,6 +23,8 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
+import org.softcaster.core.data.LoanMasterData;
+import org.hibernate.Hibernate;
 import org.softcaster.core.data.SystemBusinessCalendar;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.dto.FinancialTxnDto;
@@ -302,15 +304,19 @@ public class FinancialTxnService {
     }
 
     private Date calcSettlementDate(FinancialTxn financialTxn) {
-
+        Date settlement = financialTxn.getTradeDate();
         if (financialTxn.getMasterData() != null) {
             List<Currency> currencies = financialTxn.getMasterData().getCurrencyList();
             if (currencies != null && !currencies.isEmpty()) {
                 Calendar calendar = new Calendar(currencies);
-                return java.sql.Date.valueOf(calendar.getNextBusinessDate(financialTxn.getTradeDate(), financialTxn.getMasterData().getBusinessDays()));
-
+                settlement = java.sql.Date.valueOf(calendar.getNextBusinessDate(financialTxn.getTradeDate(), financialTxn.getMasterData().getBusinessDays()));
+            }
+            // Mutuo registrato prima dell'erogazione: la cassa passa alla data di erogazione
+            if (Hibernate.unproxy(financialTxn.getMasterData()) instanceof LoanMasterData lmd
+                    && lmd.getIssueDate() != null && lmd.getIssueDate().after(settlement)) {
+                settlement = lmd.getIssueDate();
             }
         }
-        return financialTxn.getTradeDate();
+        return settlement;
     }
 }

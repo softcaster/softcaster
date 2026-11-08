@@ -11,15 +11,17 @@ import java.math.RoundingMode
 //
 // Deal dell'utente:
 //     BUY  = la banca presta    -> attivo LOAN_ASSET, spese incassate
-//     SELL = la banca prende a prestito -> passivo LOAN_LIABILITY, spese pagate
+//     SELL = la banca prende a prestito (es. deposito multi flusso con piano
+//            bullet: solo interessi e rimborso finale) -> passivo LOAN_LIABILITY,
+//            spese pagate
 //
 // Deal EOD (LoanRepaymentService): rimborso della quota capitale di una rata,
 // alla pari, di segno opposto alla posizione:
 //     SELL = rimborso ricevuto, riduce LOAN_ASSET
 //     BUY  = rimborso pagato, riduce LOAN_LIABILITY
 //
-// La cessione di un mutuo a terzi (SELL dell'utente su una posizione attiva)
-// non e' gestita: un SELL dell'utente e' sempre un finanziamento ricevuto.
+// La cessione a terzi di un mutuo erogato non e' prevista: un SELL dell'utente
+// e' sempre un finanziamento ricevuto.
 //
 // Interessi: ratei (ACCRUAL) e incasso / pagamento della rata (COUPON) con il
 // segno della posizione, come i titoli. MtM non contabilizzato.

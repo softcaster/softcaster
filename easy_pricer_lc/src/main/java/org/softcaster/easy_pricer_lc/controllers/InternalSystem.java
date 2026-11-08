@@ -11,6 +11,7 @@ import org.softcaster.core.dto.EodTaskResult;
 import org.softcaster.easy_pricer_lc.jobs.LifeCycleJob;
 import org.softcaster.easy_pricer_lc.services.EngineStateManager;
 import org.softcaster.easy_pricer_lc.services.FxRollingService;
+import org.softcaster.easy_pricer_lc.services.RateFixingService;
 import org.softcaster.engine.enums.EodStatus;
 import org.softcaster.engine.enums.EodStep;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class InternalSystem {
 
     @Autowired
     private FxRollingService fxRollingService;
+
+    @Autowired
+    private RateFixingService rateFixingService;
 
     @PostMapping(value = "/internal/system/suspend")
     public ResponseEntity<String> suspend() {
@@ -68,6 +72,11 @@ public class InternalSystem {
     @PostMapping("/internal/system/accrual")
     public ResponseEntity<EodTaskResult> accrual() {
         return runTask(EodStep.ACCRUAL, lcJob::runAccrualLyfeCycle);
+    }
+
+    @PostMapping("/internal/system/fixing")
+    public ResponseEntity<EodTaskResult> fixing() {
+        return runTask(EodStep.FIXING, rateFixingService::fixRates);
     }
 
     @PostMapping("/internal/system/fx_rolling")
