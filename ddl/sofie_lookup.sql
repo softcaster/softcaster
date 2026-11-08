@@ -220,6 +220,7 @@ INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (7, 'MTM', '
 INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (8, 'WAIT_EOD_POSTED', 'Wait for end of day accounting');
 INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (9, 'CONTROLS', 'Closing controls');
 INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (10, 'DATE_ROLL', 'Roll the official date');
+INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (11, 'FIXING', 'Floating rate fixing');
 
 
 --
