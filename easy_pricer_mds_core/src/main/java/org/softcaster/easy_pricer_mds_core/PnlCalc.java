@@ -1,4 +1,4 @@
-package org.softcaster.easy_pricer_mds_core; // adatta al tuo package
+package org.softcaster.easy_pricer_mds_core; 
 
 /**
  * Funzioni pure, condivise da processor ed evaluator.

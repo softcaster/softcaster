@@ -45,7 +45,7 @@ public class EurexGraphQL {
 
     
     public static void main(String[] args) throws Exception {
-        //testBondFuture();
-        testEuriborFuture();
+        testBondFuture();
+        //testEuriborFuture();
     }
 }

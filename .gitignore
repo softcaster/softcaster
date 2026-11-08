@@ -26,3 +26,4 @@
 *.xlsx
 *.xlsx#
 *.xlsx#
+/market_data/target/

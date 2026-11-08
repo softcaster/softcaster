@@ -156,6 +156,7 @@ public class BondBloxProvider extends AbstractProvider {
                     root = om.readValue(jsonEstratto, Root.class);
                 } catch (JsonProcessingException ex) {
                     LoggerMgr.logError(ex.getLocalizedMessage());
+                    System.out.println(ex.getLocalizedMessage());
                 }
             } else {
                 LoggerMgr.logInfo("Json not found");

@@ -54,5 +54,6 @@ public class RefDatum {
     public String redemptionValue;
     public String minDenom;
     public String overallRating;
+    public String extBondRating;
     public ArrayList<IssuerRating> issuerRatings;
 }

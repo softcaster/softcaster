@@ -7,13 +7,14 @@ package bondblox_test;
 import org.softcaster.provider.bondblox.BondBloxProvider;
 import org.softcaster.provider.bondblox.RefDatum;
 import org.softcaster.provider.enums.Market;
+import org.softcaster.provider.eodhd.EodhdFxApiClient;
 
 /**
  *
  * @author ep
  */
 public class BondBloxText {
-    
+
     public static void main(String[] args) {
         testBondBlox();
     }
@@ -24,5 +25,9 @@ public class BondBloxText {
         System.out.println(value.coupon);
         System.out.println(value.issueDate);
         System.out.println(value.maturityDate);
+
+        EodhdFxApiClient apiClient = new EodhdFxApiClient();
+        double spot = apiClient.getRealTimeExchangeRate("EUR/USD");
+        System.out.println(spot);
     }
 }
