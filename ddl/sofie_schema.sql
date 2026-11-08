@@ -169,9 +169,9 @@ CREATE TABLE public.account_natures (
 
 CREATE TABLE public.accounting_event_accruals (
     event_id integer NOT NULL,
-    accounting_nominal numeric(23,10) NOT NULL,
-    accrual_amount numeric(23,10) NOT NULL,
-    coupon_rate numeric(23,10) NOT NULL,
+    accounting_nominal numeric(28,10) NOT NULL,
+    accrual_amount numeric(28,10) NOT NULL,
+    coupon_rate numeric(28,10) NOT NULL,
     daycount integer NOT NULL,
     days integer NOT NULL
 );
@@ -184,11 +184,11 @@ CREATE TABLE public.accounting_event_accruals (
 CREATE TABLE public.accounting_event_mtm (
     event_id integer NOT NULL,
     valuation_date date NOT NULL,
-    market_price numeric(23,10) NOT NULL,
-    accounting_nominal numeric(23,5) CONSTRAINT accounting_event_mtm_net_quantity_not_null NOT NULL,
-    average_price numeric(23,10) NOT NULL,
-    realized_pnl numeric(23,5) NOT NULL,
-    unrealized_pnl numeric(23,5) NOT NULL
+    market_price numeric(28,10) NOT NULL,
+    accounting_nominal numeric(28,10) CONSTRAINT accounting_event_mtm_net_quantity_not_null NOT NULL,
+    average_price numeric(28,10) NOT NULL,
+    realized_pnl numeric(28,10) NOT NULL,
+    unrealized_pnl numeric(28,10) NOT NULL
 );
 
 
@@ -277,8 +277,8 @@ CREATE TABLE public.accumulator_fixing (
     master_data integer NOT NULL,
     fixing_date date NOT NULL,
     settlement_date date NOT NULL,
-    fixing_price numeric(18,8),
-    accumulated_quantity numeric(18,5),
+    fixing_price numeric(28,10),
+    accumulated_quantity numeric(28,10),
     CONSTRAINT ck_accumulator_fixing_dates CHECK ((settlement_date >= fixing_date))
 );
 
@@ -305,13 +305,13 @@ CREATE TABLE public.accumulator_master_data (
     accumulator_type integer NOT NULL,
     settlement_type integer NOT NULL,
     settlement_frequency integer NOT NULL,
-    strike numeric(18,8) NOT NULL,
-    ko_barrier numeric(18,8) NOT NULL,
+    strike numeric(28,10) NOT NULL,
+    ko_barrier numeric(28,10) NOT NULL,
     ko_observation integer DEFAULT 1 NOT NULL,
-    ki_barrier numeric(18,8),
+    ki_barrier numeric(28,10),
     ki_effect integer,
-    leverage numeric(15,5) DEFAULT 1 NOT NULL,
-    daily_quantity numeric(18,5) NOT NULL,
+    leverage numeric(28,10) DEFAULT 1 NOT NULL,
+    daily_quantity numeric(28,10) NOT NULL,
     first_fixing_date date NOT NULL,
     last_fixing_date date NOT NULL,
     guaranteed_periods integer DEFAULT 0 CONSTRAINT accumulator_master_data_guaranteed_fixings_not_null NOT NULL,
@@ -461,10 +461,10 @@ CREATE TABLE public.broker_instrument_rules (
     broker integer NOT NULL,
     master_data integer NOT NULL,
     txn_side smallint NOT NULL,
-    initial_margin numeric(15,5) DEFAULT 0.0 NOT NULL,
-    maintenance_margin numeric(15,5) DEFAULT 0.0 NOT NULL,
-    broker_fee numeric(15,5) DEFAULT 0.0 NOT NULL,
-    exchange_fee numeric(15,5) DEFAULT 0.0 NOT NULL,
+    initial_margin numeric(28,10) DEFAULT 0.0 NOT NULL,
+    maintenance_margin numeric(28,10) DEFAULT 0.0 NOT NULL,
+    broker_fee numeric(28,10) DEFAULT 0.0 NOT NULL,
+    exchange_fee numeric(28,10) DEFAULT 0.0 NOT NULL,
     currency integer NOT NULL
 );
 
@@ -525,8 +525,8 @@ CREATE TABLE public.calibration_profile_item (
     calibration_profile_item_id integer NOT NULL,
     calibration_profile integer NOT NULL,
     master_data integer NOT NULL,
-    bid numeric(18,10) DEFAULT 0 NOT NULL,
-    ask numeric(18,10) DEFAULT 0 NOT NULL,
+    bid numeric(28,10) DEFAULT 0 NOT NULL,
+    ask numeric(28,10) DEFAULT 0 NOT NULL,
     instrument_quote integer NOT NULL,
     code character varying(25) NOT NULL
 );
@@ -565,8 +565,8 @@ CREATE TABLE public.cash_flow_item (
     master_data integer NOT NULL,
     start_date date NOT NULL,
     end_date date NOT NULL,
-    interest numeric(15,5) NOT NULL,
-    amount numeric(15,5) NOT NULL,
+    interest numeric(28,10) NOT NULL,
+    amount numeric(28,10) NOT NULL,
     cash_flow_status integer DEFAULT 2 NOT NULL
 );
 
@@ -596,9 +596,9 @@ CREATE TABLE public.cash_flow_master_data (
     frequency integer NOT NULL,
     roll_convention integer DEFAULT 0 NOT NULL,
     accrual_schedule_type integer DEFAULT 0 NOT NULL,
-    interest_rate numeric(23,10) NOT NULL,
-    issue_price numeric(15,5) NOT NULL,
-    redempion_price numeric(15,5) NOT NULL,
+    interest_rate numeric(28,10) NOT NULL,
+    issue_price numeric(28,10) NOT NULL,
+    redempion_price numeric(28,10) NOT NULL,
     amortization_schedule integer NOT NULL,
     compounding integer DEFAULT 2 NOT NULL
 );
@@ -612,7 +612,7 @@ CREATE TABLE public.cash_flow_reset (
     id_cash_flow_reset integer NOT NULL,
     master_data integer NOT NULL,
     start_date_reset date NOT NULL,
-    interest_reset numeric(15,5) NOT NULL
+    interest_reset numeric(28,10) NOT NULL
 );
 
 
@@ -670,8 +670,8 @@ CREATE TABLE public.commodity_delivery_profile (
     delivery_end date NOT NULL,
     total_delivery_hours integer NOT NULL,
     market character varying(16) NOT NULL,
-    notional_mw numeric NOT NULL,
-    notional_mwh numeric NOT NULL,
+    notional_mw numeric(28,10) NOT NULL,
+    notional_mwh numeric(28,10) NOT NULL,
     parent_profile integer,
     market_quote_definition_id integer,
     CONSTRAINT chk_delivery_profile_dates CHECK ((delivery_end >= delivery_start)),
@@ -936,9 +936,9 @@ CREATE TABLE public.deliverable_bonds (
     id_deliverable_bonds integer NOT NULL,
     expiration_date date NOT NULL,
     isin character varying(25) NOT NULL,
-    coupon_rate numeric(15,5) NOT NULL,
+    coupon_rate numeric(28,10) NOT NULL,
     bond_maturity date NOT NULL,
-    bond_cf numeric(15,5) NOT NULL,
+    bond_cf numeric(28,10) NOT NULL,
     master_data integer NOT NULL
 );
 
@@ -1141,12 +1141,12 @@ CREATE TABLE public.financial_txn (
     trade_date date DEFAULT now() NOT NULL,
     value_date date NOT NULL,
     settlement date NOT NULL,
-    quantity numeric(15,5) NOT NULL,
-    price numeric(15,5) NOT NULL,
+    quantity numeric(28,10) NOT NULL,
+    price numeric(28,10) NOT NULL,
     ref_id integer NOT NULL,
     version integer DEFAULT 0,
     txn_status_pre_elab integer DEFAULT 1 NOT NULL,
-    fx_rate numeric(15,5) DEFAULT 1 NOT NULL,
+    fx_rate numeric(28,10) DEFAULT 1 NOT NULL,
     txn_acct_phase integer DEFAULT 1 NOT NULL,
     txn_origin integer DEFAULT 1 NOT NULL,
     origin_key character varying(100)
@@ -1162,7 +1162,7 @@ CREATE TABLE public.financial_txn_components (
     financial_txn integer NOT NULL,
     component_type integer NOT NULL,
     currency integer NOT NULL,
-    amount numeric(15,5) NOT NULL,
+    amount numeric(28,10) NOT NULL,
     description character varying(255) DEFAULT ''::character varying NOT NULL
 );
 
@@ -1208,13 +1208,13 @@ CREATE TABLE public.fixing_day_type (
 
 CREATE TABLE public.flt_loan_master_data (
     id_master_data integer NOT NULL,
-    spread numeric(23,10) NOT NULL,
+    spread numeric(28,10) NOT NULL,
     projection_index integer,
     coupon_pm integer NOT NULL,
     fixing_lag_days integer DEFAULT 2 NOT NULL,
     fixing_day_type integer DEFAULT 2 NOT NULL,
-    floor numeric(18,10),
-    cap numeric(18,10),
+    floor numeric(28,10),
+    cap numeric(28,10),
     index_months integer DEFAULT 6 NOT NULL,
     projection_curve integer,
     CONSTRAINT ck_flt_loan_floor_cap CHECK (((floor IS NULL) OR (cap IS NULL) OR (floor <= cap)))
@@ -1227,15 +1227,15 @@ CREATE TABLE public.flt_loan_master_data (
 
 CREATE TABLE public.flt_security_master_data (
     id_master_data integer NOT NULL,
-    spread numeric(23,10) NOT NULL,
+    spread numeric(28,10) NOT NULL,
     projection_index integer,
     coupon_pm integer NOT NULL,
     fixing_lag_days integer DEFAULT 2 NOT NULL,
     fixing_day_type integer DEFAULT 2 NOT NULL,
-    floor numeric(18,10),
+    floor numeric(28,10),
     index_months integer DEFAULT 6 NOT NULL,
     projection_curve integer,
-    cap numeric(18,10)
+    cap numeric(28,10)
 );
 
 
@@ -1342,14 +1342,14 @@ CREATE TABLE public.future_product (
     description character varying(255) DEFAULT ''::character varying NOT NULL,
     exchange_contract_code character varying(25) DEFAULT ''::character varying NOT NULL,
     settlement_type integer NOT NULL,
-    contract_value numeric(15,5) NOT NULL,
-    tick_size numeric(15,5) NOT NULL,
-    initial_margin numeric(15,5) NOT NULL,
-    maintenance_margin numeric(15,5),
+    contract_value numeric(28,10) NOT NULL,
+    tick_size numeric(28,10) NOT NULL,
+    initial_margin numeric(28,10) NOT NULL,
+    maintenance_margin numeric(28,10),
     currency integer NOT NULL,
     asset_class integer NOT NULL,
     business_days integer DEFAULT 2 NOT NULL,
-    multiplier numeric(15,5) DEFAULT 1 NOT NULL
+    multiplier numeric(28,10) DEFAULT 1 NOT NULL
 );
 
 
@@ -1471,7 +1471,7 @@ CREATE TABLE public.granular_curve_point (
     granular_curve_point_id bigint NOT NULL,
     granular_curve_id integer NOT NULL,
     delivery_date date NOT NULL,
-    forward_price numeric(15,5) NOT NULL
+    forward_price numeric(28,10) NOT NULL
 );
 
 
@@ -1532,8 +1532,8 @@ CREATE TABLE public.instrument_quote (
     master_data integer NOT NULL,
     provider character varying(50) NOT NULL,
     code character varying(255) NOT NULL,
-    bid numeric(15,5) NOT NULL,
-    ask numeric(15,5) NOT NULL
+    bid numeric(28,10) NOT NULL,
+    ask numeric(28,10) NOT NULL
 );
 
 
@@ -1546,8 +1546,8 @@ CREATE TABLE public.instrument_quote_hist (
     instrument_quote integer NOT NULL,
     master_data integer NOT NULL,
     code character varying(25) NOT NULL,
-    bid numeric(15,5) NOT NULL,
-    ask numeric(15,5) NOT NULL,
+    bid numeric(28,10) NOT NULL,
+    ask numeric(28,10) NOT NULL,
     update_date date NOT NULL
 );
 
@@ -1583,14 +1583,14 @@ CREATE SEQUENCE public.instrument_quote_s
 CREATE TABLE public.instrument_valuation (
     instrument_valuation_id integer NOT NULL,
     master_data integer NOT NULL,
-    market_price numeric(15,5) NOT NULL,
-    accrued_interest numeric(15,5) DEFAULT 0 NOT NULL,
-    ytm numeric(15,5) DEFAULT 0 NOT NULL,
-    duration numeric(15,5) DEFAULT 0 NOT NULL,
-    mod_duration numeric(15,5) DEFAULT 0 NOT NULL,
-    theoretical_price numeric(15,5) DEFAULT 0 NOT NULL,
+    market_price numeric(28,10) NOT NULL,
+    accrued_interest numeric(28,10) DEFAULT 0 NOT NULL,
+    ytm numeric(28,10) DEFAULT 0 NOT NULL,
+    duration numeric(28,10) DEFAULT 0 NOT NULL,
+    mod_duration numeric(28,10) DEFAULT 0 NOT NULL,
+    theoretical_price numeric(28,10) DEFAULT 0 NOT NULL,
     valuation_date date DEFAULT now() NOT NULL,
-    dv01 numeric(15,5) DEFAULT 0 NOT NULL
+    dv01 numeric(28,10) DEFAULT 0 NOT NULL
 );
 
 
@@ -1655,8 +1655,8 @@ CREATE TABLE public.journal_entry_lines (
     journal_entry_line_id integer NOT NULL,
     journal_entry integer NOT NULL,
     line_no integer NOT NULL,
-    debit_amount numeric(20,8),
-    credit_amount numeric(20,8),
+    debit_amount numeric(28,10),
+    credit_amount numeric(28,10),
     description character varying(250),
     account_slot integer NOT NULL,
     currency integer NOT NULL
@@ -1716,11 +1716,11 @@ CREATE TABLE public.ledger_balances (
     ledger_balance_id integer NOT NULL,
     gl_account integer NOT NULL,
     currency integer NOT NULL,
-    opening_balance numeric(20,8) DEFAULT 0,
-    debit_turnover numeric(20,8) DEFAULT 0,
-    credit_turnover numeric(20,8) DEFAULT 0,
-    closing_balance numeric(20,8) GENERATED ALWAYS AS (((opening_balance + debit_turnover) - credit_turnover)) STORED,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL
+    opening_balance numeric(28,10) DEFAULT 0,
+    debit_turnover numeric(28,10) DEFAULT 0,
+    credit_turnover numeric(28,10) DEFAULT 0,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    closing_balance numeric(28,10) GENERATED ALWAYS AS (((opening_balance + debit_turnover) - credit_turnover)) STORED
 );
 
 
@@ -1757,7 +1757,7 @@ CREATE TABLE public.loan_fee (
     fee_type integer NOT NULL,
     fee_basis integer NOT NULL,
     fee_timing integer NOT NULL,
-    value numeric(23,10) NOT NULL,
+    value numeric(28,10) NOT NULL,
     CONSTRAINT ck_loan_fee_value CHECK ((value >= (0)::numeric))
 );
 
@@ -1791,9 +1791,9 @@ CREATE TABLE public.loan_fee_type (
 
 CREATE TABLE public.loan_master_data (
     id_master_data integer NOT NULL,
-    default_interest numeric(23,10) DEFAULT 0 NOT NULL,
-    late_payment_fee numeric(23,10) DEFAULT 0 NOT NULL,
-    principal_amount numeric(23,5) NOT NULL,
+    default_interest numeric(28,10) DEFAULT 0 NOT NULL,
+    late_payment_fee numeric(28,10) DEFAULT 0 NOT NULL,
+    principal_amount numeric(28,10) NOT NULL,
     first_payment_date date,
     pre_amortization_periods integer DEFAULT 0 NOT NULL,
     CONSTRAINT ck_loan_master_data_values CHECK (((principal_amount > (0)::numeric) AND (pre_amortization_periods >= 0) AND (default_interest >= (0)::numeric) AND (late_payment_fee >= (0)::numeric)))
@@ -1819,7 +1819,7 @@ CREATE TABLE public.market_quote (
     market_quote_id integer NOT NULL,
     market_quote_definition_id integer NOT NULL,
     business_date date NOT NULL,
-    price numeric(15,5) NOT NULL
+    price numeric(28,10) NOT NULL
 );
 
 
@@ -1872,7 +1872,7 @@ CREATE TABLE public.master_data (
     maturity_date date NOT NULL,
     business_days integer DEFAULT 2 NOT NULL,
     asset_class integer NOT NULL,
-    multiplier numeric(15,5) DEFAULT 1 NOT NULL,
+    multiplier numeric(28,10) DEFAULT 1 NOT NULL,
     description character varying(255) DEFAULT ''::character varying
 );
 
@@ -1939,7 +1939,7 @@ CREATE TABLE public.option_master_data (
     id_master_data integer NOT NULL,
     option_product integer NOT NULL,
     option_type integer NOT NULL,
-    strike numeric(18,8) NOT NULL,
+    strike numeric(28,10) NOT NULL,
     isin character varying(25)
 );
 
@@ -1956,16 +1956,16 @@ CREATE TABLE public.option_product (
     exercise_style integer NOT NULL,
     premium_style integer NOT NULL,
     settlement_type integer NOT NULL,
-    contract_value numeric(15,5) NOT NULL,
-    tick_size numeric(15,5) NOT NULL,
-    initial_margin numeric(15,5),
-    maintenance_margin numeric(15,5),
+    contract_value numeric(28,10) NOT NULL,
+    tick_size numeric(28,10) NOT NULL,
+    initial_margin numeric(28,10),
+    maintenance_margin numeric(28,10),
     expiry_time time without time zone,
     expiry_time_zone character varying(64),
     currency integer NOT NULL,
     asset_class integer NOT NULL,
     business_days integer DEFAULT 2 NOT NULL,
-    multiplier numeric(15,5) DEFAULT 1 NOT NULL
+    multiplier numeric(28,10) DEFAULT 1 NOT NULL
 );
 
 
@@ -2025,24 +2025,24 @@ CREATE TABLE public.position_detail (
     position_md integer NOT NULL,
     master_data integer NOT NULL,
     counterparty integer NOT NULL,
-    realized_pnl numeric(15,5) NOT NULL,
-    unrealized_pnl numeric(15,5) NOT NULL,
-    buy_qty numeric(15,5) NOT NULL,
-    notional_value_buy numeric(15,5) NOT NULL,
-    buy_fees numeric(15,5) NOT NULL,
-    buy_taxes numeric(15,5) NOT NULL,
-    sell_qty numeric(15,5) NOT NULL,
-    notional_value_sell numeric(15,5) NOT NULL,
-    sell_fees numeric(15,5) NOT NULL,
-    sell_taxes numeric(15,5) NOT NULL,
-    market_price numeric(15,5) NOT NULL,
-    ytm numeric(15,5) DEFAULT 0 NOT NULL,
-    duration numeric(15,5) DEFAULT 0 NOT NULL,
-    time_to_maturity numeric(15,5) DEFAULT 0 NOT NULL,
-    mod_duration numeric(15,5) DEFAULT 0 NOT NULL,
-    theoretical_price numeric(15,5) DEFAULT 0 NOT NULL,
-    buy_accrual numeric(15,5) DEFAULT 0 NOT NULL,
-    sell_accrual numeric(15,5) DEFAULT 0 NOT NULL,
+    realized_pnl numeric(28,10) NOT NULL,
+    unrealized_pnl numeric(28,10) NOT NULL,
+    buy_qty numeric(28,10) NOT NULL,
+    notional_value_buy numeric(28,10) NOT NULL,
+    buy_fees numeric(28,10) NOT NULL,
+    buy_taxes numeric(28,10) NOT NULL,
+    sell_qty numeric(28,10) NOT NULL,
+    notional_value_sell numeric(28,10) NOT NULL,
+    sell_fees numeric(28,10) NOT NULL,
+    sell_taxes numeric(28,10) NOT NULL,
+    market_price numeric(28,10) NOT NULL,
+    ytm numeric(28,10) DEFAULT 0 NOT NULL,
+    duration numeric(28,10) DEFAULT 0 NOT NULL,
+    time_to_maturity numeric(28,10) DEFAULT 0 NOT NULL,
+    mod_duration numeric(28,10) DEFAULT 0 NOT NULL,
+    theoretical_price numeric(28,10) DEFAULT 0 NOT NULL,
+    buy_accrual numeric(28,10) DEFAULT 0 NOT NULL,
+    sell_accrual numeric(28,10) DEFAULT 0 NOT NULL,
     official_date date DEFAULT now() NOT NULL,
     last_mtm_executed timestamp without time zone DEFAULT (now() - '01:00:00'::interval)
 );
@@ -2097,9 +2097,9 @@ CREATE TABLE public.position_txn_links (
     financial_txn integer NOT NULL,
     txn_acct_phase integer NOT NULL,
     settlement date NOT NULL,
-    quantity numeric(15,5) NOT NULL,
-    price numeric(15,5) NOT NULL,
-    fx_rate numeric(15,5) NOT NULL
+    quantity numeric(28,10) NOT NULL,
+    price numeric(28,10) NOT NULL,
+    fx_rate numeric(28,10) NOT NULL
 );
 
 
@@ -2142,7 +2142,7 @@ CREATE TABLE public.power_spot_price (
     spot_price_id integer NOT NULL,
     spot_price_definition_id integer NOT NULL,
     delivery_date date NOT NULL,
-    price numeric(15,5) NOT NULL
+    price numeric(28,10) NOT NULL
 );
 
 
@@ -2207,30 +2207,6 @@ CREATE TABLE public.projection_method (
 
 
 --
--- Name: ref_rate_fixing; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.ref_rate_fixing (
-    ref_rate_fixing_id integer NOT NULL,
-    ref_rate_index integer NOT NULL,
-    fixing_date date NOT NULL,
-    rate numeric(18,10) NOT NULL
-);
-
-
---
--- Name: ref_rate_fixing_s; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.ref_rate_fixing_s
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
 -- Name: ref_rate_index; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2240,7 +2216,8 @@ CREATE TABLE public.ref_rate_index (
     description character varying(100) NOT NULL,
     currency integer NOT NULL,
     daycount integer NOT NULL,
-    tenor integer NOT NULL
+    tenor integer NOT NULL,
+    market_quote_definition_id integer NOT NULL
 );
 
 
@@ -2301,8 +2278,8 @@ CREATE TABLE public.security_master_data (
     fisn character varying(255) NOT NULL,
     lei character varying(255) NOT NULL,
     issuer integer NOT NULL,
-    nominal_value numeric(23,10) NOT NULL,
-    first_coupon_rate numeric(23,10) NOT NULL,
+    nominal_value numeric(28,10) NOT NULL,
+    first_coupon_rate numeric(28,10) NOT NULL,
     first_coupon_payment_date date NOT NULL
 );
 
@@ -2407,7 +2384,7 @@ CREATE TABLE public.shape_profile_factor (
     day_of_week smallint,
     hour_of_day smallint,
     is_holiday boolean,
-    weight_factor numeric(18,10) NOT NULL,
+    weight_factor numeric(28,10) NOT NULL,
     CONSTRAINT chk_shape_factor_dow CHECK (((day_of_week IS NULL) OR ((day_of_week >= 1) AND (day_of_week <= 7)))),
     CONSTRAINT chk_shape_factor_hour CHECK (((hour_of_day IS NULL) OR ((hour_of_day >= 0) AND (hour_of_day <= 23)))),
     CONSTRAINT chk_shape_factor_month CHECK (((month_of_year IS NULL) OR ((month_of_year >= 1) AND (month_of_year <= 12))))
@@ -2651,8 +2628,8 @@ CREATE TABLE public.volatility_point (
     volatility_surface integer NOT NULL,
     reference_date date NOT NULL,
     expiry_date date NOT NULL,
-    strike numeric(18,8),
-    volatility numeric(12,8) NOT NULL,
+    strike numeric(28,10),
+    volatility numeric(28,10) NOT NULL,
     source character varying(64) DEFAULT ''::character varying NOT NULL,
     CONSTRAINT ck_volatility_point_values CHECK (((volatility > (0)::numeric) AND (volatility < (5)::numeric) AND ((strike IS NULL) OR (strike > (0)::numeric)) AND (expiry_date > reference_date)))
 );
@@ -2719,8 +2696,8 @@ CREATE TABLE public.yield_curve_item (
     ric character varying(25) NOT NULL,
     offset_type smallint NOT NULL,
     offset_value smallint NOT NULL,
-    bid numeric(15,5) NOT NULL,
-    ask numeric(15,5) NOT NULL,
+    bid numeric(28,10) NOT NULL,
+    ask numeric(28,10) NOT NULL,
     compounding integer DEFAULT 1 NOT NULL,
     daycount integer NOT NULL,
     node_type integer DEFAULT 1 NOT NULL
@@ -2762,9 +2739,9 @@ CREATE TABLE public.yield_curve_spread (
     base_curve_code character varying(50) NOT NULL,
     offset_type smallint NOT NULL,
     offset_value smallint NOT NULL,
-    z_spread numeric(14,10) NOT NULL,
+    z_spread numeric(28,10) NOT NULL,
     n_bonds integer,
-    dispersion numeric(14,10),
+    dispersion numeric(28,10),
     calibrated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT ck_ycs_offset_value CHECK ((offset_value > 0))
 );
@@ -3639,14 +3616,6 @@ ALTER TABLE ONLY public.premium_style
 
 
 --
--- Name: ref_rate_fixing pk_ref_rate_fixing; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ref_rate_fixing
-    ADD CONSTRAINT pk_ref_rate_fixing PRIMARY KEY (ref_rate_fixing_id);
-
-
---
 -- Name: ref_rate_index pk_ref_rate_index; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3935,14 +3904,6 @@ ALTER TABLE ONLY public.account_mapping
 
 
 --
--- Name: ref_rate_fixing uk_ref_rate_fixing; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ref_rate_fixing
-    ADD CONSTRAINT uk_ref_rate_fixing UNIQUE (ref_rate_index, fixing_date);
-
-
---
 -- Name: ref_rate_index uk_ref_rate_index_code_tenor; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4196,6 +4157,14 @@ ALTER TABLE ONLY public.power_spot_price_definition
 
 ALTER TABLE ONLY public.power_spot_price_definition
     ADD CONSTRAINT uq_pspd_code UNIQUE (code);
+
+
+--
+-- Name: ref_rate_index uq_ref_rate_index_quote_definition; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ref_rate_index
+    ADD CONSTRAINT uq_ref_rate_index_quote_definition UNIQUE (market_quote_definition_id);
 
 
 --
@@ -6021,14 +5990,6 @@ ALTER TABLE ONLY public.power_spot_price_definition
 
 
 --
--- Name: ref_rate_fixing fk_ref_rate_fixing_index; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.ref_rate_fixing
-    ADD CONSTRAINT fk_ref_rate_fixing_index FOREIGN KEY (ref_rate_index) REFERENCES public.ref_rate_index(ref_rate_index_id);
-
-
---
 -- Name: ref_rate_index fk_ref_rate_index_currency; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6042,6 +6003,14 @@ ALTER TABLE ONLY public.ref_rate_index
 
 ALTER TABLE ONLY public.ref_rate_index
     ADD CONSTRAINT fk_ref_rate_index_daycount FOREIGN KEY (daycount) REFERENCES public.daycount(id_daycount);
+
+
+--
+-- Name: ref_rate_index fk_ref_rate_index_quote_definition; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ref_rate_index
+    ADD CONSTRAINT fk_ref_rate_index_quote_definition FOREIGN KEY (market_quote_definition_id) REFERENCES public.market_quote_definition(market_quote_definition_id);
 
 
 --

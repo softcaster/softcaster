@@ -35,6 +35,15 @@ public class MarketQuoteDAO {
         return repository.findAll(sortByBusinessDate);
     }
     
+    /**
+     * Quotazione della serie alla data (es. il fixing di un indice), null se
+     * non caricata.
+     */
+    @Transactional(readOnly = true)
+    public MarketQuote findQuote(Integer marketQuoteDefinitionId, LocalDate businessDate) {
+        return repository.findByMarketQuoteDefinitionAndBusinessDate(marketQuoteDefinitionId, businessDate);
+    }
+
     @Transactional(readOnly = true)
     public MarketQuote findByMarketQuoteIdAndBusinessDate(Integer marketQuoteId, LocalDate businessDate) {
         return repository.findByMarketQuoteIdAndBusinessDate(marketQuoteId, businessDate);

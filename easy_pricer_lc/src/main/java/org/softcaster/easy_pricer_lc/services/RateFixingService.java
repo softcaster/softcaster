@@ -22,8 +22,8 @@ import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.core.data.PositionMasterDataDAO;
-import org.softcaster.core.data.RefRateFixing;
-import org.softcaster.core.data.RefRateFixingDAO;
+import org.softcaster.core.data.MarketQuote;
+import org.softcaster.core.data.MarketQuoteDAO;
 import org.softcaster.core.data.SystemBusinessCalendar;
 import org.softcaster.core.data.SystemBusinessCalendarDAO;
 import org.softcaster.core.dto.EodTaskResult;
@@ -44,11 +44,13 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * Ogni cedola / rata ancora stimata (ESTIMATED) con data di fixing (inizio del
  * periodo meno fixingLagDays) fino alla data ufficiale si fissa dal fixing
- * dell'indice in ref_rate_fixing: tasso = indice + spread, entro floor e cap.
- * La cedola passa a RECORDED, le successive ancora stimate si proiettano allo
- * stesso tasso (ultima cedola) e il tasso dell'anagrafica diventa quello del
- * periodo. Un fixing mancante blocca la chiusura: il periodo non si puo'
- * maturare con un tasso stimato.
+ * dell'indice (market_quote della market_quote_definition dell'indice, tasso
+ * in decimale): tasso = indice + spread, entro floor e cap. La cedola passa a
+ * RECORDED, le successive ancora stimate si proiettano allo stesso tasso
+ * (ultima cedola) e il tasso dell'anagrafica diventa quello del periodo. Le
+ * cedole gia' RECORDED (fissate esternamente) e PAID non si toccano. Un fixing
+ * mancante blocca la chiusura: il periodo non si puo' maturare con un tasso
+ * stimato.
  *
  * Interessi come nel piano originale:
  *   titoli: per 100 di nominale, 100 x tasso x frazione d'anno (accrual daycount);
@@ -72,7 +74,7 @@ public class RateFixingService {
     @Autowired
     private PositionDetailDAO positionDetailDAO;
     @Autowired
-    private RefRateFixingDAO refRateFixingDAO;
+    private MarketQuoteDAO marketQuoteDAO;
     @Autowired
     private TransactionTemplate transactionTemplate;
 
@@ -151,12 +153,13 @@ public class RateFixingService {
                 throw new IllegalStateException(masterData.getCode() + ": period from " + item.getStartDate()
                         + " not fixed and no index on the instrument");
             }
-            RefRateFixing fixing = refRateFixingDAO.findFixing(terms.getProjectionIndex().getRefRateIndexId(), fixingDate);
-            if (fixing == null || fixing.getRate() == null) {
+            MarketQuote fixing = marketQuoteDAO.findQuote(terms.getProjectionIndex().getMarketQuoteDefinitionId(), fixingDate);
+            if (fixing == null || fixing.getPrice() == null) {
                 throw new IllegalStateException(masterData.getCode() + ": missing " + terms.getProjectionIndex().getCode()
                         + " fixing of " + fixingDate + " for the period from " + item.getStartDate());
             }
-            double rate = RateFixing.couponRate(fixing.getRate(), terms);
+            double indexRate = fixing.getPrice().doubleValue();
+            double rate = RateFixing.couponRate(indexRate, terms);
             if (masterData instanceof FltLoanMasterData loan) {
                 applyToLoan(loan, items, k, rate);
             } else {
@@ -166,7 +169,7 @@ public class RateFixingService {
             cfmd.setInterestRate(rate * 100.);
             fixed++;
             log.info("Fixing {} period {} - {}: index {} at {} = {}, rate {}", masterData.getCode(), item.getStartDate(),
-                    item.getEnddate(), terms.getProjectionIndex().getCode(), fixingDate, fixing.getRate(), rate);
+                    item.getEnddate(), terms.getProjectionIndex().getCode(), fixingDate, indexRate, rate);
         }
         return fixed;
     }
@@ -192,31 +195,73 @@ public class RateFixingService {
             // preammortamento (rate senza quota capitale) fino alla prima rata di ammortamento
             int m = k;
             while (m < items.size() && isZero(items.get(m).getAmount())) {
-                items.get(m).setInterest(balance * rate * yearFraction(loan, items.get(m)));
+                if (isOpen(items.get(m), m, k)) {
+                    items.get(m).setInterest(balance * rate * yearFraction(loan, items.get(m)));
+                }
                 m++;
             }
-            int n = items.size() - m;
-            if (n <= 0) {
+            // rata costante sulle rate ancora aperte; le RECORDED restano come sono e
+            // l'ultima aperta chiude il residuo
+            List<Integer> open = new ArrayList<>();
+            double fixedPrincipal = 0.;
+            for (int j = m; j < items.size(); j++) {
+                if (isOpen(items.get(j), j, k)) {
+                    open.add(j);
+                } else {
+                    fixedPrincipal += items.get(j).getAmount();
+                }
+            }
+            if (open.isEmpty()) {
                 return;
             }
-            double periodic = rate / (12.0 / months(items.get(m)));
-            double payment = periodic == 0. ? balance / n : balance * (periodic / (1 - Math.pow(1 + periodic, -n)));
+            int n = open.size();
+            double periodic = rate / (12.0 / months(items.get(open.get(0))));
+            double toAmortize = balance - fixedPrincipal;
+            double payment = periodic == 0. ? toAmortize / n : toAmortize * (periodic / (1 - Math.pow(1 + periodic, -n)));
+            int lastOpen = open.get(n - 1);
             for (int j = m; j < items.size(); j++) {
                 CashFlowItem item = items.get(j);
+                if (!isOpen(item, j, k)) {
+                    balance -= item.getAmount();
+                    continue;
+                }
                 double interest = balance * periodic;
-                double principal = j == items.size() - 1 ? balance : payment - interest;
+                double principal = j == lastOpen ? balance - remainingFixed(items, j, k) : payment - interest;
                 item.setInterest(interest);
                 item.setAmount(principal);
                 balance -= principal;
             }
         } else {
-            // italiano e bullet: quote capitale invariate
+            // italiano e bullet: quote capitale invariate, interessi delle sole rate aperte
             for (int j = k; j < items.size(); j++) {
                 CashFlowItem item = items.get(j);
-                item.setInterest(balance * rate * yearFraction(loan, item));
+                if (isOpen(item, j, k)) {
+                    item.setInterest(balance * rate * yearFraction(loan, item));
+                }
                 balance -= item.getAmount();
             }
         }
+    }
+
+    /**
+     * Rata da ricalcolare: quella che si sta fissando o una successiva ancora
+     * stimata (non RECORDED ne' PAID).
+     */
+    private static boolean isOpen(CashFlowItem item, int j, int k) {
+        return j == k || item.getCashFlowStatus() == CashFlowStatus.ESTIMATED;
+    }
+
+    /**
+     * Quote capitale delle rate gia' fissate dopo la rata j.
+     */
+    private static double remainingFixed(List<CashFlowItem> items, int j, int k) {
+        double sum = 0.;
+        for (int i = j + 1; i < items.size(); i++) {
+            if (!isOpen(items.get(i), i, k)) {
+                sum += items.get(i).getAmount();
+            }
+        }
+        return sum;
     }
 
     private static double yearFraction(FltLoanMasterData loan, CashFlowItem item) {

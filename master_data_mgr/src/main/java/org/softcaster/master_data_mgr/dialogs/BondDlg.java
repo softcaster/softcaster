@@ -957,8 +957,15 @@ public class BondDlg extends javax.swing.JDialog {
         MDDialogHelper.textFieldDoubleFocusLost(txtNominalValue);
     }//GEN-LAST:event_txtNominalValueFocusLost
 
+    // Cedole scadute fino all'ultima chiusura: pagate. Quelle della chiusura in corso
+    // le marca lo step COUPON (CashFlowPaymentService in easy_pricer_lc)
     protected CashFlowStatus getCashFlowStatus(CashFlowItem item) {
-        return CashFlowStatus.RECORDED;
+        return isPaid(item) ? CashFlowStatus.PAID : CashFlowStatus.RECORDED;
+    }
+
+    protected boolean isPaid(CashFlowItem item) {
+        java.time.LocalDate lastOfficial = masterDataFacade.getSystemBusinessCalendarDAO().findBySbcId(1).getLastOfficialDate();
+        return !item.getEnddate().toLocalDate().isAfter(lastOfficial);
     }
     
     private void btnGenerateCFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateCFActionPerformed

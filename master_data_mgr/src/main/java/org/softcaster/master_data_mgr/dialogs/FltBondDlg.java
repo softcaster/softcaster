@@ -104,6 +104,9 @@ public final class FltBondDlg extends BondDlg {
 
     @Override
     protected CashFlowStatus getCashFlowStatus(CashFlowItem item) {
+        if (isPaid(item)) {
+            return CashFlowStatus.PAID;
+        }
         if (systemDate.isBefore(item.getStartDate().toLocalDate())) {
             return CashFlowStatus.ESTIMATED;
         } else {

@@ -75,6 +75,8 @@ public class LoanDealService {
     @Autowired
     private LoanCalculator loanCalculator;
     @Autowired
+    private org.softcaster.core.data.SystemBusinessCalendarDAO sbcDAO;
+    @Autowired
     private FinancialTxnService financialTxnService;
     @Autowired
     @Qualifier("marketDataService")
@@ -105,7 +107,7 @@ public class LoanDealService {
             LoanMasterData lmd = build(r);
             List<CashFlow> flows = loanCalculator.generateSchedule(lmd, calendar(lmd));
             lmd.getCashFlows().addAll(LoanCalculator.toItems(flows));
-            markFloatingPeriods(lmd);
+            markPeriods(lmd);
             lmd = loanDAO.create(lmd);
 
             LocalDate tradeDate = tradeDate(r, lmd);
@@ -155,7 +157,7 @@ public class LoanDealService {
             entityManager.flush();
             fill(lmd, r);
             lmd.getCashFlows().addAll(LoanCalculator.toItems(loanCalculator.generateSchedule(lmd, calendar(lmd))));
-            markFloatingPeriods(lmd);
+            markPeriods(lmd);
             entityManager.flush();
 
             LocalDate tradeDate = tradeDate(r, lmd);
@@ -298,20 +300,26 @@ public class LoanDealService {
     }
 
     /**
-     * Mutuo variabile: il tasso della richiesta (indice corrente + spread) vale
-     * per i periodi gia' fissati, cioe' con data di fixing fino alla data
-     * ufficiale (RECORDED); i successivi restano stimati (ESTIMATED) a quel
-     * tasso e li fissa lo step FIXING della chiusura (RateFixingService).
+     * Stato delle rate di un piano nuovo o rigenerato: PAID quelle scadute fino
+     * all'ultima chiusura (le rate della chiusura in corso le marca lo step
+     * COUPON). Mutuo variabile: il tasso della richiesta (indice corrente +
+     * spread) vale per i periodi gia' fissati, cioe' con data di fixing fino
+     * alla data ufficiale (RECORDED); i successivi restano stimati (ESTIMATED)
+     * a quel tasso e li fissa lo step FIXING della chiusura (RateFixingService).
      */
-    private void markFloatingPeriods(LoanMasterData lmd) {
-        if (!(lmd instanceof FltLoanMasterData flt)) {
-            return;
-        }
+    private void markPeriods(LoanMasterData lmd) {
         LocalDate official = marketDataService.getOfficialDate();
+        LocalDate lastOfficial = sbcDAO.findBySbcId(1).getLastOfficialDate();
         Calendar calendar = calendar(lmd);
         for (org.softcaster.core.data.CashFlowItem item : lmd.getCashFlows()) {
-            LocalDate fixingDate = RateFixing.fixingDate(item.getStartDate().toLocalDate(), flt.getFloatingTerms(), calendar);
-            item.setCashFlowStatus(fixingDate.isAfter(official) ? CashFlowStatus.ESTIMATED : CashFlowStatus.RECORDED);
+            CashFlowStatus status = CashFlowStatus.RECORDED;
+            if (!item.getEnddate().toLocalDate().isAfter(lastOfficial)) {
+                status = CashFlowStatus.PAID;
+            } else if (lmd instanceof FltLoanMasterData flt
+                    && RateFixing.fixingDate(item.getStartDate().toLocalDate(), flt.getFloatingTerms(), calendar).isAfter(official)) {
+                status = CashFlowStatus.ESTIMATED;
+            }
+            item.setCashFlowStatus(status);
         }
     }
 

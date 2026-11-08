@@ -1,6 +1,5 @@
 package org.softcaster.core.data;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -10,14 +9,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.softcaster.core.data.converters.DaycountConverter;
 import org.softcaster.core.data.converters.TenorConverter;
 import org.softcaster.engine.enums.DaycountBasis;
@@ -53,11 +47,11 @@ public class RefRateIndex implements Serializable {
     @Column(name = "tenor")
     private Tenor tenor;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Fetch(value = FetchMode.SUBSELECT)
-    @JoinColumn(name = "ref_rate_index", nullable = false) // FK in child table ref_rate_fixing
-    private List<RefRateFixing> fixings = new ArrayList<>();
-    
+    // Serie storica dei fixing (market_quote, tasso in decimale), caricata dalla
+    // procedura di import esterna come le altre quotazioni
+    @Column(name = "market_quote_definition_id", nullable = false)
+    private Integer marketQuoteDefinitionId;
+
     public Integer getRefRateIndexId() {
         return refRateIndexId;
     }
@@ -143,18 +137,12 @@ public class RefRateIndex implements Serializable {
         this.tenor = tenor;
     }
 
-    /**
-     * @return the fixings
-     */
-    public List<RefRateFixing> getFixings() {
-        return fixings;
+    public Integer getMarketQuoteDefinitionId() {
+        return marketQuoteDefinitionId;
     }
 
-    /**
-     * @param fixings the fixings to set
-     */
-    public void setFixings(List<RefRateFixing> fixings) {
-        this.fixings = fixings;
+    public void setMarketQuoteDefinitionId(Integer marketQuoteDefinitionId) {
+        this.marketQuoteDefinitionId = marketQuoteDefinitionId;
     }
 
     @Override

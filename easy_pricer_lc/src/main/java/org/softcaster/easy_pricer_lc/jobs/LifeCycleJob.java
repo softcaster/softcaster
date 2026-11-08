@@ -30,6 +30,7 @@ import org.softcaster.easy_pricer_lc.services.AccrualEventInfo;
 import org.softcaster.easy_pricer_lc.services.AccrualLyfeCycleService;
 import org.softcaster.easy_pricer_lc.services.LinkEventInfo;
 import org.softcaster.easy_pricer_lc.services.LoanRepaymentService;
+import org.softcaster.easy_pricer_lc.services.CashFlowPaymentService;
 import org.softcaster.easy_pricer_lc.services.SettlementLyfeCycleService;
 import org.softcaster.engine.enums.EodStep;
 import org.softcaster.engine.enums.EventType;
@@ -72,6 +73,9 @@ public class LifeCycleJob {
 
     @Autowired
     private LoanRepaymentService loanRepaymentService;
+
+    @Autowired
+    private CashFlowPaymentService cashFlowPaymentService;
 
     /**
      * Contatori di un task: gli elementi girano anche in parallelo e un errore
@@ -157,7 +161,10 @@ public class LifeCycleJob {
         SystemBusinessCalendar sbc = sbcDAO.findBySbcId(1);
         EodTaskResult coupons = fetchPosition(EodStep.COUPON, EventType.COUPON, sbc.getOfficialDate(), sbc.getLastOfficialDate(), sbc.getOfficialDate());
         EodTaskResult repayments = loanRepaymentService.generateRepayments();
-        String message = String.join(" ", coupons.message(), repayments.message()).trim();
+        // dopo eventi e rimborsi: i flussi della chiusura sono pagati
+        int paid = cashFlowPaymentService.markPaid(sbc.getLastOfficialDate(), sbc.getOfficialDate());
+        String message = String.join(" ", coupons.message(), repayments.message(),
+                paid > 0 ? paid + " cash flows set to paid" : "").trim();
         return EodTaskResult.of(EodStep.COUPON, sbc.getOfficialDate(),
                 coupons.processed() + repayments.processed(), coupons.created() + repayments.created(),
                 coupons.skipped() + repayments.skipped(), coupons.errors() + repayments.errors(), message);

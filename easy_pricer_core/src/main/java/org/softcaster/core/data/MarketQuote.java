@@ -46,8 +46,8 @@ public class MarketQuote implements Serializable {
 
     @Column(
             name = "price",
-            precision = 15,
-            scale = 5,
+            precision = 28,
+            scale = 10,
             nullable = false
     )
     private BigDecimal price;
