@@ -25,6 +25,7 @@ import org.softcaster.easy_pricer_proc.exceptions.TxnProcessingException;
 import org.softcaster.easy_pricer_proc.processors.BackdatedTxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.ITxnProcessor;
 import org.softcaster.easy_pricer_proc.processors.LoanLifeCycleEvents;
+import org.softcaster.easy_pricer_proc.processors.FxRollingAdjustment;
 import org.softcaster.easy_pricer_proc.processors.ProcessorDispatcher;
 import org.softcaster.engine.enums.AccountingEventStatus;
 import org.softcaster.engine.enums.EventSourceType;
@@ -59,6 +60,8 @@ public class FinTxnExecutionService {
     private BackdatedTxnProcessor backdatedTxnProcessor;
     @Autowired
     private LoanLifeCycleEvents loanLifeCycleEvents;
+    @Autowired
+    private FxRollingAdjustment fxRollingAdjustment;
 
     // Richiede una NUOVA transazione per salvare lo stato di REJECTED 
     // anche se la transazione principale fallisce e fa rollback
@@ -171,8 +174,8 @@ public class FinTxnExecutionService {
         return eventKey;
     }
 
-    // Le chiusure maturano ratei e cedole solo per questa asset class (BondScheduler)
-    private static final String ACCRUING_ASSET_CLASS = "XRB";
+    // Titoli di cui le chiusure maturano ratei e cedole (BondScheduler)
+    private static final java.util.Set<String> ACCRUING_ASSET_CLASSES = java.util.Set.of("XRB", "XRN", "FRB", "FRN");
 
     private boolean isBackdatedTxn(FinancialTxn txn) {
         boolean backdatedTxn = false;
@@ -234,7 +237,7 @@ public class FinTxnExecutionService {
                     if (userLoan) {
                         events.addAll(loanLifeCycleEvents.backdatedEvents(txn, positionDetailId, sbc.getOfficialDate(), sbc.getLastOfficialDate()));
                     }
-                } else if (ACCRUING_ASSET_CLASS.equals(txn.getMasterData().getAssetClass().getCode())) {
+                } else if (ACCRUING_ASSET_CLASSES.contains(txn.getMasterData().getAssetClass().getCode())) {
                     // Cancel o amend di un deal gia' regolato: come se non fosse mai esistito
                     events = backdatedTxnProcessor.generateReversalEvents(txn, positionDetailId, sbc.getOfficialDate(), sbc.getLastOfficialDate());
                 } else if (userLoan) {
@@ -246,6 +249,10 @@ public class FinTxnExecutionService {
                         accountingEventDAO.saveOrUpdate(backdatedEvent);
                     }
                 }
+            }
+            // FX spot cancellato o sostituito: i rolling che lo comprendevano si correggono
+            if (status == TxnStatus.CANCELLED || status == TxnStatus.AMENDED) {
+                fxRollingAdjustment.adjust(txn, positionDetailId, status);
             }
         } catch (Exception ex) {
             LoggerMgr.logInfo(ex.getLocalizedMessage());

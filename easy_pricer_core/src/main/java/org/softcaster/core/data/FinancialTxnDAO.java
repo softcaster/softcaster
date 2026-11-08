@@ -46,6 +46,14 @@ public class FinancialTxnDAO {
         return repository.findByOriginKeyStartingWithOrderByIdFinancialTxn(prefix);
     }
 
+    /**
+     * Deal che sostituiscono txnId (amend: ref_id = deal originale).
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<FinancialTxn> findReplacements(Integer txnId) {
+        return repository.findByRefIdOrderByIdFinancialTxn(txnId);
+    }
+
     @Transactional(readOnly = true)
     public java.util.List<FinancialTxn> findByMasterData(Integer idMasterData) {
         return repository.findByMasterData_IdMasterDataOrderByIdFinancialTxn(idMasterData);

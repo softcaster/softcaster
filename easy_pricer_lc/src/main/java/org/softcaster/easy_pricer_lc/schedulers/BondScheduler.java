@@ -27,8 +27,34 @@ import org.softcaster.engine.utils.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * Ratei e cedole dei titoli dal piano salvato (cash_flow_item, interessi per
+ * 100): tasso fisso (XRB, XRN) e variabile (FRB, FRN), le cui cedole sono
+ * fissate dallo step FIXING prima che maturino.
+ */
 @Component("XRB")
 public class BondScheduler implements IScheduler {
+
+    /**
+     * Note a tasso fisso.
+     */
+    @Component("XRN")
+    public static class FixedRateNote extends BondScheduler {
+    }
+
+    /**
+     * Titoli a tasso variabile.
+     */
+    @Component("FRB")
+    public static class FloatingRateBond extends BondScheduler {
+    }
+
+    /**
+     * Note a tasso variabile.
+     */
+    @Component("FRN")
+    public static class FloatingRateNote extends BondScheduler {
+    }
 
     @Autowired
     private CashFlowInstrumentCalculator bondCalculator;

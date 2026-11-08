@@ -236,6 +236,12 @@ INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, g
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (94, 'LOAN_ACCRUED_INTEREST_RECEIVABLE', 4, 116);
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (95, 'LOAN_ACCRUED_INTEREST_RECEIVABLE', 1, 116);
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (96, 'LOAN_ACCRUED_INTEREST_RECEIVABLE', 2, 116);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (97, 'BOND_REALIZED_GAIN', 4, 61);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (98, 'BOND_REALIZED_GAIN', 1, 61);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (99, 'BOND_REALIZED_GAIN', 2, 61);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (100, 'BOND_REALIZED_LOSS', 4, 68);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (101, 'BOND_REALIZED_LOSS', 1, 68);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (102, 'BOND_REALIZED_LOSS', 2, 68);
 
 
 --
@@ -796,14 +802,14 @@ INSERT INTO public.position_master_data (id_position, portfolio, currency, code,
 -- Data for Name: system_business_calendar; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_business_calendar (sbc_id, description, calendar, status, official_date, next_business_date, version, updated_at, currency, last_official_date) VALUES (1, 'SO.FI.E Buiness Calendar', 1, 1, '2026-11-06', NULL, 9, '2026-11-06 22:58:59.005629', 1, '2026-11-06');
+INSERT INTO public.system_business_calendar (sbc_id, description, calendar, status, official_date, next_business_date, version, updated_at, currency, last_official_date) VALUES (1, 'SO.FI.E Buiness Calendar', 1, 1, '2026-11-11', NULL, 15, '2026-11-08 15:53:52.964759', 1, '2026-11-10');
 
 
 --
 -- Name: account_mapping_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.account_mapping_s', 96, true);
+SELECT pg_catalog.setval('public.account_mapping_s', 102, true);
 
 
 --

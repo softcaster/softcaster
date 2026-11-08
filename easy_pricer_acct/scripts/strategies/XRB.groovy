@@ -414,11 +414,20 @@ case EventType.MTM:
      * sotto zero va su BOND_UNREALIZED_LOSS. Contropartita BOND_FV_ADJUSTMENT.
      *
      * Tutto nella valuta del bond.
+     *
+     * Realizzato delle vendite (e dei riacquisti di uno scoperto): variazione
+     * del realizzato della posizione dall'ultima fotografia, stessa regola del
+     * segno del cumulato, contropartita BOND_ASSET. Il regolamento della
+     * vendita chiude BOND_ASSET al prezzo di vendita: con l'utile (o la
+     * perdita) registrato qui il conto resta al costo della quantità residua.
      */
 
     ctx.postUnrealizedResult(accountResolver.resolve("BOND_FV_ADJUSTMENT", settlementCcy),
             accountResolver.resolve("BOND_UNREALIZED_GAIN", settlementCcy),
             accountResolver.resolve("BOND_UNREALIZED_LOSS", settlementCcy))
+    ctx.postRealizedResult(accBondAsset,
+            accountResolver.resolve("BOND_REALIZED_GAIN", settlementCcy),
+            accountResolver.resolve("BOND_REALIZED_LOSS", settlementCcy))
     break
 
 

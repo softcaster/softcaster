@@ -21,6 +21,8 @@ public interface FinancialTxnRepository extends JpaRepository<FinancialTxn, Inte
 
     public java.util.List<FinancialTxn> findByMasterData_IdMasterDataOrderByIdFinancialTxn(Integer idMasterData);
 
+    public java.util.List<FinancialTxn> findByRefIdOrderByIdFinancialTxn(Integer refId);
+
     // FORZA IL FETCH: Carica la transazione, lo strumento e l'asset class in una sola JOIN
     // @EntityGraph(attributePaths = {"masterData", "masterData.assetClass"})    
     public FinancialTxn findByIdFinancialTxn(Integer idFinancialTxn);
