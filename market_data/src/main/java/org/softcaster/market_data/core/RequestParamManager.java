@@ -24,6 +24,9 @@ public class RequestParamManager {
         return requestParams.get(pos);
     }
 
+    public void clear() {
+        requestParams.clear();
+    }
     /**
      * @return the beanName
      */

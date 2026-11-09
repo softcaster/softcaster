@@ -1,0 +1,365 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package org.softcaster.market_data.services.cme;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.options.WaitUntilState;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.jsoup.Jsoup;
+import org.softcaster.commons.utils.Converter;
+import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.engine.curve.Offset;
+import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveNodeType;
+import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.OffsetType;
+import org.softcaster.market_data.core.Data;
+import org.softcaster.market_data.core.MarketDataManager;
+import org.softcaster.market_data.core.Node;
+import org.softcaster.market_data.core.RequestParamManager;
+import org.softcaster.market_data.core.enums.Market;
+import static org.softcaster.market_data.core.enums.Market.RATES;
+import org.softcaster.market_data.core.interpreter.ProviderHelper;
+import org.softcaster.provider.exceptions.MarketDataProviderException;
+
+//import org.softcaster.marketdataprovider.interpreter.ProviderHelper;
+/**
+ *
+ * @author ep
+ */
+/*
+https://www.cmegroup.com/services/sofr-strip-rates/ 
+https://www.cmegroup.com/services/term-estr/
+ */
+public class CmeGroup implements MarketDataManager {
+
+    private final String baseUrl = "https://www.cmegroup.com";
+    private final String sofrUrl = "https://www.cmegroup.com/services/sofr-strip-rates/";
+    private final String esterUrl = "https://www.cmegroup.com/services/term-estr/";
+    private final String v2Url = "https://www.cmegroup.com/CmeWS/mvc/quotes/v2/";
+    private final String optAtmUrl = "https://www.cmegroup.com/CmeWS/mvc/atm/strike-prices/";
+    private String response = null;
+    private List<Node> rates = new ArrayList<>();
+    private RequestParamManager rpm = null;
+
+    public CmeGroup(RequestParamManager params) {
+        rpm = params;
+    }
+
+    private void parseResponseTermSofr() {
+        if (response != null && !response.isEmpty()) {
+
+            // Sostituisce tutte le chiavi "average..." che hanno valore "-" con "0"
+            String cleanResponse = response.replaceAll("(\"average\\w+\"\\s*:\\s*)\"-\"", "$1\"0\"");
+
+            // Includere anche "index" e "overnight" nella sostituzione:
+            cleanResponse = cleanResponse.replaceAll("(\"(index|overnight)\"\\s*:\\s*)\"-\"", "$1\"0\"");
+
+            ObjectMapper om = new ObjectMapper();
+            List<SofrRatesFixing> sofrRates = null;
+            try {
+                SofrRoot root = om.readValue(cleanResponse, SofrRoot.class);
+                sofrRates = root.resultsStrip.get(0).rates.sofrRatesFixing;
+            } catch (JsonProcessingException ex) {
+                LoggerMgr.logError(ex.getLocalizedMessage());
+                return;
+            }
+
+            ProviderHelper helper = ProviderHelper.getInstance();
+            if (sofrRates != null && helper != null) {
+                List<Node> nodes = helper.getNodeList("TERMSOFR");
+                if (nodes != null) {
+                    try {
+                        int pos = 0;
+                        double value = 0.;
+                        Data data = null;
+                        for (Node node : nodes) {
+                            try {
+                                value = Converter.toDouble(sofrRates.get(pos).price, false);
+                            } catch (ParseException ex) {
+                                LoggerMgr.logError(ex.getLocalizedMessage());
+                                value = 0.;
+                            }
+                            data = new Data(value / 100., value / 100.);
+                            Node newNode = new Node(node.symbol(),
+                                    node.offset(),
+                                    node.daycount(),
+                                    node.compounding(),
+                                    node.nodeType(),
+                                    data
+                            );
+                            rates.add(newNode);
+                            pos++;
+                        }
+                        // Aggiungo tasso ester ovn
+                        String jsonResponse = Jsoup.connect("https://markets.newyorkfed.org/read?productCode=50&eventCodes=520&limit=1")
+                                .ignoreContentType(true) // Obbligatorio per evitare errori con MIME type JSON
+                                .execute()
+                                .body();
+                        SofrOvn sofrOvn = om.readValue(jsonResponse, SofrOvn.class);
+                        String jsonData = sofrOvn.data.get(0).data;
+                        JsonNode root = om.readTree(jsonData);
+                        value = root.get("dailyRate").asDouble();
+                        data = new Data(value / 100., value / 100.);
+                        Offset offset = new Offset(1, OffsetType.DAYS);
+                        Node nodeOvn = new Node("Ovn",
+                                offset,
+                                DaycountBasis.ACT_360,
+                                Compounding.SIMPLE,
+                                CurveNodeType.MONEY_MARKET,
+                                data);
+                        rates.add(nodeOvn);
+                    } catch (IOException ex) {
+                        LoggerMgr.logError(ex.getLocalizedMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    private void parseResponseTermEster() {
+        if (response != null && !response.isEmpty()) {
+
+            ObjectMapper om = new ObjectMapper();
+            List<TermESTRRate> esterRates = null;
+            try {
+                EsterRoot root = om.readValue(response, EsterRoot.class);
+                esterRates = root.termESTRRates;
+            } catch (JsonProcessingException ex) {
+                LoggerMgr.logError(ex.getLocalizedMessage());
+                return;
+            }
+
+            // Tassi a data corrente
+            ArrayList<EsterRate> eRates = esterRates.get(0).rates;
+
+            ProviderHelper helper = ProviderHelper.getInstance();
+            if (esterRates != null && helper != null) {
+                try {
+                    List<Node> nodes = helper.getNodeList("TERMESTR");
+                    int pos = 0;
+                    double value = 0.;
+                    Data data = null;
+                    for (Node node : nodes) {
+                        try {
+                            value = Converter.toDouble(eRates.get(pos).price, false);
+                        } catch (ParseException ex) {
+                            LoggerMgr.logError(ex.getLocalizedMessage());
+                            value = 0.;
+                        }
+
+                        data = new Data(value / 100., value / 100.);
+                        Node newNode = new Node(node.symbol(),
+                                node.offset(),
+                                node.daycount(),
+                                node.compounding(),
+                                node.nodeType(),
+                                data
+                        );
+                        rates.add(newNode);
+                        pos++;
+                    }
+                    // Aggiungo tasso ester ovn
+                    String jsonResponse = Jsoup.connect("https://api.estr.dev/latest")
+                            .ignoreContentType(true) // Obbligatorio per evitare errori con MIME type JSON
+                            .execute()
+                            .body();
+                    EsterOvn esterOvn = om.readValue(jsonResponse, EsterOvn.class);
+                    data = new Data(esterOvn.value / 100., esterOvn.value / 100.);
+                    Offset offset = new Offset(1, OffsetType.DAYS);
+                    Node nodeOvn = new Node("Ovn",
+                            offset,
+                            DaycountBasis.ACT_360,
+                            Compounding.SIMPLE,
+                            CurveNodeType.MONEY_MARKET,
+                            data);
+                    rates.add(nodeOvn);
+                } catch (IOException ex) {
+                    LoggerMgr.logError(ex.getLocalizedMessage());
+                }
+            }
+        }
+
+    }
+
+    private void parseResponseYieldCurve(String idCurve) {
+        if (idCurve.equals("TERMSOFR")) {
+            parseResponseTermSofr();
+        } else if (idCurve.equals("TERMESTR")) {
+            parseResponseTermEster();
+        }
+    }
+
+    private double parseQuote(String quote) throws ParseException {
+        if (quote.contains("'")) {
+            // Logica specifica per i BOND (ZB, ZN, ZF)
+            String[] tokens = quote.split("'");
+            // Parte intera
+            double handle = Converter.toDouble(tokens[0], false);
+            // 32-esimi
+            double thirtySeconds = Converter.toDouble(tokens[1].replace("+", ""), false);
+            double fraction = quote.contains("+") ? (thirtySeconds / 32.0) + (0.5 / 32.0) : (thirtySeconds / 32.0);
+            return (handle + fraction);
+        } else {
+            // Logica per VALUTE (6E) o INDICI (ES)
+            return Converter.toDouble(quote, false);
+        }
+    }
+
+    private void parseResponseFuture() {
+
+    }
+
+    protected void parseResponse(Market market) {
+        switch (market) {
+            case OPTIONS ->
+                parseResponseOption(null);
+            case RATES ->
+                parseResponseYieldCurve(rpm.get(0));
+            case FUTURES ->
+                parseResponseFuture();
+            case CURRENCIES, BONDS, EQUITIES, COMMODITIES ->
+                throw new MarketDataProviderException("Market not supported!");
+        }
+    }
+
+    public void connect(String url, Market market) throws MalformedURLException, IOException {
+
+        try (Playwright playwright = Playwright.create(); // 1. Lancio del browser 
+                 Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
+                        .setHeadless(true) // browser invisibile
+                        .setArgs(Arrays.asList("--disable-blink-features=AutomationControlled", "--disable-http2")))) {
+
+            BrowserContext context = browser.newContext(new Browser.NewContextOptions()
+                    .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"));
+
+            Page page = context.newPage();
+
+            // Navigazione alla pagina "madre" (serve per ottenere i cookie di autorizzazione)
+            page.navigate(baseUrl, new Page.NavigateOptions().setWaitUntil(WaitUntilState.COMMIT));
+
+            // Chiamata all'url json completo
+            // Eseguiamo la fetch dell'URL specifico dall'interno del contesto autorizzato
+            response = (String) page.evaluate("async () => {"
+                    + "  const response = await fetch('" + url + "');"
+                    + "  return await response.text();"
+                    + "}");
+
+            parseResponse(market);
+        }
+    }
+
+    public List<Node> getTermSofrRates() {
+        try {
+            connect(sofrUrl, RATES);
+            return rates;
+        } catch (IOException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            throw new MarketDataProviderException(ex.getLocalizedMessage());
+        }
+    }
+
+    public List<Node> getFutureSofrRates() {
+        return null;
+    }
+
+    public List<Node> getTermEsterRates() {
+        try {
+            connect(esterUrl, RATES);
+            return rates;
+        } catch (IOException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            throw new MarketDataProviderException(ex.getLocalizedMessage());
+        }
+    }
+
+    public List<Node> getFutureEsterRates() {
+        return null;
+    }
+
+    public List<Node> getYieldCurveNodes(String curveId) {
+        if (rpm == null) {
+            rpm = new RequestParamManager();
+        }
+        
+        rates.clear();
+        rpm.clear();
+        
+        rpm.add(curveId);
+        return switch (curveId) {
+            case "TERMSOFR" ->
+                getTermSofrRates();
+            case "TERMESTR" ->
+                getTermEsterRates();
+            default ->
+                null;
+        };
+    }
+
+    public Node getMktQuote(String symbol, Market market) {
+        return getQuote(symbol, market);
+    }
+
+    private double parseStrike(String code) {
+        // Regex pattern: 
+        // "_"   -> finds the underscore
+        // ".*?" -> skips any characters/letters in between (like the 'C')
+        // "(\\d+)" -> captures the first sequence of numbers found after it
+        Pattern pattern = Pattern.compile("_.*?(\\d+)");
+        Matcher matcher = pattern.matcher(code);
+        // Check if the pattern matches anywhere in the string
+        if (matcher.find()) {
+            // matcher.group(1) extracts only the content inside the capturing group (the digits)
+            String numbersAsString = matcher.group(1);
+
+            // Convert the extracted text into an integer if you need to perform calculations
+            double numberAsDouble = Double.parseDouble(numbersAsString);
+            return numberAsDouble / 1000.;
+        } else {
+            return 0.;
+        }
+    }
+
+    private void parseResponseOption(String strikeCode) {
+    }
+
+    @Override
+    public List<org.softcaster.market_data.core.Node> getRates(String curveId) {
+        return getYieldCurveNodes(curveId);
+    }
+
+    @Override
+    public String getMarketDataServiceId() {
+        return "CmeGroup";
+    }
+
+    @Override
+    public List<org.softcaster.market_data.core.enums.Market> getMarkets() {
+        List<org.softcaster.market_data.core.enums.Market> markets = new ArrayList<>();
+        markets.add(org.softcaster.market_data.core.enums.Market.OPTIONS);
+        markets.add(org.softcaster.market_data.core.enums.Market.FUTURES);
+        markets.add(org.softcaster.market_data.core.enums.Market.RATES);
+        return markets;
+    }
+
+    @Override
+    public org.softcaster.market_data.core.Node getQuote(String ticker, org.softcaster.market_data.core.enums.Market market) {
+        return null;
+    }
+}

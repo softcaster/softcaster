@@ -4,7 +4,7 @@
  */
 package org.softcaster.market_data.core;
 
-import org.softcaster.provider.enums.Market;
+import org.softcaster.market_data.core.enums.Market;
 
 /**
  *

@@ -4,6 +4,8 @@
  */
 package MdmTest;
 
+import java.util.List;
+import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.MarketDataManagerFactory;
 import org.softcaster.market_data.core.Node;
@@ -26,30 +28,36 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan("org.softcaster.core.data")
 @EnableJpaRepositories("org.softcaster.core.data")
 public class MarketDataManagerTest implements CommandLineRunner {
-    
-    
+
     @Autowired
     MarketDataManagerFactory factory;
-    
+
     public static void main(String[] args) {
+        // Inizializzazione Logger
+        FileUtil.initializeLogger();
+
+        // Inizializzazione PythonPath da farsi prima di ogni utilizzo dell'interprete
+        FileUtil.initializePython();
+
         // Avvia l'applicazione tramite Spring Boot 
         SpringApplication.run(MarketDataManagerTest.class, args);
     }
-    
+
     @Override
     public void run(String... args) throws Exception {
         //testEurext();
         //testBorsaItaliana();
-        testTwelvedata();
-     }
+        //testTwelvedata();
+        testCmeGroup();
+    }
 
     private void testEurext() {
         RequestParamManager params = new RequestParamManager();
         params.add("FBTP");
         MarketDataManager mdm = factory.getInstance("Eurex", params);
-        if(mdm != null) {
+        if (mdm != null) {
             Node node = mdm.getQuote("DE000F2HLQE9", Market.FUTURES);
-            if(node != null) {
+            if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
             }
         }
@@ -57,9 +65,9 @@ public class MarketDataManagerTest implements CommandLineRunner {
 
     private void testBorsaItaliana() {
         MarketDataManager mdm = factory.getInstance("BorsaItaliana", null);
-        if(mdm != null) {
+        if (mdm != null) {
             Node node = mdm.getQuote("IT0001086567", Market.BONDS);
-            if(node != null) {
+            if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
             }
         }
@@ -67,18 +75,39 @@ public class MarketDataManagerTest implements CommandLineRunner {
 
     private void testTwelvedata() {
         MarketDataManager mdm = factory.getInstance("Twelvedata", null);
-        if(mdm != null) {
+        if (mdm != null) {
             Node node = mdm.getQuote("EURUSD", Market.CURRENCIES);
-            if(node != null) {
+            if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
             }
             node = mdm.getQuote("EURCHF", Market.CURRENCIES);
-            if(node != null) {
+            if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
             }
             node = mdm.getQuote("EURCAD", Market.CURRENCIES);
-            if(node != null) {
+            if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
+            }
+        }
+    }
+
+    private void testCmeGroup() {
+        MarketDataManager mdm = factory.getInstance("CmeGroup", null);
+        if (mdm != null) {
+            List<Node> nodes = mdm.getRates("TERMSOFR");
+            if (nodes != null && !nodes.isEmpty()) {
+                for (Node node : nodes) {
+                    System.out.println(node.symbol() + "\t" + node.data().bid());
+                }
+            }
+            
+            System.out.println();
+
+            nodes = mdm.getRates("TERMESTR");
+            if (nodes != null && !nodes.isEmpty()) {
+                for (Node node : nodes) {
+                    System.out.println(node.symbol() + "\t" + node.data().bid());
+                }
             }
         }
     }
