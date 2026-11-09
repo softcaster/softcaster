@@ -18,6 +18,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.*;
+import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.market_data.core.Data;
+import org.softcaster.market_data.core.Node;
 
 public class EurexApiClient {
 
@@ -52,6 +55,30 @@ public class EurexApiClient {
 
     public EurexApiClient(String product) {
         this.product = Objects.requireNonNull(product, "product");
+    }
+
+    public Node getFutureQuote(String ticker) {
+        try {
+            Node node = null;
+            List<ContractData> data = executeQueryIsinPrices();
+            if (data != null && !data.isEmpty()) {
+                for (ContractData d : data) {
+                    if (d.isin().equals(ticker)) {
+                        node = new Node(d.isin(),
+                                null,
+                                null, // DaycountBasis
+                                null, // Compounding
+                                null, // CurveNodeType
+                                new Data(d.price(), d.price()));
+                        break;
+                    }
+                }
+            }
+            return node;
+        } catch (Exception ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            return null;
+        }
     }
 
     public Map<Integer, List<DeliverableBond>> executeQueryDeliverables() throws Exception {

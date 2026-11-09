@@ -10,25 +10,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class MarketDataManagerFactory {
 
-    private final Map<String, MarketDataManager> managers;
+    private final Map<String, MarketDataManagerProvider> providers;
 
-    // Costruttore per la Dependency Injection
-    public MarketDataManagerFactory(Map<String, MarketDataManager> managers) {
-        this.managers = managers;
+    public MarketDataManagerFactory(
+            Map<String, MarketDataManagerProvider> providers) {
+        this.providers = providers;
     }
 
-    public MarketDataManager getInstance(String beanName) {
-        MarketDataManager manager = managers.get(beanName);
+    public MarketDataManager getInstance(String beanName, RequestParamManager params) {
 
-        if (manager == null) {
+        MarketDataManagerProvider provider = providers.get(beanName + "Provider");
+
+        if (provider == null) {
             throw new IllegalArgumentException(
-                    String.format("No MarketDataManager found with name '%s'. Available: %s",
-                            beanName, managers.keySet())
-            );
+                    "No MarketDataManager provider found: " + beanName);
         }
 
-        // Dal momento che l'istanza è un Singleton già configurato all'avvio, 
-        // l'rpm passato in questo metodo viene ignorato perché l'oggetto esiste già.
-        return manager;
+        return provider.create(params);
     }
 }

@@ -12,6 +12,4 @@ public interface MarketDataManager {
     List<Node> getRates(String curveId);
     String getMarketDataServiceId();
     List<Market> getMarkets();
-    void addParam(String param);
-    String getParam(int pos);
 }

@@ -6,6 +6,9 @@ package MdmTest;
 
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.MarketDataManagerFactory;
+import org.softcaster.market_data.core.Node;
+import org.softcaster.market_data.core.RequestParamManager;
+import org.softcaster.market_data.core.enums.Market;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -35,13 +38,48 @@ public class MarketDataManagerTest implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
-        testEurext();
+        //testEurext();
+        //testBorsaItaliana();
+        testTwelvedata();
      }
 
     private void testEurext() {
-        MarketDataManager mdm = factory.getInstance("EurexMDM");
+        RequestParamManager params = new RequestParamManager();
+        params.add("FBTP");
+        MarketDataManager mdm = factory.getInstance("Eurex", params);
         if(mdm != null) {
-            System.out.println(mdm.getMarketDataServiceId());
+            Node node = mdm.getQuote("DE000F2HLQE9", Market.FUTURES);
+            if(node != null) {
+                System.out.println(node.symbol() + "\t" + node.data().bid());
+            }
+        }
+    }
+
+    private void testBorsaItaliana() {
+        MarketDataManager mdm = factory.getInstance("BorsaItaliana", null);
+        if(mdm != null) {
+            Node node = mdm.getQuote("IT0001086567", Market.BONDS);
+            if(node != null) {
+                System.out.println(node.symbol() + "\t" + node.data().bid());
+            }
+        }
+    }
+
+    private void testTwelvedata() {
+        MarketDataManager mdm = factory.getInstance("Twelvedata", null);
+        if(mdm != null) {
+            Node node = mdm.getQuote("EURUSD", Market.CURRENCIES);
+            if(node != null) {
+                System.out.println(node.symbol() + "\t" + node.data().bid());
+            }
+            node = mdm.getQuote("EURCHF", Market.CURRENCIES);
+            if(node != null) {
+                System.out.println(node.symbol() + "\t" + node.data().bid());
+            }
+            node = mdm.getQuote("EURCAD", Market.CURRENCIES);
+            if(node != null) {
+                System.out.println(node.symbol() + "\t" + node.data().bid());
+            }
         }
     }
 }

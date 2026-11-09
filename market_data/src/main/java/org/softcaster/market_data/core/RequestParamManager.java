@@ -14,7 +14,7 @@ import java.util.List;
 public class RequestParamManager {
 
     private String beanName = null;
-    private List<String> requestParams = new ArrayList<>();
+    private final List<String> requestParams = new ArrayList<>();
 
     public void add(String param) {
         requestParams.add(param);

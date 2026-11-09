@@ -4,12 +4,12 @@
  */
 package org.softcaster.market_data.config;
 
-import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.engine.config.EngineAutoConfiguration;
-import org.softcaster.market_data.core.RequestParamManager;
-import org.softcaster.market_data.services.Eurext.EurexMDM;
+import org.softcaster.market_data.core.MarketDataManagerProvider;
+import org.softcaster.market_data.services.BorsaItaliana.BorsaItaliana;
+import org.softcaster.market_data.services.Eurext.Eurex;
+import org.softcaster.market_data.services.Twelvedata.Twelvedata;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,10 +19,21 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = "org.softcaster.market_data")
 public class MarketDataAutoConfiguration {
     
-    @Bean(name = "EurexMDM")
-    @ConditionalOnMissingBean // caso in cui qualche libreria volesse creare un proprio bean
-    public EurexMDM eurexMDM() {
-        RequestParamManager rpm = new RequestParamManager();
-        return new EurexMDM(rpm);
+    @Bean(name = "EurexProvider")
+    public MarketDataManagerProvider eurexProvider() {
+
+        return params -> new Eurex(params);
+    }
+
+    @Bean(name = "BorsaItalianaProvider")
+    public MarketDataManagerProvider borsaItalianaProvider() {
+
+        return params -> new BorsaItaliana(params);
+    }
+
+    @Bean(name = "TwelvedataProvider")
+    public MarketDataManagerProvider twelvedataProvider() {
+
+        return params -> new Twelvedata(params);
     }
 }
