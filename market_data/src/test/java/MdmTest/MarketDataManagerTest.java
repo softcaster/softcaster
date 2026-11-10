@@ -4,7 +4,13 @@
  */
 package MdmTest;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.MarketDataManagerFactory;
@@ -18,6 +24,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.jsoup.nodes.Element;
 
 @SpringBootApplication
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
@@ -48,7 +55,8 @@ public class MarketDataManagerTest implements CommandLineRunner {
         //testEurext();
         //testBorsaItaliana();
         //testTwelvedata();
-        testCmeGroup();
+        //testCmeGroup();
+        testMutuiIt();
     }
 
     private void testEurext() {
@@ -110,13 +118,21 @@ public class MarketDataManagerTest implements CommandLineRunner {
                     System.out.println(node.symbol() + "\t" + node.data().bid());
                 }
             }
-            */
+             */
             String tickerFx = "2674@M6EZ6";
             String tickerBd = "307@ZBZ6";
             Node node = mdm.getQuote(tickerBd, Market.FUTURES);
             if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
             }
+        }
+    }
+
+    private void testMutuiIt() throws IOException {
+
+        MarketDataManager mdm = factory.getInstance("MutuiIt", null);
+        if (mdm != null) {
+            List<Node> rates = mdm.getRates("");
         }
     }
 }

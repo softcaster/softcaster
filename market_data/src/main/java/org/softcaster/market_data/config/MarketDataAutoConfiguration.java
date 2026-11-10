@@ -8,6 +8,7 @@ import org.softcaster.engine.config.EngineAutoConfiguration;
 import org.softcaster.market_data.core.MarketDataManagerProvider;
 import org.softcaster.market_data.services.BorsaItaliana.BorsaItaliana;
 import org.softcaster.market_data.services.Eurext.Eurex;
+import org.softcaster.market_data.services.Twelvedata.MutuiIt.MutuiIt;
 import org.softcaster.market_data.services.Twelvedata.Twelvedata;
 import org.softcaster.market_data.services.cme.CmeGroup;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -42,5 +43,11 @@ public class MarketDataAutoConfiguration {
     public MarketDataManagerProvider cmeGroupProvider() {
 
         return params -> new CmeGroup(params);
+    }
+    
+    @Bean(name = "MutuiItProvider")
+    public MarketDataManagerProvider MutuiItProvider() {
+
+        return params -> new MutuiIt(params);
     }
 }
