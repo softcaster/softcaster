@@ -94,13 +94,14 @@ public class MarketDataManagerTest implements CommandLineRunner {
     private void testCmeGroup() {
         MarketDataManager mdm = factory.getInstance("CmeGroup", null);
         if (mdm != null) {
+            /*
             List<Node> nodes = mdm.getRates("TERMSOFR");
             if (nodes != null && !nodes.isEmpty()) {
                 for (Node node : nodes) {
                     System.out.println(node.symbol() + "\t" + node.data().bid());
                 }
             }
-            
+
             System.out.println();
 
             nodes = mdm.getRates("TERMESTR");
@@ -108,6 +109,13 @@ public class MarketDataManagerTest implements CommandLineRunner {
                 for (Node node : nodes) {
                     System.out.println(node.symbol() + "\t" + node.data().bid());
                 }
+            }
+            */
+            String tickerFx = "2674@M6EZ6";
+            String tickerBd = "307@ZBZ6";
+            Node node = mdm.getQuote(tickerBd, Market.FUTURES);
+            if (node != null) {
+                System.out.println(node.symbol() + "\t" + node.data().bid());
             }
         }
     }

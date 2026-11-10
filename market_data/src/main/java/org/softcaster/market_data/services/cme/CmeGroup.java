@@ -55,7 +55,9 @@ public class CmeGroup implements MarketDataManager {
     private final String v2Url = "https://www.cmegroup.com/CmeWS/mvc/quotes/v2/";
     private final String optAtmUrl = "https://www.cmegroup.com/CmeWS/mvc/atm/strike-prices/";
     private String response = null;
-    private List<Node> rates = new ArrayList<>();
+    private final List<Node> rates = new ArrayList<>();
+    private Node currentQuote = null;
+
     private RequestParamManager rpm = null;
 
     public CmeGroup(RequestParamManager params) {
@@ -224,6 +226,36 @@ public class CmeGroup implements MarketDataManager {
 
     private void parseResponseFuture() {
 
+        if (response != null && !response.isEmpty()) {
+
+            try {
+                ObjectMapper om = new ObjectMapper();
+                CmeResult root = om.readValue(response, CmeResult.class);
+                Data data = null;
+                currentQuote = null;
+                for (Quote quote : root.quotes) {
+                    try {
+                        if (quote.code.equals(rpm.get(0))) {
+                            // TBond future quotano come i TBond, in 32-esimi
+                            // il separatore e' l'apostrofo
+                            double value = parseQuote(quote.last);
+                            data = new Data(value, value);
+                            currentQuote = new Node(quote.code,
+                                    null,
+                                    null,//DaycountBasis.ACT_360,
+                                    null,//Compounding.SIMPLE,
+                                    null,//CurveNodeType.MONEY_MARKET,
+                                    data);
+                            break;
+                        }
+                    } catch (ParseException ex) {
+                        LoggerMgr.logError(ex.getLocalizedMessage());
+                    }
+                }
+            } catch (JsonProcessingException ex) {
+                LoggerMgr.logError(ex.getLocalizedMessage());
+            }
+        }
     }
 
     protected void parseResponse(Market market) {
@@ -297,10 +329,10 @@ public class CmeGroup implements MarketDataManager {
         if (rpm == null) {
             rpm = new RequestParamManager();
         }
-        
+
         rates.clear();
         rpm.clear();
-        
+
         rpm.add(curveId);
         return switch (curveId) {
             case "TERMSOFR" ->
@@ -360,6 +392,20 @@ public class CmeGroup implements MarketDataManager {
 
     @Override
     public org.softcaster.market_data.core.Node getQuote(String ticker, org.softcaster.market_data.core.enums.Market market) {
-        return null;
+        try {
+            if (rpm == null) {
+                rpm = new RequestParamManager();
+            }
+            rpm.clear();
+
+            String[] parsedSymbol = ticker.split("@");
+            rpm.add(parsedSymbol[1]);
+            connect(v2Url + parsedSymbol[0], market);
+
+            return currentQuote;
+        } catch (IOException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            throw new MarketDataProviderException(ex.getLocalizedMessage());
+        }
     }
 }
