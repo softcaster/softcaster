@@ -4,6 +4,8 @@
  */
 package org.softcaster.market_data.core;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
@@ -27,5 +29,13 @@ public class MarketDataManagerFactory {
         }
 
         return provider.create(params);
+    }
+
+    public List<String> gerProviders() {
+        return providers.keySet().stream()
+                // Il simbolo $ è un carattere speciale delle espressioni regolari (Regex) 
+                // che indica la fine esatta della stringa
+                .map(key -> key.replaceFirst("Provider$", ""))
+                .toList();
     }
 }

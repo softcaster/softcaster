@@ -6,7 +6,10 @@ package org.softcaster.market_data.config;
 
 import org.softcaster.engine.config.EngineAutoConfiguration;
 import org.softcaster.market_data.core.MarketDataManagerProvider;
+import org.softcaster.market_data.services.BlueGammaOis.BlueGammaOis;
 import org.softcaster.market_data.services.BorsaItaliana.BorsaItaliana;
+import org.softcaster.market_data.services.Cnbc.Cnbc;
+import org.softcaster.market_data.services.Ecb.Ecb;
 import org.softcaster.market_data.services.Eurext.Eurex;
 import org.softcaster.market_data.services.Twelvedata.MutuiIt.MutuiIt;
 import org.softcaster.market_data.services.Twelvedata.Twelvedata;
@@ -46,8 +49,26 @@ public class MarketDataAutoConfiguration {
     }
     
     @Bean(name = "MutuiItProvider")
-    public MarketDataManagerProvider MutuiItProvider() {
+    public MarketDataManagerProvider mutuiItProvider() {
 
         return params -> new MutuiIt(params);
+    }
+
+    @Bean(name = "EcbProvider")
+    public MarketDataManagerProvider ecbProvider() {
+
+        return params -> new Ecb(params);
+    }
+
+    @Bean(name = "BlueGammaOisProvider")
+    public MarketDataManagerProvider blueGammaOisProvider() {
+
+        return params -> new BlueGammaOis(params);
+    }
+
+    @Bean(name = "CnbcProvider")
+    public MarketDataManagerProvider cnbcProvider() {
+
+        return params -> new Cnbc(params);
     }
 }

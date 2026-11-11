@@ -62,4 +62,13 @@ public class ProviderHelper implements IProviderHelper {
         }
     }    
 
+    @Override
+    public String getUrl(String curveId) {
+        if (helper != null) {
+            return helper.getUrl(curveId);
+        } else {
+            return "";
+        }
+    }
+
 }

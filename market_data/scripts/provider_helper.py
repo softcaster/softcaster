@@ -62,6 +62,20 @@ class PyProviderHelper(IProviderHelper):
 
     def getDebugInfo(self):
         return "Debug is: " + sys.registry.getProperty("python.debug")
+
+    def getUrl(self, curveId):
+        if curveId=='USD_OIS':
+            return 'https://www.bluegamma.io/usd-swap-rates'
+        elif curveId=='EURIBOR_OIS':
+            return 'https://www.bluegamma.io/euribor-swap-rates'
+        elif curveId=='ESTR_OIS':
+            return 'https://www.bluegamma.io/swap-rates/estr-swap-rates'
+        elif curveId=='CHF_OIS':
+            return 'https://www.bluegamma.io/swap-rates/chf-swap-rates'
+        elif curveId=='CAD_OIS':
+            return 'https://www.bluegamma.io/swap-rates/cad-swap-rates'
+        else:
+            return None
         
        
 

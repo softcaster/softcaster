@@ -13,4 +13,5 @@ import org.softcaster.market_data.core.Node;
 public interface IProviderHelper {
     public List<Node>  getNodeList(String symbol);    
     public String  getDebugInfo();    
+    public String  getUrl(String curveId);    
 }

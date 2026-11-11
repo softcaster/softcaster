@@ -6,11 +6,6 @@ package MdmTest;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.MarketDataManagerFactory;
@@ -24,7 +19,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.jsoup.nodes.Element;
 
 @SpringBootApplication
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
@@ -56,7 +50,11 @@ public class MarketDataManagerTest implements CommandLineRunner {
         //testBorsaItaliana();
         //testTwelvedata();
         //testCmeGroup();
-        testMutuiIt();
+        //testMutuiIt();
+        //testEcb();
+        //testBlueGammaOis();
+        // providers();
+        testCnbc();
     }
 
     private void testEurext() {
@@ -135,4 +133,52 @@ public class MarketDataManagerTest implements CommandLineRunner {
             List<Node> rates = mdm.getRates("");
         }
     }
+
+    private void testEcb() {
+
+        MarketDataManager mdm = factory.getInstance("Ecb", null);
+        if (mdm != null) {
+            List<Node> rates = mdm.getRates("");
+            for (Node node : rates) {
+                System.out.println(node.offset().offsetType().getCode() + "\t" + node.offset().step() + "\t" + node.data().bid());
+            }
+        }
+    }
+
+    private void testBlueGammaOis() {
+        // estr-swap-rates, euribor-swap-rates, chf-swap-rates, usd-swap-rates, cad-swap-rates
+        MarketDataManager mdm = factory.getInstance("BlueGammaOis", null);
+        if (mdm != null) {
+            List<Node> rates = mdm.getRates("EURIBOR_OIS");
+            if (rates != null && !rates.isEmpty()) {
+                for (Node node : rates) {
+                    System.out.println(node.offset().offsetType().getCode() + "\t" + node.offset().step() + "\t" + node.data().bid());
+                }
+            }
+        }
+    }
+
+    private void testCnbc() {
+        MarketDataManager mdm = factory.getInstance("Cnbc", null);
+        if (mdm != null) {
+            Node exchRate = mdm.getQuote("EURCHF", Market.CURRENCIES);
+            System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
+            
+            exchRate = mdm.getQuote("EURCAD", Market.CURRENCIES);
+            System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
+
+            exchRate = mdm.getQuote("EURUSD", Market.CURRENCIES);
+            System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
+        }
+    }
+    
+    private void providers() {
+        List<String> providers = factory.gerProviders();
+        if(providers != null && !providers.isEmpty()) {
+            for(String provider: providers) {
+                System.out.println(provider);
+            }
+        }
+    }
+
 }

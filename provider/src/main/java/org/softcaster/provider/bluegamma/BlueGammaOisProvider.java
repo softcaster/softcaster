@@ -31,7 +31,7 @@ import org.softcaster.provider.enums.OffsetType;
  */
 public class BlueGammaOisProvider extends AbstractProvider {
 
-    private static final String URL = "https://www.bluegamma.io/swap-rates/estr-swap-rates";
+    private static final String URL = "https://www.bluegamma.io/swap-rates/cad-swap-rates";
 
     // L'intera tabella e' l'unico <tbody> della pagina.
     private static final Pattern TBODY = Pattern.compile("<tbody>(.*?)</tbody>", Pattern.DOTALL);
@@ -79,7 +79,7 @@ public class BlueGammaOisProvider extends AbstractProvider {
     }
 
     @Override
-    public List<Node> getYieldCurveNodes(String idCurve) {
+        public List<Node> getYieldCurveNodes(String idCurve) {
         try {
             List<RateQuote> blueGammaQuotes = fetch();
             if (blueGammaQuotes == null || blueGammaQuotes.isEmpty()) {
