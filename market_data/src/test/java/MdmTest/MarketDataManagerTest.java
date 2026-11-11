@@ -169,6 +169,9 @@ public class MarketDataManagerTest implements CommandLineRunner {
 
             exchRate = mdm.getQuote("EURUSD", Market.CURRENCIES);
             System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
+
+            exchRate = mdm.getQuote("IT5Y", Market.BONDS);
+            System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
         }
     }
     

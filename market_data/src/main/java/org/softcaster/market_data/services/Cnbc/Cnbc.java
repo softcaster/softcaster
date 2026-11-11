@@ -14,6 +14,7 @@ import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
+import static org.softcaster.market_data.core.enums.Market.CURRENCIES;
 
 public class Cnbc implements MarketDataManager {
 
@@ -23,27 +24,47 @@ public class Cnbc implements MarketDataManager {
         client = new CnbcApiClient();
     }
 
-    @Override
-    public Node getQuote(String ticker, Market market) {
-        if (market == Market.CURRENCIES) {
-            try {
-                ticker = ticker.replace("USD", "");
-                String symbol = ticker + "%3D"/*"%3D%7C"*/;
-                double rate = client.getRate(symbol);
-                return new Node(ticker,
-                        null,
-                        null, // DaycountBasis
-                        null, // Compounding
-                        null, // CurveNodeType
-                        new Data(rate, rate));
+    private Node getCurrencyQuote(String ticker) {
+        try {
+            ticker = ticker.replace("USD", "");
+            String symbol = ticker + "%3D"/*"%3D%7C"*/;
+            double rate = client.getRate(symbol);
+            return new Node(ticker,
+                    null,
+                    null, // DaycountBasis
+                    null, // Compounding
+                    null, // CurveNodeType
+                    new Data(rate, rate));
 
-            } catch (IOException | InterruptedException | ParseException ex) {
-                LoggerMgr.logError(ex.getLocalizedMessage());
-                return null;
-            }
-        } else {
+        } catch (IOException | InterruptedException | ParseException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
             return null;
         }
+    }
+
+    private Node getBondQuote(String ticker) {
+        try {
+            double rate = client.getRate(ticker);
+            return new Node(ticker,
+                    null,
+                    null, // DaycountBasis
+                    null, // Compounding
+                    null, // CurveNodeType
+                    new Data(rate, rate));
+
+        } catch (IOException | InterruptedException | ParseException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            return null;
+        }
+    }
+    
+    @Override
+    public Node getQuote(String ticker, Market market) {
+        return switch (market) {
+            case CURRENCIES -> getCurrencyQuote(ticker);
+            case BONDS -> getBondQuote(ticker);
+            default -> null;
+        };
     }
 
     @Override

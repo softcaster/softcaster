@@ -11,7 +11,7 @@ import org.softcaster.market_data.services.BorsaItaliana.BorsaItaliana;
 import org.softcaster.market_data.services.Cnbc.Cnbc;
 import org.softcaster.market_data.services.Ecb.Ecb;
 import org.softcaster.market_data.services.Eurext.Eurex;
-import org.softcaster.market_data.services.Twelvedata.MutuiIt.MutuiIt;
+import org.softcaster.market_data.services.MutuiIt.MutuiIt;
 import org.softcaster.market_data.services.Twelvedata.Twelvedata;
 import org.softcaster.market_data.services.cme.CmeGroup;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
