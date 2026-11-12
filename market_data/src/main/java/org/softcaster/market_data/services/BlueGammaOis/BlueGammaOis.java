@@ -25,7 +25,6 @@ import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.market_data.core.Data;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
 import org.softcaster.market_data.core.interpreter.ProviderHelper;
 
@@ -49,7 +48,7 @@ public class BlueGammaOis implements MarketDataManager {
     // Prima percentuale dopo il link del tenor = colonna "Yesterday" (la "Live" e' oscurata, non ha %).
     private static final Pattern FIRST_PERCENT = Pattern.compile(">(-?\\d+(?:[.,]\\d+)?)%<");
 
-    public BlueGammaOis(RequestParamManager rpm) {
+    public BlueGammaOis() {
     }
 
     @Override

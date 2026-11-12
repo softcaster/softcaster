@@ -22,14 +22,13 @@ import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.market_data.core.Data;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
 
 public class Csv implements MarketDataManager {
 
     public static final String IMPORT_PATH = System.getProperty("user.dir") + "/csv/";
 
-    public Csv(RequestParamManager rpm) {
+    public Csv() {
     }
 
     @Override

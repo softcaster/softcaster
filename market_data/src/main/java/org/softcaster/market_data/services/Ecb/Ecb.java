@@ -18,7 +18,6 @@ import org.softcaster.engine.enums.OffsetType;
 import org.softcaster.market_data.core.Data;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
 
 public class Ecb implements MarketDataManager {
@@ -26,7 +25,7 @@ public class Ecb implements MarketDataManager {
     private EcbYieldClient client = null;
     private final List<Node> rates = new ArrayList<>();
 
-    public Ecb(RequestParamManager rpm) {
+    public Ecb() {
         client = new EcbYieldClient();
     }
 

@@ -47,10 +47,10 @@ public class MarketDataManagerTest implements CommandLineRunner {
         // testEurext();
         // testBorsaItaliana();
         // testTwelvedata();
-        // testCmeGroup();
+        testCmeGroup();
         // testMutuiIt();
         // testEcb();
-        testBlueGammaOis();
+        // testBlueGammaOis();
         // providers();
         // testCnbc();
         // testCsv();
@@ -99,7 +99,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
     private void testCmeGroup() {
         MarketDataManager mdm = factory.getInstance("CmeGroup", null);
         if (mdm != null) {
-            /*
+            
             List<Node> nodes = mdm.getRates("TERMSOFR");
             if (nodes != null && !nodes.isEmpty()) {
                 for (Node node : nodes) {
@@ -115,7 +115,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
                     System.out.println(node.symbol() + "\t" + node.data().bid());
                 }
             }
-             */
+            
             String tickerFx = "2674@M6EZ6";
             String tickerBd = "307@ZBZ6";
             Node node = mdm.getQuote(tickerBd, Market.FUTURES);

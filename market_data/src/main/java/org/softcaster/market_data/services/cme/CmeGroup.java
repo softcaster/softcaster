@@ -33,16 +33,10 @@ import org.softcaster.market_data.core.Data;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.MarketDataProviderException;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
 import static org.softcaster.market_data.core.enums.Market.RATES;
 import org.softcaster.market_data.core.interpreter.ProviderHelper;
 
-//import org.softcaster.marketdataprovider.interpreter.ProviderHelper;
-/**
- *
- * @author ep
- */
 /*
 https://www.cmegroup.com/services/sofr-strip-rates/ 
 https://www.cmegroup.com/services/term-estr/
@@ -57,11 +51,9 @@ public class CmeGroup implements MarketDataManager {
     private String response = null;
     private final List<Node> rates = new ArrayList<>();
     private Node currentQuote = null;
+    private List<String> rpm = null;
 
-    private RequestParamManager rpm = null;
-
-    public CmeGroup(RequestParamManager params) {
-        rpm = params;
+    public CmeGroup() {
     }
 
     private void parseResponseTermSofr() {
@@ -326,10 +318,10 @@ public class CmeGroup implements MarketDataManager {
     }
 
     public List<Node> getYieldCurveNodes(String curveId) {
-        if (rpm == null) {
-            rpm = new RequestParamManager();
-        }
 
+        if (rpm == null) {
+            rpm = new ArrayList<>();
+        }
         rates.clear();
         rpm.clear();
 
@@ -391,10 +383,11 @@ public class CmeGroup implements MarketDataManager {
     }
 
     @Override
-    public org.softcaster.market_data.core.Node getQuote(String ticker, org.softcaster.market_data.core.enums.Market market) {
+    public Node getQuote(String ticker, Market market) {
         try {
+            
             if (rpm == null) {
-                rpm = new RequestParamManager();
+                rpm = new ArrayList<>();
             }
             rpm.clear();
 

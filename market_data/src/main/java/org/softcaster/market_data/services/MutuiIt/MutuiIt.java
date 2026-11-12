@@ -19,7 +19,6 @@ import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
 
 record Result(String symbol, double value) {
@@ -28,7 +27,7 @@ record Result(String symbol, double value) {
 
 public class MutuiIt implements MarketDataManager {
 
-    public MutuiIt(RequestParamManager rpm) {
+    public MutuiIt() {
     }
 
     @Override

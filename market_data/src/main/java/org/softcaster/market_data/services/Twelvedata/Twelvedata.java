@@ -8,14 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
 
 public class Twelvedata implements MarketDataManager {
 
     private TwelvedataApiClient client = null;
 
-    public Twelvedata(RequestParamManager rpm) {
+    public Twelvedata() {
         client = new TwelvedataApiClient();
     }
 

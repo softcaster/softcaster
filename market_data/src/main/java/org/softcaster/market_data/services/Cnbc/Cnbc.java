@@ -12,7 +12,6 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.market_data.core.Data;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
 import static org.softcaster.market_data.core.enums.Market.CURRENCIES;
 
@@ -20,7 +19,7 @@ public class Cnbc implements MarketDataManager {
 
     private final CnbcApiClient client;
 
-    public Cnbc(RequestParamManager rpm) {
+    public Cnbc() {
         client = new CnbcApiClient();
     }
 

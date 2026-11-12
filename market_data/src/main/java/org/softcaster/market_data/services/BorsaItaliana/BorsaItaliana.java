@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
 import static org.softcaster.market_data.core.enums.Market.BONDS;
 
@@ -20,7 +19,7 @@ public class BorsaItaliana implements MarketDataManager {
 
     private BorsaItalianaApiClient client = null;
 
-    public BorsaItaliana(RequestParamManager params) {
+    public BorsaItaliana() {
         client = new BorsaItalianaApiClient();
     }
 

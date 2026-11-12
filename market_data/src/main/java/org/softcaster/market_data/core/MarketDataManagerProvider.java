@@ -6,5 +6,6 @@ package org.softcaster.market_data.core;
 
 public interface MarketDataManagerProvider {
 
-    MarketDataManager create(RequestParamManager params);
+    // MarketDataManager create(RequestParamManager params);
+    MarketDataManager create();
 }

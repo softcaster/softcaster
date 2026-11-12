@@ -9,16 +9,13 @@ import java.util.List;
 import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.enums.Market;
 import org.softcaster.market_data.core.MarketDataManager;
-import org.softcaster.market_data.core.RequestParamManager;
 
 public class Eurex implements MarketDataManager {
 
-    private RequestParamManager rpm = null;
     private EurexApiClient client = null;
 
-    public Eurex(RequestParamManager rpm) {
-        this.rpm = rpm;
-        client = new EurexApiClient(this.rpm.get(0));
+    public Eurex() {
+        client = new EurexApiClient(""/*this.rpm.get(0)*/);
     }
 
     @Override

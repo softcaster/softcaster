@@ -36,54 +36,54 @@ public class MarketDataAutoConfiguration {
     @Bean(name = "EurexProvider")
     public MarketDataManagerProvider eurexProvider() {
 
-        return params -> new Eurex(params);
+        return () -> new Eurex();
     }
 
     @Bean(name = "BorsaItalianaProvider")
     public MarketDataManagerProvider borsaItalianaProvider() {
 
-        return params -> new BorsaItaliana(params);
+        return () -> new BorsaItaliana();
     }
 
     @Bean(name = "TwelvedataProvider")
     public MarketDataManagerProvider twelvedataProvider() {
 
-        return params -> new Twelvedata(params);
+        return () -> new Twelvedata();
     }
     
     @Bean(name = "CmeGroupProvider")
     public MarketDataManagerProvider cmeGroupProvider() {
 
-        return params -> new CmeGroup(params);
+        return () -> new CmeGroup();
     }
     
     @Bean(name = "MutuiItProvider")
     public MarketDataManagerProvider mutuiItProvider() {
 
-        return params -> new MutuiIt(params);
+        return () -> new MutuiIt();
     }
 
     @Bean(name = "EcbProvider")
     public MarketDataManagerProvider ecbProvider() {
 
-        return params -> new Ecb(params);
+        return () -> new Ecb();
     }
 
     @Bean(name = "BlueGammaOisProvider")
     public MarketDataManagerProvider blueGammaOisProvider() {
 
-        return params -> new BlueGammaOis(params);
+        return () -> new BlueGammaOis();
     }
 
     @Bean(name = "CnbcProvider")
     public MarketDataManagerProvider cnbcProvider() {
 
-        return params -> new Cnbc(params);
+        return () -> new Cnbc();
     }
 
     @Bean(name = "CsvProvider")
     public MarketDataManagerProvider csvProvider() {
 
-        return params -> new Csv(params);
+        return () -> new Csv();
     }
 }

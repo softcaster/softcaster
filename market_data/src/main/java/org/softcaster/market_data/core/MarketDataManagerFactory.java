@@ -27,7 +27,7 @@ public class MarketDataManagerFactory {
                     "No MarketDataManager provider found: " + beanName);
         }
 
-        return provider.create(params);
+        return provider.create();
     }
 
     public List<String> gerProviders() {
