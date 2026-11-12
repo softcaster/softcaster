@@ -31,7 +31,7 @@ import org.softcaster.engine.enums.EodStatus;
 import org.softcaster.engine.enums.EodStep;
 import org.softcaster.easy_pricer_mtm.services.EodMtmService;
 import org.softcaster.easy_pricer_mtm.services.MtmService;
-import org.softcaster.provider.enums.RequestType;
+import org.softcaster.engine.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

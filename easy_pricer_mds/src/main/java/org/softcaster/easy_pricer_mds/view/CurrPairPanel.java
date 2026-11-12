@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_mds.view;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.swing.JDialog;
 import javax.swing.SwingWorker;
@@ -20,10 +21,9 @@ import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
 import org.softcaster.easy_pricer_mds.dialog.CurrPairIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.CurrPairTableModel;
-import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.market_data.core.MarketDataProviderService;
+import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.TokenItem;
-import org.softcaster.provider.enums.Market;
-import org.softcaster.provider.enums.RequestType;
 
 /**
  *
@@ -289,19 +289,19 @@ public class CurrPairPanel extends FndtAbstactPanel {
         for (CurrencyPairBean bean : forexBeanList) {
             tokens.add(new TokenItem(bean.getInstrumentQuote().getCode(), bean.getInstrumentQuote().getProvider()));
         }
-        MarketDataService mds = mDSFacade.getMarketDataService();
-        mds.updateSpotPrice(tokens, Market.CURRENCIES);
 
-        // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> pairs = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FSP");
-        if (pairs.isEmpty()) {
-            return;
-        }
+        // Ricava i prezzi da provider
+        MarketDataProviderService providerService = mDSFacade.getProviderService();
+        Map<String, Node> nodes = providerService.getSpotPrices(tokens, org.softcaster.market_data.core.enums.Market.CURRENCIES);
 
         // Aggiorno dati in memoria
+        Node node = null;
         for (CurrencyPairBean bean : forexBeanList) {
-            bean.setBid(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.BID));
-            bean.setAsk(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.ASK));
+            node = nodes.get(bean.getInstrumentQuote().getCode());
+            if (node != null) {
+                bean.setAsk(node.data().ask());
+                bean.setBid(node.data().bid());
+            }
         }
 
         model.setData(forexBeanList);

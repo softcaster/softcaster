@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_mds.view;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.swing.JDialog;
 import javax.swing.SwingWorker;
@@ -21,6 +22,8 @@ import org.softcaster.easy_pricer_mds.bean.BondFutBean;
 import org.softcaster.easy_pricer_mds.dialog.BondFutIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.BondFutTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.market_data.core.MarketDataProviderService;
+import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.TokenItem;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
@@ -245,19 +248,19 @@ public class BondFutPanel extends FndtAbstactPanel {
             token = new TokenItem(bean.getInstrumentQuote().getCode(), bean.getInstrumentQuote().getProvider());
             tokens.add(token);
         }
-        MarketDataService mds = mDSFacade.getMarketDataService();
-        mds.updateSpotPrice(tokens, Market.FUTURES);
 
-        // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> pairs = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FSP");
-        if (pairs.isEmpty()) {
-            return;
-        }
+        // Ricava i prezzi da provider
+        MarketDataProviderService providerService = mDSFacade.getProviderService();
+        Map<String, Node> nodes = providerService.getSpotPrices(tokens, org.softcaster.market_data.core.enums.Market.FUTURES);
 
         // Aggiorno dati in memoria
+        Node node = null;
         for (BondFutBean bean : bondFutBeanList) {
-            bean.setBid(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.BID));
-            bean.setAsk(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.ASK));
+            node = nodes.get(bean.getInstrumentQuote().getCode());
+            if (node != null) {
+                bean.setBid(node.data().ask());
+                bean.setAsk(node.data().ask());
+            }
         }
 
         model.setData(bondFutBeanList);

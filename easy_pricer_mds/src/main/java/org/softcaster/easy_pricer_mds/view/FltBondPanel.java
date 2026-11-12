@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_mds.view;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -23,9 +24,9 @@ import org.softcaster.easy_pricer_mds.dialog.BondPricerDlg;
 import org.softcaster.easy_pricer_mds.dialog.FltBondIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.FltBondTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.market_data.core.MarketDataProviderService;
+import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.TokenItem;
-import org.softcaster.provider.enums.Market;
-import org.softcaster.provider.enums.RequestType;
 
 /**
  *
@@ -323,13 +324,20 @@ public class FltBondPanel extends FndtAbstactPanel {
             }
         }
 
-        mds.updateSpotPrice(tokens, Market.BONDS);
+        // Ricava i prezzi da provider
+        MarketDataProviderService providerService = mDSFacade.getProviderService();
+        Map<String, Node> nodes = providerService.getSpotPrices(tokens, org.softcaster.market_data.core.enums.Market.BONDS);
 
+        // Aggiorna lista bonds
+        Node node = null;
         for (int i = 0; i < model.getRowCount(); i++) {
             bondBean = (FltBondBean) model.getElementAt(i);
             if (bondBean != null) {
-                bondBean.setAsk(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.ASK));
-                bondBean.setBid(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.BID));
+                node = nodes.get(bondBean.getInstrumentQuote().getCode());
+                if (node != null) {
+                    bondBean.setAsk(node.data().ask());
+                    bondBean.setBid(node.data().bid());
+                }
             }
         }
 

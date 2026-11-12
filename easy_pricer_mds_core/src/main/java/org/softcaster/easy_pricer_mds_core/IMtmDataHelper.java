@@ -5,7 +5,7 @@
 package org.softcaster.easy_pricer_mds_core;
 
 import java.time.LocalDate;
-import org.softcaster.provider.enums.RequestType;
+import org.softcaster.engine.enums.RequestType;
 
 /**
  *

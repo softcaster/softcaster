@@ -24,7 +24,7 @@ import org.softcaster.engine.curve.SpreadProfile;
 import org.softcaster.engine.curve.SpreadedCurve;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.enums.OffsetType;
-import org.softcaster.provider.enums.RequestType;
+import org.softcaster.engine.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

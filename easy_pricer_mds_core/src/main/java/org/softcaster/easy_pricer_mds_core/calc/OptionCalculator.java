@@ -36,7 +36,7 @@ import org.softcaster.engine.dto.XRBForwardInput;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.ExerciseStyle;
 import org.softcaster.engine.enums.PremiumStyle;
-import org.softcaster.provider.enums.RequestType;
+import org.softcaster.engine.enums.RequestType;
 
 /**
  * Valutazione delle opzioni in anagrafica: costruisce l'input del pricer

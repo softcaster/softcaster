@@ -18,7 +18,7 @@ import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.easy_pricer_mtm.exceptions.MtmException;
 import org.softcaster.engine.dto.OptionInput;
 import org.softcaster.engine.enums.OptionType;
-import org.softcaster.provider.enums.RequestType;
+import org.softcaster.engine.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

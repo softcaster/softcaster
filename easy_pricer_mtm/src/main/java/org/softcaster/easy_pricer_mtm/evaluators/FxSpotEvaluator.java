@@ -4,16 +4,13 @@
  */
 package org.softcaster.easy_pricer_mtm.evaluators;
 
-import java.time.LocalDate;
-import java.util.List;
-import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.InstrumentValuation;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
-import org.softcaster.provider.enums.RequestType;
+import org.softcaster.engine.enums.RequestType;
 import org.springframework.stereotype.Component;
 
 @Component("FSP")

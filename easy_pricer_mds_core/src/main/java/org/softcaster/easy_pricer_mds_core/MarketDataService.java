@@ -23,11 +23,8 @@ import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.curve.MarketQuote;
 import org.softcaster.provider.bricks.IMarketDataProvider;
-import org.softcaster.provider.bricks.Node;
-import org.softcaster.provider.enums.Market;
-import org.softcaster.provider.enums.RequestType;
 import org.softcaster.engine.curve.YieldCurve;
-import org.softcaster.market_data.core.TokenItem;
+import org.softcaster.engine.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
@@ -205,16 +202,6 @@ public class MarketDataService {
         spotPrices.put(ticker, new SpotPrice(ticker, bid, ask, middle));
     }
 
-    private void addSpotPrice(String token, String strProvider, Market market) {
-        IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
-        if (provider != null) {
-            Node node = provider.getMktQuote(token, market);
-            double bid = node.getData().bid();
-            double ask = node.getData().ask();
-            updatePrice(token, bid, ask, (bid + ask) / 2.);
-        }
-    }
-
     // Recupera il prezzo per il Risk Engine
     private SpotPrice getSpot(String ticker) {
         SpotPrice sp = spotPrices.get(ticker);
@@ -252,31 +239,6 @@ public class MarketDataService {
             price = 0;
         }
         return price;
-    }
-
-    //
-    // Aggiornamento Prezzi Spot
-    //
-    public void updateSpotPrice(List<TokenItem> tokens, Market market) {
-        for (TokenItem token : tokens) {
-            addSpotPrice(token.symbol(), token.provider(), market);
-        }
-    }
-
-    public void updateSpotPrice(Map<String, List<String>> tokenList, Market market) {
-        try {
-            for (Map.Entry<String, List<String>> entry : tokenList.entrySet()) {
-                String provider = entry.getKey();
-                List<String> tokens = entry.getValue();
-
-                for (String token : tokens) {
-                    addSpotPrice(token, provider, market);
-                }
-            }
-        } catch (Exception ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
-            throw ex;
-        }
     }
 
     public void loadSpotPrice() {

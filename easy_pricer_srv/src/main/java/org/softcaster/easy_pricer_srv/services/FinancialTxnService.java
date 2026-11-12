@@ -33,11 +33,11 @@ import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_srv.exceptions.FinancialTxnException;
 import org.softcaster.engine.enums.AccountingPhase;
+import org.softcaster.engine.enums.RequestType;
 import org.softcaster.engine.enums.SbcStatus;
 import org.softcaster.engine.enums.TxnOrigin;
 import org.softcaster.engine.enums.TxnSide;
 import org.softcaster.engine.enums.TxnStatus;
-import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 @Service

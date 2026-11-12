@@ -6,9 +6,7 @@ package mds.core.test;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.core.data.CmdFutureMasterDataDAO;
 import org.softcaster.core.data.CurrencyDAO;
@@ -24,9 +22,7 @@ import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
-import org.softcaster.easy_pricer_mds_core.dto.PricingResponse;
 import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
-import org.softcaster.engine.cashflow.AmortizedCostPeriod;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
@@ -36,11 +32,9 @@ import org.softcaster.engine.dto.XRBInput;
 import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
-import org.softcaster.market_data.core.TokenItem;
+import org.softcaster.engine.enums.RequestType;
 import org.softcaster.provider.bricks.Node;
 import org.softcaster.provider.ecb.ECBProvider;
-import org.softcaster.provider.enums.Market;
-import org.softcaster.provider.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -140,14 +134,6 @@ public class TestMarketDataService {
         XRBInput input = bondCalculator.getXRBInput("IT0005491250", marketDataService.getOfficialDate(), 100.92);
         XRBResult result = bondCalculator.fixedIncomeValuation(input);
         System.out.println(result.analytics().yield());
-    }
-
-    private void testUpdateBondPrice() {
-        Map<String, List<String>> tokenList = new HashMap<>();
-        tokenList.computeIfAbsent("EuroNextProvider", k -> new ArrayList<>()).add("IT0001086567");
-        List<TokenItem> tokens = new ArrayList<>();
-        tokens.add(new TokenItem("EuroNextProvider", "IT0001086567"));
-        marketDataService.updateSpotPrice(tokens, Market.BONDS);
     }
 
     private void testSpotPrice() {

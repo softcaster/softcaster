@@ -14,7 +14,7 @@ import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mtm.context.ValuationContext;
 import org.softcaster.easy_pricer_mtm.exceptions.MtmException;
-import org.softcaster.provider.enums.RequestType;
+import org.softcaster.engine.enums.RequestType;
 import org.springframework.stereotype.Component;
 
 @Component("CFU")

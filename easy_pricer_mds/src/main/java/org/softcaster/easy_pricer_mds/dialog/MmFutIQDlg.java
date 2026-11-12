@@ -15,6 +15,7 @@ import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.MmFutureMasterData;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.MmFutBean;
+import org.softcaster.market_data.core.MarketDataProviderService;
 
 /**
  *
@@ -184,8 +185,6 @@ public class MmFutIQDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         detailPanel.add(jLabel5, gridBagConstraints);
-
-        cbProvider.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CmeGroupProvider", "EuroNextProvider", "InvestingComProvider" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -331,6 +330,7 @@ public class MmFutIQDlg extends javax.swing.JDialog {
 
     private void postInit() {
         setUpCurrencyPairsCombo();
+        setUpProviderCombo();
 
         if (bean != null) {
             isInsert = false;
@@ -346,11 +346,11 @@ public class MmFutIQDlg extends javax.swing.JDialog {
 
         // Aggiungo i campi alla lista di validazione
         fieldsToValidate = Arrays.asList(txtCode, txtBid, txtAsk);
-        
+
         // Aggiusto i campi
         txtCode.setColumns(10);
         txtBid.setColumns(10);
-        txtAsk.setColumns(10);        
+        txtAsk.setColumns(10);
     }
 
     private void setUpCurrencyPairsCombo() {
@@ -362,6 +362,13 @@ public class MmFutIQDlg extends javax.swing.JDialog {
 
     }
 
+    private void setUpProviderCombo() {
+        MarketDataProviderService providerService = mDSFacade.getProviderService();
+        List<String> providers = providerService.getProviders(org.softcaster.market_data.core.enums.Market.FUTURES);
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(providers.toArray(String[]::new));
+        cbProvider.setModel(model);
+    }
+    
     private boolean validateFields() {
         return DialogHelper.validateFields(fieldsToValidate);
     }

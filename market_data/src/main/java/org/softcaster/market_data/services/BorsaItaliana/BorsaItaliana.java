@@ -25,7 +25,7 @@ public class BorsaItaliana implements MarketDataManager {
 
     @Override
     public Node getQuote(String ticker, Market market) {
-        return client.getQuote(ticker, BONDS);
+        return client.getQuote(ticker, market);
     }
 
     @Override

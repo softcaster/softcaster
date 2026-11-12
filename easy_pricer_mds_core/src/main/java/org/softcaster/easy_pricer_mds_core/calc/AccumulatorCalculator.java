@@ -24,7 +24,7 @@ import org.softcaster.engine.dto.AccumulatorInput;
 import org.softcaster.engine.dto.AccumulatorPendingSettlement;
 import org.softcaster.engine.dto.AccumulatorResult;
 import org.softcaster.engine.enums.CurveRole;
-import org.softcaster.provider.enums.RequestType;
+import org.softcaster.engine.enums.RequestType;
 
 /**
  * Valutazione degli accumulator / decumulator: traduce contratto, calendario
@@ -112,12 +112,15 @@ public class AccumulatorCalculator {
     /**
      * Input del pricer per un contratto (salvato o solo simulato).
      *
+     * @param amd
+     * @param valuationDate
      * @param spot             prezzo del sottostante; null o <= 0 = quotazione mid
      * @param volatility       volatilita' piatta annua in decimale; null o <= 0 =
      *                         superficie del sottostante
      * @param domesticCurveCode curva di sconto (valuta di regolamento); vuota = default
      * @param foreignCurveCode solo FXA: curva della valuta base; vuota = default
      * @param paths            sentieri Monte Carlo; null = default
+     * @return 
      */
     public AccumulatorInput getAccumulatorInput(AccumulatorMasterData amd, LocalDate valuationDate, Double spot,
                                                 Double volatility, String domesticCurveCode, String foreignCurveCode,
@@ -201,6 +204,14 @@ public class AccumulatorCalculator {
 
     /**
      * Valuta il contratto e prepara la risposta REST.
+     * @param amd
+     * @param valuationDate
+     * @param spot
+     * @param volatility
+     * @param domesticCurveCode
+     * @param foreignCurveCode
+     * @param paths
+     * @return 
      */
     public AccumulatorPricingResponse accumulatorValuation(AccumulatorMasterData amd, LocalDate valuationDate,
                                                            Double spot, Double volatility, String domesticCurveCode,

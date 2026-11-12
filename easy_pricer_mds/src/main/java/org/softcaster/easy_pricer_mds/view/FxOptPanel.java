@@ -22,10 +22,7 @@ import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.FxOptBean;
 import org.softcaster.easy_pricer_mds.dialog.FxOptIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.OptFxFutTableModel;
-import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.market_data.core.TokenItem;
-import org.softcaster.provider.enums.Market;
-import org.softcaster.provider.enums.RequestType;
 
 /**
  *
@@ -289,21 +286,13 @@ public class FxOptPanel extends FndtAbstactPanel {
         for (FxOptBean bean : fxOptBeanList) {
             tokens.add(new TokenItem(bean.getInstrumentQuote().getCode(), bean.getInstrumentQuote().getProvider()));
         }
-        MarketDataService mds = mDSFacade.getMarketDataService();
-        mds.updateSpotPrice(tokens, Market.OPTIONS);
-
-        // Leggo lista pairs anagrafiche
-        List<InstrumentQuote> options = mDSFacade.getInstrumentQuoteDAO().findByAssetClass("FFO");
-        if (options.isEmpty()) {
-            return;
-        }
-
+/*
         // Aggiorno dati in memoria
         for (FxOptBean bean : fxOptBeanList) {
             bean.setBid(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.BID));
             bean.setAsk(mds.getSpotPrice(bean.getInstrumentQuote().getCode(), RequestType.ASK));
         }
-
+*/
         model.setData(fxOptBeanList);
     }
 }
