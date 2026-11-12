@@ -13,6 +13,7 @@ import org.softcaster.core.data.YieldCurveEntity;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;
 import org.softcaster.engine.enums.Compounding;
+import org.softcaster.market_data.core.MarketDataProviderService;
 
 /**
  *
@@ -160,8 +161,6 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         detailPanel.add(cbCalendar, gridBagConstraints);
-
-        cbProvider.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "BlueGammaOisProvider", "CmeGroupProvider", "CsvProvider", "ECBProvider", "Sole24hProvider" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -283,7 +282,7 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
                 bean.getYieldCurve().setCurrency((Currency) cbCurrency.getSelectedItem());
                 bean.getYieldCurve().setCalendar((Calendar) cbCalendar.getSelectedItem());
                 bean.getYieldCurve().setProvider((String) cbProvider.getSelectedItem());
-                bean.getYieldCurve().setCompounding((short)Compounding.CONTINUOUS.getId());
+                bean.getYieldCurve().setCompounding((short) Compounding.CONTINUOUS.getId());
             } else {
 
             }
@@ -301,7 +300,7 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
     }
 
     private void postInit() {
-        setUpBondsCombo();
+        setUpYieldCurveCombo();
 
         if (bean != null) {
             isInsert = false;
@@ -316,9 +315,18 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
         }
     }
 
-    private void setUpBondsCombo() {
+    private void setUpYieldCurveCombo() {
         setUpCurrencyCombo();
         setUpCalendarCombo();
+        setUpProviderCombo();
+    }
+
+    private void setUpProviderCombo() {
+        MarketDataProviderService providerService = mDSFacade.getProviderService();
+        List<String> providers = providerService.getProviders(org.softcaster.market_data.core.enums.Market.RATES);
+        
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(providers.toArray(String[]::new));
+        cbProvider.setModel(model);
     }
 
     private void setUpCurrencyCombo() {

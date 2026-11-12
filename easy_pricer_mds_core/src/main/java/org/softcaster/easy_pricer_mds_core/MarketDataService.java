@@ -31,24 +31,24 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
 public class MarketDataService {
-
+    
     @Autowired
     @Qualifier("yieldCurveBuilder")
     private YieldCurveBuilder yieldCurveBuilder;
-
+    
     @Autowired
     InstrumentQuoteDAO instrumentQuoteDAO;
-
+    
     @Autowired
     SystemBusinessCalendarDAO systemBusinessCalendarDAO;
-
+    
     private final ConcurrentHashMap<String, SpotPrice> spotPrices = new ConcurrentHashMap<>();
     // Curve di base senza spread, di tipo concreto
     // Una base compare in entrambe le mappe, con la stessa istanza.
     private final ConcurrentHashMap<String, YieldCurve> yieldCurves = new ConcurrentHashMap<>();
     // Quella che prezza, cioè una base oppure una curva spreaded costruita su una base.
     private final ConcurrentHashMap<String, DiscountCurve> discountCurves = new ConcurrentHashMap<>();
-
+    
     public MarketDataService() {
     }
 
@@ -69,7 +69,7 @@ public class MarketDataService {
         }
         return c;
     }
-    
+
     /**
      * Aggiorna una curva di rendimento esistente nella cache con i nuovi dati
      * dal provider.
@@ -81,11 +81,11 @@ public class MarketDataService {
      */
     public boolean updateYieldCurveInCache(String curveId, List<MarketQuote> newInputs) {
         if (curveId == null || newInputs == null) {
-            throw new IllegalArgumentException("L'ID curva e i nuovi input non possono essere nulli.");
+            throw new IllegalArgumentException("Curve Id and new inputs can't be null");
         }
-
-        if (newInputs.isEmpty()) {
-            return false;
+        
+        if (curveId.isBlank() || newInputs.isEmpty()) {
+            throw new IllegalArgumentException("Empty data");
         }
         // compute viene eseguito SEMPRE, sia se la mappa è vuota sia se è piena computeIfPresent 
         // usa una lamba function (->), quando esce existingCurve e' updateCurve
@@ -102,7 +102,7 @@ public class MarketDataService {
         // Se updatedCurve non è null significa che la curva esisteva ed è stata modificata
         return updatedCurve != null;
     }
-
+    
     public void updateYieldCurve(String strProvider, String curveId) {
         IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
         if (provider != null && curveId != null && !curveId.isBlank()) {
@@ -110,10 +110,18 @@ public class MarketDataService {
             updateYieldCurveInCache(curveId, newInput);
         }
     }
+    
+    public void updateYieldCurve(String curveId, List<MarketQuote> newInput) {
+        try {
+            updateYieldCurveInCache(curveId, newInput);
+        } catch (Exception ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+        }
+    }
 
     // Loads the base curve from the database and builds it. 
     private YieldCurve buildBase(String code, LocalDate officialDate) {
-
+        
         DiscountCurve c = yieldCurveBuilder.buildDiscountCurve(code, officialDate);
         if (c != null && c instanceof YieldCurve yc) {
             return yc;
@@ -121,7 +129,7 @@ public class MarketDataService {
             throw new MarketDataNotFoundException("Unknown Base Curve: " + code);
         }
     }
-
+    
     public DiscountCurve getDiscountCurve(String code) {
         DiscountCurve c = discountCurves.get(code);
         if (c != null) {
@@ -130,11 +138,12 @@ public class MarketDataService {
             throw new MarketDataNotFoundException("Unknown Discount Curve: " + code);
         }
     }
-
+    
     public void reloadCurves() {
-       List<String> names =  yieldCurveBuilder.getDiscountCurveNames();
-       reloadCurves(names);
+        List<String> names = yieldCurveBuilder.getDiscountCurveNames();
+        reloadCurves(names);
     }
+
     /**
      * Rebuilds the given curves and publishes them together at the end, so a
      * failure leaves the previous curves untouched. Base curves are built once
@@ -151,7 +160,7 @@ public class MarketDataService {
         // spread-free curve of a code: built at most once per reload, so every curve shares the same instance
         final Function<String, YieldCurve> resolver
                 = baseCode -> newBases.computeIfAbsent(baseCode, c -> buildBase(c, officialDate));
-
+        
         for (String code : codes) {
             try {
                 // a discount curve is either a plain YieldCurve or a SpreadedCurve built on a YieldCurve
@@ -184,17 +193,17 @@ public class MarketDataService {
         discountCurves.putAll(newDiscounts);
     }
     
-   public void saveOrUpdateCurveRates(String curveId) {
+    public void saveOrUpdateCurveRates(String curveId) {
         YieldCurve yc = yieldCurves.get(curveId);
-
+        
         List<CurveNode> newInputs = new ArrayList<>(yc.getNodes());
         yieldCurveBuilder.saveOrUpdateCurve(curveId, newInputs);
     }
-
+    
     public void loadCurveCurveRates(String curveId) {
         List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(curveId);
         updateYieldCurveInCache(curveId, newInput);
-    }    
+    }
     // --------------------------------------------------------------------------------------------
 
     // Aggiorna l'ultimo prezzo di un asset (es. Forex)
@@ -211,7 +220,7 @@ public class MarketDataService {
             throw new MarketDataNotFoundException("Ticker " + ticker + " not found");
         }
     }
-
+    
     public double getSpotPrice(Integer masterDataId, RequestType request) {
         double spotPrice = 0.;
         InstrumentQuote iq = instrumentQuoteDAO.findByMasterDataId(masterDataId);
@@ -220,7 +229,7 @@ public class MarketDataService {
         }
         return spotPrice;
     }
-
+    
     public double getSpotPrice(String ticker, RequestType request) {
         double price = 0.;
         try {
@@ -240,14 +249,14 @@ public class MarketDataService {
         }
         return price;
     }
-
+    
     public void loadSpotPrice() {
         // Leggo lista quotazioni
         List<InstrumentQuote> iqList = instrumentQuoteDAO.findAll();
         if (iqList.isEmpty()) {
             return;
         }
-
+        
         for (InstrumentQuote quote : iqList) {
             updatePrice(quote.getCode(), quote.getBid(), quote.getAsk(), (quote.getBid() + quote.getAsk()) / 2.);
         }
@@ -269,7 +278,7 @@ public class MarketDataService {
         // Questo metodo svuota la cache, costringendo la chiamata successiva a getOfficialDate() a rifare la select
         // Nota che non serve implementare nulla nel corpo della funzione
     }
-
+    
     @Cacheable(value = "systemCurrency")
     public Currency getSystemCurrency() {
         SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
@@ -278,7 +287,7 @@ public class MarketDataService {
         }
         return null;
     }
-
+    
     @CacheEvict(value = "systemCurrency", allEntries = true)
     public void refreshSystemCurrency() {
     }

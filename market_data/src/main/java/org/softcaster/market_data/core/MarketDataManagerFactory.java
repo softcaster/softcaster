@@ -18,7 +18,7 @@ public class MarketDataManagerFactory {
         this.providers = providers;
     }
 
-    public MarketDataManager getInstance(String beanName, RequestParamManager params) {
+    public MarketDataManager getInstance(String beanName) {
 
         MarketDataManagerProvider provider = providers.get(beanName + "Provider");
 

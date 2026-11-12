@@ -10,7 +10,6 @@ import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.MarketDataManagerFactory;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -57,9 +56,11 @@ public class MarketDataManagerTest implements CommandLineRunner {
     }
 
     private void testEurext() {
+        /*
         RequestParamManager params = new RequestParamManager();
         params.add("FBTP");
-        MarketDataManager mdm = factory.getInstance("Eurex", params);
+*/
+        MarketDataManager mdm = factory.getInstance("Eurex");
         if (mdm != null) {
             Node node = mdm.getQuote("DE000F2HLQE9", Market.FUTURES);
             if (node != null) {
@@ -69,7 +70,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
     }
 
     private void testBorsaItaliana() {
-        MarketDataManager mdm = factory.getInstance("BorsaItaliana", null);
+        MarketDataManager mdm = factory.getInstance("BorsaItaliana");
         if (mdm != null) {
             Node node = mdm.getQuote("IT0001086567", Market.BONDS);
             if (node != null) {
@@ -79,7 +80,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
     }
 
     private void testTwelvedata() {
-        MarketDataManager mdm = factory.getInstance("Twelvedata", null);
+        MarketDataManager mdm = factory.getInstance("Twelvedata");
         if (mdm != null) {
             Node node = mdm.getQuote("EURUSD", Market.CURRENCIES);
             if (node != null) {
@@ -97,7 +98,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
     }
 
     private void testCmeGroup() {
-        MarketDataManager mdm = factory.getInstance("CmeGroup", null);
+        MarketDataManager mdm = factory.getInstance("CmeGroup");
         if (mdm != null) {
             
             List<Node> nodes = mdm.getRates("TERMSOFR");
@@ -127,7 +128,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
 
     private void testMutuiIt() throws IOException {
 
-        MarketDataManager mdm = factory.getInstance("MutuiIt", null);
+        MarketDataManager mdm = factory.getInstance("MutuiIt");
         if (mdm != null) {
             List<Node> rates = mdm.getRates("");
         }
@@ -135,7 +136,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
 
     private void testEcb() {
 
-        MarketDataManager mdm = factory.getInstance("Ecb", null);
+        MarketDataManager mdm = factory.getInstance("Ecb");
         if (mdm != null) {
             List<Node> rates = mdm.getRates("");
             for (Node node : rates) {
@@ -146,7 +147,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
 
     private void testBlueGammaOis() {
         // estr-swap-rates, euribor-swap-rates, chf-swap-rates, usd-swap-rates, cad-swap-rates
-        MarketDataManager mdm = factory.getInstance("BlueGammaOis", null);
+        MarketDataManager mdm = factory.getInstance("BlueGammaOis");
         if (mdm != null) {
             List<Node> rates = mdm.getRates("EURIBOR_OIS");
             if (rates != null && !rates.isEmpty()) {
@@ -158,7 +159,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
     }
 
     private void testCnbc() {
-        MarketDataManager mdm = factory.getInstance("Cnbc", null);
+        MarketDataManager mdm = factory.getInstance("Cnbc");
         if (mdm != null) {
             Node exchRate = mdm.getQuote("EURCHF", Market.CURRENCIES);
             System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
@@ -193,7 +194,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
     }
 
     private void testCsv() {
-        MarketDataManager mdm = factory.getInstance("Csv", null);
+        MarketDataManager mdm = factory.getInstance("Csv");
         if (mdm != null) {
             List<Node> rates = mdm.getRates("ITAYIELD");
             if(rates != null && !rates.isEmpty()) {

@@ -208,7 +208,6 @@ public class YieldCurveDefPanel extends FndtAbstactPanel {
         yieldCurveBeanList.clear();
         YieldCurveEntityDAO dao = mDSFacade.getYieldCurveDAO();
         List<String> curves = dao.findNames();
-        MarketDataService mds = mDSFacade.getMarketDataService();
         YieldCurveBean bean = null;
         for (String code : curves) {
             bean = new YieldCurveBean(dao.findByCode(code));

@@ -17,6 +17,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
+import org.softcaster.engine.curve.Offset;
+import org.softcaster.engine.enums.Compounding;
+import org.softcaster.engine.enums.CurveNodeType;
+import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.OffsetType;
+import org.softcaster.market_data.core.Data;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.enums.Market;
@@ -66,16 +72,22 @@ public class MutuiIt implements MarketDataManager {
                     }
                 }
             }
+            List<Node> nodes = null;
             ObjectMapper om = new ObjectMapper();
             Root rootFixing = om.readValue(jsonFixing, Root.class);
             Root rootDescription = om.readValue(jsonDescrizione, Root.class);
             List<Result> resultList = getResultList(rootDescription, rootFixing);
             if (resultList != null && !resultList.isEmpty()) {
+                nodes = new ArrayList<>();
+                Node node = null;
                 for (Result result : resultList) {
-                    System.out.println(result.symbol() + "\t" + result.value());
+                    node = getNode(result);
+                    if (node != null) {
+                        nodes.add(node);
+                    }
                 }
             }
-            return null;
+            return nodes;
         } catch (IOException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return null;
@@ -127,5 +139,49 @@ public class MutuiIt implements MarketDataManager {
             }
         }
         return resultList;
+    }
+
+    private OffsetType getOffsetType(String offsetTypeStr) {
+        return switch (offsetTypeStr) {
+            case "A" ->
+                OffsetType.YEARS;
+            case "M" ->
+                OffsetType.MONTHS;
+            case "D" ->
+                OffsetType.DAYS;
+            default ->
+                OffsetType.NONE;
+        };
+    }
+
+    private Offset getOffset(String symbol) {
+
+        // Gruppo 1: (\\d+) cattura una o più cifre
+        // Gruppo 2: ([a-zA-Z]) cattura una singola lettera subito dopo il numero
+        Pattern pattern = Pattern.compile("(\\d+)([a-zA-Z])");
+        Matcher matcher = pattern.matcher(symbol);
+
+        if (matcher.find()) {
+            String val1 = matcher.group(1);
+            String val2 = matcher.group(2);
+
+            long step = Integer.parseInt(val1);
+            OffsetType offsetType = getOffsetType(val2);
+            return new Offset(step, offsetType);
+        } else {
+            return null;
+        }
+    }
+
+    private Node getNode(Result result) {
+        Node node = new Node(
+                result.symbol(),
+                getOffset(result.symbol()),
+                DaycountBasis.ACT_360,
+                Compounding.COMPOUNDED,
+                CurveNodeType.SWAP,
+                new Data(result.value(), result.value()));
+
+        return node;
     }
 }

@@ -20,6 +20,8 @@ import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;
 import org.softcaster.easy_pricer_mds.dialog.YieldCurveDlg;
 import org.softcaster.easy_pricer_mds.ui.model.YieldCurveModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.engine.curve.MarketQuote;
+import org.softcaster.market_data.core.MarketDataProviderService;
 
 /**
  *
@@ -114,11 +116,13 @@ public class YieldCurvePanel extends FndtAbstactPanel {
         model.setData(yieldCurveBeanList);
     }
 
-    private void updateTable(FndtTableModel model) {
+    private void updateTable() {
         for (YieldCurveBean bean : yieldCurveBeanList) {
             if (bean != null && bean.getYieldCurve() != null && !bean.getYieldCurve().getProvider().isBlank()) {
+                MarketDataProviderService mdsp = mDSFacade.getProviderService();
+                List<MarketQuote> newInput = mdsp.getNewInput(bean.getYieldCurve().getProvider(), bean.getYieldCurve().getCode());
                 MarketDataService mds = mDSFacade.getMarketDataService();
-                mds.updateYieldCurve(bean.getYieldCurve().getProvider(), bean.getYieldCurve().getCode());
+                mds.updateYieldCurve(bean.getYieldCurve().getCode(),newInput);
             }
         }
     }
@@ -135,7 +139,7 @@ public class YieldCurvePanel extends FndtAbstactPanel {
             @Override
             protected Void doInBackground() throws Exception {
                 // Questo metodo gira su un THREAD SEPARATO in background.
-                updateTable(model);
+                updateTable();
                 //Thread.sleep(5000);
                 return null;
             }
