@@ -13,8 +13,7 @@ import java.net.http.HttpResponse;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.market_data.core.Data;
 import org.softcaster.market_data.core.Node;
-import org.softcaster.provider.enums.Market;
-import static org.softcaster.provider.enums.Market.BONDS;
+import org.softcaster.market_data.core.enums.Market;
 
 /**
  *

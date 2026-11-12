@@ -1,0 +1,6 @@
+symbol,offset_value,offset_type,daycount,compounding,nodeType,bid,ask
+1M,1,2,2,1,1,2.199,2.232
+3M,3,2,2,1,1,2.199,2.232
+6M,6,2,2,1,1,2.199,2.232
+9M,9,2,2,1,1,2.199,2.232
+1Y,1,3,2,2,1,2.199,2.232

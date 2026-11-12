@@ -6,6 +6,7 @@ package org.softcaster.market_data.config;
 
 import org.softcaster.engine.config.EngineAutoConfiguration;
 import org.softcaster.market_data.core.MarketDataManagerProvider;
+import org.softcaster.market_data.core.MarketDataProviderService;
 import org.softcaster.market_data.services.BlueGammaOis.BlueGammaOis;
 import org.softcaster.market_data.services.BorsaItaliana.BorsaItaliana;
 import org.softcaster.market_data.services.Cnbc.Cnbc;
@@ -14,7 +15,9 @@ import org.softcaster.market_data.services.Eurext.Eurex;
 import org.softcaster.market_data.services.MutuiIt.MutuiIt;
 import org.softcaster.market_data.services.Twelvedata.Twelvedata;
 import org.softcaster.market_data.services.cme.CmeGroup;
+import org.softcaster.market_data.services.cme.Csv.Csv;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -23,6 +26,12 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableCaching // Abilita il supporto alla cache di Spring
 @ComponentScan(basePackages = "org.softcaster.market_data")
 public class MarketDataAutoConfiguration {
+
+    @Bean(name = "MarketDataProviderService")
+    @ConditionalOnMissingBean // caso in cui qualche libreria volesse creare un proprio bean
+    public MarketDataProviderService marketDataProviderService() {
+        return new MarketDataProviderService();
+    }
     
     @Bean(name = "EurexProvider")
     public MarketDataManagerProvider eurexProvider() {
@@ -70,5 +79,11 @@ public class MarketDataAutoConfiguration {
     public MarketDataManagerProvider cnbcProvider() {
 
         return params -> new Cnbc(params);
+    }
+
+    @Bean(name = "CsvProvider")
+    public MarketDataManagerProvider csvProvider() {
+
+        return params -> new Csv(params);
     }
 }

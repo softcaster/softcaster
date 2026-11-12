@@ -23,7 +23,7 @@ import org.softcaster.easy_pricer_mds.bean.FxOptBean;
 import org.softcaster.easy_pricer_mds.dialog.FxOptIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.OptFxFutTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.market_data.core.TokenItem;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 

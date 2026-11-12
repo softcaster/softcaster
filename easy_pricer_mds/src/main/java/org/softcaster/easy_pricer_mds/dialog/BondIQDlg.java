@@ -15,6 +15,7 @@ import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.BondBean;
+import org.softcaster.market_data.core.MarketDataProviderService;
 
 /**
  *
@@ -196,8 +197,6 @@ public class BondIQDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         detailPanel.add(jLabel5, gridBagConstraints);
-
-        cbProvider.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CmeGroupProvider", "EuroNextProvider", "BorsaItalianaProvider" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -335,6 +334,7 @@ public class BondIQDlg extends javax.swing.JDialog {
 
     private void postInit() {
         setUpBondsCombo();
+        setUpProviderCombo();
 
         if (bean != null) {
             isInsert = false;
@@ -366,6 +366,13 @@ public class BondIQDlg extends javax.swing.JDialog {
 
     }
 
+    private void setUpProviderCombo() {
+        MarketDataProviderService providerService = mDSFacade.getProviderService();
+        List<String> providers = providerService.getProviders(org.softcaster.market_data.core.enums.Market.BONDS);
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(providers.toArray(String[]::new));
+        cbProvider.setModel(model);    
+    }
+    
     private boolean validateFields() {
         return DialogHelper.validateFields(fieldsToValidate);
     }

@@ -10,7 +10,7 @@ import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.RequestParamManager;
 import org.softcaster.market_data.core.enums.Market;
-import static org.softcaster.provider.enums.Market.BONDS;
+import static org.softcaster.market_data.core.enums.Market.BONDS;
 
 /**
  *

@@ -7,6 +7,7 @@ package org.softcaster.easy_pricer_mds.view;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -22,10 +23,10 @@ import org.softcaster.easy_pricer_mds.bean.BondBean;
 import org.softcaster.easy_pricer_mds.dialog.BondIQDlg;
 import org.softcaster.easy_pricer_mds.dialog.BondPricerDlg;
 import org.softcaster.easy_pricer_mds.ui.model.BondTableModel;
-import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.easy_pricer_mds_core.TokenItem;
-import org.softcaster.provider.enums.Market;
-import org.softcaster.provider.enums.RequestType;
+import org.softcaster.market_data.core.MarketDataProviderService;
+import org.softcaster.market_data.core.Node;
+import org.softcaster.market_data.core.TokenItem;
+import org.softcaster.market_data.core.enums.Market;
 
 /**
  *
@@ -312,7 +313,6 @@ public class BondPanel extends FndtAbstactPanel {
 
     @Override
     protected void updateModel(FndtTableModel model) {
-        MarketDataService mds = mDSFacade.getMarketDataService();
         BondBean bondBean = null;
         List<TokenItem> tokens = new ArrayList<>();
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -322,14 +322,21 @@ public class BondPanel extends FndtAbstactPanel {
                         bondBean.getInstrumentQuote().getProvider()));
             }
         }
+        
+        // Ricava i prezzi da provider
+        MarketDataProviderService providerService = mDSFacade.getProviderService();
+        Map<String, Node> nodes = providerService.getSpotPrices(tokens, Market.BONDS);
 
-        mds.updateSpotPrice(tokens, Market.BONDS);
-
+        // Aggiorna lista bonds
+        Node node = null;
         for (int i = 0; i < model.getRowCount(); i++) {
             bondBean = (BondBean) model.getElementAt(i);
             if (bondBean != null) {
-                bondBean.setAsk(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.ASK));
-                bondBean.setBid(mds.getSpotPrice(bondBean.getInstrumentQuote().getCode(), RequestType.BID));
+                node = nodes.get(bondBean.getInstrumentQuote().getCode());
+                if (node != null) {
+                    bondBean.setAsk(node.data().ask());
+                    bondBean.setBid(node.data().bid());
+                }
             }
         }
 

@@ -23,7 +23,7 @@ import org.softcaster.easy_pricer_mds.bean.CmdFutBean;
 import org.softcaster.easy_pricer_mds.dialog.CmdFutIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.CmdFutTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.market_data.core.TokenItem;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 

@@ -28,6 +28,7 @@ import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.engine.analytics.XRBPricer;
+import org.softcaster.market_data.core.MarketDataProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -96,6 +97,9 @@ public class MDSFacade {
     @Autowired
     @Qualifier("marketDataService") 
     private MarketDataService marketDataService;
+    @Autowired
+    @Qualifier("MarketDataProviderService") 
+    private MarketDataProviderService providerService;
 
     @Autowired
     @Qualifier("cashFlowInstrumentCalculator")
@@ -256,5 +260,12 @@ public class MDSFacade {
      */
     public FutureOptionMasterDataDAO getFutureOptionMasterDataDAO() {
         return futureOptionMasterDataDAO;
+    }
+
+    /**
+     * @return the providerService
+     */
+    public MarketDataProviderService getProviderService() {
+        return providerService;
     }
 }

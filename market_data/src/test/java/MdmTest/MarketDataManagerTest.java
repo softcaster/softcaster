@@ -16,18 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
 @ComponentScan(basePackages = {
-    "org.softcaster.core.data", // Il pacchetto della libreria core
+    //"org.softcaster.core.data", // Il pacchetto della libreria core
     "org.softcaster.engine" // Il pacchetto della libreria engine
 })
-@EntityScan("org.softcaster.core.data")
-@EnableJpaRepositories("org.softcaster.core.data")
+//@EntityScan("org.softcaster.core.data")
+//@EnableJpaRepositories("org.softcaster.core.data")
 public class MarketDataManagerTest implements CommandLineRunner {
 
     @Autowired
@@ -46,15 +44,16 @@ public class MarketDataManagerTest implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        //testEurext();
-        //testBorsaItaliana();
-        //testTwelvedata();
-        //testCmeGroup();
-        //testMutuiIt();
-        //testEcb();
-        //testBlueGammaOis();
+        // testEurext();
+        // testBorsaItaliana();
+        // testTwelvedata();
+        // testCmeGroup();
+        // testMutuiIt();
+        // testEcb();
+        testBlueGammaOis();
         // providers();
-        testCnbc();
+        // testCnbc();
+        // testCsv();
     }
 
     private void testEurext() {
@@ -190,6 +189,18 @@ public class MarketDataManagerTest implements CommandLineRunner {
             System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
             exchRate = mdm.getQuote("IT10Y", Market.BONDS);
             System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
+        }
+    }
+
+    private void testCsv() {
+        MarketDataManager mdm = factory.getInstance("Csv", null);
+        if (mdm != null) {
+            List<Node> rates = mdm.getRates("ITAYIELD");
+            if(rates != null && !rates.isEmpty()) {
+                for(Node node: rates) {
+                    System.out.println(node.symbol() + "\t" + node.data().bid());
+                }
+            }
         }
     }
     

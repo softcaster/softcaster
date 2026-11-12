@@ -27,28 +27,22 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- Dipendenze interne del tuo progetto -->
+        <!-- Dipendenze interne del progetto -->
         <dependency>
             <groupId>org.softcaster.core.data</groupId>
             <artifactId>core</artifactId>
             <version>1.0</version>
         </dependency>              
         <dependency>
-            <groupId>org.softcaster.commons</groupId>
-            <artifactId>foundation</artifactId>
+            <groupId>org.softcaster.market_data</groupId>
+            <artifactId>market_data</artifactId>
             <version>1.0</version>
-        </dependency>
+        </dependency>        
         <dependency>
             <groupId>org.softcaster.provider</groupId>
             <artifactId>provider</artifactId>
             <version>1.0</version>
         </dependency>        
-        <dependency>
-            <groupId>org.softcaster.engine</groupId>
-            <artifactId>engine</artifactId>
-            <version>1.0</version>
-        </dependency>        
-
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>

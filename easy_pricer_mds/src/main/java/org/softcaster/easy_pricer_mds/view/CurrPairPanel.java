@@ -21,7 +21,7 @@ import org.softcaster.easy_pricer_mds.bean.CurrencyPairBean;
 import org.softcaster.easy_pricer_mds.dialog.CurrPairIQDlg;
 import org.softcaster.easy_pricer_mds.ui.model.CurrPairTableModel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
-import org.softcaster.easy_pricer_mds_core.TokenItem;
+import org.softcaster.market_data.core.TokenItem;
 import org.softcaster.provider.enums.Market;
 import org.softcaster.provider.enums.RequestType;
 
