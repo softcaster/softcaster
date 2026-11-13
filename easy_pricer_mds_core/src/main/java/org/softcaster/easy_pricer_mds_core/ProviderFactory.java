@@ -4,27 +4,8 @@
  */
 package org.softcaster.easy_pricer_mds_core;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-import org.softcaster.provider.bluegamma.BlueGammaOisProvider;
-import org.softcaster.provider.bricks.IMarketDataProvider;
-import org.softcaster.provider.cme.CmeGroupProvider;
-import org.softcaster.provider.cnbc.CnbcProvider;
-import org.softcaster.provider.csv.CsvProvider;
-import org.softcaster.provider.ecb.ECBProvider;
-import org.softcaster.provider.eex.EexProvider;
-import org.softcaster.provider.euronext.BorsaItalianaProvider;
-import org.softcaster.provider.euronext.EuroNextProvider;
-import org.softcaster.provider.investing.InvestingComProvider;
-import org.softcaster.provider.sole24h.Sole24hProvider;
-import org.softcaster.provider.twelvedata.TwelvedataProvider;
-/**
- *
- * @author softc
- */
 public class ProviderFactory {
-
+/*
     // Mappa che associa una stringa a un costruttore
     private static final Map<String, Supplier<IMarketDataProvider>> REGISTRY = new HashMap<>();
 
@@ -57,4 +38,5 @@ public class ProviderFactory {
 
         return supplier.get();
     }
+*/
 }

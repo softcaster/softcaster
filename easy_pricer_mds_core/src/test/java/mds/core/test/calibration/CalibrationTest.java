@@ -32,10 +32,10 @@ import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.engine.curve.DiscountCurve;
-import org.softcaster.provider.bricks.AbstractProvider;
-import org.softcaster.provider.bricks.Node;
-import org.softcaster.provider.enums.Market;
-import org.softcaster.provider.euronext.BorsaItalianaProvider;
+import org.softcaster.market_data.core.MarketDataManager;
+import org.softcaster.market_data.core.MarketDataManagerFactory;
+import org.softcaster.market_data.core.Node;
+import org.softcaster.market_data.core.enums.Market;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -64,6 +64,8 @@ public class CalibrationTest implements CommandLineRunner {
     YieldCurveEntityDAO yieldCurveEntityDAO;
     @Autowired
     SpreadCurveEntityDAO spreadCurveEntityDAO;
+    @Autowired
+    MarketDataManagerFactory factory;
 
     private record PricingResult(String code, LocalDate maturity, double coupon, double mktPrice, double thPrice) {
 
@@ -98,10 +100,13 @@ public class CalibrationTest implements CommandLineRunner {
         
          */
         log.info("===  Starting calibration ... ===\n");
-        BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
+        MarketDataManager mdm = factory.getInstance("BorsaItaliana");
+        if (mdm == null) {
+            return;
+        }
 
         log.info("===  Reading Market Prices ... ===\n");
-        List<InstrumentMktData> list = getInstrumentMktDataList(provider);
+        List<InstrumentMktData> list = getInstrumentMktDataList(mdm);
 
         log.info("===  Pricing Instruments ... ===\n");
         List<PricingResult> resultList = priceIntruments(list);
@@ -116,7 +121,7 @@ public class CalibrationTest implements CommandLineRunner {
         log.info("===  Elapsed Time {} milliseconds ===\n", (long) milliseconds);
     }
 
-    private List<InstrumentMktData> getInstrumentMktDataList(AbstractProvider provider) {
+    private List<InstrumentMktData> getInstrumentMktDataList(MarketDataManager mdm) {
         List<InstrumentMktData> list = new ArrayList<>();
 
         List<SecurityMasterData> dataList = smdDAO.findAllByAssetClass("XRB");
@@ -125,8 +130,8 @@ public class CalibrationTest implements CommandLineRunner {
             if (!(data instanceof CashFlowMasterData cfmd) || !isPlainFixedBtp(data.getDescription(), cfmd.getInterestRate())) {
                 continue;
             }
-            Node node = provider.getMktQuote(data.getCode(), Market.BONDS);
-            double cleanPrice = node != null ? node.getData().bid() : 0.;
+            Node node = mdm.getQuote(data.getCode(), Market.BONDS);
+            double cleanPrice = node != null ? node.data().bid() : 0.;
             if (!NumberUtils.isZero(cleanPrice)) {
                 list.add(new InstrumentMktData(data.getCode(), cleanPrice));
             }
@@ -211,7 +216,7 @@ public class CalibrationTest implements CommandLineRunner {
             code = yc.getCode();
             provider = yc.getProvider();
         }
-        marketDataService.updateYieldCurve(provider, code);
+        //marketDataService.updateYieldCurve(provider, code);
         marketDataService.saveOrUpdateCurveRates(code);
 
         return isSpreadedCurve;

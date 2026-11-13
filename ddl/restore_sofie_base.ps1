@@ -17,7 +17,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$bin = "C:\tools\PostgreSQL\18\bin"
+$bin = "E:\tools\PostgreSQL\17\bin"
 $env:PGPASSWORD = "sofie"
 
 if ($Backup -eq "") {

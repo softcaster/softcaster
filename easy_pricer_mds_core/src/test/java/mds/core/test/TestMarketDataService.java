@@ -23,18 +23,12 @@ import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.YieldCurveHelper;
 import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
 import org.softcaster.easy_pricer_mds_core.helpers.FltSecurityMasterDataHelper;
-import org.softcaster.engine.curve.CurveBootstrapper;
-import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
-import org.softcaster.engine.curve.MarketQuote;
-import org.softcaster.engine.curve.OrderedDiscountFactor;
 import org.softcaster.engine.dto.XRBInput;
 import org.softcaster.engine.dto.XRBResult;
 import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.RequestType;
-import org.softcaster.provider.bricks.Node;
-import org.softcaster.provider.ecb.ECBProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -52,8 +46,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 // Scansiona i pacchetti della LIBRERIA per trovare @Service, @Component, ecc.
 @ComponentScan(basePackages = {
     "org.softcaster.core.data", // Il pacchetto della libreria core
-    "org.softcaster.engine", // Il pacchetto della libreria engine
-    "org.softcaster.provider" // Il pacchetto della libreria provider
+    "org.softcaster.engine" // Il pacchetto della libreria engine
 })
 @EntityScan("org.softcaster.core.data")
 @EnableJpaRepositories("org.softcaster.core.data")
@@ -331,17 +324,5 @@ public class TestMarketDataService {
 
     private void testEcbYieldCurve() {
 
-        ECBProvider provider = ECBProvider.getInstance();
-        List<Node> nodes = provider.getYieldCurveNodes("ECBYC");
-
-        List<MarketQuote> rawNodes = YieldCurveHelper.getMarketList(nodes);
-        LocalDate officialDate = marketDataService.getOfficialDate();
-        List<CurveNode> curveNodes = CurveBootstrapper.bootstrap(officialDate, rawNodes);
-        org.softcaster.engine.curve.YieldCurve yc = org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, java.util.Currency.getInstance("EUR"), curveNodes);
-
-        List<OrderedDiscountFactor> dfs = yc.getOrderedDiscountFactors();
-        for (OrderedDiscountFactor odf : dfs) {
-            System.out.println(odf.date() + " : " + odf.discountFactor());
-        }
     }
 }

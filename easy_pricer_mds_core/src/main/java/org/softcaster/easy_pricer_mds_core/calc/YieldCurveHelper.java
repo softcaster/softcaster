@@ -18,7 +18,6 @@ import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.OffsetType;
-import org.softcaster.provider.bricks.Node;
 
 public class YieldCurveHelper {
 
@@ -37,21 +36,5 @@ public class YieldCurveHelper {
             System.out.println(ex.getLocalizedMessage());
             return null;
         }
-    }
-
-    public static List<MarketQuote> getMarketList(List<Node> nodes) {
-        List<MarketQuote> marketQuoteList = new ArrayList<>();
-        MarketQuote marketQuote = null;
-        for (Node node : nodes) {
-            OffsetType offsetType = OffsetType.fromCode(node.getOffset().offsetType().getCode());
-            Offset offset = new Offset(node.getOffset().step(), offsetType);
-            DaycountBasis daycount = DaycountBasis.fromCode(node.getDaycount());
-            Compounding compounding = Compounding.fromCode(node.getCompounding());
-            CurveNodeType nodeType = CurveNodeType.fromCode(node.getNodeType());
-            marketQuote = new MarketQuote(node.getSymbol(), offset, node.getData().bid(),
-                    daycount, compounding, nodeType);
-            marketQuoteList.add(marketQuote);
-        }
-        return marketQuoteList;
     }
 }

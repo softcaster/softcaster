@@ -22,7 +22,6 @@ import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
 import org.softcaster.engine.curve.DiscountCurve;
 import org.softcaster.engine.curve.MarketQuote;
-import org.softcaster.provider.bricks.IMarketDataProvider;
 import org.softcaster.engine.curve.YieldCurve;
 import org.softcaster.engine.enums.RequestType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,15 +101,7 @@ public class MarketDataService {
         // Se updatedCurve non è null significa che la curva esisteva ed è stata modificata
         return updatedCurve != null;
     }
-    
-    public void updateYieldCurve(String strProvider, String curveId) {
-        IMarketDataProvider provider = ProviderFactory.getInstance(strProvider);
-        if (provider != null && curveId != null && !curveId.isBlank()) {
-            List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(provider, curveId);
-            updateYieldCurveInCache(curveId, newInput);
-        }
-    }
-    
+
     public void updateYieldCurve(String curveId, List<MarketQuote> newInput) {
         try {
             updateYieldCurveInCache(curveId, newInput);

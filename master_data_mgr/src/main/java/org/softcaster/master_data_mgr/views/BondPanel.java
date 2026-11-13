@@ -17,6 +17,8 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.CashFlowMasterData;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.SecurityMasterData;
+import org.softcaster.market_data.core.MarketDataManager;
+import org.softcaster.market_data.core.MarketDataManagerFactory;
 import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.dialogs.BondDlg;
@@ -24,9 +26,7 @@ import org.softcaster.master_data_mgr.dialogs.BondFilterDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.SecurityBean;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
-import org.softcaster.provider.bricks.Node;
-import org.softcaster.provider.enums.Market;
-import org.softcaster.provider.euronext.BorsaItalianaProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -35,8 +35,10 @@ import org.softcaster.provider.euronext.BorsaItalianaProvider;
 public class BondPanel extends AbstactMDPanel {
 
     public static final String CSV_PATH = System.getProperty("user.dir") + "/csv";
-
     private final MasterDataFacade masterDataFacade;
+
+    @Autowired
+    MarketDataManagerFactory factory;
 
     /**
      * Creates new form BondPanel
@@ -203,7 +205,7 @@ public class BondPanel extends AbstactMDPanel {
     public void exportCsvAction() {
         List<SecurityMasterData> bonds = masterDataFacade.getSecurityMasterDataDAO().findAllByAssetClass("XRB");
         Path path = Paths.get(CSV_PATH + "/securities.csv");
-        CsvExporterNative.exportMasterDataToCsv(bonds, path.toString());
+        CsvExporterNative.exportMasterDataToCsv(factory, bonds, path.toString());
     }
 
     @Override
@@ -244,7 +246,7 @@ public class BondPanel extends AbstactMDPanel {
         // Definiamo il separatore (il punto e virgola è l'ideale per Excel in italiano)
         private static final String CSV_SEPARATOR = ";";
 
-        public static void exportMasterDataToCsv(List<SecurityMasterData> dataList, String filePath) {
+        public static void exportMasterDataToCsv(MarketDataManagerFactory factory, List<SecurityMasterData> dataList, String filePath) {
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
 
@@ -259,7 +261,10 @@ public class BondPanel extends AbstactMDPanel {
                 writer.write(String.join(CSV_SEPARATOR, headers));
                 writer.newLine(); // Va a capo
 
-                BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
+                MarketDataManager mdm = factory.getInstance("BorsaItaliana");
+                if (mdm == null) {
+                    return;
+                }
                 // 2. Scrittura dei dati
                 for (MasterData data : dataList) {
 
@@ -270,11 +275,11 @@ public class BondPanel extends AbstactMDPanel {
                     // Gestione di date e numeri
                     String maturityDate = (data.getIssueDate() != null) ? data.getMaturityDate().toString() : "";
                     String interestRate = (data instanceof CashFlowMasterData cf && cf.getInterestRate() != null)
-                    ? String.valueOf(cf.getInterestRate()) : "";
+                            ? String.valueOf(cf.getInterestRate()) : "";
 
                     // Costruiamo la riga del CSV
-                    Node node = provider.getMktQuote(code, Market.BONDS);
-                    double cleanPrice = node != null ? node.getData().bid() : 0.;
+                    org.softcaster.market_data.core.Node node = mdm.getQuote(code, org.softcaster.market_data.core.enums.Market.BONDS);
+                    double cleanPrice = node != null ? node.data().bid() : 0.;
                     StringBuilder row = new StringBuilder();
                     row.append(code).append(CSV_SEPARATOR)
                             .append(description).append(CSV_SEPARATOR)

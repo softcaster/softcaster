@@ -28,13 +28,8 @@ import org.softcaster.engine.curve.Offset;
 import org.softcaster.engine.curve.SpreadProfile;
 import org.softcaster.engine.curve.SpreadedCurve;
 import org.softcaster.engine.curve.YieldCurve;
-import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.CurveKind;
-import org.softcaster.engine.enums.CurveNodeType;
-import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.OffsetType;
-import org.softcaster.provider.bricks.IMarketDataProvider;
-import org.softcaster.provider.bricks.Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -169,15 +164,17 @@ public class YieldCurveBuilder {
                 item.getDaycount(), item.getCompounding(), item.getNodeType());
         return marketQuote;
     }
-
-    private MarketQuote getMarketQuote(Node node) {
+/*
+    private MarketQuote getMarketQuote(org.softcaster.market_data.core.Node node) {
         MarketQuote marketQuote = null;
-        OffsetType offsetType = OffsetType.fromCode(node.getOffset().offsetType().getCode());
-        long step = node.getOffset().step();
-        marketQuote = new MarketQuote(node.getSymbol(), new Offset(step, offsetType), node.getData().bid(),
-                DaycountBasis.fromCode(node.getDaycount()),
-                Compounding.fromCode(node.getCompounding()),
-                CurveNodeType.fromCode(node.getNodeType()));
+        OffsetType offsetType = OffsetType.fromCode(node.offset().offsetType().getCode());
+        long step = node.offset().step();
+        marketQuote = new MarketQuote(node.symbol(),
+                new Offset(step, offsetType),
+                node.data().bid(),
+                node.daycount(),
+                node.compounding(),
+                node.nodeType());
         return marketQuote;
     }
 
@@ -196,7 +193,7 @@ public class YieldCurveBuilder {
         }
         return newInput;
     }
-
+*/
     public List<MarketQuote> getNewInput(String curveId) {
         List<MarketQuote> newInput = null;
         // Recupero yield curve

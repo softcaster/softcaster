@@ -177,10 +177,10 @@ public class MutuiIt implements MarketDataManager {
         Node node = new Node(
                 result.symbol(),
                 getOffset(result.symbol()),
-                DaycountBasis.ACT_360,
+                DaycountBasis.EUR_30_360,
                 Compounding.COMPOUNDED,
                 CurveNodeType.SWAP,
-                new Data(result.value(), result.value()));
+                new Data(result.value()/100., result.value()/100.));
 
         return node;
     }

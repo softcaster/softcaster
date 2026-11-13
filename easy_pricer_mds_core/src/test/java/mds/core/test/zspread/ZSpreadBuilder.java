@@ -34,9 +34,10 @@ import org.softcaster.easy_pricer_mds_core.batches.ZSpreadHelper;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.easy_pricer_mds_core.curve.YieldCurveBuilder;
 import org.softcaster.engine.curve.DiscountCurve;
-import org.softcaster.provider.bricks.Node;
-import org.softcaster.provider.enums.Market;
-import org.softcaster.provider.euronext.BorsaItalianaProvider;
+import org.softcaster.market_data.core.MarketDataManager;
+import org.softcaster.market_data.core.MarketDataManagerFactory;
+import org.softcaster.market_data.core.Node;
+import org.softcaster.market_data.core.enums.Market;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
@@ -66,6 +67,9 @@ public class ZSpreadBuilder implements CommandLineRunner {
     @Autowired
     @Qualifier("marketDataService") // Indica a Spring esattamente QUALE bean usare
     private MarketDataService marketDataService;
+
+    @Autowired
+    MarketDataManagerFactory factory;
 
     @Autowired
     YieldCurveBuilder yieldCurveBuilder;
@@ -149,14 +153,17 @@ public class ZSpreadBuilder implements CommandLineRunner {
                 writer.write(String.join(CSV_SEPARATOR, headers));
                 writer.newLine(); // Va a capo
 
-                BorsaItalianaProvider provider = BorsaItalianaProvider.getInstance();
+                MarketDataManager mdm = factory.getInstance("BorsaItaliana");
+                if(mdm == null) {
+                    return;
+                }
                 // 2. Scrittura dei dati
                 for (MasterData data : dataList) {
 
                     // Estraiamo in sicurezza i campi, gestendo i potenziali NullPointerException
                     String code = sanitize(data.getCode());
-                    Node node = provider.getMktQuote(code, Market.BONDS);
-                    double cleanPrice = node != null ? node.getData().bid() : 0.;
+                    Node node = mdm.getQuote(code, Market.BONDS);
+                    double cleanPrice = node != null ? node.data().bid() : 0.;
                     if (NumberUtils.isZero(cleanPrice)) {
                         continue;
                     }

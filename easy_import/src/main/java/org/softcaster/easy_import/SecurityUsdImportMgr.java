@@ -4,28 +4,11 @@
  */
 package org.softcaster.easy_import;
 
-import java.text.ParseException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import org.softcaster.commons.utils.Converter;
-import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.AssetClassDAO;
-import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.CurrencyDAO;
-import org.softcaster.core.data.Issuer;
 import org.softcaster.core.data.IssuerDAO;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SecurityMasterDataDAO;
-import org.softcaster.engine.enums.AccrualScheduleType;
-import org.softcaster.engine.enums.AmortizationSchedule;
-import org.softcaster.engine.enums.DaycountBasis;
-import org.softcaster.engine.enums.Form;
-import org.softcaster.engine.enums.Frequency;
-import org.softcaster.engine.enums.RollConvention;
-import org.softcaster.engine.enums.TypeOfInterest;
-import org.softcaster.provider.bondblox.BondBloxProvider;
-import org.softcaster.provider.bondblox.RefDatum;
-import org.softcaster.provider.enums.Market;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +29,7 @@ public class SecurityUsdImportMgr implements IImportMgr {
     IssuerDAO issuerDAO;
 
     SecurityMasterData securityMasterData = null;
-
+/*
     private final DaycountBasis daycount = DaycountBasis.ACT_ACT_ICMA;
     private final DaycountBasis accrualDaycount = DaycountBasis.ACT_365;
     private final AmortizationSchedule amortizationSchedule = AmortizationSchedule.IOL;
@@ -179,5 +162,14 @@ public class SecurityUsdImportMgr implements IImportMgr {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return 0.;
         }
+    }
+*/
+
+    @Override
+    public void start(IProgressInfo progressInfo) {
+    }
+
+    @Override
+    public void terminate() {
     }
 }
