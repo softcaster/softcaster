@@ -46,13 +46,14 @@ public class MarketDataManagerTest implements CommandLineRunner {
         // testEurext();
         // testBorsaItaliana();
         // testTwelvedata();
-        testCmeGroup();
+        // testCmeGroup();
         // testMutuiIt();
         // testEcb();
         // testBlueGammaOis();
         // providers();
         // testCnbc();
         // testCsv();
+        testBondBlox();
     }
 
     private void testEurext() {
@@ -214,4 +215,13 @@ public class MarketDataManagerTest implements CommandLineRunner {
         }
     }
 
+    private void testBondBlox() {
+        MarketDataManager mdm = factory.getInstance("BondBlox");
+        if (mdm != null) {
+            Node node = mdm.getQuote("US912810QL52", Market.BONDS);
+            if(node != null) {
+                System.out.println(node.symbol() + "\t" + node.data().bid() + "\t" + node.data().ask());
+            }
+        }
+    }
 }
