@@ -43,6 +43,26 @@ public class InternalSystem {
         return new ResponseEntity<>("Official date refreshed", HttpStatus.OK);
     }
 
+    /**
+     * Inizio della chiusura di giornata (EodBatchRunner, a ogni lancio): data
+     * ufficiale, prezzi e curve di chiusura in memoria, una volta sola; il MtM
+     * di chiusura li usa senza ricaricarli. 500 con il motivo se una curva non
+     * si costruisce.
+     */
+    @PostMapping(value = "/internal/system/market_data")
+    public ResponseEntity<String> marketData() {
+        try {
+            marketDataService.refreshOfficialDate();
+            marketDataService.loadSpotPrice();
+            marketDataService.reloadCurves();
+            log.info("Market data loaded");
+            return new ResponseEntity<>("Market data loaded", HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("### Market data load failed", e);
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping(value = "/internal/system/suspend")
     public ResponseEntity<String> suspend() {
         // Cambia lo stato centralizzato
@@ -74,8 +94,8 @@ public class InternalSystem {
     
     /**
      * MtM di fine giornata alla data ufficiale: valutazione di tutte le
-     * posizioni e fotografie per la contabilita' (eventi MTM). Da lanciare
-     * dopo il caricamento dei prezzi di chiusura.
+     * posizioni e fotografie per la contabilita' (eventi MTM), con prezzi e
+     * curve caricati a inizio chiusura (/internal/system/market_data).
      */
     @PostMapping(value = "/internal/mtm/eod")
     public ResponseEntity<EodTaskResult> executeEod() {

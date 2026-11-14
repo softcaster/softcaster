@@ -86,8 +86,8 @@ public class LoanRepaymentService {
         LocalDate from = sbc.getLastOfficialDate();
         LocalDate date = sbc.getOfficialDate();
 
-        // cambi di chiusura per i mutui non nella valuta di sistema (fx_rate del deal)
-        marketDataService.loadSpotPrice();
+        // cambi di chiusura per i mutui non nella valuta di sistema (fx_rate del deal):
+        // caricati a inizio chiusura (/internal/system/market_data)
 
         Counters counters = new Counters();
         for (PositionMasterData position : positionMasterDataDAO.findAll()) {

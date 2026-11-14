@@ -151,10 +151,8 @@ public class MtMPollingJob implements IMtmDataHelper {
      */
     public EodTaskResult executeEod() {
         ValuationContext context = new ValuationContext();
-        // la data ufficiale e' in cache (businessCalendar): il fine giornata la rilegge
-        marketDataService.refreshOfficialDate();
-        refreshSpotPrices();
-        refreshDiscountCurves();
+        // data ufficiale, prezzi e curve di chiusura: caricati a inizio chiusura
+        // (/internal/system/market_data), non si ricaricano
         LocalDate valuationDate = getOfficialDate();
 
         List<PositionDetail> details = positionDetailDAO.findAll();

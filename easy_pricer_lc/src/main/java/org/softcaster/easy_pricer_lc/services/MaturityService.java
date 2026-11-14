@@ -7,6 +7,7 @@ import java.util.List;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.softcaster.core.data.AccumulatorMasterData;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnDAO;
@@ -71,8 +72,12 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Margine iniziale: un evento MATURITY per ogni deal della posizione che ne
  * ha uno, che la contabilita' rilascia (script FUT, OPTION).
  *
- * Gli accumulator (FXA, CMA) hanno un ciclo di vita proprio e non passano di
- * qui; i mutui si chiudono con il rimborso dell'ultima rata.
+ * Accumulator (FXA, CMA): il regolamento di ogni periodo e' come la cedola di
+ * un titolo (step COUPON, AccumulatorLifeCycleService); il knock-out o la
+ * scadenza naturale sono come la scadenza di un'opzione: dopo l'ultimo
+ * regolamento dovuto il contratto si chiude con un deal EOD a prezzo 0.
+ *
+ * I mutui si chiudono con il rimborso dell'ultima rata (LoanRepaymentService).
  */
 @Service
 public class MaturityService {
@@ -119,9 +124,8 @@ public class MaturityService {
         LocalDate from = sbc.getLastOfficialDate();
         LocalDate date = sbc.getOfficialDate();
 
-        // prezzi di chiusura: regolamento finale dei future, sottostanti delle opzioni, cambi
-        marketDataService.loadSpotPrice();
-
+        // prezzi di chiusura (regolamento finale dei future, sottostanti delle
+        // opzioni, cambi): caricati a inizio chiusura (/internal/system/market_data)
         Counters counters = new Counters();
         for (PositionMasterData position : positionMasterDataDAO.findAll()) {
             for (PositionDetail detail : positionDetailDAO.findByPositionMasterData(position)) {
@@ -155,6 +159,9 @@ public class MaturityService {
         if (md instanceof OptionMasterData omd) {
             return omd.getExpiryLocalDate();
         }
+        if (md instanceof AccumulatorMasterData amd) {
+            return AccumulatorLifeCycleService.endDate(amd);
+        }
         return null;
     }
 
@@ -187,6 +194,12 @@ public class MaturityService {
             counters.created += matureFuture(detail, position, fmd, sbc, date, end, net, closeSide, originKey);
         } else if (md instanceof OptionMasterData omd) {
             counters.created += expireOption(detail, position, omd, sbc, date, end, net, closeSide, originKey);
+        } else if (md instanceof AccumulatorMasterData amd) {
+            // tutto regolato (step COUPON): il contratto non vale piu' nulla e si
+            // chiude a 0, il premio diventa realizzato come per un'opzione scaduta
+            save(deal(detail, position, amd, date, date, closeSide, Math.abs(net), 0., sbc,
+                    (amd.isKnockedOut() ? "Knock-out " + amd.getKoDate() : "Expiry ") + " " + end, originKey));
+            counters.created++;
         }
     }
 

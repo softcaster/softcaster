@@ -42,6 +42,13 @@ public class InternalSystem {
     @Autowired
     private MaturityService maturityService;
 
+    @Autowired
+    private org.softcaster.easy_pricer_lc.services.AccumulatorLifeCycleService accumulatorService;
+
+    @Autowired
+    @org.springframework.beans.factory.annotation.Qualifier("marketDataService")
+    private org.softcaster.easy_pricer_mds_core.MarketDataService marketDataService;
+
     @PostMapping(value = "/internal/system/suspend")
     public ResponseEntity<String> suspend() {
         // Cambia lo stato centralizzato
@@ -63,6 +70,25 @@ public class InternalSystem {
         return new ResponseEntity<>("LifeCycle Service Alive", HttpStatus.OK);
     }
 
+    /**
+     * Inizio della chiusura di giornata (EodBatchRunner, a ogni lancio): data
+     * ufficiale, prezzi e curve di chiusura in memoria, una volta sola. Gli step
+     * li usano senza ricaricarli. 500 con il motivo se una curva non si costruisce.
+     */
+    @PostMapping("/internal/system/market_data")
+    public ResponseEntity<String> marketData() {
+        try {
+            marketDataService.refreshOfficialDate();
+            marketDataService.loadSpotPrice();
+            marketDataService.reloadCurves();
+            log.info("Market data loaded");
+            return new ResponseEntity<>("Market data loaded", HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("### Market data load failed", e);
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping("/internal/system/settlement")
     public ResponseEntity<EodTaskResult> settlement() {
         return runTask(EodStep.SETTLEMENT, lcJob::runSettlementLyfeCycle);
@@ -80,7 +106,19 @@ public class InternalSystem {
 
     @PostMapping("/internal/system/fixing")
     public ResponseEntity<EodTaskResult> fixing() {
-        return runTask(EodStep.FIXING, rateFixingService::fixRates);
+        // tassi variabili e fixing degli accumulator
+        return runTask(EodStep.FIXING, () -> {
+            EodTaskResult rates = rateFixingService.fixRates();
+            if (rates.status() == EodStatus.FAILED && rates.errors() == 0) {
+                return rates; // fuori dalla chiusura
+            }
+            EodTaskResult accumulators = accumulatorService.fixAccumulators();
+            return EodTaskResult.of(EodStep.FIXING, rates.businessDate(),
+                    rates.processed() + accumulators.processed(), rates.created() + accumulators.created(),
+                    rates.skipped() + accumulators.skipped(), rates.errors() + accumulators.errors(),
+                    String.join(" ", rates.message() == null ? "" : rates.message(),
+                            accumulators.message() == null ? "" : accumulators.message()).trim());
+        });
     }
 
     @PostMapping("/internal/system/maturity")

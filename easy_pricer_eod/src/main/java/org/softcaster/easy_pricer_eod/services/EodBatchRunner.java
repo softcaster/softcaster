@@ -117,6 +117,9 @@ public class EodBatchRunner {
             post(ServiceType.ASRV, "/internal/system/resume");
             post(ServiceType.MSRV, "/internal/system/suspend");
             mtmSuspended = true;
+            // prezzi e curve di chiusura una volta sola, a ogni lancio (anche nei
+            // rilanci, che saltano gli step gia' riusciti): gli step non li ricaricano
+            loadMarketData();
 
             EodStatus outcome = executeSteps(run);
             info(outcome == EodStatus.FAILED
@@ -357,6 +360,22 @@ public class EodBatchRunner {
                 info("WARNING: " + type.getCode() + " did not refresh the official date, restart it: " + e.getLocalizedMessage());
             }
         }
+    }
+
+    /**
+     * Data ufficiale, prezzi e curve di chiusura nei servizi che li usano negli
+     * step (life-cycle e MtM). Se un servizio non li carica (curva che non si
+     * costruisce, prezzi mancanti) la chiusura non parte.
+     */
+    private void loadMarketData() {
+        for (ServiceType type : List.of(ServiceType.LSRV, ServiceType.MSRV)) {
+            try {
+                post(type, "/internal/system/market_data");
+            } catch (Exception e) {
+                throw new IllegalStateException("Market data not loaded by " + type.getCode() + ": " + e.getLocalizedMessage(), e);
+            }
+        }
+        info("Market data loaded: official date, closing prices and curves");
     }
 
     private RestClient client() {

@@ -37,8 +37,12 @@ import java.math.RoundingMode
 // Scadenza (step MATURITY del life-cycle): l'opzione si chiude con un deal EOD
 // al valore intrinseco (0 se fuori dal denaro), con consegna fisica il
 // sottostante entra con un deal EOD al prezzo di mercato; l'evento MATURITY
-// rilascia il margine iniziale. I regolamenti periodici degli accumulator non
-// generano ancora eventi.
+// rilascia il margine iniziale.
+//
+// Accumulator: i regolamenti dei periodi (step COUPON) sono deal EOD sul
+// sottostante allo strike (consegna fisica) o eventi COUPON (cash); dopo
+// l'ultimo regolamento, o il knock-out, il contratto si chiude con un deal EOD
+// a prezzo 0.
 // ============================================================================
 
 def txn   = ctx.txn
@@ -177,6 +181,37 @@ case EventType.MTM:
     ctx.postRealizedResult(accPremium,
             accountResolver.resolve("DERIV_REALIZED_GAIN", settlementCcy),
             accountResolver.resolve("DERIV_REALIZED_LOSS", settlementCcy))
+    break
+
+
+    // ========================================================================
+    // COUPON (regolamento cash di un periodo di accumulator)
+    // ========================================================================
+
+case EventType.COUPON:
+
+    /*
+     * Regolamento cash di un periodo (step COUPON): importo per la posizione
+     * sign x Q x (S - K) x contratti, realizzato. Il contratto perde valore per
+     * la parte regolata: il MtM ne registra la riduzione del non realizzato,
+     * che compensa questo realizzato.
+     *
+     * Incasso:    DR CASH                  CR DERIV_REALIZED_GAIN
+     * Pagamento:  DR DERIV_REALIZED_LOSS   CR CASH
+     *
+     * Il regolamento fisico e' invece un deal EOD sul sottostante allo strike.
+     */
+
+    BigDecimal settlementAmount = money(ctx.getCouponAmount())
+    if (settlementAmount.signum() > 0) {
+        ctx.journal.debit(accCash, settlementAmount, settlementCcy)
+        ctx.journal.credit(accountResolver.resolve("DERIV_REALIZED_GAIN", settlementCcy), settlementAmount, settlementCcy)
+    } else if (settlementAmount.signum() < 0) {
+        ctx.journal.debit(accountResolver.resolve("DERIV_REALIZED_LOSS", settlementCcy), settlementAmount.abs(), settlementCcy)
+        ctx.journal.credit(accCash, settlementAmount.abs(), settlementCcy)
+    }
+
+    ctx.accountingPhase = AccountingPhase.OFFICIAL_POSTED
     break
 
 

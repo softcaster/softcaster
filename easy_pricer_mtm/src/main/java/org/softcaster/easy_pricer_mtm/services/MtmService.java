@@ -51,9 +51,11 @@ public class MtmService {
         double buyQty = position.getBuyQty() == null ? 0. : position.getBuyQty();
         double sellQty = position.getSellQty() == null ? 0. : position.getSellQty();
         java.time.LocalDate officialDate = mtmHelper.getOfficialDate();
-        if (masterData.getMaturityDate() != null && officialDate != null
-                && !masterData.getMaturityDate().toLocalDate().isAfter(officialDate)
-                && org.softcaster.easy_pricer_mds_core.PnlCalc.isFlat(buyQty, sellQty)) {
+        boolean ended = masterData.getMaturityDate() != null && officialDate != null
+                && !masterData.getMaturityDate().toLocalDate().isAfter(officialDate);
+        // accumulator chiuso dopo il knock-out: i fixing successivi non si rilevano piu'
+        boolean knockedOut = masterData instanceof org.softcaster.core.data.AccumulatorMasterData amd && amd.isKnockedOut();
+        if ((ended || knockedOut) && org.softcaster.easy_pricer_mds_core.PnlCalc.isFlat(buyQty, sellQty)) {
             position.setUnrealizedPnl(0.);
             positionDetailDAO.saveOrUpdate(position);
             log.info("Mtm instrument {}: matured, position closed, not valued", masterData.getCode());

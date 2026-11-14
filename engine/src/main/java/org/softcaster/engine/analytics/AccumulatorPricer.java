@@ -157,8 +157,8 @@ public final class AccumulatorPricer implements Pricer<AccumulatorInput, Accumul
                         : in.koBarrier();
                 settlementRatio[i] = f.settlementForward() / f.forward();
                 discountFactor[i] = f.discountFactor();
-                koObserved[i] = f.index() >= in.guaranteedFixings()
-                        && (in.koObservation() != BarrierObservation.SETTLEMENT || f.periodEnd());
+                koObserved[i] = AccumulatorFixingRule.koObserved(f.index(), in.guaranteedFixings(), in.koObservation(),
+                        f.periodEnd());
                 baseOnly[i] = in.guaranteeType() == GuaranteeType.UNLEVERAGED && f.index() < in.guaranteedFixings();
             }
         }
@@ -209,18 +209,9 @@ public final class AccumulatorPricer implements Pricer<AccumulatorInput, Accumul
         }
 
         private double quantity(int i, double s, boolean knockedIn) {
-            if (baseOnly[i]) {
-                // garanzia senza leva: quantita' base qualunque sia il prezzo
-                return in.dailyQuantity();
-            }
-            if (in.kiEffect() == KnockInEffect.CONTRACT && !knockedIn) {
-                return 0.;
-            }
-            if (type.isFavourable(s, in.strike())) {
-                return in.dailyQuantity();
-            }
-            boolean leveraged = in.kiEffect() != KnockInEffect.LEVERAGE || knockedIn;
-            return in.dailyQuantity() * (leveraged ? in.leverage() : 1.);
+            // stessa regola dei fixing rilevati dal ciclo di vita
+            return AccumulatorFixingRule.quantity(type, in.strike(), in.dailyQuantity(), in.leverage(), in.kiEffect(),
+                    knockedIn, baseOnly[i], s);
         }
 
         private double accrual(int i, double s, double q) {

@@ -75,6 +75,9 @@ public class LifeCycleJob {
     private LoanRepaymentService loanRepaymentService;
 
     @Autowired
+    private org.softcaster.easy_pricer_lc.services.AccumulatorLifeCycleService accumulatorService;
+
+    @Autowired
     private CashFlowPaymentService cashFlowPaymentService;
 
     /**
@@ -161,13 +164,17 @@ public class LifeCycleJob {
         SystemBusinessCalendar sbc = sbcDAO.findBySbcId(1);
         EodTaskResult coupons = fetchPosition(EodStep.COUPON, EventType.COUPON, sbc.getOfficialDate(), sbc.getLastOfficialDate(), sbc.getOfficialDate());
         EodTaskResult repayments = loanRepaymentService.generateRepayments();
+        // regolamenti dei periodi degli accumulator: come una cedola
+        EodTaskResult accumulators = accumulatorService.settlePeriods();
         // dopo eventi e rimborsi: i flussi della chiusura sono pagati
         int paid = cashFlowPaymentService.markPaid(sbc.getLastOfficialDate(), sbc.getOfficialDate());
-        String message = String.join(" ", coupons.message(), repayments.message(),
+        String message = String.join(" ", coupons.message(), repayments.message(), accumulators.message(),
                 paid > 0 ? paid + " cash flows set to paid" : "").trim();
         return EodTaskResult.of(EodStep.COUPON, sbc.getOfficialDate(),
-                coupons.processed() + repayments.processed(), coupons.created() + repayments.created(),
-                coupons.skipped() + repayments.skipped(), coupons.errors() + repayments.errors(), message);
+                coupons.processed() + repayments.processed() + accumulators.processed(),
+                coupons.created() + repayments.created() + accumulators.created(),
+                coupons.skipped() + repayments.skipped() + accumulators.skipped(),
+                coupons.errors() + repayments.errors() + accumulators.errors(), message);
     }
 
     private EodTaskResult fetchPosition(EodStep task, EventType eventType, LocalDate businessDate, LocalDate from, LocalDate to) {

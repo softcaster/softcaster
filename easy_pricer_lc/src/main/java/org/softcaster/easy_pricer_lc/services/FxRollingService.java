@@ -2,7 +2,6 @@ package org.softcaster.easy_pricer_lc.services;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.List;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,10 +84,8 @@ public class FxRollingService {
             return EodTaskResult.failed(EodStep.FX_ROLLING, date, "FX rolling runs only during the end of day");
         }
 
-        // La data ufficiale e' in cache e questo servizio non riceve il cambio data; i
-        // cambi di chiusura sono caricati dopo il suo avvio
-        marketDataService.refreshOfficialDate();
-        marketDataService.loadSpotPrice();
+        // data ufficiale, cambi e curve di chiusura: caricati a inizio chiusura
+        // (/internal/system/market_data)
 
         int processed = 0;
         int created = 0;
@@ -174,11 +171,10 @@ public class FxRollingService {
     }
 
     /**
-     * Punti forward tra le due valute, con le curve della coppia ricostruite ai
-     * dati di chiusura.
+     * Punti forward tra le due valute, con le curve della coppia ai dati di
+     * chiusura (caricate a inizio chiusura).
      */
     private double forwardPoints(ForexMasterData forex, LocalDate closeValue, LocalDate openValue, double spot) {
-        marketDataService.reloadCurves(List.of(forex.getCcyIrc(), forex.getBcyIrc()));
         FxForwardInput input = fxForwardCalculator.getFxForwardInput(forex.getCode(), closeValue, openValue, spot,
                 marketDataService.getDiscountCurve(forex.getCcyIrc()), marketDataService.getDiscountCurve(forex.getBcyIrc()), null);
         return fxForwardCalculator.fxFwdValuation(input).forwardPoints();
