@@ -30,7 +30,6 @@ import org.hibernate.annotations.FetchMode;
         attributeNodes = {
             @NamedAttributeNode(value = "currency", subgraph = "currencyGraph"),
             @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
             @NamedAttributeNode("product"),
             @NamedAttributeNode("deliverables")
         },

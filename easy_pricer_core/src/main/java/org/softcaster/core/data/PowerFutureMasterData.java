@@ -25,7 +25,6 @@ import org.softcaster.engine.enums.LoadType;
             attributeNodes = {
                 @NamedAttributeNode("currency"),
                 @NamedAttributeNode("assetClass"),
-                @NamedAttributeNode("instrumentValuation"),
                 @NamedAttributeNode("product"),
                 @NamedAttributeNode("deliveryProfile")}
     )

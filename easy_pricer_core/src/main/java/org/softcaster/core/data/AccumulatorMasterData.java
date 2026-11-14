@@ -60,7 +60,6 @@ import org.softcaster.engine.enums.SettlementType;
         attributeNodes = {
             @NamedAttributeNode("currency"),
             @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
             @NamedAttributeNode("underlying"),
             @NamedAttributeNode("fixings")
         }

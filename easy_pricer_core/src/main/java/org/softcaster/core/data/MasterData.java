@@ -40,21 +40,28 @@ import org.hibernate.annotations.JdbcTypeCode;
         strategy = InheritanceType.JOINED
 )
 
+/*
+ * Entity graph: mai il nodo instrumentValuation, in nessun grafo (anche delle
+ * sottoclassi) e mai "join fetch md.instrumentValuation". Con Hibernate 6.4, se
+ * l'anagrafica e' gia' nella sessione come proxy non inizializzato (es. da
+ * InstrumentQuote.masterData, LAZY) e la valutazione esiste, la query che fa il
+ * fetch della valutazione (che punta di nuovo all'anagrafica con @MapsId)
+ * inizializza il proxy senza le relazioni EAGER delle sottoclassi: testata di
+ * future e opzioni a null. Il lato inverso del OneToOne Hibernate lo carica
+ * comunque con una select a parte, quindi nel grafo non serve.
+ */
 @NamedEntityGraphs({
     @NamedEntityGraph(
             name = "MasterData.fullGraph",
             attributeNodes = {
-                @NamedAttributeNode("instrumentValuation"),
                 @NamedAttributeNode("currency"),
                 @NamedAttributeNode("assetClass")
             }
     ),
 
+    // la valutazione arriva con la select a parte del lato inverso (vedi sopra)
     @NamedEntityGraph(
-            name = "MasterData.valuationGraph",
-            attributeNodes = {
-                @NamedAttributeNode("instrumentValuation")
-            }
+            name = "MasterData.valuationGraph"
     )
 })
 public class MasterData implements Serializable {

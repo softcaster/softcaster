@@ -20,7 +20,6 @@ import jakarta.persistence.Table;
         attributeNodes = {
             @NamedAttributeNode(value = "currency", subgraph = "currencyGraph"),
             @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
             @NamedAttributeNode("cashFlows"),
             @NamedAttributeNode(value = "floatingTerms", subgraph = "floatingTerms")
         },

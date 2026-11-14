@@ -23,7 +23,6 @@ import org.hibernate.annotations.JdbcTypeCode;
             attributeNodes = {
                 @NamedAttributeNode("currency"),
                 @NamedAttributeNode("assetClass"),
-                @NamedAttributeNode("instrumentValuation"),
                 @NamedAttributeNode("issuer"),}
     ),
     @NamedEntityGraph(
@@ -34,7 +33,6 @@ import org.hibernate.annotations.JdbcTypeCode;
                         subgraph = "currencyGraph"
                 ),
                 @NamedAttributeNode("assetClass"),
-                @NamedAttributeNode("instrumentValuation"),
                 @NamedAttributeNode("issuer"),
                 @NamedAttributeNode("cashFlows"),},
             subgraphs = {

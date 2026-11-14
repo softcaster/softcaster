@@ -41,7 +41,6 @@ import org.softcaster.engine.enums.FeeTiming;
         attributeNodes = {
             @NamedAttributeNode(value = "currency", subgraph = "currencyGraph"),
             @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
             // un'unica collezione in join (i flussi, una List): le spese con SUBSELECT
             @NamedAttributeNode("cashFlows")
         },

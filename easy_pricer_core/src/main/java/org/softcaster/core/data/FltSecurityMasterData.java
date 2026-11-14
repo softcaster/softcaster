@@ -25,7 +25,6 @@ import org.softcaster.engine.enums.FixingDayType;
             attributeNodes = {
                 @NamedAttributeNode("currency"),
                 @NamedAttributeNode("assetClass"),
-                @NamedAttributeNode("instrumentValuation"),
                 @NamedAttributeNode("issuer"),
             }),
     @NamedEntityGraph(
@@ -43,7 +42,6 @@ import org.softcaster.engine.enums.FixingDayType;
             attributeNodes = {
                 @NamedAttributeNode("currency"),
                 @NamedAttributeNode("assetClass"),
-                @NamedAttributeNode("instrumentValuation"),
                 @NamedAttributeNode("issuer"),
                 @NamedAttributeNode(value = "floatingTerms", subgraph = "floatingTerms"),
                 @NamedAttributeNode("cashFlows")

@@ -14,6 +14,7 @@ import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FutureMasterData;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.MasterData;
+import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.OptionMasterData;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
@@ -87,8 +88,8 @@ public class MaturityService {
     private PositionMasterDataDAO positionMasterDataDAO;
     @Autowired
     private PositionDetailDAO positionDetailDAO;
-    @jakarta.persistence.PersistenceContext
-    private jakarta.persistence.EntityManager entityManager;
+    @Autowired
+    private MasterDataDAO masterDataDAO;
     @Autowired
     private CounterpartyDAO counterpartyDAO;
     @Autowired
@@ -127,7 +128,7 @@ public class MaturityService {
                 try {
                     transactionTemplate.executeWithoutResult(status -> matureDetail(detail, position, sbc, from, date, counters));
                 } catch (Exception e) {
-                    counters.processed++;
+                    // processed e' gia' contato in matureDetail per le posizioni in scadenza
                     counters.errors++;
                     log.error("### Maturity error for position detail {}", detail.getIdPositionDetail(), e);
                     if (counters.firstError == null) {
@@ -159,9 +160,7 @@ public class MaturityService {
 
     private void matureDetail(PositionDetail detail, PositionMasterData position, SystemBusinessCalendar sbc, LocalDate from,
             LocalDate date, Counters counters) {
-        // find e non findByIdMasterData: la query con entity graph lascia vuota la
-        // testata delle opzioni (contract value, tipo di regolamento)
-        MasterData md = (MasterData) Hibernate.unproxy(entityManager.find(MasterData.class, detail.getMasterData()));
+        MasterData md = (MasterData) Hibernate.unproxy(masterDataDAO.findByIdMasterData(detail.getMasterData()));
         LocalDate end = endDate(md);
         if (end == null || !end.isAfter(from) || end.isAfter(date)) {
             return;

@@ -25,7 +25,6 @@ import java.util.List;
         attributeNodes = {
             @NamedAttributeNode(value = "currency", subgraph = "currency"),
             @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
             @NamedAttributeNode(value = "product", subgraph = "product")
         },
         subgraphs = {

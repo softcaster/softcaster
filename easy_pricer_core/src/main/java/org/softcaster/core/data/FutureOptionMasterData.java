@@ -21,7 +21,6 @@ import jakarta.persistence.Table;
         attributeNodes = {
             @NamedAttributeNode("currency"),
             @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
             @NamedAttributeNode(value = "product", subgraph = "product"),
             @NamedAttributeNode("underlying")
         },

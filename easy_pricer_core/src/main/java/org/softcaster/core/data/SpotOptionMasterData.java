@@ -25,7 +25,6 @@ import java.time.LocalDate;
         attributeNodes = {
             @NamedAttributeNode("currency"),
             @NamedAttributeNode("assetClass"),
-            @NamedAttributeNode("instrumentValuation"),
             @NamedAttributeNode(value = "product", subgraph = "product"),
             @NamedAttributeNode("underlying")
         },

@@ -10,7 +10,8 @@ public interface MmFutureMasterDataRepository extends BaseMasterDataRepository<M
      * Lista per le finestre di anagrafica: con testata e sottostante, usati
      * fuori dalla transazione (combo del sottostante).
      */
-    @EntityGraph(attributePaths = {"instrumentValuation", "currency", "assetClass", "product", "product.underlying"},
+    // niente instrumentValuation nel grafo: vedi MasterData
+    @EntityGraph(attributePaths = {"currency", "assetClass", "product", "product.underlying"},
             type = EntityGraph.EntityGraphType.LOAD)
     @Override
     List<MmFutureMasterData> findAll(Sort sort);
