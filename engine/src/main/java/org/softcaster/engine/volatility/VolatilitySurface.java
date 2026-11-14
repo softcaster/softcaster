@@ -9,6 +9,7 @@ public interface VolatilitySurface {
 
     /**
      * Data da cui si misura il tempo alle scadenze (ACT/365).
+     * @return 
      */
     LocalDate getReferenceDate();
 
