@@ -16,11 +16,11 @@ public class BondFutureMasterDataDAO extends AbstractMasterDataDAO<BondFutureMas
         super(repository);
     }
 
-    @Transactional(readOnly = true)
-    @Override
-    public List<BondFutureMasterData> findAll() {
-        return repository.findAll(sortByCode);
-    }
+        @Transactional(readOnly = true)
+        @Override
+        public List<BondFutureMasterData> findAll() {
+            return repository.findAll(sortByCode);
+        }
 
     /**
      * Scadenza con testata, calendario e paniere.

@@ -23,6 +23,20 @@ import org.springframework.stereotype.Component;
 @Component("XRB")
 public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluator {
 
+    /**
+     * Note a tasso fisso.
+     */
+    @Component("XRN")
+    public static class FixedRateNote extends BondEvaluator {
+    }
+
+    /**
+     * BOT e titoli zero coupon a breve.
+     */
+    @Component("BLL")
+    public static class Bill extends BondEvaluator {
+    }
+
     @Autowired
     @Qualifier("cashFlowInstrumentCalculator")
     private CashFlowInstrumentCalculator bondCalculator;
@@ -56,6 +70,26 @@ public class BondEvaluator extends AbstractEvaluator implements IPositionEvaluat
                         masterData.setInstrumentValuation(currentValuation); // Aggiorna il lato inverso
                     }
                     double mktPrice = mtmHelper.getSpotPrice(masterData.getCode(), RequestType.BID);
+
+                    // ultimi giorni di vita: la data di regolamento (official + business days)
+                    // e' gia' la scadenza, non restano flussi per rendimento e duration. Il
+                    // titolo vale il prezzo di mercato, il rimborso lo fa lo step MATURITY
+                    LocalDate settlementDate = new org.softcaster.easy_pricer_mds_core.Calendar(smd.getCurrencyList())
+                            .getNextBusinessDate(mtmHelper.getOfficialDate(), smd.getBusinessDays() == null ? 0 : smd.getBusinessDays());
+                    if (smd.getMaturityDate() != null && !settlementDate.isBefore(smd.getMaturityDate().toLocalDate())) {
+                        if (mktPrice <= 0.) {
+                            throw new MtmException("Missing quote for " + smd.getCode());
+                        }
+                        currentValuation.setMarketPrice(mktPrice);
+                        currentValuation.setTheoreticalPrice(mktPrice);
+                        currentValuation.setYtm(0.);
+                        currentValuation.setDuration(0.);
+                        currentValuation.setModDuration(0.);
+                        currentValuation.setAccruedInterest(0.);
+                        currentValuation.setValuationDate(settlementDate);
+                        currentValuation.setDv01(0.);
+                        return currentValuation;
+                    }
 
                     XRBResult output = calculate(smd, mktPrice, mtmHelper.getOfficialDate());
                     if (output != null) {

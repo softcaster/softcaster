@@ -30,6 +30,9 @@ public class CmdFutureTxnProcessor  extends AbstractTxnProcessor implements ITxn
 
         super.process(positionInput(cfmd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide()), position);
 
+        if (!marginApplies(txn)) {
+            return;
+        }
         // Aggiungo component initial margin
         FinancialTxnComponent initialMargin = new FinancialTxnComponent();
         initialMargin.setCurrency(cfmd.getCurrency());

@@ -11,6 +11,7 @@ import org.softcaster.core.dto.EodTaskResult;
 import org.softcaster.easy_pricer_lc.jobs.LifeCycleJob;
 import org.softcaster.easy_pricer_lc.services.EngineStateManager;
 import org.softcaster.easy_pricer_lc.services.FxRollingService;
+import org.softcaster.easy_pricer_lc.services.MaturityService;
 import org.softcaster.easy_pricer_lc.services.RateFixingService;
 import org.softcaster.engine.enums.EodStatus;
 import org.softcaster.engine.enums.EodStep;
@@ -37,6 +38,9 @@ public class InternalSystem {
 
     @Autowired
     private RateFixingService rateFixingService;
+
+    @Autowired
+    private MaturityService maturityService;
 
     @PostMapping(value = "/internal/system/suspend")
     public ResponseEntity<String> suspend() {
@@ -77,6 +81,11 @@ public class InternalSystem {
     @PostMapping("/internal/system/fixing")
     public ResponseEntity<EodTaskResult> fixing() {
         return runTask(EodStep.FIXING, rateFixingService::fixRates);
+    }
+
+    @PostMapping("/internal/system/maturity")
+    public ResponseEntity<EodTaskResult> maturity() {
+        return runTask(EodStep.MATURITY, maturityService::processMaturities);
     }
 
     @PostMapping("/internal/system/fx_rolling")

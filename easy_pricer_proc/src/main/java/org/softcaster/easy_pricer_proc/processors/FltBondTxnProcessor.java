@@ -8,5 +8,11 @@ import org.springframework.stereotype.Component;
 
 @Component("FRB")
 public class FltBondTxnProcessor extends BondTxnProcessor {
-    
+
+    /**
+     * Note a tasso variabile.
+     */
+    @Component("FRN")
+    public static class FloatingRateNote extends FltBondTxnProcessor {
+    }
 }

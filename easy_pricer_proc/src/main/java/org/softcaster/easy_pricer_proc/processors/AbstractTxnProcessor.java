@@ -20,6 +20,31 @@ public abstract class AbstractTxnProcessor {
     protected abstract boolean shortSellEnabled();
 
     /**
+     * Componenti di un deal (premio, margine, rateo) solo al suo inserimento
+     * (PENDING / RESTARTING), non a ogni rielaborazione.
+     */
+    protected static boolean isNewDeal(org.softcaster.core.data.FinancialTxn txn) {
+        return txn.getTxnStatusPreElab() == org.softcaster.engine.enums.TxnStatus.PENDING
+                || txn.getTxnStatusPreElab() == org.softcaster.engine.enums.TxnStatus.RESTARTING;
+    }
+
+    /**
+     * Deal generato dalla chiusura (scadenze, rimborsi, rolling): nessun
+     * margine iniziale, la posizione si chiude e il margine dei deal originali
+     * lo rilascia l'evento MATURITY.
+     */
+    protected static boolean isEodDeal(org.softcaster.core.data.FinancialTxn txn) {
+        return txn.getTxnOrigin() == org.softcaster.engine.enums.TxnOrigin.EOD;
+    }
+
+    /**
+     * Margine iniziale su un deal nuovo dell'utente.
+     */
+    protected static boolean marginApplies(org.softcaster.core.data.FinancialTxn txn) {
+        return isNewDeal(txn) && !isEodDeal(txn);
+    }
+
+    /**
      * Prezzo e quantita' del deal in base unitaria per i conti di posizione.
      */
     protected abstract ProcInputData positionInput(MasterData masterData, double quantity, double price, TxnSide side);

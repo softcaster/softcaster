@@ -46,6 +46,20 @@ public class MtmService {
         MasterData masterData = (MasterData) Hibernate.unproxy(masterDataDAO.findByIdMasterData(masterDataId));
         String assetClass = masterData.getAssetClass().getCode();
 
+        // posizione chiusa su uno strumento scaduto (step MATURITY): niente da
+        // valutare, e la valutazione fallirebbe (nessun flusso, nessuna quotazione)
+        double buyQty = position.getBuyQty() == null ? 0. : position.getBuyQty();
+        double sellQty = position.getSellQty() == null ? 0. : position.getSellQty();
+        java.time.LocalDate officialDate = mtmHelper.getOfficialDate();
+        if (masterData.getMaturityDate() != null && officialDate != null
+                && !masterData.getMaturityDate().toLocalDate().isAfter(officialDate)
+                && org.softcaster.easy_pricer_mds_core.PnlCalc.isFlat(buyQty, sellQty)) {
+            position.setUnrealizedPnl(0.);
+            positionDetailDAO.saveOrUpdate(position);
+            log.info("Mtm instrument {}: matured, position closed, not valued", masterData.getCode());
+            return;
+        }
+
         IPositionEvaluator evaluator = evaluatorDispatcher.dispatch(assetClass);
         if (evaluator != null) {
             evaluator.evaluate(position, masterData, mtmHelper, context);

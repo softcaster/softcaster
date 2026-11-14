@@ -200,6 +200,28 @@ public class AcctPollingJob {
         }
     }
 
+    /**
+     * Scadenza dello strumento (step MATURITY): un evento per deal con margine
+     * iniziale, che lo script rilascia.
+     */
+    protected void pollPendingMaturityEvents() {
+        List<AccountingEvent> maturityEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.TRADE,
+                EventType.MATURITY);
+
+        if (!maturityEvents.isEmpty()) {
+            log.info("=== [BATCH START] find {} MATURITY event(s) ===", maturityEvents.size());
+            for (AccountingEvent event : maturityEvents) {
+                try {
+                    tradeAccountingEventService.processEvent(event);
+                } catch (Exception e) {
+                    log.error("### ERROR MATURITY ID {}: {}", event.getEventId(), e.getMessage());
+                    LoggerMgr.logError(e.getLocalizedMessage());
+                }
+            }
+            log.info("=== [BATCH END] Processing completed ===\n");
+        }
+    }
+
     protected void pollPendingAccrualEvents() {
         List<AccountingEvent> accrualEvents = accountingEventDAO.fetchAndClaimEvents(EventSourceType.INSTRUMENT,
                 EventType.ACCRUAL);
@@ -256,6 +278,7 @@ public class AcctPollingJob {
         // Dopo i settlement: lo storno deve trovare tutte le righe del deal
         poolPendingAmendedTradeEvents();
         poolPendingCancelledTradeEvents();
+        pollPendingMaturityEvents();
         pollPendingAccrualEvents();
         pollPendingCouponEvents();
         pollPendingMtmEvents();

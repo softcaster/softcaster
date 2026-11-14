@@ -30,6 +30,21 @@ import org.springframework.stereotype.Component;
 @Component("XRB")
 public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProcessor {
 
+    /**
+     * Note a tasso fisso.
+     */
+    @Component("XRN")
+    public static class FixedRateNote extends BondTxnProcessor {
+    }
+
+    /**
+     * BOT e titoli zero coupon a breve: nessuna cedola, il rateo e' zero e lo
+     * sconto matura nel prezzo secco (MtM).
+     */
+    @Component("BLL")
+    public static class Bill extends BondTxnProcessor {
+    }
+
     @Autowired
     @Qualifier("cashFlowInstrumentCalculator")
     CashFlowInstrumentCalculator calculator;
@@ -49,6 +64,12 @@ public class BondTxnProcessor extends AbstractTxnProcessor implements ITxnProces
         ProcInputData input = positionInput(smd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide());
         // trasformo prezzo di mercato in base unitaria per calcolo utili unrealized
         super.process(input, position);
+
+        // rimborso a scadenza (deal EOD a 100): nessun rateo, il titolo non ha piu'
+        // flussi da valutare
+        if (isEodDeal(txn)) {
+            return;
+        }
 
         XRBInput bondInputData = calculator.getXRBInput(txn.getTradeDate().toLocalDate(), txn.getPrice(), smd); 
         XRBResult bondOutputData = calculator.fixedIncomeValuation(bondInputData); 

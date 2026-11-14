@@ -54,7 +54,7 @@ public abstract class OptionTxnProcessor extends AbstractTxnProcessor implements
         }
 
         boolean futuresStyle = omd.getPremiumStyle() == PremiumStyle.FUTURES_STYLE;
-        if (!futuresStyle) {
+        if (!futuresStyle && input.getPrice() * input.getQuantity() != 0.) {
             FinancialTxnComponent premium = new FinancialTxnComponent();
             premium.setCurrency(omd.getCurrency());
             premium.setDescription("Option premium " + (txn.getTxnSide() == TxnSide.BUY ? "paid" : "received")
@@ -64,7 +64,8 @@ public abstract class OptionTxnProcessor extends AbstractTxnProcessor implements
             txn.addTxnComponent(premium);
         }
 
-        boolean margined = futuresStyle || txn.getTxnSide() == TxnSide.SELL;
+        // nessun margine sui deal di scadenza (EOD): chiudono la posizione
+        boolean margined = !isEodDeal(txn) && (futuresStyle || txn.getTxnSide() == TxnSide.SELL);
         if (margined && omd.getInitialMargin() != null && omd.getInitialMargin() > 0) {
             FinancialTxnComponent initialMargin = new FinancialTxnComponent();
             initialMargin.setCurrency(omd.getCurrency());

@@ -31,6 +31,9 @@ public class FxFutureTxnProcessor extends AbstractTxnProcessor implements ITxnPr
 
         super.process(positionInput(ffmd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide()), position);
 
+        if (!marginApplies(txn)) {
+            return;
+        }
         // Aggiungo component initial margin
         FinancialTxnComponent initialMargin = new FinancialTxnComponent();
         initialMargin.setCurrency(ffmd.getCurrency());

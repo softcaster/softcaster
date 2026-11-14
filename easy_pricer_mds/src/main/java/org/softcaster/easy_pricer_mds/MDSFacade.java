@@ -8,6 +8,7 @@ import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.AssetClassDAO;
 import org.softcaster.core.data.BondFutureMasterDataDAO;
 import org.softcaster.core.data.CalendarDAO;
+import org.softcaster.core.data.CalibrationProfileDAO;
 import org.softcaster.core.data.CmdFutureMasterDataDAO;
 import org.softcaster.core.data.CounterpartyDAO;
 import org.softcaster.core.data.CountryDAO;
@@ -26,6 +27,7 @@ import org.softcaster.core.data.SettlementTypeDAO;
 import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
+import org.softcaster.easy_pricer_mds_core.batches.ZSpreadHelper;
 import org.softcaster.easy_pricer_mds_core.calc.CashFlowInstrumentCalculator;
 import org.softcaster.engine.analytics.XRBPricer;
 import org.softcaster.market_data.core.MarketDataProviderService;
@@ -90,6 +92,11 @@ public class MDSFacade {
     private YieldCurveEntityDAO yieldCurveDAO;
     @Autowired
     private SpreadCurveEntityDAO spreadCurveDAO;
+    
+    @Autowired
+    private CalibrationProfileDAO calibrationProfileDAO;
+    @Autowired
+    private ZSpreadHelper zSpreadHelper;
 
     @Autowired
     @Qualifier("xRBPricer")
@@ -267,5 +274,19 @@ public class MDSFacade {
      */
     public MarketDataProviderService getProviderService() {
         return providerService;
+    }
+
+    /**
+     * @return the calibrationProfileDAO
+     */
+    public CalibrationProfileDAO getCalibrationProfileDAO() {
+        return calibrationProfileDAO;
+    }
+
+    /**
+     * @return the zSpreadHelper
+     */
+    public ZSpreadHelper getzSpreadHelper() {
+        return zSpreadHelper;
     }
 }

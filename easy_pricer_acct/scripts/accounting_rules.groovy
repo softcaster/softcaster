@@ -48,7 +48,11 @@ if (txn != null) {
         throw new IllegalArgumentException("Validation error: transaction price is null. Txn ID: ${txn.idFinancialTxn}")
     }
 
-    if (txn.price <= 0 && !premiumAssetClasses.contains(txn.masterData.assetClass.getCode())) {
+    // Deal di scadenza generati dalla chiusura (origin EOD): un'opzione che
+    // scade fuori dal denaro si chiude a prezzo zero
+    boolean eodZeroPrice = txn.txnOrigin == org.softcaster.engine.enums.TxnOrigin.EOD && txn.price == 0
+    if (txn.price < 0 && !premiumAssetClasses.contains(txn.masterData.assetClass.getCode())
+            || txn.price == 0 && !eodZeroPrice && !premiumAssetClasses.contains(txn.masterData.assetClass.getCode())) {
         throw new IllegalArgumentException("Validation error: transaction price must be greater than zero. Txn ID: ${txn.idFinancialTxn}")
     }
 }

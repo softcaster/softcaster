@@ -31,7 +31,7 @@ public class ZSpreadHelper {
     @Autowired
     CalibrationProfileDAO calibrationProfileDAO;
     @Autowired
-    MarketDataService marketDataService;          
+    MarketDataService marketDataService;
     @Autowired
     SpreadCurveCalibrator calibrator;
 
@@ -39,15 +39,26 @@ public class ZSpreadHelper {
 
     public void calibrateZSpread(String spreadCurve) {
         log.info("===  Starting z-spread calibration ... ===\n");
-        Result result = calibrator.calibrate(spreadCurve);  
+        Result result = calibrator.calibrate(spreadCurve);
         log.info("=== {} ===\n", result.message());
-}
-    
+    }
+
+    public void calibrateZSpreadCurves(Integer profileId) {
+        if (profileId != null && profileId > 0) {
+            List<String> curves = calibrationProfileDAO.findCurvesFromCalibrationProfileCode(profileId);
+            if (curves != null && !curves.isEmpty()) {
+                for (String curve : curves) {
+                    calibrateZSpread(curve);
+                }
+            }
+        }
+    }
+
     public void updateCalibrationItems(String profileCode) {
         log.info("===  Starting update calibration items ... ===\n");
 
         LocalDate officialDate = marketDataService.getOfficialDate();
-        
+
         CalibrationProfile profile = calibrationProfileDAO.findByCalibrationProfileCode(profileCode);
         if (profile == null) {
             log.error("CalibrationProfile is null!");
@@ -77,6 +88,7 @@ public class ZSpreadHelper {
                 }
             }
         }
+        profile.setLastUpdate(officialDate);
         calibrationProfileDAO.saveOrUpdate(profile);
         log.info("===  Updated {} items ===\n", count);
     }

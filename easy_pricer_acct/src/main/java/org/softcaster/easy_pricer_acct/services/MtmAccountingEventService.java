@@ -78,6 +78,7 @@ public class MtmAccountingEventService extends BaseAccountingEventService {
                     masterData.getSettlementCcy(), eventMtm);
             ctx.setPreviousMtm(accountingEventMtmDAO.findLastPosted(eventMtm.getPositionDetail(), eventMtm.getValuationDate())
                     .orElse(null));
+            ctx.setMasterData(masterData);
 
             Bindings bindings = new SimpleBindings();
             bindings.put("ctx", ctx);

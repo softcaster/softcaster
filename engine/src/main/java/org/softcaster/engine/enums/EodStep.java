@@ -9,6 +9,8 @@ public enum EodStep implements IdentifiableEnum {
     // id dopo DATE_ROLL (aggiunto dopo), posizione di esecuzione prima di cedole e ratei
     FIXING(11, "FIXING", "Floating rate fixing"),
     COUPON(2, "COUPON", "Coupon events"),
+    // id dopo FIXING, posizione dopo le cedole (l'ultima cedola dei titoli) e prima del regolamento dei deal generati
+    MATURITY(12, "MATURITY", "Maturity and expiry"),
     SETTLEMENT(3, "SETTLEMENT", "Settlement events"),
     WAIT_SETTLEMENT_POSTED(4, "WAIT_SETTLEMENT_POSTED", "Wait for settlement accounting"),
     FX_ROLLING(5, "FX_ROLLING", "FX spot rolling"),

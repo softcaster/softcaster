@@ -221,6 +221,7 @@ INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (8, 'WAIT_EO
 INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (9, 'CONTROLS', 'Closing controls');
 INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (10, 'DATE_ROLL', 'Roll the official date');
 INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (11, 'FIXING', 'Floating rate fixing');
+INSERT INTO public.eod_step (eod_step_id, code, description) VALUES (12, 'MATURITY', 'Maturity and expiry');
 
 
 --

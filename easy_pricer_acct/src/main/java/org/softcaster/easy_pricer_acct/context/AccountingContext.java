@@ -10,6 +10,8 @@ import java.util.Objects;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.FinancialTxn;
 import org.softcaster.core.data.FinancialTxnComponent;
+import org.softcaster.core.data.MasterData;
+import org.hibernate.Hibernate;
 import org.softcaster.core.data.account.AccountingEvent;
 import org.softcaster.core.data.account.AccountingEventAccruals;
 import org.softcaster.core.data.account.AccountingEventMtm;
@@ -35,6 +37,8 @@ public class AccountingContext {
     private final int currencyScale;
     // evento MTM: ultima fotografia gia' contabilizzata della posizione
     private AccountingEventMtm previousMtm;
+    // eventi di posizione: anagrafica dello strumento (senza transazione)
+    private MasterData masterData;
 
     public AccountingContext(FinancialTxn txn, JournalDsl journal, Currency masterDataCurrency, Currency settlementCurrency, AccountingEvent event) {
         this.txn = txn;
@@ -115,6 +119,50 @@ public class AccountingContext {
                 .findFirst()
                 .map(BigDecimal::doubleValue)
                 .orElse(0.0);
+    }
+
+    /**
+     * Premio di un'opzione o di un accumulator (componente OPTION_PREMIUM,
+     * importo positivo), 0 se assente (premio nullo o opzione futures-style).
+     * Il verso, pagato o incassato, lo stabilisce lo script.
+     */
+    public double getOptionPremium() {
+        if (txn == null || txn.getComponents() == null || txn.getComponents().isEmpty()) {
+            return 0.0;
+        }
+        return txn.getComponents().stream()
+                .filter(c -> c.getComponentType() == TxnComponentType.OPTION_PREMIUM)
+                .map(FinancialTxnComponent::getAmount)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .map(BigDecimal::doubleValue)
+                .orElse(0.0);
+    }
+
+    /**
+     * Anagrafica dello strumento: quella della transazione, altrimenti quella
+     * impostata dal servizio per gli eventi di posizione (MTM).
+     */
+    public MasterData getMasterData() {
+        if (txn != null) {
+            return (MasterData) Hibernate.unproxy(txn.getMasterData());
+        }
+        return masterData == null ? null : (MasterData) Hibernate.unproxy(masterData);
+    }
+
+    public void setMasterData(MasterData masterData) {
+        this.masterData = masterData;
+    }
+
+    /**
+     * true se la transazione dell'evento ha gia' righe contabili: uno storno
+     * di un deal che non ha scritto nulla (premio nullo, nessun margine) non
+     * ha niente da stornare, e reverseJournal fallirebbe.
+     */
+    public boolean hasJournalLines() {
+        JournalEntryLinesDAO journalEntryLinesDAO = ApplicationContextHolder.getBean(JournalEntryLinesDAO.class);
+        List<JournalEntryLines> lines = journalEntryLinesDAO.findLinesByFinancialTxnId(this.event.getSourceId());
+        return lines != null && !lines.isEmpty();
     }
 
     public double getFutureInitialMargin() {

@@ -71,7 +71,6 @@ INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postab
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (21, 5, '52', 'Interest Expenses and Trading Losses', false, 2, 5, 1, '2026-06-05 09:03:34.250266', '2026-06-05 09:03:34.250266');
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (22, 5, '58', 'Trading Fees and Execution Costs', false, 2, 5, 1, '2026-06-05 09:03:34.250266', '2026-06-05 09:03:34.250266');
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (23, 6, '60', 'Financial Commitments', false, 3, 6, 1, '2026-06-05 09:03:34.250266', '2026-06-05 09:03:34.250266');
-INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (38, 11, '140020', 'Options Premium Purchased', true, 1, 1, 1, '2026-06-05 09:03:34.250266', '2026-06-05 09:03:34.250266');
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (42, 12, '190020', 'Dividends Receivable', true, 1, 1, 1, '2026-06-05 09:03:34.250266', '2026-06-05 09:03:34.250266');
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (45, 13, '210020', 'Short-Term Repo Loans', true, 1, 2, 2, '2026-06-05 09:03:34.250266', '2026-06-05 09:03:34.250266');
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (47, 14, '240020', 'Options Premium Written', true, 1, 2, 2, '2026-06-05 09:03:34.250266', '2026-06-05 09:03:34.250266');
@@ -134,6 +133,8 @@ INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postab
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (115, 109, '430010', 'Loan Fees Received', true, 2, 4, 2, '2026-11-07 18:26:34.640532', '2026-11-07 18:26:34.640532');
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (116, 107, '150020', 'Accrued Interest Receivable - Loans', true, 1, 1, 1, '2026-11-07 18:57:28.65387', '2026-11-07 18:57:28.65387');
 INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (117, 108, '220020', 'Accrued Interest Payable - Loans', true, 1, 2, 2, '2026-11-07 18:57:28.65387', '2026-11-07 18:57:28.65387');
+INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (38, 11, '140020', 'Options and OTC Derivatives - Premium', true, 1, 1, 1, '2026-06-05 09:03:34.250266', '2026-11-14 19:42:23.51073');
+INSERT INTO public.gl_accounts (account_id, parent, code, description, is_postable, statement_type, nature, balance, created_at, updated_at) VALUES (118, 11, '140050', 'Fair Value Adjustment - Options and OTC Derivatives', true, 1, 1, 1, '2026-11-14 19:42:23.51073', '2026-11-14 19:42:23.51073');
 
 
 --
@@ -242,6 +243,24 @@ INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, g
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (100, 'BOND_REALIZED_LOSS', 4, 68);
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (101, 'BOND_REALIZED_LOSS', 1, 68);
 INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (102, 'BOND_REALIZED_LOSS', 2, 68);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (103, 'DERIV_REALIZED_GAIN', 1, 55);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (104, 'DERIV_REALIZED_GAIN', 2, 55);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (105, 'DERIV_REALIZED_GAIN', 4, 55);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (106, 'DERIV_REALIZED_LOSS', 1, 63);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (107, 'DERIV_REALIZED_LOSS', 2, 63);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (108, 'DERIV_REALIZED_LOSS', 4, 63);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (109, 'DERIV_UNREALIZED_GAIN', 1, 56);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (110, 'DERIV_UNREALIZED_GAIN', 2, 56);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (111, 'DERIV_UNREALIZED_GAIN', 4, 56);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (112, 'DERIV_UNREALIZED_LOSS', 1, 64);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (113, 'DERIV_UNREALIZED_LOSS', 2, 64);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (114, 'DERIV_UNREALIZED_LOSS', 4, 64);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (115, 'OPTION_FV_ADJUSTMENT', 1, 118);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (116, 'OPTION_FV_ADJUSTMENT', 2, 118);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (117, 'OPTION_FV_ADJUSTMENT', 4, 118);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (118, 'OPTION_PREMIUM', 1, 38);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (119, 'OPTION_PREMIUM', 2, 38);
+INSERT INTO public.account_mapping (account_mapping_id, mapping_key, currency, gl_account) VALUES (120, 'OPTION_PREMIUM', 4, 38);
 
 
 --
@@ -281,6 +300,15 @@ INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, as
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (6, 11, NULL, 'FUT');
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (7, 6, NULL, 'LOAN');
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (8, 7, NULL, 'LOAN');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (9, 5, NULL, 'XRB');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (10, 12, NULL, 'FUT');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (11, 13, NULL, 'FUT');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (12, 14, NULL, 'OPTION');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (13, 15, NULL, 'OPTION');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (14, 16, NULL, 'OPTION');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (15, 17, NULL, 'OPTION');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (16, 18, NULL, 'OPTION');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (17, 19, NULL, 'OPTION');
 
 
 --
@@ -753,6 +781,13 @@ INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES 
 INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (425, 117, 5);
 INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (426, 117, 6);
 INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (427, 117, 7);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (428, 118, 1);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (429, 118, 2);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (430, 118, 3);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (431, 118, 4);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (432, 118, 5);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (433, 118, 6);
+INSERT INTO public.gl_account_slots (account_slot_id, account, currency) VALUES (434, 118, 7);
 
 
 --
@@ -802,14 +837,14 @@ INSERT INTO public.position_master_data (id_position, portfolio, currency, code,
 -- Data for Name: system_business_calendar; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_business_calendar (sbc_id, description, calendar, status, official_date, next_business_date, version, updated_at, currency, last_official_date) VALUES (1, 'SO.FI.E Buiness Calendar', 1, 1, '2026-11-11', NULL, 15, '2026-11-08 15:53:52.964759', 1, '2026-11-10');
+INSERT INTO public.system_business_calendar (sbc_id, description, calendar, status, official_date, next_business_date, version, updated_at, currency, last_official_date) VALUES (1, 'SO.FI.E Buiness Calendar', 1, 1, '2026-11-13', NULL, 15, '2026-11-08 16:36:02.377716', 1, '2026-11-13');
 
 
 --
 -- Name: account_mapping_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.account_mapping_s', 102, true);
+SELECT pg_catalog.setval('public.account_mapping_s', 120, true);
 
 
 --
@@ -823,7 +858,7 @@ SELECT pg_catalog.setval('public.asset_class_s', 19, true);
 -- Name: asset_class_script_mapping_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.asset_class_script_mapping_s', 8, true);
+SELECT pg_catalog.setval('public.asset_class_script_mapping_s', 17, true);
 
 
 --
@@ -872,14 +907,14 @@ SELECT pg_catalog.setval('public.descriptors_s', 1, false);
 -- Name: gl_account_slots_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.gl_account_slots_s', 427, true);
+SELECT pg_catalog.setval('public.gl_account_slots_s', 434, true);
 
 
 --
 -- Name: gl_accounts_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.gl_accounts_s', 117, true);
+SELECT pg_catalog.setval('public.gl_accounts_s', 118, true);
 
 
 --

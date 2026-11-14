@@ -188,6 +188,7 @@ public class EodBatchRunner {
                 case OPEN_CLOSING -> openClosing(run);
                 case FIXING -> callTask(step, date, ServiceType.LSRV, "/internal/system/fixing");
                 case COUPON -> taskWithTrades(step, date, "/internal/system/coupon");
+                case MATURITY -> taskWithTrades(step, date, "/internal/system/maturity");
                 case SETTLEMENT -> callTask(step, date, ServiceType.LSRV, "/internal/system/settlement");
                 case ACCRUAL -> callTask(step, date, ServiceType.LSRV, "/internal/system/accrual");
                 case FX_ROLLING -> taskWithTrades(step, date, "/internal/system/fx_rolling");

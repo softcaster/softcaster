@@ -31,6 +31,9 @@ public class BondFutureTxnProcessor extends AbstractTxnProcessor implements ITxn
 
         super.process(positionInput(bfmd, txn.getQuantity(), txn.getPrice(), txn.getTxnSide()), position);
 
+        if (!marginApplies(txn)) {
+            return;
+        }
         // Aggiungo component initial margin
         FinancialTxnComponent initialMargin = new FinancialTxnComponent();
         initialMargin.setCurrency(bfmd.getCurrency());
