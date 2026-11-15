@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import org.softcaster.easy_pricer_srv.dto.VolatilitySurfaceDto;
+import org.softcaster.easy_pricer_srv.services.CmeVolatilityImportService;
 import org.softcaster.easy_pricer_srv.services.VolatilityService;
 import org.softcaster.easy_pricer_srv.util.CommonData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class VolatilityRestController {
     @Autowired
     private VolatilityService service;
 
+    @Autowired
+    private CmeVolatilityImportService cmeImport;
+
     @GetMapping("/volatility/r01")
     public ResponseEntity<List<VolatilitySurfaceDto>> findAll() {
         return ResponseEntity.ok(service.findAll());
@@ -44,6 +48,21 @@ public class VolatilityRestController {
     public ResponseEntity<VolatilitySurfaceDto> upload(@PathVariable("code") String code,
             @RequestBody VolatilitySurfaceDto dto) {
         return ResponseEntity.ok(service.upload(code, dto));
+    }
+
+    /**
+     * Superficie della coppia dal file di settlement CME della giornata
+     * (corpo: il CSV), volatilita' implicite delle opzioni sul future.
+     * Esempio: POST /volatility/EURUSD-VOL/cme?option=EUU&future=6E
+     */
+    @PostMapping(value = "/volatility/{code}/cme", consumes = {"text/csv", "text/plain"})
+    public ResponseEntity<CmeVolatilityImportService.ImportResult> importCme(@PathVariable("code") String code,
+            @RequestBody String csv,
+            @RequestParam("option") String optionSymbol,
+            @RequestParam("future") String futureSymbol,
+            @RequestParam(value = "strikeScale", defaultValue = "1") double strikeScale,
+            @RequestParam(value = "minPremium", defaultValue = "0.00005") double minPremium) {
+        return ResponseEntity.ok(cmeImport.importSettlements(code, csv, optionSymbol, futureSymbol, strikeScale, minPremium));
     }
 
     @GetMapping("/volatility/{code}/value")

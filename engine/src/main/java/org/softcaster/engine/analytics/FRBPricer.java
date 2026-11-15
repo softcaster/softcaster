@@ -5,7 +5,6 @@
 package org.softcaster.engine.analytics;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.softcaster.engine.cashflow.CashFlow;
 import org.softcaster.engine.dto.CashFlowAnalytics;
@@ -84,32 +83,6 @@ public class FRBPricer extends AbstractFixedIncomePricer<FRBInput, FRBResult> {
                 .toList();
 
         return solveDiscountMargin(futureFlows, dirtyPrice, valuationDate, dcb, compounding, frequency, currentRate, spread);
-    }
-
-    public double calculateFltShortBondYield(List<CashFlow> flows, LocalDate valuationDate, double referencePrice, double redemptionPrice, double accruedInterest, DaycountBasis dcb) {
-        // 1. Trova l'unico cash flow della cedola in corso (quella che scadrà a breve)
-        CashFlow currentFlow = flows.stream()
-                .filter(cf -> !valuationDate.isBefore(cf.accrualStart()) && valuationDate.isBefore(cf.accrualEnd()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Nessun periodo cedolare attivo alla data di valutazione"));
-
-        // 2. Calcola il Prezzo Tel Quel (Dirty Price) pagato sul mercato
-        double dirtyPrice = referencePrice + accruedInterest;
-
-        // 3. Calcola il valore totale ottenuto alla data di stacco (Capitale 100 + Cedola Semestrale Intera)
-        double totalPayoutAtReset = redemptionPrice + currentFlow.interest();
-
-        // 4. Calcola i giorni effettivi che mancano da OGGI (valuationDate) alla data di stacco cedola
-        long daysToReset = ChronoUnit.DAYS.between(valuationDate, currentFlow.accrualEnd());
-
-        // Frazione d'anno monetaria (ACT/360) per il tempo residuo
-        double yearFractionToReset = daysToReset / dcb.getTime();
-
-        // 5. Formula inversa per ricavare lo Yield (Rendimento annualizzato linearmente)
-        // dirtyPrice = totalPayoutAtReset / (1 + yield * yearFractionToReset)
-        double shortBondYield = ((totalPayoutAtReset / dirtyPrice) - 1.0) / yearFractionToReset;
-
-        return shortBondYield; // Restituisce es. 0.032 (3.2%)
     }
 
     /**

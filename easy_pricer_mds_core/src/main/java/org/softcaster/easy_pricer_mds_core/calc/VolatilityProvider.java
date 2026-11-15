@@ -1,6 +1,7 @@
 package org.softcaster.easy_pricer_mds_core.calc;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,6 +40,10 @@ public class VolatilityProvider {
     /**
      * Vuoto se il sottostante non ha superficie o non ci sono punti utili alla
      * data.
+     *
+     * @throws IllegalStateException se l'ultima rilevazione e' piu' vecchia di
+     * max_age_days: valutare con volatilita' vecchie darebbe valori sbagliati
+     * senza avvisare (stessa regola degli z-spread)
      */
     public Optional<SurfaceData> surface(Integer underlyingId, LocalDate valuationDate) {
         Optional<VolatilitySurfaceEntity> entity = volatilitySurfaceDAO.findByUnderlying(underlyingId);
@@ -46,6 +51,15 @@ public class VolatilityProvider {
             return Optional.empty();
         }
         List<VolatilityPoint> points = volatilitySurfaceDAO.findLatestPoints(entity.get().getIdVolatilitySurface(), valuationDate);
+        if (!points.isEmpty()) {
+            LocalDate asOf = points.get(0).getReferenceDate();
+            long ageDays = ChronoUnit.DAYS.between(asOf, valuationDate);
+            Integer maxAge = entity.get().getMaxAgeDays();
+            if (maxAge != null && ageDays > maxAge) {
+                throw new IllegalStateException("Volatility surface " + entity.get().getCode() + " is stale: as of " + asOf
+                        + " (" + ageDays + " days, max " + maxAge + ")");
+            }
+        }
         List<VolatilityNode> nodes = points.stream()
                 .filter(p -> p.getExpiryDate().isAfter(valuationDate))
                 .map(p -> new VolatilityNode(p.getExpiryDate(), p.getStrike(), p.getVolatility()))

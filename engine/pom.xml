@@ -10,7 +10,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
         <spring-boot.version>3.2.3</spring-boot.version>
-        <exec.mainClass>org.softcaster.Engine</exec.mainClass>
     </properties>
     
     <dependencyManagement>

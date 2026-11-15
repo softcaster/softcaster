@@ -80,6 +80,7 @@ public class OptionCalculator {
     private final GarmanKohlhagenPricer garmanKohlhagenPricer;
     private final CRRBinomialPricer crrPricer;
     private final VolatilityProvider volatilityProvider;
+    private final FxForwardCalculator fxForwardCalculator;
 
     public OptionCalculator(FutureOptionMasterDataDAO futureOptionMasterDataDAO,
                             SpotOptionMasterDataDAO spotOptionMasterDataDAO,
@@ -89,7 +90,9 @@ public class OptionCalculator {
                             Black76Pricer black76Pricer,
                             GarmanKohlhagenPricer garmanKohlhagenPricer,
                             CRRBinomialPricer crrPricer,
-                            VolatilityProvider volatilityProvider) {
+                            VolatilityProvider volatilityProvider,
+                            FxForwardCalculator fxForwardCalculator) {
+        this.fxForwardCalculator = Objects.requireNonNull(fxForwardCalculator);
         this.futureOptionMasterDataDAO = Objects.requireNonNull(futureOptionMasterDataDAO);
         this.spotOptionMasterDataDAO = Objects.requireNonNull(spotOptionMasterDataDAO);
         this.fxFutureMasterDataDAO = Objects.requireNonNull(fxFutureMasterDataDAO);
@@ -115,13 +118,39 @@ public class OptionCalculator {
         return volatilityProvider.surface(omd.getUnderlying().getIdMasterData(), valuationDate);
     }
 
+    /**
+     * Volatilita' della serie alla sua scadenza e al suo strike: dalla
+     * superficie del sottostante; per un'opzione su future su cambi senza
+     * superficie propria, da quella della coppia. Quella superficie e' in
+     * termini di forward della coppia alla consegna OTC
+     * (FxForwardCalculator.optionForward): lo strike
+     * del future si porta in quei termini, K x F_coppia / F_future, a parita' di
+     * moneyness.
+     */
     public Optional<Double> surfaceVolatility(String code, LocalDate valuationDate) {
         OptionMasterData omd = findSeries(code);
         if (omd.getStrike() == null || omd.getExpiryLocalDate() == null) {
             return Optional.empty();
         }
-        return volatilityProvider.surface(omd.getUnderlying().getIdMasterData(), valuationDate)
+        Optional<Double> own = volatilityProvider.surface(omd.getUnderlying().getIdMasterData(), valuationDate)
                 .map(s -> s.surface().volatility(omd.getExpiryLocalDate(), omd.getStrike()));
+        if (own.isPresent() || !(omd instanceof FutureOptionMasterData)) {
+            return own;
+        }
+        FutureMasterData future = (FutureMasterData) Hibernate.unproxy(omd.getUnderlying());
+        if (!(future instanceof FxFutureMasterData)) {
+            return own;
+        }
+        FxFutureMasterData fxFuture = fxFutureMasterDataDAO.getByCodeOrIsin(future.getCode());
+        ForexMasterData pair = (ForexMasterData) Hibernate.unproxy(fxFuture.getUnderlying());
+        Optional<VolatilityProvider.SurfaceData> pairSurface = volatilityProvider.surface(pair.getIdMasterData(), valuationDate);
+        if (pairSurface.isEmpty()) {
+            return own;
+        }
+        double futurePrice = price(null, future);
+        double pairForward = fxForwardCalculator.optionForward(pair, valuationDate, omd.getExpiryLocalDate());
+        double strike = omd.getStrike() * pairForward / futurePrice;
+        return Optional.of(pairSurface.get().surface().volatility(omd.getExpiryLocalDate(), strike));
     }
 
     // ------------------------------------------------------------------------
@@ -199,9 +228,19 @@ public class OptionCalculator {
         double spot = price(spotPrice, pair);
         String domestic = domesticCurveCode != null && !domesticCurveCode.isBlank() ? domesticCurveCode : pair.getCcyIrc();
         String foreign = foreignCurveCode != null && !foreignCurveCode.isBlank() ? foreignCurveCode : pair.getBcyIrc();
+        // convenzione FX: premio al regolamento dello spot, payoff alla consegna
+        OptionContract contract = contract(omd);
+        int days = pair.getBusinessDays() == null ? 2 : pair.getBusinessDays();
+        org.softcaster.easy_pricer_mds_core.Calendar calendar = new org.softcaster.easy_pricer_mds_core.Calendar(pair.getCurrencyList());
+        LocalDate spotDate = calendar.getNextBusinessDate(valuationDate, days);
+        LocalDate delivery = omd.getDeliveryLocalDate() != null ? omd.getDeliveryLocalDate()
+                : calendar.getNextBusinessDate(contract.expiryDate(), days);
+        if (delivery.isBefore(spotDate)) {
+            delivery = spotDate;   // opzione gia' scaduta: nessun periodo di sconto
+        }
         return new FxOptionInput(omd.getCode(), valuationDate, spot,
                 loadCurve(domestic, valuationDate), loadCurve(foreign, valuationDate),
-                contract(omd), volatility);
+                contract, volatility, spotDate, delivery);
     }
 
     /**

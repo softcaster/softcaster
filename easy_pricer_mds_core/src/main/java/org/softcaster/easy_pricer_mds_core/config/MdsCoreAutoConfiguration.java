@@ -87,10 +87,11 @@ public class MdsCoreAutoConfiguration {
             Black76Pricer black76Pricer,
             GarmanKohlhagenPricer garmanKohlhagenPricer,
             CRRBinomialPricer crrPricer,
-            VolatilityProvider volatilityProvider) {
+            VolatilityProvider volatilityProvider,
+            FxForwardCalculator fxForwardCalculator) {
         return new OptionCalculator(futureOptionMasterDataDAO, spotOptionMasterDataDAO, fxFutureMasterDataDAO,
                 bondForwardCalculator, marketDataService, black76Pricer, garmanKohlhagenPricer, crrPricer,
-                volatilityProvider);
+                volatilityProvider, fxForwardCalculator);
     }
 
     @Bean(name = "volatilityProvider")

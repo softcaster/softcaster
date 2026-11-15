@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.softcaster.engine.dto.EquityOptionInput;
 import org.softcaster.engine.dto.ForwardOptionInput;
+import org.softcaster.engine.dto.FxForwardResult;
 import org.softcaster.engine.dto.FxOptionInput;
 import org.softcaster.engine.dto.Greeks;
 import org.softcaster.engine.dto.OptionContract;
@@ -25,7 +26,8 @@ import org.softcaster.engine.enums.ExerciseStyle;
  * Il sottostante e' ridotto a tre parametri: S = prezzo di partenza (spot,
  * oppure forward per ForwardOptionInput) r = tasso continuo di sconto del
  * premio b = cost of carry continuo, cioe' la crescita attesa del sottostante:
- * azione b = r - q, cambio b = r_dom - r_for, future/forward b = 0
+ * azione b = r - q, cambio b = ln(F_consegna / S) / T con sconto tra
+ * regolamento dello spot e consegna (come Garman-Kohlhagen), future/forward b = 0
  *
  * Nodi: S_{n,i} = S * exp(b n dt + sigma sqrt(dt) (2i - n)), i = 0..n E' la
  * spaziatura del CRR (u/d = exp(2 sigma sqrt dt)) con i nodi centrati sul
@@ -41,6 +43,7 @@ public final class CRRBinomialPricer implements Pricer<OptionInput, OptionResult
 
     private static final double MIN_SIGMA = 1e-8;   // volatilita' nulla trattata come quasi nulla
     private static final double ONE_DAY = 1.0 / 365.0;
+    private static final FxForwardPricer FX_FORWARD = new FxForwardPricer();
 
     private final int steps;
 
@@ -198,9 +201,12 @@ public final class CRRBinomialPricer implements Pricer<OptionInput, OptionResult
             return new Params(eq.spot(), r, r - eq.dividendYield(), in.volatility(), t);
         }
         if (in instanceof FxOptionInput fx) {
-            double rd = rate(fx.domesticCurve().getDiscountFactor(exp) / fx.domesticCurve().getDiscountFactor(val), t);
-            double rf = rate(fx.foreignCurve().getDiscountFactor(exp) / fx.foreignCurve().getDiscountFactor(val), t);
-            return new Params(fx.spot(), rd, rd - rf, in.volatility(), t);
+            // come Garman-Kohlhagen: forward alla consegna (FxForwardPricer) e sconto tra
+            // regolamento dello spot e consegna, distribuiti sul tempo alla scadenza
+            FxForwardResult fwd = FX_FORWARD.calculate(fx.forwardInput());
+            double r = rate(fwd.domesticDF(), t);
+            double b = t > 0 ? Math.log(fwd.forwardRate() / fx.spot()) / t : 0.0;
+            return new Params(fx.spot(), r, b, in.volatility(), t);
         }
         if (in instanceof ForwardOptionInput fw) {
             double r = fw.premiumDiscounted()

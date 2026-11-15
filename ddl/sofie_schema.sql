@@ -2655,7 +2655,8 @@ CREATE TABLE public.volatility_surface (
     id_volatility_surface integer NOT NULL,
     code character varying(25) NOT NULL,
     description character varying(255) DEFAULT ''::character varying NOT NULL,
-    underlying integer NOT NULL
+    underlying integer NOT NULL,
+    max_age_days integer DEFAULT 5 NOT NULL
 );
 
 

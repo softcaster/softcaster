@@ -5,8 +5,6 @@
 package org.softcaster.engine.analytics;
 
 import org.softcaster.engine.dto.CashFlowAnalytics;
-import org.softcaster.engine.dto.FRBInput;
-import org.softcaster.engine.dto.PricingResult;
 import org.softcaster.engine.dto.XRBInput;
 import org.softcaster.engine.dto.XRBResult;
 
@@ -36,9 +34,5 @@ public class XRBPricer extends AbstractFixedIncomePricer<XRBInput, XRBResult> {
 
         XRBResult result = new XRBResult(input.code(), input.valuationDate(), analytics);
         return result;
-    }
-
-    public PricingResult calculate(FRBInput input) {
-        return null;
     }
 }

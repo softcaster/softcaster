@@ -38,6 +38,21 @@ public class VolatilitySurfaceEntity implements Serializable {
     @JoinColumn(name = "underlying", nullable = false)
     private MasterData underlying;
 
+    /**
+     * Eta' massima della rilevazione, in giorni di calendario dalla data di
+     * valutazione: oltre, la superficie non si usa (come gli z-spread).
+     */
+    @Column(name = "max_age_days", nullable = false)
+    private Integer maxAgeDays = 5;
+
+    public Integer getMaxAgeDays() {
+        return maxAgeDays;
+    }
+
+    public void setMaxAgeDays(Integer maxAgeDays) {
+        this.maxAgeDays = maxAgeDays;
+    }
+
     public Integer getIdVolatilitySurface() {
         return idVolatilitySurface;
     }

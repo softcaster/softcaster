@@ -3,7 +3,10 @@ package org.softcaster.easy_pricer_mds_core.calc;
 import java.time.LocalDate;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FxFutureMasterData;
+import org.softcaster.easy_pricer_mds_core.Calendar;
+import org.softcaster.engine.enums.RequestType;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.dto.PricingRequest;
@@ -132,6 +135,29 @@ public class FxForwardCalculator {
     // ------------------------------------------------------------------------
     // -- Valutazione
     // ------------------------------------------------------------------------
+
+    /**
+     * Cambio forward della coppia alla consegna di un'opzione OTC che scade in
+     * expiry (scadenza + giorni di regolamento della coppia), dallo spot mid e
+     * dalle curve della coppia in memoria; sconto dal regolamento dello spot
+     * (valuationDate + giorni di regolamento), come FxForwardPricer.
+     *
+     * Serve a portare gli strike delle opzioni su future (riferiti al prezzo del
+     * future) in termini di forward della coppia e ritorno, a parita' di
+     * moneyness: superficie di volatilita' della coppia dai dati CME.
+     */
+    public double optionForward(ForexMasterData pair, LocalDate valuationDate, LocalDate expiry) {
+        double spot = marketDataService.getSpotPrice(pair.getCode(), RequestType.MIDDLE);
+        if (spot <= 0.) {
+            throw new IllegalStateException("Missing spot for " + pair.getCode());
+        }
+        int days = pair.getBusinessDays() == null ? 2 : pair.getBusinessDays();
+        Calendar calendar = new Calendar(pair.getCurrencyList());
+        FxForwardInput input = getFxForwardInput(pair.getCode(),
+                calendar.getNextBusinessDate(valuationDate, days), calendar.getNextBusinessDate(expiry, days), spot,
+                marketDataService.getDiscountCurve(pair.getCcyIrc()), marketDataService.getDiscountCurve(pair.getBcyIrc()), null);
+        return fxForwardPricer.forwardRate(input);
+    }
 
     public FxForwardResult fxFwdValuation(FxForwardInput input) {
         return fxForwardPricer.calculate(Objects.requireNonNull(input, "input"));
