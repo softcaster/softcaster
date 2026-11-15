@@ -140,6 +140,7 @@ public class VolatilityImportHelper {
      *                     quotati allo stesso modo)
      * @param minPremium   premio minimo: sotto, il prezzo di settlement non
      *                     dice nulla sulla volatilita'
+     * @return 
      */
     public ImportResult importCmeSettlements(String code, Path file, String optionSymbol, String futureSymbol,
             double strikeScale, double minPremium) {
