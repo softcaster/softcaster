@@ -40,6 +40,7 @@ import org.softcaster.easy_pricer_mds.view.MmFutPanel;
 import org.softcaster.easy_pricer_mds.view.SpreadedCurvePanel;
 import org.softcaster.easy_pricer_mds.view.YieldCurveDefPanel;
 import org.softcaster.easy_pricer_mds.view.YieldCurvePanel;
+import org.softcaster.easy_pricer_mds.view.VolatilityUpdatePanel;
 import org.softcaster.easy_pricer_mds.view.ZspreadUpdatePanel;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,6 +160,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                             case BATCH_ZSPREAD -> {
                                 cl.show(mainPanel, AppCard.BATCH_ZSPREAD_CARD.name());
                                 currentCard = AppCard.BATCH_ZSPREAD_CARD;
+                            }
+                            case BATCH_VOLATILITY -> {
+                                cl.show(mainPanel, AppCard.BATCH_VOLATILITY_CARD.name());
+                                currentCard = AppCard.BATCH_VOLATILITY_CARD;
                             }
                             default -> {
                                 cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
@@ -418,6 +423,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.FX_OPTION_CARD, fxOptPanel);
         JPanel zspreadPanel = new ZspreadUpdatePanel(mDSFacade);
         cardMap.put(AppCard.BATCH_ZSPREAD_CARD, zspreadPanel);
+        JPanel volatilityPanel = new VolatilityUpdatePanel(mDSFacade);
+        cardMap.put(AppCard.BATCH_VOLATILITY_CARD, volatilityPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
@@ -433,6 +440,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(scUpdatePanel, AppCard.SC_UPDATE_CARD.name());
         mainPanel.add(fxOptPanel, AppCard.FX_OPTION_CARD.name());
         mainPanel.add(zspreadPanel, AppCard.BATCH_ZSPREAD_CARD.name());
+        mainPanel.add(volatilityPanel, AppCard.BATCH_VOLATILITY_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

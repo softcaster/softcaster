@@ -50,7 +50,7 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
                         setIcon(forexIcon);
                     case BOND_FUTURE, MM_FUTURE, FX_FUTURE, CMD_FUTURE ->
                         setIcon(futureIcon);
-                    case BATCH_ZSPREAD ->
+                    case BATCH_ZSPREAD, BATCH_VOLATILITY ->
                         setIcon(batchIcon);
                     default -> {
                         setIcon(getDefaultLeafIcon()); // Torna al "pallino" o icona di default

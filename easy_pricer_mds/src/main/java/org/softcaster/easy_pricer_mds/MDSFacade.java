@@ -97,6 +97,14 @@ public class MDSFacade {
     private CalibrationProfileDAO calibrationProfileDAO;
     @Autowired
     private ZSpreadHelper zSpreadHelper;
+    @Autowired
+    private org.softcaster.easy_pricer_mds_core.batches.VolatilityImportHelper volatilityImportHelper;
+    @Autowired
+    private org.softcaster.core.data.VolatilitySurfaceDAO volatilitySurfaceDAO;
+
+    // batch delle volatilita' (conf/params.xml): cartella dei file CSV e superfici da caricare
+    public static final String CME_VOL_DIRECTORY = "CME_VOL_DIRECTORY";
+    public static final String CME_VOL_SURFACES = "CME_VOL_SURFACES";
 
     @Autowired
     @Qualifier("xRBPricer")
@@ -288,5 +296,30 @@ public class MDSFacade {
      */
     public ZSpreadHelper getzSpreadHelper() {
         return zSpreadHelper;
+    }
+
+    public org.softcaster.easy_pricer_mds_core.batches.VolatilityImportHelper getVolatilityImportHelper() {
+        return volatilityImportHelper;
+    }
+
+    public org.softcaster.core.data.VolatilitySurfaceDAO getVolatilitySurfaceDAO() {
+        return volatilitySurfaceDAO;
+    }
+
+    /**
+     * Cartella dei file CSV delle volatilita' (CME_VOL_DIRECTORY in
+     * conf/params.xml), vuota se l'import non e' configurato.
+     */
+    public String getCmeDirectory() {
+        return org.softcaster.commons.xml.ParamsMgr.getInstance().getParamValue(CME_VOL_DIRECTORY);
+    }
+
+    /**
+     * Superfici da caricare (CME_VOL_SURFACES in conf/params.xml): elenco
+     * separato da virgole di superficie:opzione:future[:strikeScale], es.
+     * EURUSD-VOL:EUU:6E.
+     */
+    public String getCmeSurfaces() {
+        return org.softcaster.commons.xml.ParamsMgr.getInstance().getParamValue(CME_VOL_SURFACES);
     }
 }

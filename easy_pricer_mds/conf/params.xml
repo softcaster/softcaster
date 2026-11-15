@@ -3,5 +3,13 @@
     <param>
         <name>PY_DEBUG</name>
         <value>false</value>
-    </param>    
+    </param>
+    <param>
+        <name>CME_VOL_DIRECTORY</name>
+        <value>C:/tools/data/cme</value>
+    </param>
+    <param>
+        <name>CME_VOL_SURFACES</name>
+        <value>EURUSD-VOL:EUU:6E</value>
+    </param>
 </params>

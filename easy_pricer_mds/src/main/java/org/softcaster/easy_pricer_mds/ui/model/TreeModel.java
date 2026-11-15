@@ -63,6 +63,7 @@ public class TreeModel {
         // Batches
         DefaultMutableTreeNode batches = new DefaultMutableTreeNode("Batches");
         batches.add(new DefaultMutableTreeNode(new FndtNode<>("ZSpreads Update", AppTreeItem.BATCH_ZSPREAD)));
+        batches.add(new DefaultMutableTreeNode(new FndtNode<>("Volatilities", AppTreeItem.BATCH_VOLATILITY)));
 
         root.add(batches);
 
