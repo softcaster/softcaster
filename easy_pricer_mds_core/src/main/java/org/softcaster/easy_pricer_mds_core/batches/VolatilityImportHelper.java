@@ -37,9 +37,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Batch delle superfici di volatilita' delle coppie di cambi dai settlement
  * CME delle opzioni sul future (es. EUU sul future 6E). File CSV della
- * giornata con intestazione (colonne cercate per nome), in due formati
+ * giornata con intestazione (colonne cercate per nome), in tre formati
  * riconosciuti dall'intestazione:
  *
+ * 0. griglia per delta del tool FX di CME (FXTOOL_..._London_3PM): snap_time,
+ *    tenor, expiry_date, dte, forward, option_type, midNNd; ogni delta diventa
+ *    uno strike sul forward della riga (importDeltaGrid).
  * 1. volatilita' di settlement (es. dal tool QuikStrike, anche compilato a
  *    mano): BizDt, Sym, MatDt, FuturePrice, StrkPx, Vol (percentuale). La
  *    volatilita' si carica com'e'.
@@ -83,6 +86,16 @@ public class VolatilityImportHelper {
     // formato con le volatilita' di settlement (QuikStrike)
     private static final String FUTURE_PRICE = "FuturePrice";
     private static final String VOL = "Vol";
+    // formato a delta (tool FX di CME, es. FXTOOL_EUU_London_3PM_AAAAMMGG.csv)
+    private static final String SNAP_TIME = "snap_time";
+    private static final String TENOR = "tenor";
+    private static final String EXPIRY_DATE = "expiry_date";
+    private static final String DTE = "dte";
+    private static final String FORWARD = "forward";
+    private static final String OPTION_TYPE = "option_type";
+    // volatilita' mid per delta: mid10d, mid25d, mid50d...
+    private static final java.util.regex.Pattern MID_DELTA = java.util.regex.Pattern.compile("mid(\\d+)d");
+    private static final DateTimeFormatter US_DATE = DateTimeFormatter.ofPattern("M/d/yyyy");
 
     private static final List<String> REQUIRED = List.of(BIZ_DATE, SYMBOL, SECURITY_TYPE, MONTH, MATURITY, PUT_CALL,
             STRIKE, SETTLE, UNDERLYING_MONTH);
@@ -161,6 +174,10 @@ public class VolatilityImportHelper {
             throw new IllegalArgumentException("Volatility surface " + code + " is not on a currency pair");
         }
         Csv csv = Csv.read(file);
+        // griglia per delta del tool FX di CME (snapshot per tenor, con il forward)
+        if (csv.has(SNAP_TIME, TENOR, EXPIRY_DATE, FORWARD, OPTION_TYPE)) {
+            return importDeltaGrid(surface, csv, file);
+        }
         // volatilita' di settlement gia' calcolate da CME: si caricano direttamente
         if (csv.has(VOL, FUTURE_PRICE)) {
             return importVolatilities(surface, pair, csv, file, optionSymbol, strikeScale);
@@ -305,6 +322,92 @@ public class VolatilityImportHelper {
         }
         volatilitySurfaceDAO.replacePoints(surface.getIdVolatilitySurface(), bizDate, new ArrayList<>(points.values()));
         return new ImportResult(surface.getCode(), bizDate, rows, points.size(), skipped);
+    }
+
+    // ------------------------------------------------------------------------
+    // -- Formato a delta (tool FX di CME)
+    // ------------------------------------------------------------------------
+
+    /**
+     * Snapshot per tenor della superficie per delta (es.
+     * FXTOOL_EUU_London_3PM_AAAAMMGG.csv): per ogni riga tenor, scadenza,
+     * giorni (dte), forward della coppia alla scadenza, tipo dei delta
+     * ("EUR Call (USD Put)": delta delle call; "... Put ...": delta delle put)
+     * e volatilita' mid per delta (mid10d, mid25d, mid50d, mid75d, mid90d) in
+     * decimale. Ogni delta diventa uno strike con Black-76 sul forward della
+     * riga (Black76Pricer.strikeForCallDelta, T = dte / 365): il forward e'
+     * gia' quello della coppia, nessuna conversione dal future. Data di
+     * rilevazione = data di snap_time.
+     */
+    private ImportResult importDeltaGrid(VolatilitySurfaceEntity surface, Csv csv, Path file) {
+        // colonne mid per delta, nell'ordine del file
+        Map<String, Double> deltaColumns = new java.util.LinkedHashMap<>();
+        csv.columns().entrySet().stream()
+                .sorted(Map.Entry.comparingByValue())
+                .forEach(e -> {
+                    java.util.regex.Matcher m = MID_DELTA.matcher(e.getKey());
+                    if (m.matches()) {
+                        deltaColumns.put(e.getKey(), Integer.parseInt(m.group(1)) / 100.);
+                    }
+                });
+        if (deltaColumns.isEmpty()) {
+            throw new IllegalArgumentException("No mid volatility by delta (midNNd) in " + file);
+        }
+
+        LocalDate bizDate = null;
+        Map<String, Integer> skipped = new TreeMap<>();
+        // un punto per scadenza e strike: tenor con la stessa scadenza contano una volta
+        Map<String, VolatilityPoint> points = new java.util.LinkedHashMap<>();
+        int quotes = 0;
+        for (int n = 0; n < csv.rows().size(); n++) {
+            String[] f = csv.rows().get(n);
+            try {
+                LocalDate rowDate = snapDate(csv.value(f, SNAP_TIME));
+                if (bizDate == null) {
+                    bizDate = rowDate;
+                } else if (!bizDate.equals(rowDate)) {
+                    throw new IllegalArgumentException("the file mixes snapshot dates " + bizDate + " and " + rowDate);
+                }
+                LocalDate expiry = LocalDate.parse(csv.value(f, EXPIRY_DATE), US_DATE);
+                if (!expiry.isAfter(bizDate)) {
+                    skipped.merge("expired", deltaColumns.size(), Integer::sum);
+                    continue;
+                }
+                double forward = csv.number(csv.value(f, FORWARD));
+                String dte = csv.value(f, DTE);
+                double t = (dte.isEmpty() ? java.time.temporal.ChronoUnit.DAYS.between(bizDate, expiry)
+                        : Double.parseDouble(dte)) / 365.;
+                boolean callDeltas = csv.value(f, OPTION_TYPE).toLowerCase(Locale.ROOT).contains("call (");
+                for (Map.Entry<String, Double> c : deltaColumns.entrySet()) {
+                    quotes++;
+                    String text = csv.value(f, c.getKey());
+                    double vol = text.isEmpty() ? Double.NaN : csv.number(text);
+                    if (Double.isNaN(vol) || vol <= 0 || vol >= 5) {
+                        skipped.merge("missing volatility", 1, Integer::sum);
+                        continue;
+                    }
+                    double callDelta = callDeltas ? c.getValue() : 1. - c.getValue();
+                    double strike = round(Black76Pricer.strikeForCallDelta(forward, vol, t, callDelta));
+                    points.putIfAbsent(expiry + "@" + strike, new VolatilityPoint(surface.getIdVolatilitySurface(),
+                            bizDate, expiry, strike, vol, SOURCE));
+                }
+            } catch (RuntimeException e) {
+                throw new IllegalArgumentException("File " + file + ", line " + csv.lineNumber(n) + ": " + e.getMessage(), e);
+            }
+        }
+        if (points.isEmpty()) {
+            throw new IllegalArgumentException("No usable volatility in " + file + ": " + skipped);
+        }
+        volatilitySurfaceDAO.replacePoints(surface.getIdVolatilitySurface(), bizDate, new ArrayList<>(points.values()));
+        return new ImportResult(surface.getCode(), bizDate, quotes, points.size(), skipped);
+    }
+
+    /**
+     * Data di snap_time, MM/dd/yyyy HH:mm:ss (es. 07/01/2025 14:00:03).
+     */
+    private static LocalDate snapDate(String text) {
+        String day = text.trim().split(" ")[0];
+        return LocalDate.parse(day, US_DATE);
     }
 
     // ------------------------------------------------------------------------

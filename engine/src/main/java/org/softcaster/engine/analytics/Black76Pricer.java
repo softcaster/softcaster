@@ -26,6 +26,24 @@ import org.softcaster.engine.math.Gaussian;
  */
 public final class Black76Pricer implements Pricer<ForwardOptionInput, OptionResult> {
 
+    /**
+     * Strike di una call con delta forward callDelta (non scontato, premio non
+     * incluso: N(d1)), dal forward, dalla volatilita' e dal tempo T in anni:
+     * K = F exp(-sigma sqrt T N^-1(delta) + sigma^2 T / 2). Le superfici FX
+     * quotate per delta (10d, 25d, 50d...) si portano cosi' in strike; una put
+     * con delta d e' la call con delta 1 - d.
+     */
+    public static double strikeForCallDelta(double forward, double volatility, double t, double callDelta) {
+        if (forward <= 0 || volatility <= 0 || t <= 0) {
+            throw new IllegalArgumentException("forward, volatilita' e tempo devono essere > 0");
+        }
+        if (callDelta <= 0 || callDelta >= 1) {
+            throw new IllegalArgumentException("delta " + callDelta + " fuori da (0, 1)");
+        }
+        double sigmaSqrtT = volatility * Math.sqrt(t);
+        return forward * Math.exp(-sigmaSqrtT * Gaussian.inverseCDF(callDelta) + 0.5 * sigmaSqrtT * sigmaSqrtT);
+    }
+
     @Override
     public OptionResult calculate(ForwardOptionInput in) {
         OptionContract c = in.contract();
