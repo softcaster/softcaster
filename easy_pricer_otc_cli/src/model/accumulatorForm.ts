@@ -26,6 +26,8 @@ export interface AccumulatorFormState {
     spot: number | null;
     volatilityPct: number | null;
     paths: number | null;
+    discountCurve: string;
+    foreignCurve: string;
     valuationDate: Date | null;
     premiumMode: string;
     premium: number | null;
@@ -57,6 +59,8 @@ export const newAccumulatorForm = (assetClass: string): AccumulatorFormState => 
         spot: null,
         volatilityPct: null,
         paths: 50000,
+        discountCurve: '',
+        foreignCurve: '',
         valuationDate: null,
         premiumMode: 'AMOUNT',
         premium: 0,
@@ -114,6 +118,8 @@ export const accumulatorRequest = (f: AccumulatorFormState, reg?: Registration):
         spot: f.spot,
         volatility: fromPercent(f.volatilityPct),
         paths: f.paths,
+        domesticRCurve: f.discountCurve || undefined,
+        foreignRCurve: f.foreignCurve || undefined,
         ...(reg ? {
             side: reg.side,
             counterpartyId: reg.counterpartyId,

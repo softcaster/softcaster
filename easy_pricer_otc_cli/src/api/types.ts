@@ -204,6 +204,8 @@ export interface AccumulatorDealRequest {
     spot?: number | null;
     volatility?: number | null;         // decimale; vuota = superficie
     paths?: number | null;
+    domesticRCurve?: string;            // vuota = curva di default
+    foreignRCurve?: string;             // solo FXA
 }
 
 export interface AccumulatorPricingResponse {

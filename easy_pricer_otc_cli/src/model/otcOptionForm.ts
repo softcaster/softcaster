@@ -22,6 +22,8 @@ export interface OtcOptionFormState {
     spot: number | null;
     volatilityPct: number | null;
     optionPrice: number | null;
+    discountCurve: string;
+    foreignCurve: string;
     valuationDate: Date | null;
     premiumMode: string;
     premium: number | null;
@@ -48,6 +50,8 @@ export const newOtcOptionForm = (assetClass: OtcOptionAssetClass): OtcOptionForm
         spot: null,
         volatilityPct: null,
         optionPrice: null,
+        discountCurve: '',
+        foreignCurve: '',
         valuationDate: null,
         premiumMode: fx ? 'UNIT' : 'AMOUNT',
         premium: null,
@@ -106,6 +110,8 @@ export const otcOptionRequest = (f: OtcOptionFormState, reg?: Registration): Otc
     spot: f.spot,
     volatility: fromPercent(f.volatilityPct),
     optionPrice: f.optionPrice,
+    domesticRCurve: f.discountCurve || undefined,
+    foreignRCurve: f.foreignCurve || undefined,
     ...(reg ? {
         side: reg.side,
         counterpartyId: reg.counterpartyId,

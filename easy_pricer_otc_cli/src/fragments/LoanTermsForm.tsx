@@ -3,8 +3,9 @@ import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
-import { fetchCurrencies, fetchDiscountCurves } from '../api/services';
-import type { CurrencyDto, DiscountCurveDto, LoanFeeInput } from '../api/types';
+import { fetchCurrencies } from '../api/services';
+import type { CurrencyDto, LoanFeeInput } from '../api/types';
+import { CurveDropdown } from '../components/CurveDropdown';
 import { Choice, Field, FormTabs, Grid, NumberInput, type TabDef } from '../components/ui';
 import { useEnums } from '../model/enums';
 import type { LoanFormState } from '../model/loanForm';
@@ -35,7 +36,6 @@ export const LoanFormTabs = ({ value, onChange, readOnly = false, rateTypeLocked
     const setFee = (index: number, fee: LoanFeeInput) => set('fees', value.fees.map((x, i) => (i === index ? fee : x)));
     const floating = value.rateType === 'FLOATING';
     const enums = useEnums('amortizationSchedule', 'loanFrequency', 'daycountBasis', 'rollConvention', 'loanFeeType', 'feeBasis', 'feeTiming');
-    const [curves, setCurves] = useState<DiscountCurveDto[]>([]);
     const [currencies, setCurrencies] = useState<CurrencyDto[]>([]);
 
     useEffect(() => {
@@ -49,20 +49,6 @@ export const LoanFormTabs = ({ value, onChange, readOnly = false, rateTypeLocked
         ? currencies
         : [{ idCurrency: 0, isoCode: value.currency, description: null }, ...currencies])
         .map((c) => ({ label: c.isoCode, value: c.isoCode }));
-
-    useEffect(() => {
-        if (pricing) {
-            fetchDiscountCurves().then(setCurves).catch(() => setCurves([]));
-        }
-    }, [pricing]);
-
-    // curve nella valuta del mutuo (o senza valuta), piu' quella gia' scelta
-    const curveOptions = curves
-        .filter((c) => !c.currency || c.currency === value.currency || c.code === value.discountCurve)
-        .map((c) => ({
-            label: `${c.code}${c.description ? ` — ${c.description}` : ''}${c.kind === 'SPREAD' ? ' (spread)' : ''}`,
-            value: c.code,
-        }));
 
     const terms = (
         <Grid>
@@ -172,8 +158,8 @@ export const LoanFormTabs = ({ value, onChange, readOnly = false, rateTypeLocked
                 <Calendar value={value.valuationDate} onChange={(e) => set('valuationDate', e.value ?? null)} dateFormat="dd/mm/yy" showIcon showButtonBar />
             </Field>
             <Field label="Discount curve" col={3} hint="Yield and spread curves in the loan currency. Empty = configured DISCOUNT curve, otherwise the flat rate">
-                <Dropdown value={value.discountCurve || null} options={curveOptions} filter showClear placeholder="Configured curve"
-                    emptyMessage={`No curves in ${value.currency}`} onChange={(e) => set('discountCurve', e.value ?? '')} />
+                <CurveDropdown value={value.discountCurve} currency={value.currency} placeholder="Configured curve"
+                    onChange={(code) => set('discountCurve', code)} />
             </Field>
             <Field label="Discount rate %" col={3} hint="Continuous, used when there is no curve">
                 <NumberInput value={value.discountRatePct} onChange={(v) => set('discountRatePct', v)} digits={4} />

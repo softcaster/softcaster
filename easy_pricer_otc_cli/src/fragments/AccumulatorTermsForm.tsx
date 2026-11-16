@@ -3,6 +3,8 @@ import { Calendar } from 'primereact/calendar';
 import { Checkbox } from 'primereact/checkbox';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
+import { CurveDropdown } from '../components/CurveDropdown';
+import { pairCurrency } from '../components/format';
 import { Choice, Field, FormTabs, Grid, NumberInput, Section, type TabDef } from '../components/ui';
 import type { AccumulatorFormState } from '../model/accumulatorForm';
 import { useEnums } from '../model/enums';
@@ -42,7 +44,8 @@ export const AccumulatorFormTabs = ({ value, onChange, assetClass, readOnly = fa
     onTabChange: (key: string) => void;
 }) => {
     const set = <K extends keyof AccumulatorFormState>(key: K, v: AccumulatorFormState[K]) => onChange({ ...value, [key]: v });
-    const priceDigits = assetClass === 'FXA' ? 5 : 4;
+    const fx = assetClass === 'FXA';
+    const priceDigits = fx ? 5 : 4;
     const enums = useEnums('accumulatorType', 'settlementType', 'accumulatorFrequency', 'barrierObservation', 'knockInEffect', 'guaranteeType');
 
     const contract = (
@@ -132,6 +135,18 @@ export const AccumulatorFormTabs = ({ value, onChange, assetClass, readOnly = fa
             <Field label="Paths" col={3}>
                 <NumberInput value={value.paths} onChange={(v) => set('paths', v)} digits={0} min={2} />
             </Field>
+            <Field label={fx ? 'Domestic curve' : 'Discount curve'} col={6}
+                hint={fx ? 'Discounting in the settlement (quote) currency. Empty = curve of the pair'
+                    : 'Discounting. Empty = DISCOUNT curve configured for the asset class and currency'}>
+                <CurveDropdown value={value.discountCurve} onChange={(code) => set('discountCurve', code)}
+                    currency={fx ? pairCurrency(value.underlyingCode, 'quote') : undefined} />
+            </Field>
+            {fx && (
+                <Field label="Foreign curve" col={6} hint="Rate of the base currency. Empty = curve of the pair">
+                    <CurveDropdown value={value.foreignCurve} onChange={(code) => set('foreignCurve', code)}
+                        currency={pairCurrency(value.underlyingCode, 'base')} />
+                </Field>
+            )}
         </Grid>
     );
 

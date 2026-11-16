@@ -3,6 +3,8 @@ import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import type { OptionPricingResponse } from '../api/types';
+import { CurveDropdown } from '../components/CurveDropdown';
+import { pairCurrency } from '../components/format';
 import { fmt, pct, tone } from '../components/format';
 import { Choice, Field, FormTabs, Grid, KpiGrid, NumberInput, Section, type TabDef } from '../components/ui';
 import { useEnums } from '../model/enums';
@@ -126,6 +128,18 @@ export const OtcOptionFormTabs = ({ value, onChange, assetClass, readOnly = fals
             <Field label="Market premium per unit" col={3} hint="If given: valuation at the implied volatility">
                 <NumberInput value={value.optionPrice} onChange={(v) => set('optionPrice', v)} digits={4} maxDigits={8} />
             </Field>
+            <Field label={fx ? 'Domestic curve' : 'Discount curve'} col={6}
+                hint={fx ? 'Discounting of the premium (quote currency). Empty = curve of the pair'
+                    : 'Discounting of the premium. Empty = DISCOUNT curve configured for the asset class and currency'}>
+                <CurveDropdown value={value.discountCurve} onChange={(code) => set('discountCurve', code)}
+                    currency={fx ? pairCurrency(value.underlyingCode, 'quote') : undefined} />
+            </Field>
+            {fx && (
+                <Field label="Foreign curve" col={6} hint="Rate of the base currency. Empty = curve of the pair">
+                    <CurveDropdown value={value.foreignCurve} onChange={(code) => set('foreignCurve', code)}
+                        currency={pairCurrency(value.underlyingCode, 'base')} />
+                </Field>
+            )}
         </Grid>
     );
 

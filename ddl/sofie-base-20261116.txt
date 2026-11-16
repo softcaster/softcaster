@@ -7,6 +7,8 @@ Stato
   otc_cmd_option_master_data; asset class OFX (20) e OCM (21) con script OPTION
   (19 mapping in asset_class_script_mapping)
 - chiusura: 12 step, compreso MATURITY
+- curve DISCOUNT (ac_dc_bcy_link): BFU/EUR TERMESTR, FRM e XRM/EUR ESTR_OIS,
+  CMA e OCM/USD TERMSOFR
 - superficie di volatilita' EURUSD-VOL: 3 punti al 2026-10-29, max_age_days 5,
   quindi scaduta alla data ufficiale: senza un nuovo import (o volatilita'
   indicata) la valutazione di FXA e OFX dalla superficie fallisce
