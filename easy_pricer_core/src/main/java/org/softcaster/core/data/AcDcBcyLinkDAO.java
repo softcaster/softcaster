@@ -23,9 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class AcDcBcyLinkDAO {
 
     private final AcDcBcyLinkRepository repository;
+    private final YieldCurveEntityDAO yieldCurveEntityDAO;
+    private final SpreadCurveEntityDAO spreadCurveEntityDAO;
 
-    public AcDcBcyLinkDAO(AcDcBcyLinkRepository repository) {
+    public AcDcBcyLinkDAO(AcDcBcyLinkRepository repository, YieldCurveEntityDAO yieldCurveEntityDAO,
+            SpreadCurveEntityDAO spreadCurveEntityDAO) {
         this.repository = Objects.requireNonNull(repository);
+        this.yieldCurveEntityDAO = Objects.requireNonNull(yieldCurveEntityDAO);
+        this.spreadCurveEntityDAO = Objects.requireNonNull(spreadCurveEntityDAO);
     }
 
     // ------------------------------------------------------------------------
@@ -34,6 +39,17 @@ public class AcDcBcyLinkDAO {
     @Transactional(readOnly = true)
     public Optional<AcDcBcyLink> find(Integer assetClass, Integer currency, CurveRole role) {
         return repository.findByAssetClassAndCurrencyAndCurveRole(assetClass, currency, role);
+    }
+
+    /**
+     * Codice della curva collegata (yield curve o spread curve) per asset
+     * class, valuta e ruolo; vuoto se il collegamento non e' configurato.
+     */
+    @Transactional(readOnly = true)
+    public Optional<String> findCurveCode(Integer assetClass, Integer currency, CurveRole role) {
+        return find(assetClass, currency, role).map(link -> link.isSpreadCurve()
+                ? spreadCurveEntityDAO.findByIdWithBase(link.getSpreadCurve()).getCode()
+                : yieldCurveEntityDAO.findByIdYieldCurve(link.getCurveId()).getCode());
     }
 
     /**

@@ -19,6 +19,13 @@ export const PREMIUM_MODES: Option[] = [
     { label: '%', value: 'PERCENT', icon: 'pi pi-percentage' },
 ];
 
+// Opzioni OTC: come si indica il premio della registrazione
+export const OPTION_PREMIUM_MODES: Option[] = [
+    { label: 'Amount', value: 'AMOUNT', icon: 'pi pi-money-bill' },
+    { label: 'Per unit', value: 'UNIT', icon: 'pi pi-tag' },
+    { label: '% of notional', value: 'PERCENT', icon: 'pi pi-percentage' },
+];
+
 // Lato dell'operazione, punto di vista della banca (come SIDE_OPTIONS di easy_pricer_cli)
 export const SIDES: Option[] = [
     { label: 'Buy', value: 'BUY', icon: 'pi pi-arrow-down-right text-green-500' },

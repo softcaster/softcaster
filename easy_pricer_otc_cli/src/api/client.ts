@@ -1,8 +1,11 @@
 import axios from 'axios';
 
-// Stesso server REST del client degli strumenti quotati
+// Stesso server REST del client degli strumenti quotati; VITE_API_URL per
+// puntare a un'altra istanza (es. un srv di prova su una copia del DB)
+const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api/v1';
+
 export const apiClient = axios.create({
-    baseURL: 'http://localhost:8080/api/v1',
+    baseURL: API_URL,
     headers: { 'Content-Type': 'application/json' },
 });
 
@@ -28,7 +31,7 @@ export const errorMessage = (error: unknown): string => {
             return data;
         }
         if (!error.response) {
-            return 'Server unreachable (easy_pricer_srv on localhost:8080)';
+            return `Server unreachable (easy_pricer_srv on ${API_URL})`;
         }
         return `Error ${error.response.status}`;
     }

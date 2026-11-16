@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Message } from 'primereact/message';
 import { errorMessage } from '../api/client';
-import { priceAccumulator, priceLoan } from '../api/services';
-import type { AccumulatorPricingResponse, LoanPricingResponse } from '../api/types';
+import { priceAccumulator, priceLoan, priceOtcOption } from '../api/services';
+import type { AccumulatorPricingResponse, LoanPricingResponse, OptionPricingResponse } from '../api/types';
 import { useActions } from '../context/ActionContext';
 import { AccumulatorResults } from '../fragments/AccumulatorResults';
 import { AccumulatorFormTabs } from '../fragments/AccumulatorTermsForm';
 import { LoanResults } from '../fragments/LoanResults';
 import { LoanFormTabs } from '../fragments/LoanTermsForm';
+import { OtcOptionFormTabs, OtcOptionResults } from '../fragments/OtcOptionTermsForm';
 import { accumulatorRequest, newAccumulatorForm } from '../model/accumulatorForm';
 import { loanRequest, newLoanForm } from '../model/loanForm';
+import { newOtcOptionForm, otcOptionRequest, type OtcOptionAssetClass } from '../model/otcOptionForm';
 
 const pageStyle = { height: 'calc(100vh - 45px)', padding: '1rem', boxSizing: 'border-box' as const };
 
@@ -105,3 +107,49 @@ const AccumulatorPricingView = ({ assetClass }: { assetClass: 'FXA' | 'CMA' }) =
 
 export const FxAccumulatorPricingView = () => <AccumulatorPricingView assetClass="FXA" />;
 export const CmdAccumulatorPricingView = () => <AccumulatorPricingView assetClass="CMA" />;
+
+const OtcOptionPricingView = ({ assetClass }: { assetClass: OtcOptionAssetClass }) => {
+    const { setAction } = useActions();
+    const [form, setForm] = useState(() => newOtcOptionForm(assetClass));
+    const [result, setResult] = useState<OptionPricingResponse | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [tab, setTab] = useState('terms');
+
+    const calculate = async () => {
+        setError(null);
+        try {
+            setResult(await priceOtcOption(otcOptionRequest(form)));
+            setTab('results');
+        } catch (e) {
+            setError(errorMessage(e));
+        }
+    };
+
+    const reset = () => {
+        setForm(newOtcOptionForm(assetClass));
+        setResult(null);
+        setError(null);
+        setTab('terms');
+    };
+
+    useEffect(() => {
+        setAction({ new: reset, calculate });
+        // le azioni della toolbar si aggiornano con lo stato del form
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [form]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => () => setAction({}), []);
+
+    return (
+        <div style={pageStyle} className="overflow-auto">
+            <div className="font-semibold mb-2">Pricing · {assetClass === 'OFX' ? 'FX Options' : 'Commodity Options'}</div>
+            {error && <Message severity="error" text={error} className="w-full mb-2" />}
+            <OtcOptionFormTabs value={form} onChange={setForm} assetClass={assetClass} tab={tab} onTabChange={setTab}
+                results={result ? <OtcOptionResults result={result} notional={form.notional} strike={form.strike} /> : undefined} />
+        </div>
+    );
+};
+
+export const FxOptionPricingView = () => <OtcOptionPricingView assetClass="OFX" />;
+export const CmdOptionPricingView = () => <OtcOptionPricingView assetClass="OCM" />;

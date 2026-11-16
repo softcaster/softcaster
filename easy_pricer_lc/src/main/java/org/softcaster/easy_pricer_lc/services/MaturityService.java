@@ -17,6 +17,7 @@ import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.OptionMasterData;
+import org.softcaster.core.data.OtcOptionMasterData;
 import org.softcaster.core.data.PositionDetail;
 import org.softcaster.core.data.PositionDetailDAO;
 import org.softcaster.core.data.PositionMasterData;
@@ -68,6 +69,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  *    intrinseco (0 se fuori dal denaro); con consegna fisica il sottostante
  *    entra al prezzo di mercato, cosi' il costo netto e' lo strike e il fair
  *    value dell'opzione entra nel costo del sottostante (IFRS 9).
+ *  - Opzioni OTC (OFX, OCM), alla scadenza: come le opzioni, con il valore
+ *    del contratto (intrinseco x nozionale) come prezzo.
  *
  * Margine iniziale: un evento MATURITY per ogni deal della posizione che ne
  * ha uno, che la contabilita' rilascia (script FUT, OPTION).
@@ -159,6 +162,9 @@ public class MaturityService {
         if (md instanceof OptionMasterData omd) {
             return omd.getExpiryLocalDate();
         }
+        if (md instanceof OtcOptionMasterData otc) {
+            return otc.getExpiryLocalDate();
+        }
         if (md instanceof AccumulatorMasterData amd) {
             return AccumulatorLifeCycleService.endDate(amd);
         }
@@ -194,6 +200,8 @@ public class MaturityService {
             counters.created += matureFuture(detail, position, fmd, sbc, date, end, net, closeSide, originKey);
         } else if (md instanceof OptionMasterData omd) {
             counters.created += expireOption(detail, position, omd, sbc, date, end, net, closeSide, originKey);
+        } else if (md instanceof OtcOptionMasterData otc) {
+            counters.created += expireOtcOption(detail, position, otc, sbc, date, end, net, closeSide, originKey);
         } else if (md instanceof AccumulatorMasterData amd) {
             // tutto regolato (step COUPON): il contratto non vale piu' nulla e si
             // chiude a 0, il premio diventa realizzato come per un'opzione scaduta
@@ -250,6 +258,41 @@ public class MaturityService {
         LocalDate settlement = omd instanceof SpotOptionMasterData somd && somd.getDeliveryLocalDate() != null
                 ? somd.getDeliveryLocalDate()
                 : underlying instanceof FutureMasterData ? date : settlementDate(underlying, date);
+        save(deal(detail, position, underlying, date, settlement, underlyingSide, quantity, underlyingPrice, sbc,
+                "Exercise of " + omd.getCode(), originKey + ":UND"));
+        return 2;
+    }
+
+    /**
+     * Opzione OTC (OFX, OCM): come una serie quotata, ma la posizione e' in
+     * contratti e il prezzo e' il valore del contratto, intrinseco x
+     * nozionale. Regolamento alla consegna del contratto (OFX: altrimenti
+     * scadenza + spot lag della coppia; OCM: il giorno stesso). Con consegna
+     * fisica la coppia (nozionale nella valuta base) o il future (nozionale /
+     * contract value contratti) entrano al prezzo di mercato.
+     */
+    private int expireOtcOption(PositionDetail detail, PositionMasterData position, OtcOptionMasterData omd,
+            SystemBusinessCalendar sbc, LocalDate date, LocalDate end, double net, TxnSide closeSide, String originKey) {
+        MasterData underlying = (MasterData) Hibernate.unproxy(omd.getUnderlying());
+        double underlyingPrice = closePrice(underlying);
+        boolean call = omd.getOptionType() == OptionType.CALL;
+        double intrinsic = Math.max(call ? underlyingPrice - omd.getStrike() : omd.getStrike() - underlyingPrice, 0.);
+        LocalDate settlement = omd.getDeliveryLocalDate() != null ? omd.getDeliveryLocalDate()
+                : underlying instanceof ForexMasterData ? settlementDate(underlying, date) : date;
+        if (settlement.isBefore(date)) {
+            settlement = date;
+        }
+
+        save(deal(detail, position, omd, date, settlement, closeSide, Math.abs(net), intrinsic * omd.getNotional(), sbc,
+                (intrinsic > 0. ? "Exercise " : "Expiry ") + end, originKey));
+        if (intrinsic <= 0. || omd.getSettlementType() != SettlementType.PHYSICAL) {
+            return 1;
+        }
+
+        boolean longOption = net > 0;
+        TxnSide underlyingSide = (longOption == call) ? TxnSide.BUY : TxnSide.SELL;
+        double units = Math.abs(net) * omd.getNotional();
+        double quantity = underlying instanceof FutureMasterData ufmd ? units / contractValue(ufmd) : units;
         save(deal(detail, position, underlying, date, settlement, underlyingSide, quantity, underlyingPrice, sbc,
                 "Exercise of " + omd.getCode(), originKey + ":UND"));
         return 2;

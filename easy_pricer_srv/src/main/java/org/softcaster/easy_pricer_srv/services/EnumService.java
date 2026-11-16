@@ -13,6 +13,7 @@ import org.softcaster.engine.enums.AccumulatorType;
 import org.softcaster.engine.enums.AmortizationSchedule;
 import org.softcaster.engine.enums.BarrierObservation;
 import org.softcaster.engine.enums.DaycountBasis;
+import org.softcaster.engine.enums.ExerciseStyle;
 import org.softcaster.engine.enums.FeeBasis;
 import org.softcaster.engine.enums.FeeTiming;
 import org.softcaster.engine.enums.Frequency;
@@ -20,6 +21,7 @@ import org.softcaster.engine.enums.GuaranteeType;
 import org.softcaster.engine.enums.IdentifiableEnum;
 import org.softcaster.engine.enums.KnockInEffect;
 import org.softcaster.engine.enums.LoanFeeType;
+import org.softcaster.engine.enums.OptionType;
 import org.softcaster.engine.enums.RollConvention;
 import org.softcaster.engine.enums.SettlementType;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,9 @@ public class EnumService {
         CATALOG.put("knockInEffect", () -> all(KnockInEffect.class));
         // NONE corrisponde a zero periodi garantiti, non si sceglie
         CATALOG.put("guaranteeType", () -> of(GuaranteeType.class, g -> g != GuaranteeType.NONE));
+        // opzioni OTC: niente bermudan (servirebbero le date di esercizio)
+        CATALOG.put("optionType", () -> all(OptionType.class));
+        CATALOG.put("otcExerciseStyle", () -> of(ExerciseStyle.class, e -> e != ExerciseStyle.BERMUDAN));
     }
 
     public List<String> names() {

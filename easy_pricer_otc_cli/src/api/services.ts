@@ -2,6 +2,7 @@ import { apiDelete, apiGet, apiPost, apiPut } from './client';
 import type {
     AccumulatorDealRequest, AccumulatorDealResponse, AccumulatorDto, AccumulatorPricingResponse, CurrencyDto, DiscountCurveDto, FinancialTxnDto,
     GenericMasterDataDto, LoanCashFlow, LoanDealRequest, LoanDto, LoanPricingResponse,
+    OptionPricingResponse, OtcOptionDealRequest, OtcOptionDealResponse, OtcOptionDto,
 } from './types';
 
 // Mutui
@@ -24,6 +25,17 @@ export const fetchAccumulators = () => apiGet<AccumulatorDto[]>('/otc/accumulato
 /** date (yyyy-MM-dd) vuota = data ufficiale. */
 export const valueAccumulator = (code: string, r: Partial<AccumulatorDealRequest>, date?: string) =>
     apiPost<AccumulatorPricingResponse>(`/otc/accumulator/value/${encodeURIComponent(code)}${date ? `?date=${date}` : ''}`, r);
+
+// Opzioni OTC
+export const priceOtcOption = (r: OtcOptionDealRequest) => apiPost<OptionPricingResponse>('/otc/option/price', r);
+export const bookOtcOption = (r: OtcOptionDealRequest) => apiPost<OtcOptionDealResponse>('/otc/option/deal', r);
+/** Modifica di un deal registrato: PENDING aggiornato, EXECUTED -> TO_AMEND. */
+export const amendOtcOption = (txnId: number, r: OtcOptionDealRequest) =>
+    apiPut<OtcOptionDealResponse>(`/otc/option/deal/${txnId}`, r);
+export const fetchOtcOptions = () => apiGet<OtcOptionDto[]>('/otc/option/r01');
+/** date (yyyy-MM-dd) vuota = data ufficiale. */
+export const valueOtcOption = (code: string, r: Partial<OtcOptionDealRequest>, date?: string) =>
+    apiPost<OptionPricingResponse>(`/otc/option/value/${encodeURIComponent(code)}${date ? `?date=${date}` : ''}`, r);
 
 // Transazioni di una asset class (come il client ET)
 export const fetchTxns = (assetClass: string) => apiGet<FinancialTxnDto[]>(`/financial_txn/r03/${encodeURIComponent(assetClass)}`);

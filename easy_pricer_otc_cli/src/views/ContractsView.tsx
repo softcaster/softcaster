@@ -5,22 +5,24 @@ import { Message } from 'primereact/message';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import { TabPanel, TabView } from 'primereact/tabview';
 import { errorMessage } from '../api/client';
-import { fetchAccumulators, fetchLoans, valueAccumulator, valueLoan } from '../api/services';
-import type { AccumulatorDto, LoanDto } from '../api/types';
+import { fetchAccumulators, fetchLoans, fetchOtcOptions, valueAccumulator, valueLoan, valueOtcOption } from '../api/services';
+import type { AccumulatorDto, LoanDto, OtcOptionDto } from '../api/types';
 import { fmt, fmtDate, fromPercent, pct, tone } from '../components/format';
 import { KpiGrid, NumberInput, type KpiItem } from '../components/ui';
 import { useActions } from '../context/ActionContext';
 
-type Selection = { kind: 'loan'; row: LoanDto } | { kind: 'accumulator'; row: AccumulatorDto } | null;
+type Selection = { kind: 'loan'; row: LoanDto } | { kind: 'accumulator'; row: AccumulatorDto }
+    | { kind: 'option'; row: OtcOptionDto } | null;
 
 /**
- * Contratti OTC registrati (mutui e accumulator) e loro valutazione alla data
+ * Contratti OTC registrati (mutui, accumulator, opzioni) e loro valutazione alla data
  * ufficiale: si seleziona una riga e si usa Calcola. Toolbar: Aggiorna, Calcola.
  */
 const ContractsView = () => {
     const { setAction } = useActions();
     const [loans, setLoans] = useState<LoanDto[]>([]);
     const [accumulators, setAccumulators] = useState<AccumulatorDto[]>([]);
+    const [options, setOptions] = useState<OtcOptionDto[]>([]);
     const [selection, setSelection] = useState<Selection>(null);
     const [discountRatePct, setDiscountRatePct] = useState<number | null>(3);
     const [valuation, setValuation] = useState<{ code: string; items: KpiItem[] } | null>(null);
@@ -28,9 +30,10 @@ const ContractsView = () => {
 
     const refresh = useCallback(async () => {
         try {
-            const [l, a] = await Promise.all([fetchLoans(), fetchAccumulators()]);
+            const [l, a, o] = await Promise.all([fetchLoans(), fetchAccumulators(), fetchOtcOptions()]);
             setLoans(l);
             setAccumulators(a);
+            setOptions(o);
         } catch (e) {
             setError(errorMessage(e));
         }
@@ -60,6 +63,21 @@ const ContractsView = () => {
                         { label: 'Next payment', value: `${fmtDate(r.nextPaymentDate)} · ${fmt(r.nextPaymentAmount)}` },
                         { label: 'DV01', value: fmt(r.dv01) },
                         { label: 'Discounting', value: r.discountSource },
+                    ],
+                });
+            } else if (selection.kind === 'option') {
+                const o = selection.row;
+                const r = await valueOtcOption(o.code, {});
+                setValuation({
+                    code: o.code, items: [
+                        { label: 'Value (holder)', value: `${fmt(r.optionValue)} ${o.currency}`, tone: tone(r.optionValue) },
+                        { label: 'Premium per unit', value: fmt(r.optionPremium, 6) },
+                        { label: 'Model', value: r.optionModel },
+                        { label: 'Forward', value: fmt(r.underlyingForward, 6) },
+                        { label: 'Delta', value: `${pct(100 * r.delta, 2)} · ${fmt(r.delta * o.notional, 0)}` },
+                        { label: 'Vega (per point)', value: fmt(r.vega * o.notional) },
+                        { label: 'Theta (per day)', value: fmt(r.theta * o.notional) },
+                        { label: 'Volatility', value: `${pct(100 * r.volatility, 3)} (${r.volatilitySource})` },
                     ],
                 });
             } else {
@@ -141,6 +159,20 @@ const ContractsView = () => {
                                 <Column header="Strike" body={(r: AccumulatorDto) => fmt(r.strike, 5)} className="text-right" />
                                 <Column header="KO" body={(r: AccumulatorDto) => fmt(r.koBarrier, 5)} className="text-right" />
                                 <Column header="Fixing" body={(r: AccumulatorDto) => `${fmtDate(r.firstFixingDate)} – ${fmtDate(r.lastFixingDate)}`} />
+                            </DataTable>
+                        </TabPanel>
+                        <TabPanel header={`Options (${options.length})`}>
+                            <DataTable value={options} selectionMode="single" dataKey="code"
+                                selection={selection?.kind === 'option' ? selection.row : null}
+                                onSelectionChange={(e) => select(e.value ? { kind: 'option', row: e.value as OtcOptionDto } : null)}
+                                size="small" stripedRows paginator rows={15} emptyMessage="No OTC options">
+                                <Column field="code" header="Code" />
+                                <Column field="description" header="Description" />
+                                <Column field="assetClass" header="Asset class" />
+                                <Column header="Strike" body={(r: OtcOptionDto) => fmt(r.strike, 5)} className="text-right" />
+                                <Column header="Notional" body={(r: OtcOptionDto) => fmt(r.notional, 0)} className="text-right" />
+                                <Column header="Expiry" body={(r: OtcOptionDto) => fmtDate(r.expiryDate)} />
+                                <Column field="settlementType" header="Settlement" />
                             </DataTable>
                         </TabPanel>
                     </TabView>

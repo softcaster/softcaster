@@ -11,9 +11,7 @@ import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.InstrumentQuoteDAO;
 import org.softcaster.core.data.SecurityMasterDataDAO;
 import org.softcaster.core.data.SpotOptionMasterDataDAO;
-import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.VolatilitySurfaceDAO;
-import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.calc.AccumulatorCalculator;
 import org.softcaster.easy_pricer_mds_core.calc.LoanCalculator;
 import org.softcaster.engine.analytics.LoanPricer;
@@ -88,10 +86,11 @@ public class MdsCoreAutoConfiguration {
             GarmanKohlhagenPricer garmanKohlhagenPricer,
             CRRBinomialPricer crrPricer,
             VolatilityProvider volatilityProvider,
-            FxForwardCalculator fxForwardCalculator) {
+            FxForwardCalculator fxForwardCalculator,
+            AcDcBcyLinkDAO acDcBcyLinkDAO) {
         return new OptionCalculator(futureOptionMasterDataDAO, spotOptionMasterDataDAO, fxFutureMasterDataDAO,
                 bondForwardCalculator, marketDataService, black76Pricer, garmanKohlhagenPricer, crrPricer,
-                volatilityProvider, fxForwardCalculator);
+                volatilityProvider, fxForwardCalculator, acDcBcyLinkDAO);
     }
 
     @Bean(name = "volatilityProvider")
@@ -104,24 +103,19 @@ public class MdsCoreAutoConfiguration {
     @ConditionalOnMissingBean
     public AccumulatorCalculator accumulatorCalculator(
             AcDcBcyLinkDAO acDcBcyLinkDAO,
-            YieldCurveEntityDAO yieldCurveEntityDAO,
-            SpreadCurveEntityDAO spreadCurveEntityDAO,
             MarketDataService marketDataService,
             VolatilityProvider volatilityProvider,
             AccumulatorPricer accumulatorPricer) {
-        return new AccumulatorCalculator(acDcBcyLinkDAO, yieldCurveEntityDAO, spreadCurveEntityDAO,
-                marketDataService, volatilityProvider, accumulatorPricer);
+        return new AccumulatorCalculator(acDcBcyLinkDAO, marketDataService, volatilityProvider, accumulatorPricer);
     }
 
     @Bean(name = "loanCalculator")
     @ConditionalOnMissingBean
     public LoanCalculator loanCalculator(
             AcDcBcyLinkDAO acDcBcyLinkDAO,
-            YieldCurveEntityDAO yieldCurveEntityDAO,
-            SpreadCurveEntityDAO spreadCurveEntityDAO,
             MarketDataService marketDataService,
             LoanPricer loanPricer) {
-        return new LoanCalculator(acDcBcyLinkDAO, yieldCurveEntityDAO, spreadCurveEntityDAO, marketDataService, loanPricer);
+        return new LoanCalculator(acDcBcyLinkDAO, marketDataService, loanPricer);
     }
 
     @Bean(name = "cashFlowInstrumentCalculator")

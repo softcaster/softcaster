@@ -11,6 +11,10 @@ export const CmdAccumulatorView = lazy(() => import('../views/AccumulatorTradeVi
 export const LoanPricingView = lazy(() => import('../views/PricingViews').then(m => ({ default: m.LoanPricingView })));
 export const FxAccumulatorPricingView = lazy(() => import('../views/PricingViews').then(m => ({ default: m.FxAccumulatorPricingView })));
 export const CmdAccumulatorPricingView = lazy(() => import('../views/PricingViews').then(m => ({ default: m.CmdAccumulatorPricingView })));
+export const FxOptionView = lazy(() => import('../views/OtcOptionTradeView').then(m => ({ default: m.FxOptionView })));
+export const CmdOptionView = lazy(() => import('../views/OtcOptionTradeView').then(m => ({ default: m.CmdOptionView })));
+export const FxOptionPricingView = lazy(() => import('../views/PricingViews').then(m => ({ default: m.FxOptionPricingView })));
+export const CmdOptionPricingView = lazy(() => import('../views/PricingViews').then(m => ({ default: m.CmdOptionPricingView })));
 export const ContractsView = lazy(() => import('../views/ContractsView'));
 
 export const navigationNodes: TreeNode[] = [
@@ -30,6 +34,7 @@ export const navigationNodes: TreeNode[] = [
                 key: 'forex',
                 label: 'Forex',
                 children: [
+                    { key: 'fx-option-key', label: 'FX Options', data: '/fx-option' },
                     { key: 'fx-accumulator-key', label: 'FX Accumulators', data: '/fx-accumulator' },
                 ]
             },
@@ -37,6 +42,7 @@ export const navigationNodes: TreeNode[] = [
                 key: 'commodity',
                 label: 'Commodities',
                 children: [
+                    { key: 'cmd-option-key', label: 'Commodity Options', data: '/cmd-option' },
                     { key: 'cmd-accumulator-key', label: 'Commodity Accumulators', data: '/cmd-accumulator' },
                 ]
             }
@@ -57,6 +63,7 @@ export const navigationNodes: TreeNode[] = [
                 key: 'forex-p',
                 label: 'Forex',
                 children: [
+                    { key: 'fx-option-p-key', label: 'FX Options', data: '/fx-option-p' },
                     { key: 'fx-accumulator-p-key', label: 'FX Accumulators', data: '/fx-accumulator-p' },
                 ]
             },
@@ -64,6 +71,7 @@ export const navigationNodes: TreeNode[] = [
                 key: 'commodity-p',
                 label: 'Commodities',
                 children: [
+                    { key: 'cmd-option-p-key', label: 'Commodity Options', data: '/cmd-option-p' },
                     { key: 'cmd-accumulator-p-key', label: 'Commodity Accumulators', data: '/cmd-accumulator-p' },
                 ]
             }

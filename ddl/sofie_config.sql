@@ -286,6 +286,8 @@ INSERT INTO public.asset_class (id_asset_class, super_class, code, description) 
 INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (17, 4, 'BFO', 'Bond Future Option');
 INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (18, 4, 'FXA', 'Forex Accumulator');
 INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (19, 4, 'CMA', 'Commodity Accumulator');
+INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (20, 4, 'OFX', 'OTC Forex Option');
+INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (21, 4, 'OCM', 'OTC Commodity Option');
 
 
 --
@@ -309,6 +311,8 @@ INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, as
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (15, 17, NULL, 'OPTION');
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (16, 18, NULL, 'OPTION');
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (17, 19, NULL, 'OPTION');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (18, 20, NULL, 'OPTION');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (19, 21, NULL, 'OPTION');
 
 
 --

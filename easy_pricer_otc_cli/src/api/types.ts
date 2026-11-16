@@ -266,3 +266,79 @@ export interface AccumulatorDealResponse {
     premium: number;
     pricing: AccumulatorPricingResponse | null;
 }
+
+// ---------------------------------------------------------------------------
+// Opzioni OTC (OFX su cambio, OCM su commodity)
+// ---------------------------------------------------------------------------
+
+export interface OtcOptionDealRequest {
+    underlyingCode: string;
+    optionType: string;                 // CALL, PUT
+    exerciseStyle: string;              // EUROPEAN, AMERICAN
+    settlementType: string;             // PHYSICAL, CASH
+    strike: number | null;
+    notional: number | null;            // valuta base (OFX) o unita' della commodity (OCM)
+    expiryDate?: string;
+    deliveryDate?: string;              // vuota = scadenza + spot lag
+    spotLag?: number | null;
+    expiryTime?: string | null;         // HH:mm:ss
+    expiryTimeZone?: string | null;
+    description?: string;
+    tradeDate?: string;
+    side?: string;
+    counterpartyId?: number | null;
+    positionMdId?: number | null;
+    premium?: number | null;            // totale, valuta di regolamento
+    premiumUnit?: number | null;        // per unita' di sottostante
+    premiumPercent?: number | null;     // % di nozionale x strike
+    spot?: number | null;
+    volatility?: number | null;         // decimale; vuota = superficie
+    optionPrice?: number | null;        // premio unitario di mercato -> volatilita' implicita
+    domesticRCurve?: string;
+    foreignRCurve?: string;
+}
+
+/** Valutazione di un'opzione (PricingResponse di mds_core, campi delle opzioni). */
+export interface OptionPricingResponse {
+    optionModel: string;
+    optionPremium: number;              // per unita' di sottostante
+    optionValue: number;                // contratto: premio x nozionale
+    volatility: number;
+    volatilitySource: string;
+    underlyingForward: number;
+    discountFactor: number;
+    timeToExpiry: number;
+    delta: number;
+    gamma: number;
+    vega: number;
+    theta: number;
+    rho: number;
+}
+
+export interface OtcOptionDto {
+    masterDataId: number;
+    code: string;
+    description: string;
+    assetClass: string;
+    underlyingCode: string;
+    currency: string;
+    optionType: string;
+    exerciseStyle: string;
+    settlementType: string;
+    strike: number;
+    notional: number;
+    tradeDate: string | null;
+    expiryDate: string;
+    expiryTime: string | null;
+    expiryTimeZone: string | null;
+    deliveryDate: string | null;
+    spotLag: number | null;
+}
+
+export interface OtcOptionDealResponse {
+    contract: OtcOptionDto;
+    side: string;
+    quantity: number;
+    premium: number;
+    pricing: OptionPricingResponse | null;
+}

@@ -1993,6 +1993,46 @@ CREATE TABLE public.option_type (
 
 
 --
+-- Name: otc_cmd_option_master_data; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.otc_cmd_option_master_data (
+    id_master_data integer NOT NULL,
+    underlying integer NOT NULL
+);
+
+
+--
+-- Name: otc_fx_option_master_data; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.otc_fx_option_master_data (
+    id_master_data integer NOT NULL,
+    underlying integer NOT NULL
+);
+
+
+--
+-- Name: otc_option_master_data; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.otc_option_master_data (
+    id_master_data integer NOT NULL,
+    option_type integer NOT NULL,
+    exercise_style integer DEFAULT 1 NOT NULL,
+    settlement_type integer NOT NULL,
+    strike numeric(28,10) NOT NULL,
+    notional numeric(28,10) NOT NULL,
+    expiry_time time without time zone,
+    expiry_time_zone character varying(64),
+    delivery_date date,
+    CONSTRAINT ck_otc_option_master_data_exercise CHECK ((exercise_style <> 3)),
+    CONSTRAINT ck_otc_option_master_data_notional CHECK ((notional > (0)::numeric)),
+    CONSTRAINT ck_otc_option_master_data_strike CHECK ((strike > (0)::numeric))
+);
+
+
+--
 -- Name: portfolio_master_data; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3577,6 +3617,30 @@ ALTER TABLE ONLY public.option_type
 
 
 --
+-- Name: otc_cmd_option_master_data pk_otc_cmd_option_master_data; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_cmd_option_master_data
+    ADD CONSTRAINT pk_otc_cmd_option_master_data PRIMARY KEY (id_master_data);
+
+
+--
+-- Name: otc_fx_option_master_data pk_otc_fx_option_master_data; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_fx_option_master_data
+    ADD CONSTRAINT pk_otc_fx_option_master_data PRIMARY KEY (id_master_data);
+
+
+--
+-- Name: otc_option_master_data pk_otc_option_master_data; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_option_master_data
+    ADD CONSTRAINT pk_otc_option_master_data PRIMARY KEY (id_master_data);
+
+
+--
 -- Name: power_future_master_data pk_power_future_master_data; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4710,6 +4774,20 @@ CREATE UNIQUE INDEX idx_yield_curve_code ON public.yield_curve USING btree (code
 --
 
 CREATE UNIQUE INDEX idx_yield_curve_item_ric ON public.yield_curve_item USING btree (ric, yield_curve);
+
+
+--
+-- Name: ix_otc_cmd_option_master_data_underlying; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_otc_cmd_option_master_data_underlying ON public.otc_cmd_option_master_data USING btree (underlying);
+
+
+--
+-- Name: ix_otc_fx_option_master_data_underlying; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_otc_fx_option_master_data_underlying ON public.otc_fx_option_master_data USING btree (underlying);
 
 
 --
@@ -5884,6 +5962,70 @@ ALTER TABLE ONLY public.option_product
 
 ALTER TABLE ONLY public.option_product
     ADD CONSTRAINT fk_option_product_settlement_type FOREIGN KEY (settlement_type) REFERENCES public.settlement_type(id_settlement_type);
+
+
+--
+-- Name: otc_cmd_option_master_data fk_otc_cmd_option_master_data_parent; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_cmd_option_master_data
+    ADD CONSTRAINT fk_otc_cmd_option_master_data_parent FOREIGN KEY (id_master_data) REFERENCES public.otc_option_master_data(id_master_data);
+
+
+--
+-- Name: otc_cmd_option_master_data fk_otc_cmd_option_master_data_underlying; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_cmd_option_master_data
+    ADD CONSTRAINT fk_otc_cmd_option_master_data_underlying FOREIGN KEY (underlying) REFERENCES public.cmd_future_master_data(id_master_data);
+
+
+--
+-- Name: otc_fx_option_master_data fk_otc_fx_option_master_data_parent; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_fx_option_master_data
+    ADD CONSTRAINT fk_otc_fx_option_master_data_parent FOREIGN KEY (id_master_data) REFERENCES public.otc_option_master_data(id_master_data);
+
+
+--
+-- Name: otc_fx_option_master_data fk_otc_fx_option_master_data_underlying; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_fx_option_master_data
+    ADD CONSTRAINT fk_otc_fx_option_master_data_underlying FOREIGN KEY (underlying) REFERENCES public.forex_master_data(id_master_data);
+
+
+--
+-- Name: otc_option_master_data fk_otc_option_master_data_exercise_style; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_option_master_data
+    ADD CONSTRAINT fk_otc_option_master_data_exercise_style FOREIGN KEY (exercise_style) REFERENCES public.exercise_style(exercise_style_id);
+
+
+--
+-- Name: otc_option_master_data fk_otc_option_master_data_option_type; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_option_master_data
+    ADD CONSTRAINT fk_otc_option_master_data_option_type FOREIGN KEY (option_type) REFERENCES public.option_type(option_type_id);
+
+
+--
+-- Name: otc_option_master_data fk_otc_option_master_data_parent; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_option_master_data
+    ADD CONSTRAINT fk_otc_option_master_data_parent FOREIGN KEY (id_master_data) REFERENCES public.master_data(id_master_data);
+
+
+--
+-- Name: otc_option_master_data fk_otc_option_master_data_settlement_type; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.otc_option_master_data
+    ADD CONSTRAINT fk_otc_option_master_data_settlement_type FOREIGN KEY (settlement_type) REFERENCES public.settlement_type(id_settlement_type);
 
 
 --

@@ -8,16 +8,11 @@ import java.time.LocalDate;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.softcaster.core.data.AcDcBcyLink;
 import org.softcaster.core.data.AcDcBcyLinkDAO;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.InstrumentValuation;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.PositionDetail;
-import org.softcaster.core.data.SpreadCurveEntity;
-import org.softcaster.core.data.SpreadCurveEntityDAO;
-import org.softcaster.core.data.YieldCurveEntity;
-import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.Calendar;
 import org.softcaster.easy_pricer_mds_core.IMtmDataHelper;
 import org.softcaster.easy_pricer_mds_core.calc.BondForwardCalculator;
@@ -40,12 +35,6 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
     @Autowired
     @Qualifier("bondForwardCalculator")
     private BondForwardCalculator bondForwardCalculator;
-
-    @Autowired
-    YieldCurveEntityDAO yieldCurveEntityDAO;
-
-    @Autowired
-    SpreadCurveEntityDAO spreadCurveEntityDAO;
 
     @Autowired
     AcDcBcyLinkDAO acDcBcyLinkDAO;
@@ -80,18 +69,10 @@ public class BondFutureEvaluator extends AbstractEvaluator implements IPositionE
             currentValuation.setAccruedInterest(0.);
             currentValuation.setValuationDate(valuationDate);
 
-            AcDcBcyLink link = acDcBcyLinkDAO.find(masterData.getAssetClass().getIdAssetClass(), masterData.getCurrency().getIdCurrency(), CurveRole.DISCOUNT).orElse(null);
-            if (link == null) {
-                throw new MtmException("Inalid link");
-            }
-            String discountCurveName = "";
-            if (link.isSpreadCurve()) {
-                SpreadCurveEntity sc = spreadCurveEntityDAO.findByIdWithBase(link.getSpreadCurve());
-                discountCurveName = sc.getCode();
-            } else {
-                YieldCurveEntity yc = yieldCurveEntityDAO.findByIdYieldCurve(link.getCurveId());
-                discountCurveName = yc.getCode();
-            }
+            String discountCurveName = acDcBcyLinkDAO.findCurveCode(masterData.getAssetClass().getIdAssetClass(),
+                    masterData.getCurrency().getIdCurrency(), CurveRole.DISCOUNT)
+                    .orElseThrow(() -> new MtmException("No DISCOUNT curve configured for "
+                    + masterData.getAssetClass().getCode() + "/" + masterData.getCurrency().getIsoCode()));
             XRBForwardInput input = bondForwardCalculator.getBondForwardInput(masterData.getCode(), mtmHelper.getOfficialDate(), discountCurveName, mktPrice);
             XRBForwardResult result = bondForwardCalculator.bondFwdValuation(input);
             // DV01 del future: DV01 del CTD al prezzo a pronti / fattore di conversione

@@ -5,12 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import org.softcaster.core.data.AcDcBcyLink;
 import org.softcaster.core.data.AcDcBcyLinkDAO;
 import org.softcaster.core.data.CashFlowItem;
 import org.softcaster.core.data.LoanMasterData;
-import org.softcaster.core.data.SpreadCurveEntityDAO;
-import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.dto.LoanPricingResponse;
 import org.softcaster.engine.analytics.LoanPricer;
@@ -45,17 +42,12 @@ import org.softcaster.engine.enums.RollConvention;
 public class LoanCalculator {
 
     private final AcDcBcyLinkDAO acDcBcyLinkDAO;
-    private final YieldCurveEntityDAO yieldCurveEntityDAO;
-    private final SpreadCurveEntityDAO spreadCurveEntityDAO;
     private final MarketDataService marketDataService;
     private final LoanPricer loanPricer;
     private final LoanScheduleBuilder scheduleBuilder = new LoanScheduleBuilder();
 
-    public LoanCalculator(AcDcBcyLinkDAO acDcBcyLinkDAO, YieldCurveEntityDAO yieldCurveEntityDAO,
-            SpreadCurveEntityDAO spreadCurveEntityDAO, MarketDataService marketDataService, LoanPricer loanPricer) {
+    public LoanCalculator(AcDcBcyLinkDAO acDcBcyLinkDAO, MarketDataService marketDataService, LoanPricer loanPricer) {
         this.acDcBcyLinkDAO = Objects.requireNonNull(acDcBcyLinkDAO);
-        this.yieldCurveEntityDAO = Objects.requireNonNull(yieldCurveEntityDAO);
-        this.spreadCurveEntityDAO = Objects.requireNonNull(spreadCurveEntityDAO);
         this.marketDataService = Objects.requireNonNull(marketDataService);
         this.loanPricer = Objects.requireNonNull(loanPricer);
     }
@@ -302,15 +294,8 @@ public class LoanCalculator {
     }
 
     private String linkedCurveCode(LoanMasterData lmd) {
-        return acDcBcyLinkDAO.find(lmd.getAssetClass().getIdAssetClass(), lmd.getCurrency().getIdCurrency(), CurveRole.DISCOUNT)
-                .map(this::curveCode)
-                .orElse(null);
-    }
-
-    private String curveCode(AcDcBcyLink link) {
-        return link.isSpreadCurve()
-                ? spreadCurveEntityDAO.findByIdWithBase(link.getSpreadCurve()).getCode()
-                : yieldCurveEntityDAO.findByIdYieldCurve(link.getCurveId()).getCode();
+        return acDcBcyLinkDAO.findCurveCode(lmd.getAssetClass().getIdAssetClass(), lmd.getCurrency().getIdCurrency(),
+                CurveRole.DISCOUNT).orElse(null);
     }
 
     private DiscountCurve loadCurve(String curveCode, LocalDate valuationDate) {

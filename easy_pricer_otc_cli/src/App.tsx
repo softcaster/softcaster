@@ -7,7 +7,8 @@ import { Toolbar } from 'primereact/toolbar';
 import { Tree } from 'primereact/tree';
 import type { TreeExpandedKeysType } from 'primereact/tree';
 import {
-    CmdAccumulatorPricingView, CmdAccumulatorView, ContractsView, FxAccumulatorPricingView, FxAccumulatorView,
+    CmdAccumulatorPricingView, CmdAccumulatorView, CmdOptionPricingView, CmdOptionView, ContractsView,
+    FxAccumulatorPricingView, FxAccumulatorView, FxOptionPricingView, FxOptionView,
     HomeView, LoanFixedView, LoanFloatingView, LoanPricingView, navigationNodes,
 } from './config/navigation.config';
 import { ActionProvider, useActions } from './context/ActionContext';
@@ -139,6 +140,10 @@ const MainLayout = () => {
                             <Route path="/loan-p" element={<LoanPricingView />} />
                             <Route path="/fx-accumulator-p" element={<FxAccumulatorPricingView />} />
                             <Route path="/cmd-accumulator-p" element={<CmdAccumulatorPricingView />} />
+                            <Route path="/fx-option" element={<FxOptionView />} />
+                            <Route path="/cmd-option" element={<CmdOptionView />} />
+                            <Route path="/fx-option-p" element={<FxOptionPricingView />} />
+                            <Route path="/cmd-option-p" element={<CmdOptionPricingView />} />
                             <Route path="/contracts" element={<ContractsView />} />
                             <Route path="*" element={<div className="p-4">404 - Not Found</div>} />
                         </Routes>

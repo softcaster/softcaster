@@ -19,6 +19,7 @@ delete from instrument_valuation;
 --   mutui (XRM, FRM): master_data -> cash_flow_master_data -> loan_master_data
 --                     (-> flt_loan_master_data), spese, piano delle rate
 --   accumulator (FXA, CMA): master_data -> accumulator_master_data, fixing
+--   opzioni OTC (OFX, OCM): master_data -> otc_option_master_data -> foglia
 -- ----------------------------------------------------------------------------
 begin;
 -- otc_md vive fino al commit: la transazione racchiude tutta la pulizia OTC
@@ -26,7 +27,7 @@ create temp table otc_md on commit drop as
 select md.id_master_data
 from master_data md
 join asset_class ac on ac.id_asset_class = md.asset_class
-where ac.code in ('XRM', 'FRM', 'FXA', 'CMA');
+where ac.code in ('XRM', 'FRM', 'FXA', 'CMA', 'OFX', 'OCM');
 
 -- quotazioni e regole broker (di norma assenti per gli OTC)
 delete from instrument_quote_hist where master_data in (select id_master_data from otc_md);
@@ -44,6 +45,11 @@ delete from cash_flow_master_data where id_master_data in (select id_master_data
 -- accumulator: calendario dei fixing, foglia
 delete from accumulator_fixing where master_data in (select id_master_data from otc_md);
 delete from accumulator_master_data where id_master_data in (select id_master_data from otc_md);
+
+-- opzioni OTC: foglie, termini comuni
+delete from otc_fx_option_master_data where id_master_data in (select id_master_data from otc_md);
+delete from otc_cmd_option_master_data where id_master_data in (select id_master_data from otc_md);
+delete from otc_option_master_data where id_master_data in (select id_master_data from otc_md);
 
 delete from master_data where id_master_data in (select id_master_data from otc_md);
 commit;

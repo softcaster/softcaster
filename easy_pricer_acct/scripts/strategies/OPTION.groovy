@@ -10,6 +10,8 @@ import java.math.RoundingMode
 // OPZIONI E ACCUMULATOR (asset_class_script_mapping -> OPTION)
 //
 //   opzioni:      FFO, BFO (su future), FXO (su cambio), BDO (su titolo)
+//   opzioni OTC:  OFX (su cambio), OCM (su commodity), un contratto per
+//                 anagrafica: quantita' 1, prezzo = premio sul nozionale
 //   accumulator:  FXA, CMA (OTC, un contratto per anagrafica)
 //
 // Tutto nella settlement currency dello strumento; la controvalutazione nella

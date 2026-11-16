@@ -7,7 +7,8 @@ export type EnumName =
     | 'daycountBasis' | 'rollConvention' | 'amortizationSchedule' | 'loanFrequency'
     | 'loanFeeType' | 'feeBasis' | 'feeTiming'
     | 'accumulatorType' | 'settlementType' | 'accumulatorFrequency'
-    | 'barrierObservation' | 'knockInEffect' | 'guaranteeType';
+    | 'barrierObservation' | 'knockInEffect' | 'guaranteeType'
+    | 'optionType' | 'otcExerciseStyle';
 
 export type EnumOptions = Partial<Record<EnumName, Option[]>>;
 
@@ -17,6 +18,8 @@ const ICONS: Record<string, string> = {
     'accumulatorType.DECUMULATOR': 'pi pi-minus-circle',
     'guaranteeType.LEVERAGED': 'pi pi-angle-double-up',
     'guaranteeType.UNLEVERAGED': 'pi pi-minus',
+    'optionType.CALL': 'pi pi-arrow-up-right',
+    'optionType.PUT': 'pi pi-arrow-down-right',
 };
 
 // Gli enum non cambiano durante la sessione: una sola richiesta per nome

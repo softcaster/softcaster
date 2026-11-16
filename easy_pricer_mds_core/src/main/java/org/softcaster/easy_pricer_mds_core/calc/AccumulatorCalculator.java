@@ -7,14 +7,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.hibernate.Hibernate;
-import org.softcaster.core.data.AcDcBcyLink;
 import org.softcaster.core.data.AcDcBcyLinkDAO;
 import org.softcaster.core.data.AccumulatorFixing;
 import org.softcaster.core.data.AccumulatorMasterData;
 import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.MasterData;
-import org.softcaster.core.data.SpreadCurveEntityDAO;
-import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.easy_pricer_mds_core.MarketDataService;
 import org.softcaster.easy_pricer_mds_core.dto.AccumulatorPricingResponse;
 import org.softcaster.engine.analytics.AccumulatorPricer;
@@ -60,21 +57,15 @@ public class AccumulatorCalculator {
     public static final String MODEL = "Monte Carlo lognormal (GK/Black)";
 
     private final AcDcBcyLinkDAO acDcBcyLinkDAO;
-    private final YieldCurveEntityDAO yieldCurveEntityDAO;
-    private final SpreadCurveEntityDAO spreadCurveEntityDAO;
     private final MarketDataService marketDataService;
     private final VolatilityProvider volatilityProvider;
     private final AccumulatorPricer accumulatorPricer;
 
     public AccumulatorCalculator(AcDcBcyLinkDAO acDcBcyLinkDAO,
-                                 YieldCurveEntityDAO yieldCurveEntityDAO,
-                                 SpreadCurveEntityDAO spreadCurveEntityDAO,
                                  MarketDataService marketDataService,
                                  VolatilityProvider volatilityProvider,
                                  AccumulatorPricer accumulatorPricer) {
         this.acDcBcyLinkDAO = Objects.requireNonNull(acDcBcyLinkDAO);
-        this.yieldCurveEntityDAO = Objects.requireNonNull(yieldCurveEntityDAO);
-        this.spreadCurveEntityDAO = Objects.requireNonNull(spreadCurveEntityDAO);
         this.marketDataService = Objects.requireNonNull(marketDataService);
         this.volatilityProvider = Objects.requireNonNull(volatilityProvider);
         this.accumulatorPricer = Objects.requireNonNull(accumulatorPricer);
@@ -271,13 +262,10 @@ public class AccumulatorCalculator {
      * Curva DISCOUNT configurata per (asset class, valuta di regolamento).
      */
     private String discountCurveCode(AccumulatorMasterData amd) {
-        AcDcBcyLink link = acDcBcyLinkDAO.find(amd.getAssetClass().getIdAssetClass(),
+        return acDcBcyLinkDAO.findCurveCode(amd.getAssetClass().getIdAssetClass(),
                 amd.getCurrency().getIdCurrency(), CurveRole.DISCOUNT)
                 .orElseThrow(() -> new IllegalArgumentException("Missing discount curve (domesticRCurve) and no "
                         + "DISCOUNT curve configured for " + amd.getAssetClass().getCode() + "/" + amd.getCurrency().getIsoCode()));
-        return link.isSpreadCurve()
-                ? spreadCurveEntityDAO.findByIdWithBase(link.getSpreadCurve()).getCode()
-                : yieldCurveEntityDAO.findByIdYieldCurve(link.getCurveId()).getCode();
     }
 
     private double price(Double price, MasterData underlying) {

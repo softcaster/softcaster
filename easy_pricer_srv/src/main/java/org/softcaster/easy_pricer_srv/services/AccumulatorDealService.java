@@ -194,14 +194,14 @@ public class AccumulatorDealService {
 
     /**
      * Valutazione alla data dell'operazione, informativa: senza volatilita'
-     * (indicata o da superficie) o curve il deal resta registrato senza
-     * valutazione.
+     * (indicata o da superficie valida, non scaduta) o curve il deal resta
+     * registrato senza valutazione.
      */
     private AccumulatorPricingResponse valuationAtBooking(AccumulatorMasterData amd, AccumulatorDealRequest request) {
         try {
             return accumulatorCalculator.accumulatorValuation(amd, tradeDate(request), request.spot,
                     request.volatility, request.domesticRCurve, request.foreignRCurve, request.paths);
-        } catch (IllegalArgumentException | NoSuchElementException ex) {
+        } catch (IllegalArgumentException | IllegalStateException | NoSuchElementException ex) {
             log.warn("Accumulator {} booked without valuation: {}", amd.getCode(), ex.getMessage());
             return null;
         }

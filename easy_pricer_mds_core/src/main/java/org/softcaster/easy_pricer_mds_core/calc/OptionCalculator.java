@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import org.hibernate.Hibernate;
+import org.softcaster.core.data.AcDcBcyLinkDAO;
 import org.softcaster.core.data.ForexMasterData;
 import org.softcaster.core.data.FutureMasterData;
 import org.softcaster.core.data.FutureOptionMasterData;
@@ -15,6 +16,9 @@ import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.OptionMasterData;
+import org.softcaster.core.data.OtcCmdOptionMasterData;
+import org.softcaster.core.data.OtcFxOptionMasterData;
+import org.softcaster.core.data.OtcOptionMasterData;
 import org.softcaster.core.data.SecurityMasterData;
 import org.softcaster.core.data.SpotOptionMasterData;
 import org.softcaster.core.data.SpotOptionMasterDataDAO;
@@ -33,6 +37,7 @@ import org.softcaster.engine.dto.OptionContract;
 import org.softcaster.engine.dto.OptionInput;
 import org.softcaster.engine.dto.OptionResult;
 import org.softcaster.engine.dto.XRBForwardInput;
+import org.softcaster.engine.enums.CurveRole;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.ExerciseStyle;
 import org.softcaster.engine.enums.PremiumStyle;
@@ -49,6 +54,8 @@ import org.softcaster.engine.enums.RequestType;
  *  - opzione su titolo (BDO)       -> Black-76 sul prezzo secco a termine del titolo
  *                                     alla consegna (bond forward con la curva repo)
  *  - americane (tutti i rami)      -> albero binomiale CRR sullo stesso input
+ *  - OTC su cambio (OFX)           -> come FXO, nozionale e consegna del contratto
+ *  - OTC su commodity (OCM)        -> Black-76 sul prezzo del future, premio scontato
  *
  * Volatilita': indicata, implicita dal premio di mercato oppure, se mancano
  * entrambi, dalla superficie del sottostante della serie (VolatilityProvider)
@@ -81,6 +88,7 @@ public class OptionCalculator {
     private final CRRBinomialPricer crrPricer;
     private final VolatilityProvider volatilityProvider;
     private final FxForwardCalculator fxForwardCalculator;
+    private final AcDcBcyLinkDAO acDcBcyLinkDAO;
 
     public OptionCalculator(FutureOptionMasterDataDAO futureOptionMasterDataDAO,
                             SpotOptionMasterDataDAO spotOptionMasterDataDAO,
@@ -91,8 +99,10 @@ public class OptionCalculator {
                             GarmanKohlhagenPricer garmanKohlhagenPricer,
                             CRRBinomialPricer crrPricer,
                             VolatilityProvider volatilityProvider,
-                            FxForwardCalculator fxForwardCalculator) {
+                            FxForwardCalculator fxForwardCalculator,
+                            AcDcBcyLinkDAO acDcBcyLinkDAO) {
         this.fxForwardCalculator = Objects.requireNonNull(fxForwardCalculator);
+        this.acDcBcyLinkDAO = Objects.requireNonNull(acDcBcyLinkDAO);
         this.futureOptionMasterDataDAO = Objects.requireNonNull(futureOptionMasterDataDAO);
         this.spotOptionMasterDataDAO = Objects.requireNonNull(spotOptionMasterDataDAO);
         this.fxFutureMasterDataDAO = Objects.requireNonNull(fxFutureMasterDataDAO);
@@ -225,20 +235,34 @@ public class OptionCalculator {
     private FxOptionInput getFxOptionInput(SpotOptionMasterData omd, ForexMasterData pair, LocalDate valuationDate,
                                            Double spotPrice, String domesticCurveCode, String foreignCurveCode,
                                            double volatility) {
+        return fxOptionInput(omd.getCode(), contract(omd), pair, null, omd.getDeliveryLocalDate(), valuationDate,
+                spotPrice, domesticCurveCode, foreignCurveCode, volatility);
+    }
+
+    /**
+     * Input Garman-Kohlhagen / CRR comune a serie quotate e opzioni OTC:
+     * spot della coppia, curve domestica (valuta quotata) ed estera (valuta
+     * base), di default quelle della coppia. Convenzione FX: premio al
+     * regolamento dello spot, payoff alla consegna (indicata, altrimenti
+     * scadenza + spot lag).
+     *
+     * @param spotLag giorni di regolamento; null = quelli della coppia (2 se mancano)
+     */
+    private FxOptionInput fxOptionInput(String code, OptionContract contract, ForexMasterData pair, Integer spotLag,
+                                        LocalDate deliveryDate, LocalDate valuationDate, Double spotPrice,
+                                        String domesticCurveCode, String foreignCurveCode, double volatility) {
         double spot = price(spotPrice, pair);
         String domestic = domesticCurveCode != null && !domesticCurveCode.isBlank() ? domesticCurveCode : pair.getCcyIrc();
         String foreign = foreignCurveCode != null && !foreignCurveCode.isBlank() ? foreignCurveCode : pair.getBcyIrc();
-        // convenzione FX: premio al regolamento dello spot, payoff alla consegna
-        OptionContract contract = contract(omd);
-        int days = pair.getBusinessDays() == null ? 2 : pair.getBusinessDays();
+        int days = spotLag != null ? spotLag : pair.getBusinessDays() == null ? 2 : pair.getBusinessDays();
         org.softcaster.easy_pricer_mds_core.Calendar calendar = new org.softcaster.easy_pricer_mds_core.Calendar(pair.getCurrencyList());
         LocalDate spotDate = calendar.getNextBusinessDate(valuationDate, days);
-        LocalDate delivery = omd.getDeliveryLocalDate() != null ? omd.getDeliveryLocalDate()
+        LocalDate delivery = deliveryDate != null ? deliveryDate
                 : calendar.getNextBusinessDate(contract.expiryDate(), days);
         if (delivery.isBefore(spotDate)) {
             delivery = spotDate;   // opzione gia' scaduta: nessun periodo di sconto
         }
-        return new FxOptionInput(omd.getCode(), valuationDate, spot,
+        return new FxOptionInput(code, valuationDate, spot,
                 loadCurve(domestic, valuationDate), loadCurve(foreign, valuationDate),
                 contract, volatility, spotDate, delivery);
     }
@@ -352,8 +376,11 @@ public class OptionCalculator {
         if (implied) {
             input = input.withVolatility(impliedVolatility(input, request.optionPrice));
         }
-        OptionResult result = valuation(input);
+        return response(input, volatilitySource);
+    }
 
+    private PricingResponse response(OptionInput input, String volatilitySource) {
+        OptionResult result = valuation(input);
         PricingResponse response = new PricingResponse();
         response.optionModel = model(input);
         response.optionPremium = result.price();
@@ -369,6 +396,85 @@ public class OptionCalculator {
         response.theta = result.greeks().theta();
         response.rho = result.greeks().rho();
         return response;
+    }
+
+    // ------------------------------------------------------------------------
+    // -- Opzioni OTC (OFX, OCM): un contratto per anagrafica
+    // ------------------------------------------------------------------------
+
+    /**
+     * Superficie del sottostante del contratto (coppia o future).
+     */
+    public Optional<VolatilityProvider.SurfaceData> otcSurface(OtcOptionMasterData omd, LocalDate valuationDate) {
+        MasterData underlying = (MasterData) Hibernate.unproxy(omd.getUnderlying());
+        return volatilityProvider.surface(underlying.getIdMasterData(), valuationDate);
+    }
+
+    /**
+     * Input del pricer per un'opzione OTC (salvata o solo simulata). Il
+     * nozionale del contratto e' la quantita' del sottostante: positionValue
+     * del risultato e' il valore del contratto (prezzo della transazione).
+     *
+     *  - OFX: Garman-Kohlhagen / CRR su spot e curve della coppia, consegna
+     *    del contratto o scadenza + spot lag;
+     *  - OCM: Black-76 / CRR sul prezzo del future, premio scontato con la
+     *    curva indicata o la DISCOUNT di ac_dc_bcy_link per (OCM, valuta).
+     *
+     * @param underlyingPrice spot della coppia o prezzo del future; null o <= 0 = quotazione mid
+     * @param domesticCurveCode sconto del premio (valuta di regolamento); vuota = default
+     * @param foreignCurveCode solo OFX: curva della valuta base; vuota = quella della coppia
+     */
+    public OptionInput getOtcOptionInput(OtcOptionMasterData omd, LocalDate valuationDate, Double underlyingPrice,
+                                         String domesticCurveCode, String foreignCurveCode, double volatility) {
+        Objects.requireNonNull(omd, "omd");
+        Objects.requireNonNull(valuationDate, "valuationDate");
+        OptionContract contract = new OptionContract(omd.getOptionType(), omd.getExerciseStyle(), omd.getStrike(),
+                omd.getExpiryLocalDate(), omd.getNotional(), List.of());
+        if (omd instanceof OtcFxOptionMasterData fx) {
+            return fxOptionInput(omd.getCode(), contract, fx.getPair(), omd.getBusinessDays(), omd.getDeliveryLocalDate(),
+                    valuationDate, underlyingPrice, domesticCurveCode, foreignCurveCode, volatility);
+        }
+        if (omd instanceof OtcCmdOptionMasterData cmd) {
+            double forward = price(underlyingPrice, cmd.getFuture());
+            String curveCode = domesticCurveCode != null && !domesticCurveCode.isBlank() ? domesticCurveCode
+                    : acDcBcyLinkDAO.findCurveCode(omd.getAssetClass().getIdAssetClass(), omd.getCurrency().getIdCurrency(),
+                            CurveRole.DISCOUNT).orElseThrow(() -> new IllegalArgumentException(
+                            "Missing discount curve (domesticRCurve) and no DISCOUNT curve configured for "
+                            + omd.getAssetClass().getCode() + "/" + omd.getCurrency().getIsoCode()));
+            return new ForwardOptionInput(omd.getCode(), valuationDate, forward, loadCurve(curveCode, valuationDate),
+                    true, contract, volatility);
+        }
+        throw new IllegalArgumentException("Unsupported OTC option " + omd.getCode());
+    }
+
+    /**
+     * Valutazione di un'opzione OTC. Volatilita': indicata, implicita dal
+     * premio di mercato unitario (optionPrice, per unita' di sottostante)
+     * oppure dalla superficie del sottostante alla scadenza e allo strike.
+     * optionValue = valore del contratto nella valuta di regolamento per chi
+     * lo detiene.
+     */
+    public PricingResponse otcOptionValuation(OtcOptionMasterData omd, LocalDate valuationDate, Double underlyingPrice,
+                                              Double volatility, Double optionPrice,
+                                              String domesticCurveCode, String foreignCurveCode) {
+        Objects.requireNonNull(omd, "omd");
+        LocalDate date = valuationDate != null ? valuationDate : marketDataService.getOfficialDate();
+        boolean implied = optionPrice != null && optionPrice > 0;
+        String volatilitySource = implied ? "implied" : "request";
+        Double vol = volatility;
+        if (!implied && (vol == null || vol <= 0)) {
+            VolatilityProvider.SurfaceData surface = otcSurface(omd, date).orElseThrow(() -> new IllegalArgumentException(
+                    "Missing volatility (volatility) or market premium (optionPrice), and no volatility surface for "
+                    + omd.getUnderlying().getCode() + " at " + date));
+            vol = surface.surface().volatility(omd.getExpiryLocalDate(), omd.getStrike());
+            volatilitySource = surface.describe();
+        }
+        OptionInput input = getOtcOptionInput(omd, date, underlyingPrice, domesticCurveCode, foreignCurveCode,
+                vol != null && vol > 0 ? vol : 0.20);
+        if (implied) {
+            input = input.withVolatility(impliedVolatility(input, optionPrice));
+        }
+        return response(input, volatilitySource);
     }
 
     // ------------------------------------------------------------------------
