@@ -2671,8 +2671,42 @@ CREATE TABLE public.volatility_point (
     strike numeric(28,10),
     volatility numeric(28,10) NOT NULL,
     source character varying(64) DEFAULT ''::character varying NOT NULL,
+    tenor character varying(4),
+    delta numeric(28,10),
+    CONSTRAINT ck_volatility_point_tenor CHECK ((((tenor IS NULL) = (delta IS NULL)) AND ((delta IS NULL) OR ((delta > (0)::numeric) AND (delta < (1)::numeric))) AND ((tenor IS NULL) OR ((tenor)::text ~ '^[0-9]{1,2}[DWMY]$'::text)))),
     CONSTRAINT ck_volatility_point_values CHECK (((volatility > (0)::numeric) AND (volatility < (5)::numeric) AND ((strike IS NULL) OR (strike > (0)::numeric)) AND (expiry_date > reference_date)))
 );
+
+
+--
+-- Name: volatility_point_hist; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.volatility_point_hist (
+    id_volatility_point_hist integer NOT NULL,
+    volatility_surface integer NOT NULL,
+    reference_date date NOT NULL,
+    expiry_date date NOT NULL,
+    strike numeric(28,10),
+    volatility numeric(28,10) NOT NULL,
+    source character varying(64) DEFAULT ''::character varying NOT NULL,
+    tenor character varying(4),
+    delta numeric(28,10),
+    CONSTRAINT ck_volatility_point_hist_tenor CHECK ((((tenor IS NULL) = (delta IS NULL)) AND ((delta IS NULL) OR ((delta > (0)::numeric) AND (delta < (1)::numeric))) AND ((tenor IS NULL) OR ((tenor)::text ~ '^[0-9]{1,2}[DWMY]$'::text)))),
+    CONSTRAINT ck_volatility_point_hist_values CHECK (((volatility > (0)::numeric) AND (volatility < (5)::numeric) AND ((strike IS NULL) OR (strike > (0)::numeric)) AND (expiry_date > reference_date)))
+);
+
+
+--
+-- Name: volatility_point_hist_s; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.volatility_point_hist_s
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -3777,6 +3811,14 @@ ALTER TABLE ONLY public.volatility_point
 
 
 --
+-- Name: volatility_point_hist pk_volatility_point_hist; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volatility_point_hist
+    ADD CONSTRAINT pk_volatility_point_hist PRIMARY KEY (id_volatility_point_hist);
+
+
+--
 -- Name: volatility_surface pk_volatility_surface; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4289,6 +4331,14 @@ ALTER TABLE ONLY public.volatility_point
 
 
 --
+-- Name: volatility_point_hist uq_volatility_point_hist; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volatility_point_hist
+    ADD CONSTRAINT uq_volatility_point_hist UNIQUE NULLS NOT DISTINCT (volatility_surface, reference_date, expiry_date, strike);
+
+
+--
 -- Name: volatility_surface uq_volatility_surface_code; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4763,6 +4813,13 @@ CREATE INDEX idx_volatility_point_date ON public.volatility_point USING btree (v
 
 
 --
+-- Name: idx_volatility_point_hist_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_volatility_point_hist_date ON public.volatility_point_hist USING btree (volatility_surface, reference_date);
+
+
+--
 -- Name: idx_yield_curve_code; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4837,6 +4894,13 @@ CREATE UNIQUE INDEX uq_eod_run_completed ON public.eod_run USING btree (business
 --
 
 CREATE UNIQUE INDEX uq_eod_run_running ON public.eod_run USING btree (status) WHERE (status = 1);
+
+
+--
+-- Name: uq_volatility_point_tenor; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uq_volatility_point_tenor ON public.volatility_point USING btree (volatility_surface, tenor, delta) WHERE (tenor IS NOT NULL);
 
 
 --
@@ -6386,6 +6450,14 @@ ALTER TABLE ONLY public.financial_txn
 
 ALTER TABLE ONLY public.financial_txn
     ADD CONSTRAINT fk_txn_status FOREIGN KEY (txn_status) REFERENCES public.txn_status(id_txn_status);
+
+
+--
+-- Name: volatility_point_hist fk_volatility_point_hist_surface; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volatility_point_hist
+    ADD CONSTRAINT fk_volatility_point_hist_surface FOREIGN KEY (volatility_surface) REFERENCES public.volatility_surface(id_volatility_surface) ON DELETE CASCADE;
 
 
 --

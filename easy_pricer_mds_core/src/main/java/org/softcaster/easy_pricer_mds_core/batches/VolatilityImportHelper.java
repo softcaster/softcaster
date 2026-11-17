@@ -36,9 +36,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Batch delle superfici di volatilita' delle coppie di cambi dai settlement
- * CME delle opzioni sul future (es. EUU sul future 6E). File CSV della
- * giornata con intestazione (colonne cercate per nome), in tre formati
- * riconosciuti dall'intestazione:
+ * CME delle opzioni sul future (es. EUU sul future 6E). File CSV (o .txt)
+ * della giornata; la tabella del Summary View di QuikStrike incollata cosi'
+ * com'e' (righe per tenor, colonne per delta: importSummaryGrid) si
+ * riconosce dalle righe che iniziano con un tenor. Gli altri formati hanno
+ * un'intestazione (colonne cercate per nome) e si riconoscono da quella:
  *
  * 0. griglia per delta del tool FX di CME (FXTOOL_..._London_3PM): snap_time,
  *    tenor, expiry_date, dte, forward, option_type, midNNd; ogni delta diventa
@@ -64,7 +66,11 @@ import org.springframework.transaction.support.TransactionTemplate;
  * accumulator leggono la superficie con il proprio strike; le opzioni su
  * future riportano il loro (OptionCalculator.surfaceVolatility).
  *
- * I punti sostituiscono quelli della stessa data di rilevazione.
+ * Salvataggio (VolatilitySurfaceDAO): le griglie per delta (FXTOOL e
+ * Summary View) aggiornano la superficie per tenor, con tenor e delta su ogni
+ * punto (i tenor non presenti nel file restano); i formati per strike
+ * caricano una rilevazione completa. Una data piu' recente della superficie
+ * corrente la sposta nello storico; i tenor in giorni (1D) non si caricano.
  */
 @Service("volatilityImportHelper")
 public class VolatilityImportHelper {
@@ -96,6 +102,8 @@ public class VolatilityImportHelper {
     // volatilita' mid per delta: mid10d, mid25d, mid50d...
     private static final java.util.regex.Pattern MID_DELTA = java.util.regex.Pattern.compile("mid(\\d+)d");
     private static final DateTimeFormatter US_DATE = DateTimeFormatter.ofPattern("M/d/yyyy");
+    // tenor delle griglie per delta: 1W, 2W, 1M, 1Y...
+    private static final java.util.regex.Pattern TENOR_CODE = java.util.regex.Pattern.compile("\\d{1,2}[DWMY]");
 
     private static final List<String> REQUIRED = List.of(BIZ_DATE, SYMBOL, SECURITY_TYPE, MONTH, MATURITY, PUT_CALL,
             STRIKE, SETTLE, UNDERLYING_MONTH);
@@ -135,7 +143,10 @@ public class VolatilityImportHelper {
      */
     public static Path latestFile(Path directory) {
         try (var files = Files.list(directory)) {
-            return files.filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".csv"))
+            return files.filter(p -> {
+                        String name = p.getFileName().toString().toLowerCase(Locale.ROOT);
+                        return name.endsWith(".csv") || name.endsWith(".txt");
+                    })
                     .max((a, b) -> Long.compare(a.toFile().lastModified(), b.toFile().lastModified()))
                     .orElseThrow(() -> new NoSuchElementException("No CSV file in " + directory));
         } catch (IOException e) {
@@ -173,7 +184,12 @@ public class VolatilityImportHelper {
         if (!(Hibernate.unproxy(surface.getUnderlying()) instanceof ForexMasterData pair)) {
             throw new IllegalArgumentException("Volatility surface " + code + " is not on a currency pair");
         }
-        Csv csv = Csv.read(file);
+        List<String> lines = readLines(file);
+        // griglia per tenor e delta copiata dal Summary View (senza intestazione CSV)
+        if (SummaryGrid.matches(lines)) {
+            return importSummaryGrid(surface, pair, lines, file);
+        }
+        Csv csv = Csv.read(file, lines);
         // griglia per delta del tool FX di CME (snapshot per tenor, con il forward)
         if (csv.has(SNAP_TIME, TENOR, EXPIRY_DATE, FORWARD, OPTION_TYPE)) {
             return importDeltaGrid(surface, csv, file);
@@ -373,6 +389,15 @@ public class VolatilityImportHelper {
                     skipped.merge("expired", deltaColumns.size(), Integer::sum);
                     continue;
                 }
+                String tenor = csv.value(f, TENOR).toUpperCase(Locale.ROOT);
+                if (!TENOR_CODE.matcher(tenor).matches()) {
+                    throw new IllegalArgumentException("invalid tenor '" + tenor + "'");
+                }
+                // come per il Summary View: i tenor in giorni non si caricano
+                if (tenor.endsWith("D")) {
+                    skipped.merge("day tenor", deltaColumns.size(), Integer::sum);
+                    continue;
+                }
                 double forward = csv.number(csv.value(f, FORWARD));
                 String dte = csv.value(f, DTE);
                 double t = (dte.isEmpty() ? java.time.temporal.ChronoUnit.DAYS.between(bizDate, expiry)
@@ -386,10 +411,10 @@ public class VolatilityImportHelper {
                         skipped.merge("missing volatility", 1, Integer::sum);
                         continue;
                     }
-                    double callDelta = callDeltas ? c.getValue() : 1. - c.getValue();
+                    double callDelta = roundDelta(callDeltas ? c.getValue() : 1. - c.getValue());
                     double strike = round(Black76Pricer.strikeForCallDelta(forward, vol, t, callDelta));
                     points.putIfAbsent(expiry + "@" + strike, new VolatilityPoint(surface.getIdVolatilitySurface(),
-                            bizDate, expiry, strike, vol, SOURCE));
+                            bizDate, expiry, strike, vol, SOURCE, tenor, callDelta));
                 }
             } catch (RuntimeException e) {
                 throw new IllegalArgumentException("File " + file + ", line " + csv.lineNumber(n) + ": " + e.getMessage(), e);
@@ -398,7 +423,7 @@ public class VolatilityImportHelper {
         if (points.isEmpty()) {
             throw new IllegalArgumentException("No usable volatility in " + file + ": " + skipped);
         }
-        volatilitySurfaceDAO.replacePoints(surface.getIdVolatilitySurface(), bizDate, new ArrayList<>(points.values()));
+        volatilitySurfaceDAO.updateTenorPoints(surface.getIdVolatilitySurface(), bizDate, new ArrayList<>(points.values()));
         return new ImportResult(surface.getCode(), bizDate, quotes, points.size(), skipped);
     }
 
@@ -408,6 +433,262 @@ public class VolatilityImportHelper {
     private static LocalDate snapDate(String text) {
         String day = text.trim().split(" ")[0];
         return LocalDate.parse(day, US_DATE);
+    }
+
+    // ------------------------------------------------------------------------
+    // -- Griglia del Summary View (FX Options Vol Converter, QuikStrike)
+    // ------------------------------------------------------------------------
+
+    /**
+     * Tabella del Summary View copiata dal browser (o da Excel): una riga per
+     * tenor (1W, 2W, 1M, ... 1Y) con le volatilita' in percentuale per delta,
+     * nell'ordine delle colonne: put 5D...40D, 50D, call 40D...5D; RiskRev e
+     * Butterflies in coda si ignorano. Se c'e' la riga dei delta (5D 10D ...
+     * 50D ... 5D, anche col simbolo delta) l'ordine si prende da li'.
+     *
+     * Il Summary View non da' scadenza ne' forward: scadenza = data di
+     * rilevazione + tenor, al giorno lavorativo successivo sul calendario
+     * della coppia (come le expiry_date del file FXTOOL di CME); forward
+     * della coppia alla scadenza da FxForwardCalculator.optionForward (spot e
+     * curve con cui poi si prezza). Delta forward come nel formato FXTOOL: la
+     * put con delta d e' la call con delta 1 - d, lo strike da
+     * Black76Pricer.strikeForCallDelta con T = giorni / 365.
+     *
+     * Data di rilevazione: dal nome del file (aaaammgg, es. EURUSD_20261117.txt),
+     * altrimenti la data ufficiale. I tenor in giorni (1D) si scartano: molto
+     * rumorosi e senza interesse per i contratti OTC.
+     */
+    private ImportResult importSummaryGrid(VolatilitySurfaceEntity surface, ForexMasterData pair, List<String> lines,
+            Path file) {
+        SummaryGrid grid = SummaryGrid.parse(lines, file);
+        String pairName = pair.getCode().length() == 6
+                ? pair.getCode().substring(0, 3) + "/" + pair.getCode().substring(3) : pair.getCode();
+        if (grid.pairName() != null && !grid.pairName().equalsIgnoreCase(pairName)) {
+            throw new IllegalArgumentException("The grid in " + file + " is for " + grid.pairName()
+                    + ", not for " + pairName + " (" + surface.getCode() + ")");
+        }
+        LocalDate bizDate = fileDate(file);
+        if (bizDate == null) {
+            bizDate = marketDataService.getOfficialDate();
+        }
+        marketDataService.loadSpotPrice();
+        marketDataService.reloadCurves(List.of(pair.getCcyIrc(), pair.getBcyIrc()));
+        org.softcaster.easy_pricer_mds_core.Calendar calendar = new org.softcaster.easy_pricer_mds_core.Calendar(pair.getCurrencyList());
+
+        Map<String, Integer> skipped = new TreeMap<>();
+        Map<String, VolatilityPoint> points = new java.util.LinkedHashMap<>();
+        int quotes = 0;
+        for (SummaryGrid.TenorRow row : grid.rows()) {
+            quotes += row.vols().length;
+            if (row.unit() == 'D') {
+                skipped.merge("day tenor", row.vols().length, Integer::sum);
+                continue;
+            }
+            LocalDate expiry = tenorDate(bizDate, row.count(), row.unit());
+            if (!calendar.isBusinessDay(expiry)) {
+                expiry = calendar.getNextBusinessDate(expiry, 1);
+            }
+            double t = java.time.temporal.ChronoUnit.DAYS.between(bizDate, expiry) / 365.;
+            double forward = fxForwardCalculator.optionForward(pair, bizDate, expiry);
+            String tenor = row.count() + String.valueOf(row.unit());
+            for (int i = 0; i < row.vols().length; i++) {
+                double vol = row.vols()[i] / 100.;
+                if (Double.isNaN(vol) || vol <= 0 || vol >= 5) {
+                    skipped.merge("missing volatility", 1, Integer::sum);
+                    continue;
+                }
+                double callDelta = roundDelta(grid.callDeltas()[i]);
+                double strike = round(Black76Pricer.strikeForCallDelta(forward, vol, t, callDelta));
+                points.putIfAbsent(expiry + "@" + strike, new VolatilityPoint(surface.getIdVolatilitySurface(),
+                        bizDate, expiry, strike, vol, SOURCE, tenor, callDelta));
+            }
+        }
+        if (points.isEmpty()) {
+            throw new IllegalArgumentException("No usable volatility in " + file + ": " + skipped);
+        }
+        // aggiornamento per tenor: i tenor non presenti nel file restano
+        volatilitySurfaceDAO.updateTenorPoints(surface.getIdVolatilitySurface(), bizDate, new ArrayList<>(points.values()));
+        return new ImportResult(surface.getCode(), bizDate, quotes, points.size(), skipped);
+    }
+
+    private static LocalDate tenorDate(LocalDate date, int count, char unit) {
+        return switch (unit) {
+            case 'D' -> date.plusDays(count);
+            case 'W' -> date.plusWeeks(count);
+            case 'M' -> date.plusMonths(count);
+            case 'Y' -> date.plusYears(count);
+            default -> throw new IllegalArgumentException("Unknown tenor unit " + unit);
+        };
+    }
+
+    /**
+     * Data aaaammgg nel nome del file, se c'e'.
+     */
+    private static LocalDate fileDate(Path file) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(20\\d{6})").matcher(file.getFileName().toString());
+        if (!m.find()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(m.group(1), DateTimeFormatter.BASIC_ISO_DATE);
+        } catch (java.time.format.DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Tabella per tenor e delta: righe che iniziano con un tenor (1W, 3M...)
+     * seguito da almeno tanti numeri quanti i delta. Separatori: tabulazione,
+     * punto e virgola, virgola (decimali con la virgola tra virgolette) o
+     * spazi; decimali con la virgola o col punto.
+     */
+    private record SummaryGrid(String pairName, double[] callDeltas, List<TenorRow> rows) {
+
+        private static final java.util.regex.Pattern TENOR_CELL = java.util.regex.Pattern.compile("(\\d{1,2})([DWMY])");
+        private static final java.util.regex.Pattern DELTA_CELL = java.util.regex.Pattern.compile("(\\d{1,2})\\s*(Δ|D|d)");
+        private static final java.util.regex.Pattern PAIR = java.util.regex.Pattern.compile("\\b([A-Z]{3}/[A-Z]{3})\\b");
+        // colonne del Summary View: put 5..40, 50, call 40..5
+        private static final int[] DEFAULT_DELTAS = {5, 10, 15, 20, 25, 30, 35, 40, 50, 40, 35, 30, 25, 20, 15, 10, 5};
+
+        record TenorRow(int count, char unit, double[] vols) {
+        }
+
+        static boolean matches(List<String> lines) {
+            return lines.stream().anyMatch(l -> {
+                String[] cells = cells(l);
+                return cells.length >= 4 && TENOR_CELL.matcher(cells[0]).matches() && isNumber(cells[1]);
+            });
+        }
+
+        static SummaryGrid parse(List<String> lines, Path file) {
+            String pairName = null;
+            double[] callDeltas = null;
+            List<TenorRow> rows = new ArrayList<>();
+            for (int n = 0; n < lines.size(); n++) {
+                String line = lines.get(n).replace("\uFEFF", "");
+                if (pairName == null) {
+                    java.util.regex.Matcher pm = PAIR.matcher(line);
+                    if (pm.find()) {
+                        pairName = pm.group(1);
+                    }
+                }
+                String[] cells = cells(line);
+                if (cells.length == 0) {
+                    continue;
+                }
+                if (callDeltas == null) {
+                    callDeltas = deltaHeader(cells);
+                }
+                java.util.regex.Matcher tm = TENOR_CELL.matcher(cells[0]);
+                if (!tm.matches() || cells.length < 2 || !isNumber(cells[1])) {
+                    continue;
+                }
+                double[] deltas = callDeltas != null ? callDeltas : defaultCallDeltas();
+                if (cells.length - 1 < deltas.length) {
+                    throw new IllegalArgumentException("File " + file + ", line " + (n + 1) + ": " + (cells.length - 1)
+                            + " values for " + deltas.length + " deltas");
+                }
+                double[] vols = new double[deltas.length];
+                for (int i = 0; i < deltas.length; i++) {
+                    String cell = cells[i + 1];
+                    vols[i] = cell.isEmpty() || cell.equals("-") ? Double.NaN : number(cell, file, n);
+                }
+                rows.add(new TenorRow(Integer.parseInt(tm.group(1)), tm.group(2).charAt(0), vols));
+            }
+            if (rows.isEmpty()) {
+                throw new IllegalArgumentException("No tenor rows in " + file);
+            }
+            return new SummaryGrid(pairName, callDeltas != null ? callDeltas : defaultCallDeltas(), rows);
+        }
+
+        /**
+         * Delta delle call dalla riga dei delta (5D 10D ... 50D ... 5D): prima
+         * di 50 le put (call 1 - d), dopo le call; null se la riga non e' questa.
+         * Le put crescono fino a 50, le call scendono: i delta che seguono (25D
+         * 10D di RiskRev e Butterflies) non sono colonne di volatilita'.
+         */
+        private static double[] deltaHeader(String[] cells) {
+            List<Integer> deltas = new ArrayList<>();
+            boolean calls = false;
+            for (String c : cells) {
+                java.util.regex.Matcher m = DELTA_CELL.matcher(c);
+                if (!m.matches()) {
+                    continue;
+                }
+                int d = Integer.parseInt(m.group(1));
+                if (calls && d >= deltas.get(deltas.size() - 1)) {
+                    break;
+                }
+                deltas.add(d);
+                calls = calls || d == 50;
+            }
+            if (deltas.size() < 3 || !deltas.contains(50)) {
+                return null;
+            }
+            return toCallDeltas(deltas.stream().mapToInt(Integer::intValue).toArray());
+        }
+
+        private static double[] defaultCallDeltas() {
+            return toCallDeltas(DEFAULT_DELTAS);
+        }
+
+        private static double[] toCallDeltas(int[] deltas) {
+            double[] result = new double[deltas.length];
+            boolean calls = false;
+            for (int i = 0; i < deltas.length; i++) {
+                if (deltas[i] == 50) {
+                    result[i] = 0.5;
+                    calls = true;
+                } else {
+                    result[i] = calls ? deltas[i] / 100. : 1. - deltas[i] / 100.;
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Celle della riga. Separatore: tabulazione, punto e virgola o virgola
+         * (nell'ordine; con la virgola i decimali con la virgola stanno tra
+         * virgolette, come nel CSV di Excel italiano: 1D,"11,61",...), altrimenti
+         * spazi. Le virgolette racchiudono una cella e non ne fanno parte.
+         */
+        private static String[] cells(String line) {
+            String l = line.replace("\uFEFF", "").trim();
+            if (l.isEmpty()) {
+                return new String[0];
+            }
+            char separator = l.indexOf('\t') >= 0 ? '\t' : l.indexOf(';') >= 0 ? ';' : l.indexOf(',') >= 0 ? ',' : ' ';
+            if (separator == ' ') {
+                return l.replace("\"", "").split("\\s+");
+            }
+            List<String> cells = new ArrayList<>();
+            StringBuilder cell = new StringBuilder();
+            boolean quoted = false;
+            for (int i = 0; i < l.length(); i++) {
+                char c = l.charAt(i);
+                if (c == '"') {
+                    quoted = !quoted;
+                } else if (c == separator && !quoted) {
+                    cells.add(cell.toString().trim());
+                    cell.setLength(0);
+                } else {
+                    cell.append(c);
+                }
+            }
+            cells.add(cell.toString().trim());
+            return cells.toArray(String[]::new);
+        }
+
+        private static boolean isNumber(String cell) {
+            return cell.matches("-?\\d+([.,]\\d+)?");
+        }
+
+        private static double number(String cell, Path file, int line) {
+            if (!isNumber(cell)) {
+                throw new IllegalArgumentException("File " + file + ", line " + (line + 1) + ": not a number '" + cell + "'");
+            }
+            return Double.parseDouble(cell.replace(',', '.'));
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -421,16 +702,7 @@ public class VolatilityImportHelper {
      */
     private record Csv(Map<String, Integer> columns, List<String[]> rows, List<Integer> lineNumbers, boolean semicolon) {
 
-        static Csv read(Path file) {
-            List<String> lines;
-            try {
-                lines = Files.readAllLines(file, StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                throw new IllegalStateException("Cannot read " + file + ": " + e.getMessage(), e);
-            }
-            if (lines.isEmpty()) {
-                throw new IllegalArgumentException("Empty file " + file);
-            }
+        static Csv read(Path file, List<String> lines) {
             // intestazione senza BOM (file salvati da Excel)
             String header = lines.get(0).replace("﻿", "");
             boolean semicolon = header.contains(";");
@@ -484,6 +756,19 @@ public class VolatilityImportHelper {
         }
     }
 
+    private static List<String> readLines(Path file) {
+        List<String> lines;
+        try {
+            lines = Files.readAllLines(file, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot read " + file + ": " + e.getMessage(), e);
+        }
+        if (lines.stream().allMatch(String::isBlank)) {
+            throw new IllegalArgumentException("Empty file " + file);
+        }
+        return lines;
+    }
+
     private static List<Row> parse(Csv csv, Path file, String optionSymbol, String futureSymbol, double strikeScale) {
         csv.require(file, REQUIRED);
         List<Row> rows = new ArrayList<>();
@@ -535,5 +820,10 @@ public class VolatilityImportHelper {
 
     private static double round(double strike) {
         return Math.round(strike * 1e6) / 1e6;
+    }
+
+    // 1 - 0,05 non e' esattamente 0,95: il delta e' una chiave del punto
+    private static double roundDelta(double delta) {
+        return Math.round(delta * 1e4) / 1e4;
     }
 }

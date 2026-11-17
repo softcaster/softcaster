@@ -28,10 +28,31 @@ public interface VolatilityPointRepository extends JpaRepository<VolatilityPoint
         """)
     List<VolatilityPoint> findByReferenceDate(@Param("surface") Integer surface, @Param("date") LocalDate date);
 
+    /**
+     * Punti correnti della superficie (una sola data di rilevazione).
+     */
+    @Query("""
+        SELECT p
+        FROM VolatilityPoint p
+        WHERE p.volatilitySurface = :surface
+        ORDER BY p.expiryDate, p.strike
+        """)
+    List<VolatilityPoint> findBySurface(@Param("surface") Integer surface);
+
     @Modifying
     @Query("""
         DELETE FROM VolatilityPoint p
-        WHERE p.volatilitySurface = :surface AND p.referenceDate = :date
+        WHERE p.volatilitySurface = :surface
         """)
-    int deleteByReferenceDate(@Param("surface") Integer surface, @Param("date") LocalDate date);
+    int deleteBySurface(@Param("surface") Integer surface);
+
+    /**
+     * Punti dei tenor indicati e punti senza tenor (quotati per strike).
+     */
+    @Modifying
+    @Query("""
+        DELETE FROM VolatilityPoint p
+        WHERE p.volatilitySurface = :surface AND (p.tenor IN :tenors OR p.tenor IS NULL)
+        """)
+    int deleteByTenors(@Param("surface") Integer surface, @Param("tenors") List<String> tenors);
 }

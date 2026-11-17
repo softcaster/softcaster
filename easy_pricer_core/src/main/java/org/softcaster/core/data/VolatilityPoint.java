@@ -7,19 +7,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import java.io.Serializable;
-import java.sql.Types;
 import java.time.LocalDate;
-import org.hibernate.annotations.JdbcTypeCode;
 
 /**
- * Volatilita' implicita rilevata a una data per una scadenza e uno strike
- * (strike null = at the money).
+ * Punto della superficie corrente: volatility_point contiene solo l'ultima
+ * rilevazione di ogni superficie, le precedenti stanno in
+ * volatility_point_hist (VolatilitySurfaceDAO).
  */
 @Entity
 @Table(name = "volatility_point")
 @SuppressWarnings("PersistenceUnitPresent")
-public class VolatilityPoint implements Serializable {
+public class VolatilityPoint extends AbstractVolatilityPoint {
 
     @Id
     @SequenceGenerator(name = "volatility_point_seq", sequenceName = "volatility_point_s", allocationSize = 1)
@@ -27,64 +25,33 @@ public class VolatilityPoint implements Serializable {
     @Column(name = "id_volatility_point")
     private Integer idVolatilityPoint;
 
-    @Column(name = "volatility_surface", nullable = false)
-    private Integer volatilitySurface;
-
-    @Column(name = "reference_date", nullable = false)
-    private LocalDate referenceDate;
-
-    @Column(name = "expiry_date", nullable = false)
-    private LocalDate expiryDate;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "strike")
-    private Double strike;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "volatility", nullable = false)
-    private Double volatility;
-
-    @Column(name = "source", nullable = false)
-    private String source = "";
-
     public VolatilityPoint() {
     }
 
+    /**
+     * Punto quotato per strike.
+     */
     public VolatilityPoint(Integer volatilitySurface, LocalDate referenceDate, LocalDate expiryDate,
             Double strike, Double volatility, String source) {
-        this.volatilitySurface = volatilitySurface;
-        this.referenceDate = referenceDate;
-        this.expiryDate = expiryDate;
-        this.strike = strike;
-        this.volatility = volatility;
-        this.source = source == null ? "" : source;
+        super(volatilitySurface, referenceDate, expiryDate, strike, volatility, source, null, null);
+    }
+
+    /**
+     * Punto quotato per tenor e delta (delta forward della call).
+     */
+    public VolatilityPoint(Integer volatilitySurface, LocalDate referenceDate, LocalDate expiryDate,
+            Double strike, Double volatility, String source, String tenor, Double delta) {
+        super(volatilitySurface, referenceDate, expiryDate, strike, volatility, source, tenor, delta);
     }
 
     public Integer getIdVolatilityPoint() {
         return idVolatilityPoint;
     }
 
-    public Integer getVolatilitySurface() {
-        return volatilitySurface;
-    }
-
-    public LocalDate getReferenceDate() {
-        return referenceDate;
-    }
-
-    public LocalDate getExpiryDate() {
-        return expiryDate;
-    }
-
-    public Double getStrike() {
-        return strike;
-    }
-
-    public Double getVolatility() {
-        return volatility;
-    }
-
-    public String getSource() {
-        return source;
+    /**
+     * La superficie corrente passa a una rilevazione piu' recente (VolatilitySurfaceDAO).
+     */
+    void moveTo(LocalDate referenceDate) {
+        setReferenceDate(referenceDate);
     }
 }

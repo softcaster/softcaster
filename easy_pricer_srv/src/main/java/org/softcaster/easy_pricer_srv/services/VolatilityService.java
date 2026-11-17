@@ -3,6 +3,7 @@ package org.softcaster.easy_pricer_srv.services;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.softcaster.core.data.AbstractVolatilityPoint;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.VolatilityPoint;
@@ -54,16 +55,17 @@ public class VolatilityService {
     public VolatilitySurfaceDto find(String code, LocalDate date) {
         VolatilitySurfaceEntity s = surface(code);
         LocalDate d = date != null ? date : marketDataService.getOfficialDate();
-        List<VolatilityPoint> points = volatilitySurfaceDAO.findLatestPoints(s.getIdVolatilitySurface(), d);
+        List<? extends AbstractVolatilityPoint> points = volatilitySurfaceDAO.findLatestPoints(s.getIdVolatilitySurface(), d);
         return new VolatilitySurfaceDto(s.getCode(), s.getDescription(), s.getUnderlying().getCode(),
                 points.isEmpty() ? null : points.get(0).getReferenceDate(),
                 points.stream().map(p -> new VolatilitySurfaceDto.Point(p.getExpiryDate(), p.getStrike(),
-                        p.getVolatility(), p.getSource())).toList());
+                        p.getVolatility(), p.getSource(), p.getTenor(), p.getDelta())).toList());
     }
 
     /**
-     * Crea la superficie se manca e sostituisce i punti della data di
-     * rilevazione.
+     * Crea la superficie se manca e carica una rilevazione completa (punti per
+     * strike): sostituisce la superficie corrente, o lo storico se la data e'
+     * precedente.
      */
     public VolatilitySurfaceDto upload(String code, VolatilitySurfaceDto dto) {
         if (dto.referenceDate() == null) {

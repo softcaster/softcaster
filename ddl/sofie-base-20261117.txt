@@ -1,0 +1,22 @@
+Base di test sofie-base-20261117.backup (pg_dump formato custom)
+
+Stato
+- nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
+- calendario: official_date = last_official_date = 2026-11-17, next_business_date vuota, OPEN
+- opzioni OTC: tabelle otc_option_master_data, otc_fx_option_master_data,
+  otc_cmd_option_master_data; asset class OFX (20) e OCM (21) con script OPTION
+- chiusura: 12 step, compreso MATURITY
+- curve DISCOUNT (ac_dc_bcy_link): BFU/EUR TERMESTR, FRM e XRM/EUR ESTR_OIS,
+  CMA e OCM/USD TERMSOFR
+- superficie di volatilita' EURUSD-VOL (max_age_days 365):
+  corrente (volatility_point) 153 punti al 2026-11-17 dal Summary View CME,
+  ancora senza tenor/delta (importati prima di quelle colonne: il primo import
+  per tenor li sostituisce); storico (volatility_point_hist) 3 punti al 2026-10-29
+- quotazioni, curve, anagrafiche quotate e piano dei conti come in sofie al 2026-11-17
+
+Schema e dati di sistema coincidono con sofie_schema.sql, sofie_lookup.sql e
+sofie_config.sql del 2026-11-17. Sostituisce sofie-base-20261116 (senza lo
+storico delle volatilita').
+
+Ripristino: ddl\restore_sofie_base.ps1 (usa l'ultimo sofie-base-*.backup)
+Una migrazione successiva va applicata dopo il ripristino, oppure va rifatto il backup.

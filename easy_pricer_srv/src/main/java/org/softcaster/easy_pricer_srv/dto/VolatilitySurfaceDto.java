@@ -18,6 +18,10 @@ public record VolatilitySurfaceDto(
         LocalDate referenceDate,
         List<Point> points) {
 
-    public record Point(LocalDate expiryDate, Double strike, Double volatility, String source) {
+    /**
+     * tenor e delta (delta forward della call): solo in lettura, per i punti
+     * delle griglie per delta; il caricamento e' per scadenza e strike.
+     */
+    public record Point(LocalDate expiryDate, Double strike, Double volatility, String source, String tenor, Double delta) {
     }
 }

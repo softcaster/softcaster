@@ -5,7 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import org.softcaster.core.data.VolatilityPoint;
+import org.softcaster.core.data.AbstractVolatilityPoint;
 import org.softcaster.core.data.VolatilitySurfaceDAO;
 import org.softcaster.core.data.VolatilitySurfaceEntity;
 import org.softcaster.engine.volatility.GridVolatilitySurface;
@@ -14,7 +14,8 @@ import org.softcaster.engine.volatility.VolatilitySurface;
 
 /**
  * Superficie di volatilita' di un sottostante a una data di valutazione:
- * punti dell'ultima rilevazione non successiva alla data, tempo misurato
+ * punti dell'ultima rilevazione non successiva alla data (superficie corrente
+ * o storico, VolatilitySurfaceDAO), tempo misurato
  * dalla data di valutazione (scadenze gia' passate scartate).
  *
  * Creato come @Bean in MdsCoreAutoConfiguration.
@@ -50,7 +51,7 @@ public class VolatilityProvider {
         if (entity.isEmpty()) {
             return Optional.empty();
         }
-        List<VolatilityPoint> points = volatilitySurfaceDAO.findLatestPoints(entity.get().getIdVolatilitySurface(), valuationDate);
+        List<? extends AbstractVolatilityPoint> points = volatilitySurfaceDAO.findLatestPoints(entity.get().getIdVolatilitySurface(), valuationDate);
         if (!points.isEmpty()) {
             LocalDate asOf = points.get(0).getReferenceDate();
             long ageDays = ChronoUnit.DAYS.between(asOf, valuationDate);
