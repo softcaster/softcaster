@@ -18,6 +18,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.commons.utils.LoggerMgr;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.BATCH_VOLATILITY;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND_FUTURE;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.CURR_PAIR;
@@ -38,6 +39,7 @@ import org.softcaster.easy_pricer_mds.view.FxOptPanel;
 import org.softcaster.easy_pricer_mds.view.HomePanel;
 import org.softcaster.easy_pricer_mds.view.MmFutPanel;
 import org.softcaster.easy_pricer_mds.view.SpreadedCurvePanel;
+import org.softcaster.easy_pricer_mds.view.VolatilityImportPanel;
 import org.softcaster.easy_pricer_mds.view.YieldCurveDefPanel;
 import org.softcaster.easy_pricer_mds.view.YieldCurvePanel;
 import org.softcaster.easy_pricer_mds.view.VolatilityUpdatePanel;
@@ -164,6 +166,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                             case BATCH_VOLATILITY -> {
                                 cl.show(mainPanel, AppCard.BATCH_VOLATILITY_CARD.name());
                                 currentCard = AppCard.BATCH_VOLATILITY_CARD;
+                            }
+                            case BATCH_VOL_IMPORT -> {
+                                cl.show(mainPanel, AppCard.BATCH_VOL_IMPORT_CARD.name());
+                                currentCard = AppCard.BATCH_VOL_IMPORT_CARD;
                             }
                             default -> {
                                 cl.show(mainPanel, AppCard.DEFAULT_CARD.name());
@@ -425,6 +431,8 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.BATCH_ZSPREAD_CARD, zspreadPanel);
         JPanel volatilityPanel = new VolatilityUpdatePanel(mDSFacade);
         cardMap.put(AppCard.BATCH_VOLATILITY_CARD, volatilityPanel);
+        JPanel volatilityImportPanel = new VolatilityImportPanel(mDSFacade);
+        cardMap.put(AppCard.BATCH_VOL_IMPORT_CARD, volatilityImportPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
@@ -441,6 +449,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(fxOptPanel, AppCard.FX_OPTION_CARD.name());
         mainPanel.add(zspreadPanel, AppCard.BATCH_ZSPREAD_CARD.name());
         mainPanel.add(volatilityPanel, AppCard.BATCH_VOLATILITY_CARD.name());
+        mainPanel.add(volatilityImportPanel, AppCard.BATCH_VOL_IMPORT_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

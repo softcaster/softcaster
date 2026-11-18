@@ -5,8 +5,12 @@
         <value>false</value>
     </param>
     <param>
+        <name>CME_VOL_FILENAME</name>
+        <value>cmevol</value>
+    </param>
+    <param>
         <name>CME_VOL_DIRECTORY</name>
-        <value>C:\tools\projects\DEVELOP\softcaster\easy_pricer_mds\csv</value>
+        <value>E:\tools\projects\DEVELOP\softcaster\easy_pricer_mds\csv</value>
     </param>
     <param>
         <name>CME_VOL_SURFACES</name>
