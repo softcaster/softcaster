@@ -54,7 +54,8 @@ public class VolatilitySurfaceBean implements IFndtModel {
     }
 
     /**
-     * Superficie con i simboli CME: il batch la carica.
+     * Superficie con i simboli CME (CME_VOL_SURFACES): servono solo ai file di
+     * settlement per strike.
      */
     public boolean isConfigured() {
         return optionSymbol != null && !optionSymbol.isBlank() && futureSymbol != null && !futureSymbol.isBlank();

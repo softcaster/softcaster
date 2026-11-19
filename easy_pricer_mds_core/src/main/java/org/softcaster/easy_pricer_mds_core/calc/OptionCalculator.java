@@ -136,6 +136,9 @@ public class OptionCalculator {
      * (FxForwardCalculator.optionForward): lo strike
      * del future si porta in quei termini, K x F_coppia / F_future, a parita' di
      * moneyness.
+     * @param code
+     * @param valuationDate
+     * @return 
      */
     public Optional<Double> surfaceVolatility(String code, LocalDate valuationDate) {
         OptionMasterData omd = findSeries(code);
@@ -404,6 +407,9 @@ public class OptionCalculator {
 
     /**
      * Superficie del sottostante del contratto (coppia o future).
+     * @param omd
+     * @param valuationDate
+     * @return 
      */
     public Optional<VolatilityProvider.SurfaceData> otcSurface(OtcOptionMasterData omd, LocalDate valuationDate) {
         MasterData underlying = (MasterData) Hibernate.unproxy(omd.getUnderlying());
@@ -420,9 +426,13 @@ public class OptionCalculator {
      *  - OCM: Black-76 / CRR sul prezzo del future, premio scontato con la
      *    curva indicata o la DISCOUNT di ac_dc_bcy_link per (OCM, valuta).
      *
+     * @param omd
+     * @param valuationDate
      * @param underlyingPrice spot della coppia o prezzo del future; null o <= 0 = quotazione mid
      * @param domesticCurveCode sconto del premio (valuta di regolamento); vuota = default
      * @param foreignCurveCode solo OFX: curva della valuta base; vuota = quella della coppia
+     * @param volatility
+     * @return 
      */
     public OptionInput getOtcOptionInput(OtcOptionMasterData omd, LocalDate valuationDate, Double underlyingPrice,
                                          String domesticCurveCode, String foreignCurveCode, double volatility) {
@@ -453,6 +463,14 @@ public class OptionCalculator {
      * oppure dalla superficie del sottostante alla scadenza e allo strike.
      * optionValue = valore del contratto nella valuta di regolamento per chi
      * lo detiene.
+     * @param omd
+     * @param valuationDate
+     * @param underlyingPrice
+     * @param volatility
+     * @param optionPrice
+     * @param domesticCurveCode
+     * @param foreignCurveCode
+     * @return 
      */
     public PricingResponse otcOptionValuation(OtcOptionMasterData omd, LocalDate valuationDate, Double underlyingPrice,
                                               Double volatility, Double optionPrice,

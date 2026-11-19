@@ -6,11 +6,11 @@
     </param>
     <param>
         <name>CME_VOL_FILENAME</name>
-        <value>cmevol</value>
+         <value>cmevol</value>
     </param>
     <param>
         <name>CME_VOL_DIRECTORY</name>
-        <value>E:\tools\projects\DEVELOP\softcaster\easy_pricer_mds\csv</value>
+        <value>c:\tools\projects\DEVELOP\softcaster\easy_pricer_mds\csv</value>
     </param>
     <param>
         <name>CME_VOL_SURFACES</name>

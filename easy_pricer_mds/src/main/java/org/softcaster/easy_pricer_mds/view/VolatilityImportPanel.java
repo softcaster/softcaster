@@ -10,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.swing.DefaultListModel;
+import javax.swing.border.EmptyBorder;
 import org.softcaster.commons.ui.model.FndtTableModel;
 import org.softcaster.commons.ui.view.FndtAbstactPanel;
 import org.softcaster.commons.utils.LoggerMgr;
@@ -20,7 +22,10 @@ import org.softcaster.easy_pricer_mds.MDSFacade;
  *
  * @author softc
  */
-public class VolatilityImportPanel extends FndtAbstactPanel {
+public final class VolatilityImportPanel extends FndtAbstactPanel {
+
+    // Il modello che gestisce fisicamente i dati della lista
+    private final DefaultListModel<String> listModel = new DefaultListModel<>();
 
     /**
      * Creates new form ForexPanel
@@ -29,6 +34,9 @@ public class VolatilityImportPanel extends FndtAbstactPanel {
      */
     public VolatilityImportPanel(MDSFacade mDSFacade) {
         initComponents();
+        messageList.setModel(listModel);
+        messageList.setBorder(new EmptyBorder(10, 15, 10, 15));
+        appendMessage("Volatily Import ready...");
     }
 
     /**
@@ -46,7 +54,7 @@ public class VolatilityImportPanel extends FndtAbstactPanel {
         acDel = new javax.swing.JMenuItem();
         lblHeader = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        messageList = new javax.swing.JList<>();
 
         acNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/angular/draft_16dp.png"))); // NOI18N
         acNew.setText("New");
@@ -72,12 +80,12 @@ public class VolatilityImportPanel extends FndtAbstactPanel {
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+        messageList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane1.setViewportView(messageList);
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
@@ -87,9 +95,9 @@ public class VolatilityImportPanel extends FndtAbstactPanel {
     private javax.swing.JMenuItem acDel;
     private javax.swing.JMenuItem acMod;
     private javax.swing.JMenuItem acNew;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblHeader;
+    private javax.swing.JList<String> messageList;
     private javax.swing.JPopupMenu popUp;
     // End of variables declaration//GEN-END:variables
 
@@ -119,6 +127,7 @@ public class VolatilityImportPanel extends FndtAbstactPanel {
 
     @Override
     public void refreshAction() {
+        appendMessage("Start Import...");
         try {
             ParamsMgr paramsMgr = ParamsMgr.getInstance();
             String fileName = paramsMgr.getParamValue("CME_VOL_FILENAME");
@@ -127,16 +136,18 @@ public class VolatilityImportPanel extends FndtAbstactPanel {
             String output = path + "\\" + fileName + ".csv";
             Path fileInput = Path.of(input);
             Path fileOutput = Path.of(output);
-            
+
             List<String> rows = Files.readAllLines(fileInput).stream()
                     .map(riga -> riga.trim()
-                            .replaceAll("\\s+", ";") // Passaggio 1: spazi -> ";"
-                            .replace(',', '.')) // Passaggio 2: "," -> "."
+                    .replaceAll("\\s+", ";") // Passaggio 1: spazi -> ";"
+                    .replace(',', '.')) // Passaggio 2: "," -> "."
                     .collect(Collectors.toList());
-            
+
             Files.write(fileOutput, rows);
+            appendMessage("Import ended!");
         } catch (IOException ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
+            appendMessage(ex.getLocalizedMessage());
         }
     }
 
@@ -152,5 +163,19 @@ public class VolatilityImportPanel extends FndtAbstactPanel {
     }
 
     protected void refreshModelFromDb(FndtTableModel ftm) {
+    }
+
+    public void appendMessage(String message) {
+        // FONDAMENTALE: le modifiche all'interfaccia Swing devono avvenire nell'EDT
+        java.awt.EventQueue.invokeLater(() -> {
+            // Aggiunge l'elemento in fondo alla lista
+            listModel.addElement(message);
+
+            // OPZIONALE: Forza l'autoscroll per mostrare sempre l'ultimo messaggio inserito
+            int lastIndex = listModel.getSize() - 1;
+            if (lastIndex >= 0) {
+                messageList.ensureIndexIsVisible(lastIndex);
+            }
+        });
     }
 }

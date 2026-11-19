@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.TreeMap;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
@@ -137,18 +138,22 @@ public class VolatilityImportHelper {
     }
 
     /**
-     * File di settlement da importare: il CSV piu' recente della cartella.
-     * @param directory
-     * @return 
+     * File della superficie nella cartella: si chiama come il codice della
+     * superficie, con o senza data, .csv o .txt (EURUSD-VOL.csv,
+     * EURUSD-VOL_20261119.csv; maiuscole e minuscole indifferenti). Se ce ne
+     * sono piu' d'uno vale il piu' recente; vuoto se non ce ne sono.
+     *
+     * @param directory cartella CME_VOL_DIRECTORY
+     * @param surfaceCode codice di volatility_surface
+     * @return
      */
-    public static Path latestFile(Path directory) {
+    public static Optional<Path> surfaceFile(Path directory, String surfaceCode) {
+        java.util.regex.Pattern name = java.util.regex.Pattern.compile(
+                java.util.regex.Pattern.quote(surfaceCode) + "(_\\d{8})?\\.(csv|txt)",
+                java.util.regex.Pattern.CASE_INSENSITIVE);
         try (var files = Files.list(directory)) {
-            return files.filter(p -> {
-                        String name = p.getFileName().toString().toLowerCase(Locale.ROOT);
-                        return name.endsWith(".csv") || name.endsWith(".txt");
-                    })
-                    .max((a, b) -> Long.compare(a.toFile().lastModified(), b.toFile().lastModified()))
-                    .orElseThrow(() -> new NoSuchElementException("No CSV file in " + directory));
+            return files.filter(p -> Files.isRegularFile(p) && name.matcher(p.getFileName().toString()).matches())
+                    .max((a, b) -> Long.compare(a.toFile().lastModified(), b.toFile().lastModified()));
         } catch (IOException e) {
             throw new IllegalStateException("Cannot read " + directory + ": " + e.getMessage(), e);
         }
@@ -157,8 +162,9 @@ public class VolatilityImportHelper {
     /**
      * @param code         superficie della coppia (es. EURUSD-VOL)
      * @param file         file di settlement CME
-     * @param optionSymbol simbolo delle opzioni (es. EUU)
-     * @param futureSymbol simbolo del future sottostante (es. 6E)
+     * @param optionSymbol simbolo delle opzioni (es. EUU); solo per i formati
+     *                     per strike, null per le griglie per delta
+     * @param futureSymbol simbolo del future sottostante (es. 6E); come optionSymbol
      * @param strikeScale  moltiplicatore dello strike del file per avere lo
      *                     strike nell'unita' del prezzo del future (1 se
      *                     quotati allo stesso modo)
@@ -193,6 +199,11 @@ public class VolatilityImportHelper {
         // griglia per delta del tool FX di CME (snapshot per tenor, con il forward)
         if (csv.has(SNAP_TIME, TENOR, EXPIRY_DATE, FORWARD, OPTION_TYPE)) {
             return importDeltaGrid(surface, csv, file);
+        }
+        // formati per strike: servono i simboli CME di opzione e future
+        if (optionSymbol == null || optionSymbol.isBlank() || futureSymbol == null || futureSymbol.isBlank()) {
+            throw new IllegalArgumentException("File " + file.getFileName() + " has CME settlements by strike: "
+                    + "set the option and future symbols of " + code + " in CME_VOL_SURFACES (conf/params.xml)");
         }
         // volatilita' di settlement gia' calcolate da CME: si caricano direttamente
         if (csv.has(VOL, FUTURE_PRICE)) {

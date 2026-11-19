@@ -32,6 +32,11 @@ public final class Black76Pricer implements Pricer<ForwardOptionInput, OptionRes
      * K = F exp(-sigma sqrt T N^-1(delta) + sigma^2 T / 2). Le superfici FX
      * quotate per delta (10d, 25d, 50d...) si portano cosi' in strike; una put
      * con delta d e' la call con delta 1 - d.
+     * @param forward
+     * @param volatility
+     * @param t
+     * @param callDelta
+     * @return 
      */
     public static double strikeForCallDelta(double forward, double volatility, double t, double callDelta) {
         if (forward <= 0 || volatility <= 0 || t <= 0) {

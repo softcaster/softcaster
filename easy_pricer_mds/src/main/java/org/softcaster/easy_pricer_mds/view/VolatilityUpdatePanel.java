@@ -21,9 +21,11 @@ import org.softcaster.easy_pricer_mds.ui.model.VolatilitySurfaceTableModel;
 import org.softcaster.easy_pricer_mds_core.batches.VolatilityImportHelper;
 
 /**
- * Batch delle volatilita': superfici (volatility_surface) caricate dal file di
- * settlement CME piu' recente della cartella CME_VOL_DIRECTORY (conf/params.xml), con i
- * simboli di CME_VOL_SURFACES (superficie:opzione:future[:strikeScale]).
+ * Batch delle volatilita': ogni superficie (volatility_surface) si carica dal
+ * file con il suo codice nella cartella CME_VOL_DIRECTORY (conf/params.xml),
+ * es. EURUSD-VOL.csv. I simboli di CME_VOL_SURFACES
+ * (superficie:opzione:future[:strikeScale]) servono solo ai file di
+ * settlement per strike; le griglie per delta non li usano.
  *
  * @author softc
  */
@@ -198,8 +200,11 @@ public class VolatilityUpdatePanel extends FndtAbstactPanel {
     }
 
     /**
-     * Importa le superfici configurate della tabella dal CSV CME piu' recente
-     * della cartella. Un errore su una superficie non ferma le altre.
+     * Importa ogni superficie della tabella dal proprio file nella cartella
+     * CME_VOL_DIRECTORY: il file si chiama come il codice della superficie
+     * (EURUSD-VOL.csv o .txt, anche EURUSD-VOL_aaaammgg.csv). Le superfici
+     * senza file si saltano; un errore su una superficie non ferma le altre.
+     * @param model
      */
     @Override
     protected void updateModel(FndtTableModel model) {
@@ -208,36 +213,33 @@ public class VolatilityUpdatePanel extends FndtAbstactPanel {
             summary = "Volatility import not configured: set CME_VOL_DIRECTORY in conf/params.xml.";
             return;
         }
-        Path file;
-        try {
-            file = VolatilityImportHelper.latestFile(Path.of(directory));
-        } catch (RuntimeException e) {
-            LoggerMgr.logError(e.getLocalizedMessage());
-            summary = e.getLocalizedMessage();
-            return;
-        }
-        StringBuilder sb = new StringBuilder("Volatility import from " + file.getFileName() + ":");
+        StringBuilder sb = new StringBuilder("Volatility import from " + directory + ":");
         int imported = 0;
         if (model != null) {
             for (int i = 0; i < model.getRowCount(); i++) {
                 VolatilitySurfaceBean bean = (VolatilitySurfaceBean) model.getElementAt(i);
-                if (bean == null || !bean.isConfigured()) {
+                if (bean == null) {
                     continue;
                 }
                 String code = bean.getBean().getCode();
                 try {
+                    Path file = VolatilityImportHelper.surfaceFile(Path.of(directory), code).orElse(null);
+                    if (file == null) {
+                        sb.append("\n- ").append(code).append(": no file ").append(code).append(".csv");
+                        continue;
+                    }
                     VolatilityImportHelper.ImportResult r = mDSFacade.getVolatilityImportHelper().importCmeSettlements(
                             code, file, bean.getOptionSymbol(), bean.getFutureSymbol(), bean.getStrikeScale(), MIN_PREMIUM);
-                    sb.append("\n- ").append(r.describe());
+                    sb.append("\n- ").append(file.getFileName()).append(": ").append(r.describe());
+                    imported++;
                 } catch (RuntimeException e) {
                     LoggerMgr.logError(e.getLocalizedMessage());
                     sb.append("\n- ").append(code).append(": ").append(e.getLocalizedMessage());
                 }
-                imported++;
             }
         }
         if (imported == 0) {
-            sb.append("\n- no surface configured in CME_VOL_SURFACES (conf/params.xml)");
+            sb.append("\n- nothing imported: name each file after its surface code (e.g. EURUSD-VOL.csv)");
         }
         summary = sb.toString();
     }
