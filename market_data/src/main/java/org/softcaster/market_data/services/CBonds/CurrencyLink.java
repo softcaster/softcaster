@@ -20,97 +20,44 @@ class CurrencyLink {
     public CurrencyLink() {
         addChfOis();
         addUsdOis();
-    }
+    }    
     
-    
+    /**
+     * OIS CHF (Annual Money vs SARON). Id della pagina Cbonds, espliciti: il 40Y
+     * (217775) ripete il valore del 30Y e non si carica.
+     */
     private void addChfOis() {
-        Link link = null;
-        int id01 = 217715;
         List<Link> links = new ArrayList<>();
-        
-        link = new Link("7D", id01);
-        links.add(link);
-        id01 += 2;
-        
-        link = new Link("14D", id01);
-        links.add(link);
-        id01 += 2;
-        
-        link = new Link("21D", id01);
-        links.add(link);
-        id01 += 2;
-        
-        link = new Link("1M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("2M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("3M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("3Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("4Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("5Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("6Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("7Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("8Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("9Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("10Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("12Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("15Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("20Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("25Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("30Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("40Y", id01);
-        links.add(link);
-        id01 += 2;
-        
-        link = new Link("50Y", id01);
-        links.add(link);
-        
+        links.add(new Link("7D", 217715));
+        links.add(new Link("1M", 217717));
+        links.add(new Link("2M", 217719));
+        links.add(new Link("3M", 217721));
+        links.add(new Link("4M", 217723));
+        links.add(new Link("5M", 217725));
+        links.add(new Link("6M", 217727));
+        links.add(new Link("7M", 217729));
+        links.add(new Link("8M", 217731));
+        links.add(new Link("9M", 217733));
+        links.add(new Link("10M", 217735));
+        links.add(new Link("11M", 217737));
+        links.add(new Link("1Y", 217739));
+        links.add(new Link("15M", 217741));
+        links.add(new Link("18M", 217743));
+        links.add(new Link("21M", 217745));
+        links.add(new Link("2Y", 217747));
+        links.add(new Link("3Y", 217749));
+        links.add(new Link("4Y", 217751));
+        links.add(new Link("5Y", 217753));
+        links.add(new Link("6Y", 217755));
+        links.add(new Link("7Y", 217757));
+        links.add(new Link("8Y", 217759));
+        links.add(new Link("9Y", 217761));
+        links.add(new Link("10Y", 217763));
+        links.add(new Link("12Y", 217765));
+        links.add(new Link("15Y", 217767));
+        links.add(new Link("20Y", 217769));
+        links.add(new Link("25Y", 217771));
+        links.add(new Link("30Y", 217773));
         mapLinks.put("CHF", links);
     }
     /**

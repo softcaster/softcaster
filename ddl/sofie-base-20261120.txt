@@ -6,16 +6,16 @@ Stato
 - opzioni OTC: tabelle otc_option_master_data, otc_fx_option_master_data,
   otc_cmd_option_master_data; asset class OFX (20) e OCM (21) con script OPTION
 - chiusura: 12 step, compreso MATURITY
-- curva SARON_OIS (CHF, provider CBonds, provider_code CHF): 27 nodi al 19/11/2026,
+- curva SARON_OIS (CHF, provider CBonds, provider_code CHF): 27 nodi al 19/11/2026 (refresh Cbonds),
   7D-11M money market, 1Y-30Y OIS; EURCHF usa SARON_OIS come curva CHF (ccy_irc)
 - curva SOFR_OIS (USD, provider CBonds, provider_code USD): 21 nodi al 19/11/2026,
   1W-3M money market e 3Y-50Y OIS; fill_curve TERMSOFR completa 6M e 1Y
-  (YieldCurveBuilder), il 2Y si interpola. EURUSD e CMA/OCM usano ancora TERMSOFR
+  (YieldCurveBuilder), il 2Y si interpola. EURUSD (ccy_irc) e CMA/OCM USD (DISCOUNT) usano SOFR_OIS
 - yield_curve.fill_curve: curva di supporto per le scadenze brevi mancanti
 - yield_curve.provider_code: chiave per il provider (vuota = code della curva);
   yield_curve.compounding eliminata (le curve lavorano in ACT/365 continuo)
 - curve DISCOUNT (ac_dc_bcy_link): BFU/EUR TERMESTR, FRM e XRM/EUR ESTR_OIS,
-  CMA e OCM/USD TERMSOFR
+  CMA e OCM/USD SOFR_OIS
 - superficie di volatilita' EURUSD-VOL (max_age_days 365):
   corrente (volatility_point) 153 punti al 2026-11-17 dal Summary View CME,
   ancora senza tenor/delta (importati prima di quelle colonne: il primo import
