@@ -42,8 +42,10 @@ public class MarketDataProviderService {
     /**
      * Nodi della curva dal provider.
      *
+     * @param provider
      * @param curveId       chiave della curva per il provider (provider_code o codice)
      * @param referenceDate data dei tassi (es. data ufficiale); null = la piu' recente
+     * @return 
      */
     public List<MarketQuote> getNewInput(String provider, String curveId, java.time.LocalDate referenceDate) {
 

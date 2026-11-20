@@ -119,6 +119,10 @@ public class CBonds implements MarketDataManager {
             String val2 = matcher.group(2);
 
             long step = Integer.parseInt(val1);
+            // settimane (1W, 2W): non c'e' un OffsetType, sono 7 giorni ciascuna
+            if (val2.equals("W")) {
+                return new Offset(step * 7, OffsetType.DAYS);
+            }
             OffsetType offsetType = getOffsetType(val2);
             return new Offset(step, offsetType);
         } else {

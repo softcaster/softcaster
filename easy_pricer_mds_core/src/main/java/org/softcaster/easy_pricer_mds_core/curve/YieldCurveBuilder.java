@@ -118,7 +118,7 @@ public class YieldCurveBuilder {
         if (dbCurve != null) {
             Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
             List<CurveNode> nodes = null;
-            List<MarketQuote> marketQuotes = getMarketQuotes(dbCurve);
+            List<MarketQuote> marketQuotes = withFillCurve(dbCurve, getMarketQuotes(dbCurve));
             if (marketQuotes != null && !marketQuotes.isEmpty()) {
                 nodes = CurveBootstrapper.bootstrap(officialDate, marketQuotes);
             }
@@ -149,11 +149,87 @@ public class YieldCurveBuilder {
         YieldCurveEntity dbCurve = yieldCurveEntityDAO.findByCode(idCurve);
         if (dbCurve != null) {
             Currency currency = Currency.getInstance(dbCurve.getCurrency().getIsoCode());
-            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, newInputs);
+            List<CurveNode> nodes = CurveBootstrapper.bootstrap(officialDate, withFillCurve(dbCurve, newInputs));
             return org.softcaster.engine.curve.YieldCurve.fromDiscountFactors(officialDate, currency, nodes);
         } else {
             return null;
         }
+    }
+
+    /**
+     * Nodi della curva dai suoi input (es. appena scaricati dal provider),
+     * completati con la curva di supporto.
+     */
+    public List<CurveNode> bootstrap(String curveCode, List<MarketQuote> quotes, LocalDate officialDate) {
+        return CurveBootstrapper.bootstrap(officialDate, withFillCurve(yieldCurveEntityDAO.findByCode(curveCode), quotes));
+    }
+
+    // simbolo dei nodi presi dalla curva di supporto: <curva di supporto>/<ric>
+    private static final String FILL_SEPARATOR = "/";
+
+    /**
+     * Completa gli input di una curva con la sua curva di supporto
+     * (yield_curve.fill_curve): si aggiungono i nodi della curva di supporto
+     * con scadenza precedente al primo swap / OIS della curva e non gia'
+     * presenti (es. SOFR_OIS da Cbonds: depositi fino a 3M e OIS dal 3Y; da
+     * TERMSOFR entrano 6M e 1Y). Un deposito a un anno entra come OIS a un
+     * anno (stesso tasso semplice, un solo pagamento): il bootstrap non usa i
+     * depositi dal primo nodo annuale in poi. I nodi presi hanno simbolo
+     * <curva di supporto>/<ric> e non si salvano sulla curva
+     * (saveOrUpdateCurve).
+     */
+    public List<MarketQuote> withFillCurve(YieldCurveEntity dbCurve, List<MarketQuote> quotes) {
+        if (dbCurve == null || dbCurve.getFillCurve() == null || quotes == null || quotes.isEmpty()) {
+            return quotes;
+        }
+        String fillCode = yieldCurveEntityDAO.getCodeFromId(dbCurve.getFillCurve());
+        YieldCurveEntity fill = fillCode == null ? null : yieldCurveEntityDAO.findByCode(fillCode);
+        List<MarketQuote> fillQuotes = getMarketQuotes(fill);
+        if (fillQuotes == null || fillQuotes.isEmpty()) {
+            return quotes;
+        }
+        // primo swap / OIS della curva, in mesi
+        MarketQuote firstLong = quotes.stream()
+                .filter(q -> q.nodeType() == org.softcaster.engine.enums.CurveNodeType.OIS
+                || q.nodeType() == org.softcaster.engine.enums.CurveNodeType.SWAP)
+                .min(java.util.Comparator.comparingInt(YieldCurveBuilder::tenorDays)).orElse(null);
+        int limitDays = firstLong == null ? Integer.MAX_VALUE : tenorDays(firstLong);
+        boolean ois = firstLong != null && firstLong.nodeType() == org.softcaster.engine.enums.CurveNodeType.OIS;
+        java.util.Set<Integer> present = quotes.stream().map(YieldCurveBuilder::tenorDays)
+                .collect(Collectors.toCollection(java.util.HashSet::new));
+
+        List<MarketQuote> merged = new ArrayList<>(quotes);
+        for (MarketQuote f : fillQuotes) {
+            int days = tenorDays(f);
+            if (days >= limitDays || present.contains(days)) {
+                continue;
+            }
+            org.softcaster.engine.enums.CurveNodeType type = f.nodeType();
+            org.softcaster.engine.enums.Compounding compounding = f.compounding();
+            if (ois && type == org.softcaster.engine.enums.CurveNodeType.MONEY_MARKET && days == 365
+                    && f.daycount() == firstLong.daycount()) {
+                type = org.softcaster.engine.enums.CurveNodeType.OIS;
+                compounding = org.softcaster.engine.enums.Compounding.COMPOUNDED;
+            }
+            merged.add(new MarketQuote(fillCode + FILL_SEPARATOR + f.symbol(), f.tenorOffset(), f.rate(), f.daycount(),
+                    compounding, type));
+            present.add(days);
+        }
+        return merged;
+    }
+
+    /**
+     * Scadenza indicativa in giorni per confrontare i tenor (1Y = 365, 6M =
+     * 180, 1W = 7): non serve alle date, solo all'ordinamento e ai doppioni.
+     */
+    private static int tenorDays(MarketQuote q) {
+        Offset o = q.tenorOffset();
+        return switch (o.offsetType()) {
+            case DAYS -> (int) o.step();
+            case MONTHS -> o.step() % 12 == 0 ? (int) (o.step() / 12 * 365) : (int) (o.step() * 30);
+            case YEARS -> (int) (o.step() * 365);
+            default -> Integer.MAX_VALUE;
+        };
     }
 
     private MarketQuote getMarketQuote(YieldCurveItem item) {
@@ -251,7 +327,8 @@ public class YieldCurveBuilder {
 
             // 3. Allinea i dati finanziari con le entità DB
             for (CurveNode node : newInputs) {
-                if (node.mq() != null) {
+                // i nodi della curva di supporto restano su quella curva
+                if (node.mq() != null && !node.mq().symbol().contains(FILL_SEPARATOR)) {
                     String key = node.mq().symbol();
                     if (existingDbItems.containsKey(key)) {
                         // Il nodo esiste già a DB: aggiorna solo tasso e discount factor (UPDATE)

@@ -58,6 +58,19 @@ public class YieldCurveEntity implements Serializable {
     @Column(name = "provider_code")
     private String providerCode;
 
+    // curva di supporto (id di yield_curve): ne completa le scadenze brevi
+    // mancanti, prima del primo swap/OIS (YieldCurveBuilder.withFillCurve)
+    @Column(name = "fill_curve")
+    private Integer fillCurve;
+
+    public Integer getFillCurve() {
+        return fillCurve;
+    }
+
+    public void setFillCurve(Integer fillCurve) {
+        this.fillCurve = fillCurve;
+    }
+
     public Integer getIdYieldCurve() {
         return idYieldCurve;
     }
@@ -171,6 +184,7 @@ public class YieldCurveEntity implements Serializable {
     /**
      * Chiave per il refresh dal provider: provider_code se indicato,
      * altrimenti il codice della curva.
+     * @return 
      */
     public String getProviderKey() {
         return providerCode != null && !providerCode.isBlank() ? providerCode : code;

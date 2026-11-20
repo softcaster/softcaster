@@ -22,7 +22,8 @@ import org.softcaster.engine.enums.OffsetType;
  * Swap and OIS tenors are keyed by months (15M and 15Y are different
  * quotes); the bootstrap runs on the annual grid, so OIS tenors that are not
  * whole years (15M, 18M, 21M) only feed the interpolation of the par rate
- * on unquoted years.
+ * on unquoted years. When the first OIS tenor is beyond one year, the years
+ * before it are interpolated from the longest deposit, not held flat.
  *
  * Simplifications: no spot lag, no business-day adjustment, regular coupon
  * periods, single-curve.
@@ -135,7 +136,7 @@ public final class CurveBootstrapper {
                 swapNodes = bootstrapSwaps(valuationDate, swaps, 0.0);                 // tau = 1 (30/360)
             } else {
                 double basisDays = oisSwaps.firstEntry().getValue().daycount() == DaycountBasis.ACT_365 ? 365.0 : 360.0;
-                swapNodes = bootstrapSwaps(valuationDate, oisSwaps, basisDays);        // tau = actual days / basis
+                swapNodes = bootstrapSwaps(valuationDate, withDepositAnchor(oisSwaps, depos), basisDays);
             }
             result.addAll(swapNodes);
             firstSwapDays = swapNodes.get(0).days();
@@ -165,6 +166,40 @@ public final class CurveBootstrapper {
     private static boolean isValidOisTenor(Offset o) {
         return o.step() > 0 && (o.offsetType() == OffsetType.MONTHS || o.offsetType() == OffsetType.YEARS);
     }
+    /**
+     * OIS quotate solo da oltre l'anno (es. USD: depositi fino a 3M, OIS dal
+     * 3Y): per gli anni prima del primo OIS il tasso par si interpola tra il
+     * deposito piu' lungo (in mesi o anni) e il primo OIS, invece di restare
+     * piatto sul primo OIS. Fino a un anno un OIS paga una volta sola: il suo
+     * tasso e' un tasso semplice come quello del deposito, quindi confrontabile.
+     * Il deposito serve solo all'interpolazione (nodo solo se cade su un anno).
+     */
+    private static TreeMap<Integer, MarketQuote> withDepositAnchor(TreeMap<Integer, MarketQuote> oisSwaps,
+            List<MarketQuote> depos) {
+        if (oisSwaps.firstKey() <= 12) {
+            return oisSwaps;
+        }
+        MarketQuote anchor = null;
+        int anchorMonths = 0;
+        for (MarketQuote d : depos) {
+            OffsetType t = d.tenorOffset().offsetType();
+            if (t != OffsetType.MONTHS && t != OffsetType.YEARS) {
+                continue;
+            }
+            int months = tenorInMonths(d);
+            if (months > anchorMonths && months < oisSwaps.firstKey()) {
+                anchor = d;
+                anchorMonths = months;
+            }
+        }
+        if (anchor == null || oisSwaps.containsKey(anchorMonths)) {
+            return oisSwaps;
+        }
+        TreeMap<Integer, MarketQuote> grid = new TreeMap<>(oisSwaps);
+        grid.put(anchorMonths, anchor);
+        return grid;
+    }
+
     // ------------------------------------------------------------------ swaps
     /**
      * DF_n = (1 - S_n * A_{n-1}) / (1 + S_n * tau_n), A = sum of tau_k * DF_k

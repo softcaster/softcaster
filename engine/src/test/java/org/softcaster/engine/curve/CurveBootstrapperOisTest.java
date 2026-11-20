@@ -95,6 +95,34 @@ class CurveBootstrapperOisTest {
         assertThrows(IllegalArgumentException.class, () -> CurveBootstrapper.bootstrap(TODAY, q));
     }
 
+    /** OIS USD del 19/11/2026 (Cbonds): depositi fino a 3M, OIS dal 3Y. */
+    private static List<MarketQuote> sofrFromThreeYears() {
+        return new ArrayList<>(List.of(
+                mm("1M", 4.0297), mm("2M", 4.12384), mm("3M", 4.20056),
+                ois("3Y", 4.608), ois("5Y", 4.575), ois("10Y", 4.649)));
+    }
+
+    @Test
+    void yearsBeforeTheFirstOisAreInterpolatedFromTheLastDeposit() {
+        List<CurveNode> nodes = CurveBootstrapper.bootstrap(TODAY, sofrFromThreeYears());
+        // 1Y: OIS a un pagamento, par = 4,20056 + (12-3)/(36-3) x (4,608-4,20056) %
+        double par1y = (4.20056 + 9. / 33. * (4.608 - 4.20056)) / 100.;
+        int days1y = (int) ChronoUnit.DAYS.between(TODAY, TODAY.plusYears(1));
+        CurveNode n1y = nodes.stream().filter(n -> n.days() == days1y).findFirst().orElseThrow();
+        assertEquals(1. / (1. + par1y * days1y / 360.), n1y.df(), 1e-12);
+        // piatto sul 3Y darebbe un fattore di sconto piu' basso
+        assertTrue(n1y.df() > 1. / (1. + 0.04608 * days1y / 360.));
+    }
+
+    @Test
+    void depositOnTheFirstYearIsNotDuplicated() {
+        List<MarketQuote> q = sofrFromThreeYears();
+        q.add(ois("1Y", 4.62));
+        List<CurveNode> nodes = CurveBootstrapper.bootstrap(TODAY, q);
+        int days1y = (int) ChronoUnit.DAYS.between(TODAY, TODAY.plusYears(1));
+        assertEquals("1Y", nodes.stream().filter(n -> n.days() == days1y).findFirst().orElseThrow().mq().symbol());
+    }
+
     @Test
     void oisTenorInDaysIsRejected() {
         List<MarketQuote> q = new ArrayList<>(saron(false));

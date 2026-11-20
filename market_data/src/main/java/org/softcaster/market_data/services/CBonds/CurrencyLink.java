@@ -19,6 +19,7 @@ class CurrencyLink {
     
     public CurrencyLink() {
         addChfOis();
+        addUsdOis();
     }
     
     
@@ -26,7 +27,16 @@ class CurrencyLink {
         Link link = null;
         int id01 = 217715;
         List<Link> links = new ArrayList<>();
+        
         link = new Link("7D", id01);
+        links.add(link);
+        id01 += 2;
+        
+        link = new Link("14D", id01);
+        links.add(link);
+        id01 += 2;
+        
+        link = new Link("21D", id01);
         links.add(link);
         id01 += 2;
         
@@ -39,58 +49,6 @@ class CurrencyLink {
         id01 += 2;
 
         link = new Link("3M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("4M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("5M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("6M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("7M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("8M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("9M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("10M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("11M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("1Y", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("15M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("18M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("21M", id01);
-        links.add(link);
-        id01 += 2;
-
-        link = new Link("2Y", id01);
         links.add(link);
         id01 += 2;
 
@@ -144,10 +102,45 @@ class CurrencyLink {
 
         link = new Link("30Y", id01);
         links.add(link);
-        // il 40Y (id01 + 2) ripete il valore del 30Y: non e' una quotazione, non si carica
+        id01 += 2;
 
+        link = new Link("40Y", id01);
+        links.add(link);
+        id01 += 2;
+        
+        link = new Link("50Y", id01);
+        links.add(link);
+        
         mapLinks.put("CHF", links);
     }
-    
-    
+    /**
+     * OIS USD (Annual Money vs SOFR). Cbonds non pubblica tutti i tenor: tra il
+     * 3M e il 3Y mancano (4M...2Y), la curva SOFR_OIS li completa con
+     * TERMSOFR (yield_curve.fill_curve). Id espliciti per i buchi.
+     */
+    private void addUsdOis() {
+        List<Link> links = new ArrayList<>();
+        links.add(new Link("1W", 218471));
+        links.add(new Link("2W", 218473));
+        links.add(new Link("3W", 218475));
+        links.add(new Link("1M", 218477));
+        links.add(new Link("2M", 218479));
+        links.add(new Link("3M", 218481));
+        links.add(new Link("3Y", 218499));
+        links.add(new Link("4Y", 218501));
+        links.add(new Link("5Y", 218503));
+        links.add(new Link("6Y", 218505));
+        links.add(new Link("7Y", 218507));
+        links.add(new Link("8Y", 218509));
+        links.add(new Link("9Y", 218511));
+        links.add(new Link("10Y", 218513));
+        links.add(new Link("12Y", 218515));
+        links.add(new Link("15Y", 218517));
+        links.add(new Link("20Y", 218519));
+        links.add(new Link("25Y", 218521));
+        links.add(new Link("30Y", 218523));
+        links.add(new Link("40Y", 218525));
+        links.add(new Link("50Y", 218527));
+        mapLinks.put("USD", links);
+    }
 }

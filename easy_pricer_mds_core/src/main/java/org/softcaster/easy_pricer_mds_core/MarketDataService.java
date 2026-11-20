@@ -94,7 +94,8 @@ public class MarketDataService {
                 return yieldCurveBuilder.buildYieldCurve(id, newInputs, getOfficialDate());
             } else {
                 // Se esiste già, sfruttiamo il metodo synchronized esistente
-                existingCurve.update(CurveBootstrapper.bootstrap(getOfficialDate(), newInputs));
+                // con la curva di supporto, se la curva ne ha una (yield_curve.fill_curve)
+                existingCurve.update(yieldCurveBuilder.bootstrap(id, newInputs, getOfficialDate()));
                 return existingCurve;
             }
         });
