@@ -2757,7 +2757,9 @@ CREATE TABLE public.yield_curve (
     currency integer NOT NULL,
     calendar integer NOT NULL,
     provider character varying(50) DEFAULT ''::character varying NOT NULL,
-    provider_code character varying(25)
+    provider_code character varying(25),
+    fill_curve integer,
+    CONSTRAINT ck_yield_curve_fill_curve CHECK (((fill_curve IS NULL) OR (fill_curve <> id_yield_curve)))
 );
 
 
@@ -6490,6 +6492,14 @@ ALTER TABLE ONLY public.yield_curve_spread
 
 ALTER TABLE ONLY public.yield_curve_item
     ADD CONSTRAINT fk_yield_curve FOREIGN KEY (yield_curve) REFERENCES public.yield_curve(id_yield_curve);
+
+
+--
+-- Name: yield_curve fk_yield_curve_fill_curve; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.yield_curve
+    ADD CONSTRAINT fk_yield_curve_fill_curve FOREIGN KEY (fill_curve) REFERENCES public.yield_curve(id_yield_curve);
 
 
 --

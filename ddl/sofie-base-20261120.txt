@@ -2,12 +2,16 @@ Base di test sofie-base-20261120.backup (pg_dump formato custom)
 
 Stato
 - nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
-- calendario: official_date = last_official_date = 2026-11-17, next_business_date vuota, OPEN
+- calendario: official_date = 2026-11-19, next_business_date vuota, OPEN
 - opzioni OTC: tabelle otc_option_master_data, otc_fx_option_master_data,
   otc_cmd_option_master_data; asset class OFX (20) e OCM (21) con script OPTION
 - chiusura: 12 step, compreso MATURITY
 - curva SARON_OIS (CHF, provider CBonds, provider_code CHF): 27 nodi al 19/11/2026,
   7D-11M money market, 1Y-30Y OIS; EURCHF usa SARON_OIS come curva CHF (ccy_irc)
+- curva SOFR_OIS (USD, provider CBonds, provider_code USD): 21 nodi al 19/11/2026,
+  1W-3M money market e 3Y-50Y OIS; fill_curve TERMSOFR completa 6M e 1Y
+  (YieldCurveBuilder), il 2Y si interpola. EURUSD e CMA/OCM usano ancora TERMSOFR
+- yield_curve.fill_curve: curva di supporto per le scadenze brevi mancanti
 - yield_curve.provider_code: chiave per il provider (vuota = code della curva);
   yield_curve.compounding eliminata (le curve lavorano in ACT/365 continuo)
 - curve DISCOUNT (ac_dc_bcy_link): BFU/EUR TERMESTR, FRM e XRM/EUR ESTR_OIS,
@@ -20,7 +24,7 @@ Stato
 
 Schema e dati di sistema coincidono con sofie_schema.sql, sofie_lookup.sql e
 sofie_config.sql del 2026-11-20. Sostituisce sofie-base-20261117 (senza
-provider_code e SARON_OIS, con yield_curve.compounding).
+provider_code, fill_curve, SARON_OIS e SOFR_OIS, con yield_curve.compounding).
 
 Ripristino: ddl\restore_sofie_base.ps1 (usa l'ultimo sofie-base-*.backup)
 Una migrazione successiva va applicata dopo il ripristino, oppure va rifatto il backup.
