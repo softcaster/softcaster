@@ -10,6 +10,7 @@ import org.softcaster.market_data.core.MarketDataProviderService;
 import org.softcaster.market_data.services.BlueGammaOis.BlueGammaOis;
 import org.softcaster.market_data.services.Bondblox.BondBlox;
 import org.softcaster.market_data.services.BorsaItaliana.BorsaItaliana;
+import org.softcaster.market_data.services.CBonds.CBonds;
 import org.softcaster.market_data.services.Cnbc.Cnbc;
 import org.softcaster.market_data.services.Ecb.Ecb;
 import org.softcaster.market_data.services.Eurext.Eurex;
@@ -92,5 +93,11 @@ public class MarketDataAutoConfiguration {
     public MarketDataManagerProvider bondBloxProvider() {
 
         return () -> new BondBlox();
+    }
+
+    @Bean(name = "CBondsProvider")
+    public MarketDataManagerProvider cBondsProvider() {
+
+        return () -> new CBonds();
     }
 }

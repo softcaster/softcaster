@@ -5,6 +5,7 @@
 package MdmTest;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.market_data.core.MarketDataManager;
@@ -53,14 +54,15 @@ public class MarketDataManagerTest implements CommandLineRunner {
         // providers();
         // testCnbc();
         // testCsv();
-        testBondBlox();
+        // testBondBlox();
+        testCBonds();
     }
 
     private void testEurext() {
         /*
         RequestParamManager params = new RequestParamManager();
         params.add("FBTP");
-*/
+         */
         MarketDataManager mdm = factory.getInstance("Eurex");
         if (mdm != null) {
             Node node = mdm.getQuote("DE000F2HLQE9", Market.FUTURES);
@@ -101,7 +103,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
     private void testCmeGroup() {
         MarketDataManager mdm = factory.getInstance("CmeGroup");
         if (mdm != null) {
-            
+
             List<Node> nodes = mdm.getRates("TERMSOFR");
             if (nodes != null && !nodes.isEmpty()) {
                 for (Node node : nodes) {
@@ -117,7 +119,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
                     System.out.println(node.symbol() + "\t" + node.data().bid());
                 }
             }
-            
+
             String tickerFx = "2674@M6EZ6";
             String tickerBd = "307@ZBZ6";
             Node node = mdm.getQuote(tickerBd, Market.FUTURES);
@@ -164,7 +166,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
         if (mdm != null) {
             Node exchRate = mdm.getQuote("EURCHF", Market.CURRENCIES);
             System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
-            
+
             exchRate = mdm.getQuote("EURCAD", Market.CURRENCIES);
             System.out.println(exchRate.symbol() + "\t" + exchRate.data().bid());
 
@@ -198,18 +200,18 @@ public class MarketDataManagerTest implements CommandLineRunner {
         MarketDataManager mdm = factory.getInstance("Csv");
         if (mdm != null) {
             List<Node> rates = mdm.getRates("ITAYIELD");
-            if(rates != null && !rates.isEmpty()) {
-                for(Node node: rates) {
+            if (rates != null && !rates.isEmpty()) {
+                for (Node node : rates) {
                     System.out.println(node.symbol() + "\t" + node.data().bid());
                 }
             }
         }
     }
-    
+
     private void providers() {
         List<String> providers = factory.gerProviders();
-        if(providers != null && !providers.isEmpty()) {
-            for(String provider: providers) {
+        if (providers != null && !providers.isEmpty()) {
+            for (String provider : providers) {
                 System.out.println(provider);
             }
         }
@@ -219,8 +221,24 @@ public class MarketDataManagerTest implements CommandLineRunner {
         MarketDataManager mdm = factory.getInstance("BondBlox");
         if (mdm != null) {
             Node node = mdm.getQuote("US912810QL52", Market.BONDS);
-            if(node != null) {
+            if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid() + "\t" + node.data().ask());
+            }
+        }
+    }
+
+    private void testCBonds() {
+        MarketDataManager mdm = factory.getInstance("CBonds");
+        if (mdm != null) {
+            List<Node> rates = mdm.getRatesByCurrency("CHF", LocalDate.now());
+            if (rates != null && !rates.isEmpty()) {
+                for (Node node : rates) {
+                    System.out.println(node.symbol() + ";"
+                            + node.data().bid() + ";"
+                            + node.daycount().getCode() + ";"
+                            + node.compounding().getCode() + ";"
+                            + node.nodeType().getCode());
+                }
             }
         }
     }

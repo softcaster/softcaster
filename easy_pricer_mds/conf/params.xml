@@ -10,7 +10,7 @@
     </param>
     <param>
         <name>CME_VOL_DIRECTORY</name>
-        <value>c:\tools\projects\DEVELOP\softcaster\easy_pricer_mds\csv</value>
+        <value>e:\tools\projects\DEVELOP\softcaster\easy_pricer_mds\csv</value>
     </param>
     <param>
         <name>CME_VOL_SURFACES</name>

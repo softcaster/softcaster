@@ -4,6 +4,7 @@
  */
 package org.softcaster.market_data.core;
 
+import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.market_data.core.enums.Market;
 
@@ -12,4 +13,8 @@ public interface MarketDataManager {
     List<Node> getRates(String curveId);
     String getMarketDataServiceId();
     List<Market> getMarkets();
+
+    default List<Node> getRatesByCurrency(String currency, LocalDate officialDate) {
+        return null;
+    }
 }

@@ -30,24 +30,24 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
 public class MarketDataService {
-    
+
     @Autowired
     @Qualifier("yieldCurveBuilder")
     private YieldCurveBuilder yieldCurveBuilder;
-    
+
     @Autowired
     InstrumentQuoteDAO instrumentQuoteDAO;
-    
+
     @Autowired
     SystemBusinessCalendarDAO systemBusinessCalendarDAO;
-    
+
     private final ConcurrentHashMap<String, SpotPrice> spotPrices = new ConcurrentHashMap<>();
     // Curve di base senza spread, di tipo concreto
     // Una base compare in entrambe le mappe, con la stessa istanza.
     private final ConcurrentHashMap<String, YieldCurve> yieldCurves = new ConcurrentHashMap<>();
     // Quella che prezza, cioè una base oppure una curva spreaded costruita su una base.
     private final ConcurrentHashMap<String, DiscountCurve> discountCurves = new ConcurrentHashMap<>();
-    
+
     public MarketDataService() {
     }
 
@@ -82,7 +82,7 @@ public class MarketDataService {
         if (curveId == null || newInputs == null) {
             throw new IllegalArgumentException("Curve Id and new inputs can't be null");
         }
-        
+
         if (curveId.isBlank() || newInputs.isEmpty()) {
             throw new IllegalArgumentException("Empty data");
         }
@@ -112,7 +112,7 @@ public class MarketDataService {
 
     // Loads the base curve from the database and builds it. 
     private YieldCurve buildBase(String code, LocalDate officialDate) {
-        
+
         DiscountCurve c = yieldCurveBuilder.buildDiscountCurve(code, officialDate);
         if (c != null && c instanceof YieldCurve yc) {
             return yc;
@@ -120,7 +120,7 @@ public class MarketDataService {
             throw new MarketDataNotFoundException("Unknown Base Curve: " + code);
         }
     }
-    
+
     public DiscountCurve getDiscountCurve(String code) {
         DiscountCurve c = discountCurves.get(code);
         if (c != null) {
@@ -129,7 +129,7 @@ public class MarketDataService {
             throw new MarketDataNotFoundException("Unknown Discount Curve: " + code);
         }
     }
-    
+
     public void reloadCurves() {
         List<String> names = yieldCurveBuilder.getDiscountCurveNames();
         reloadCurves(names);
@@ -151,7 +151,7 @@ public class MarketDataService {
         // spread-free curve of a code: built at most once per reload, so every curve shares the same instance
         final Function<String, YieldCurve> resolver
                 = baseCode -> newBases.computeIfAbsent(baseCode, c -> buildBase(c, officialDate));
-        
+
         for (String code : codes) {
             try {
                 // a discount curve is either a plain YieldCurve or a SpreadedCurve built on a YieldCurve
@@ -183,17 +183,19 @@ public class MarketDataService {
         yieldCurves.putAll(newBases);
         discountCurves.putAll(newDiscounts);
     }
-    
+
     public void saveOrUpdateCurveRates(String curveId) {
         YieldCurve yc = yieldCurves.get(curveId);
-        
+
         List<CurveNode> newInputs = new ArrayList<>(yc.getNodes());
         yieldCurveBuilder.saveOrUpdateCurve(curveId, newInputs);
     }
-    
+
     public void loadCurveCurveRates(String curveId) {
         List<MarketQuote> newInput = yieldCurveBuilder.getNewInput(curveId);
-        updateYieldCurveInCache(curveId, newInput);
+        if (newInput != null && !newInput.isEmpty()) {
+            updateYieldCurveInCache(curveId, newInput);
+        }
     }
     // --------------------------------------------------------------------------------------------
 
@@ -211,7 +213,7 @@ public class MarketDataService {
             throw new MarketDataNotFoundException("Ticker " + ticker + " not found");
         }
     }
-    
+
     public double getSpotPrice(Integer masterDataId, RequestType request) {
         double spotPrice = 0.;
         InstrumentQuote iq = instrumentQuoteDAO.findByMasterDataId(masterDataId);
@@ -220,7 +222,7 @@ public class MarketDataService {
         }
         return spotPrice;
     }
-    
+
     public double getSpotPrice(String ticker, RequestType request) {
         double price = 0.;
         try {
@@ -240,14 +242,14 @@ public class MarketDataService {
         }
         return price;
     }
-    
+
     public void loadSpotPrice() {
         // Leggo lista quotazioni
         List<InstrumentQuote> iqList = instrumentQuoteDAO.findAll();
         if (iqList.isEmpty()) {
             return;
         }
-        
+
         for (InstrumentQuote quote : iqList) {
             updatePrice(quote.getCode(), quote.getBid(), quote.getAsk(), (quote.getBid() + quote.getAsk()) / 2.);
         }
@@ -269,7 +271,7 @@ public class MarketDataService {
         // Questo metodo svuota la cache, costringendo la chiamata successiva a getOfficialDate() a rifare la select
         // Nota che non serve implementare nulla nel corpo della funzione
     }
-    
+
     @Cacheable(value = "systemCurrency")
     public Currency getSystemCurrency() {
         SystemBusinessCalendar sbc = systemBusinessCalendarDAO.findBySbcId(1);
@@ -278,7 +280,7 @@ public class MarketDataService {
         }
         return null;
     }
-    
+
     @CacheEvict(value = "systemCurrency", allEntries = true)
     public void refreshSystemCurrency() {
     }

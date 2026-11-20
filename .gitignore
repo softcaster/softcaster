@@ -27,3 +27,4 @@
 *.xlsx#
 *.xlsx#
 /market_data/target/
+easy_pricer_mds/conf/params.xml
