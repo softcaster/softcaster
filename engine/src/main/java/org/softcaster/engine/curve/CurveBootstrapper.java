@@ -83,7 +83,7 @@ public final class CurveBootstrapper {
                 }
                 case OIS -> {
                     Offset o = q.tenorOffset();
-                    if (o.offsetType() != OffsetType.YEARS || o.step() <= 0) {
+                    if (!isValidOisTenor(o)) {
                         throw new IllegalArgumentException("OIS tenor must be a positive number of years: " + q.symbol());
                     }
                     if (q.daycount() != DaycountBasis.ACT_360 && q.daycount() != DaycountBasis.ACT_365) {
@@ -149,6 +149,12 @@ public final class CurveBootstrapper {
         return result;
     }
 
+    private static boolean isValidOisTenor(Offset o) {
+        if(o.step() <=0 )
+            return false;
+        
+        return true;
+    }
     // ------------------------------------------------------------------ swaps
     /**
      * DF_n = (1 - S_n * A_{n-1}) / (1 + S_n * tau_n), A = sum of tau_k * DF_k

@@ -20,6 +20,9 @@ import org.softcaster.engine.enums.Compounding;
 import org.softcaster.engine.enums.CurveNodeType;
 import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.OffsetType;
+import static org.softcaster.engine.enums.OffsetType.DAYS;
+import static org.softcaster.engine.enums.OffsetType.MONTHS;
+import static org.softcaster.engine.enums.OffsetType.YEARS;
 import org.softcaster.market_data.core.Data;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.Node;
@@ -60,7 +63,7 @@ public class CBonds implements MarketDataManager {
 
         return rates;
     }
-    
+
     @Override
     public List<Node> getRates(String curveId) {
         LocalDate officialDate = LocalDate.now();
@@ -112,6 +115,40 @@ public class CBonds implements MarketDataManager {
         };
     }
 
+    private Compounding getCompounding(Offset offset) {
+        switch (offset.offsetType()) {
+            case DAYS:
+                return Compounding.SIMPLE;
+            case MONTHS: {
+                if (offset.step() < 12) {
+                    return Compounding.SIMPLE;
+                } else {
+                    return Compounding.COMPOUNDED;
+                }
+            }
+            case YEARS:
+            default:
+                return Compounding.COMPOUNDED;
+        }
+    }
+
+    private CurveNodeType getCurveNodeType(Offset offset) {
+        switch (offset.offsetType()) {
+            case DAYS:
+                return CurveNodeType.MONEY_MARKET;
+            case MONTHS: {
+                if (offset.step() < 12) {
+                    return CurveNodeType.MONEY_MARKET;
+                } else {
+                    return CurveNodeType.OIS;
+                }
+            }
+            case YEARS:
+            default:
+                return CurveNodeType.OIS;
+        }
+    }
+
     private Node getNode(String url, Link link) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -124,7 +161,7 @@ public class CBonds implements MarketDataManager {
             CbondsIndexResponse cbondsIndexResponse = mapper.readValue(response.body(), CbondsIndexResponse.class);
             Offset offset = getOffset(link.symbol());
             Data data = new Data(cbondsIndexResponse.getCbondsIndexValueNumeric(), cbondsIndexResponse.getCbondsIndexValueNumeric());
-            return new Node(link.symbol(), offset, DaycountBasis.ACT_360, Compounding.COMPOUNDED, CurveNodeType.OIS, data);
+            return new Node(link.symbol(), offset, DaycountBasis.ACT_360, getCompounding(offset), getCurveNodeType(offset), data);
 
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
