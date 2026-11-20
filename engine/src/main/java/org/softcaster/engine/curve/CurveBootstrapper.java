@@ -19,6 +19,11 @@ import org.softcaster.engine.enums.OffsetType;
  * bonds, semiannual coupons (e.g. BTP benchmarks) - ZERO_RATES zero rates,
  * converted with their own compounding / day count
  *
+ * Swap and OIS tenors are keyed by months (15M and 15Y are different
+ * quotes); the bootstrap runs on the annual grid, so OIS tenors that are not
+ * whole years (15M, 18M, 21M) only feed the interpolation of the par rate
+ * on unquoted years.
+ *
  * Simplifications: no spot lag, no business-day adjustment, regular coupon
  * periods, single-curve.
  */
@@ -59,8 +64,9 @@ public final class CurveBootstrapper {
         // 1. Split quotes by type
         List<MarketQuote> depos = new ArrayList<>();
         List<MarketQuote> zeroRates = new ArrayList<>();
-        TreeMap<Integer, MarketQuote> swaps = new TreeMap<>();        // years -> quote
-        TreeMap<Integer, MarketQuote> oisSwaps = new TreeMap<>();     // years -> quote
+        // tutte le scadenze in mesi: con gli anni 15M e 15Y (o 1M e 1Y) avrebbero la stessa chiave
+        TreeMap<Integer, MarketQuote> swaps = new TreeMap<>();        // months -> quote
+        TreeMap<Integer, MarketQuote> oisSwaps = new TreeMap<>();     // months -> quote
         TreeMap<Integer, MarketQuote> parYields = new TreeMap<>();    // months -> quote
 
         for (MarketQuote q : quotes) {
@@ -77,14 +83,15 @@ public final class CurveBootstrapper {
                     if (q.daycount() != DaycountBasis.NASD_30_360 && q.daycount() != DaycountBasis.EUR_30_360) {
                         throw new IllegalArgumentException("Swap fixed leg must be 30/360: " + q.symbol());
                     }
-                    if (swaps.put((int) o.step(), q) != null) {
+                    if (swaps.put(tenorInMonths(q), q) != null) {
                         throw new IllegalArgumentException("Duplicate swap: " + q.symbol());
                     }
                 }
                 case OIS -> {
                     Offset o = q.tenorOffset();
                     if (!isValidOisTenor(o)) {
-                        throw new IllegalArgumentException("OIS tenor must be a positive number of years: " + q.symbol());
+                        throw new IllegalArgumentException("OIS tenor must be a positive number of months or years: "
+                                + q.symbol());
                     }
                     if (q.daycount() != DaycountBasis.ACT_360 && q.daycount() != DaycountBasis.ACT_365) {
                         throw new IllegalArgumentException("OIS fixed leg must be ACT/360 or ACT/365: " + q.symbol());
@@ -92,7 +99,7 @@ public final class CurveBootstrapper {
                     if (!oisSwaps.isEmpty() && oisSwaps.firstEntry().getValue().daycount() != q.daycount()) {
                         throw new IllegalArgumentException("OIS quotes of one curve must share the day count: " + q.symbol());
                     }
-                    if (oisSwaps.put((int) o.step(), q) != null) {
+                    if (oisSwaps.put(tenorInMonths(q), q) != null) {
                         throw new IllegalArgumentException("Duplicate OIS: " + q.symbol());
                     }
                 }
@@ -149,36 +156,43 @@ public final class CurveBootstrapper {
         return result;
     }
 
+    /**
+     * Scadenza OIS in mesi o anni. Il bootstrap e' sulla griglia annuale: le
+     * scadenze non intere (15M, 18M, 21M) non diventano nodi (servirebbe lo
+     * schedule con il periodo spezzato), entrano solo nell'interpolazione del
+     * tasso par sugli anni non quotati.
+     */
     private static boolean isValidOisTenor(Offset o) {
-        if(o.step() <=0 )
-            return false;
-        
-        return true;
+        return o.step() > 0 && (o.offsetType() == OffsetType.MONTHS || o.offsetType() == OffsetType.YEARS);
     }
     // ------------------------------------------------------------------ swaps
     /**
      * DF_n = (1 - S_n * A_{n-1}) / (1 + S_n * tau_n), A = sum of tau_k * DF_k
      * over the previous annual dates. basisDays = 0: tau = 1 for every year
      * (par swap, 30/360). basisDays = 360 or 365: tau = actual days of the year
-     * / basisDays (OIS, fixed leg ACT/360 or ACT/365).
+     * / basisDays (OIS, fixed leg ACT/360 or ACT/365). Quotes are keyed by
+     * months: year n reads the rate at 12 n months (quoted or interpolated).
      */
     private static List<CurveNode> bootstrapSwaps(LocalDate valuationDate, TreeMap<Integer, MarketQuote> swaps,
             double basisDays) {
         List<CurveNode> out = new ArrayList<>();
-        int maxYears = swaps.lastKey();
+        int maxYears = swaps.lastKey() / 12;
+        if (maxYears < 1) {
+            throw new IllegalArgumentException("Swap/OIS quotes need at least a 1Y tenor");
+        }
         double annuity = 0.0;
         LocalDate previous = valuationDate;
         for (int n = 1; n <= maxYears; n++) {
             LocalDate date = valuationDate.plusYears(n);
             double tau = basisDays > 0.0 ? ChronoUnit.DAYS.between(previous, date) / basisDays : 1.0;
-            double s = interpolateRate(swaps, n);
+            double s = interpolateRate(swaps, 12 * n);
             double df = (1.0 - s * annuity) / (1.0 + s * tau);
             if (!(df > 0.0)) {
                 throw new IllegalStateException("Swap bootstrap failed at " + n + "Y: DF=" + df);
             }
             annuity += tau * df;
             int days = (int) ChronoUnit.DAYS.between(valuationDate, date);
-            out.add(new CurveNode(days, df, swaps.get(n)));          // null on interpolated years
+            out.add(new CurveNode(days, df, swaps.get(12 * n)));     // null on interpolated years
             previous = date;
         }
         return out;
@@ -281,7 +295,7 @@ public final class CurveBootstrapper {
             case YEARS ->
                 (int) (12 * o.step());
             default ->
-                throw new IllegalArgumentException("Par-yield tenor must be in months or years: " + q.symbol());
+                throw new IllegalArgumentException("Tenor must be in months or years: " + q.symbol());
         };
     }
 

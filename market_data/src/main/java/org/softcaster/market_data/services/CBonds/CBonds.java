@@ -29,13 +29,22 @@ import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.enums.Market;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * Tassi OIS da Cbonds (indici "OIS ... vs SARON" ecc.): un indice per tenor,
+ * valore alla data richiesta in percentuale. La chiave della curva e' la
+ * valuta (yield_curve.provider_code: CHF), i tenor e gli id Cbonds sono in
+ * CurrencyLink.
+ *
+ * Una curva si carica tutta o niente: se un tenor manca (errore HTTP, valore
+ * assente o di un'altra data) non si restituisce nulla, perche' il salvataggio
+ * della curva toglierebbe i nodi mancanti.
+ */
 public class CBonds implements MarketDataManager {
 
-    private final String template = "https://cbonds.com/api/indexes/{param}/2026-11-19/getValue/";
+    private static final String TEMPLATE = "https://cbonds.com/api/indexes/{id}/{date}/getValue/";
     private final CurrencyLink currencyLink = new CurrencyLink();
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
-    private final List<Node> rates = new ArrayList<>();
 
     public CBonds() {
     }
@@ -45,30 +54,45 @@ public class CBonds implements MarketDataManager {
         return null;
     }
 
-    @Override
-    public List<Node> getRatesByCurrency(String currency, LocalDate officialDate) {
-        List<Link> links = currencyLink.getLinks(currency);
-        if (links != null && !links.isEmpty()) {
-            for (Link link : links) {
-                String url = UriComponentsBuilder.fromUriString(template)
-                        .buildAndExpand(link.id())
-                        .toUriString();
-
-                Node node = getNode(url, link);
-                if (node != null) {
-                    rates.add(node);
-                }
-            }
-        }
-
-        return rates;
-    }
-
+    /**
+     * Tassi all'ultimo giorno lavorativo prima di oggi (Cbonds pubblica con un
+     * giorno di ritardo).
+     */
     @Override
     public List<Node> getRates(String curveId) {
-        LocalDate officialDate = LocalDate.now();
-        officialDate = officialDate.minusDays(1);
-        return getRatesByCurrency(curveId, officialDate);
+        LocalDate date = LocalDate.now().minusDays(1);
+        while (date.getDayOfWeek() == java.time.DayOfWeek.SATURDAY || date.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+            date = date.minusDays(1);
+        }
+        return getRates(curveId, date);
+    }
+
+    /**
+     * @param curveId valuta della curva (CHF)
+     * @param referenceDate data dei valori: ogni tenor deve avere il valore di
+     *                      quella data
+     * @return i nodi di tutti i tenor, oppure una lista vuota
+     */
+    @Override
+    public List<Node> getRates(String curveId, LocalDate referenceDate) {
+        List<Link> links = currencyLink.getLinks(curveId);
+        if (links == null || links.isEmpty()) {
+            LoggerMgr.logError("CBonds: no indexes configured for '" + curveId + "' (provider code of the curve)");
+            return List.of();
+        }
+        List<Node> rates = new ArrayList<>();
+        for (Link link : links) {
+            String url = UriComponentsBuilder.fromUriString(TEMPLATE)
+                    .buildAndExpand(link.id(), referenceDate.toString())
+                    .toUriString();
+            Node node = getNode(url, link, referenceDate);
+            if (node == null) {
+                LoggerMgr.logError("CBonds: " + curveId + " not loaded, missing " + link.symbol() + " at " + referenceDate);
+                return List.of();
+            }
+            rates.add(node);
+        }
+        return rates;
     }
 
     @Override
@@ -149,7 +173,13 @@ public class CBonds implements MarketDataManager {
         }
     }
 
-    private Node getNode(String url, Link link) {
+    /**
+     * Valore di un tenor alla data: null se la risposta non e' 200, non ha
+     * valore o e' di un'altra data. Cbonds da' la percentuale (-0,04175 =
+     * -0,04175%): il nodo e' in decimale, come gli altri provider. ACT/360
+     * vale per CHF (SARON), EUR e USD; per GBP (SONIA) servira' ACT/365.
+     */
+    private Node getNode(String url, Link link, LocalDate referenceDate) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
@@ -158,13 +188,44 @@ public class CBonds implements MarketDataManager {
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                LoggerMgr.logError("CBonds " + link.symbol() + ": HTTP " + response.statusCode() + " from " + url);
+                return null;
+            }
             CbondsIndexResponse cbondsIndexResponse = mapper.readValue(response.body(), CbondsIndexResponse.class);
+            Double value = cbondsIndexResponse.getCbondsIndexValueNumeric();
+            if (value == null || !Double.isFinite(value)) {
+                LoggerMgr.logError("CBonds " + link.symbol() + ": no value at " + referenceDate);
+                return null;
+            }
+            LocalDate valueDate = valueDate(cbondsIndexResponse.getDatetime());
+            if (valueDate != null && !valueDate.equals(referenceDate)) {
+                LoggerMgr.logError("CBonds " + link.symbol() + ": value of " + valueDate + ", requested " + referenceDate);
+                return null;
+            }
+            double rate = value / 100.;
             Offset offset = getOffset(link.symbol());
-            Data data = new Data(cbondsIndexResponse.getCbondsIndexValueNumeric(), cbondsIndexResponse.getCbondsIndexValueNumeric());
+            Data data = new Data(rate, rate);
             return new Node(link.symbol(), offset, DaycountBasis.ACT_360, getCompounding(offset), getCurveNodeType(offset), data);
 
         } catch (Exception ex) {
-            LoggerMgr.logError(ex.getLocalizedMessage());
+            LoggerMgr.logError("CBonds " + link.symbol() + ": " + ex.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Data del valore dal campo datetime (inizia con aaaa-mm-gg); null se il
+     * formato non e' riconosciuto, e allora il controllo sulla data si salta.
+     */
+    private static LocalDate valueDate(String datetime) {
+        if (datetime == null || datetime.length() < 10) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(datetime.substring(0, 10));
+        } catch (java.time.format.DateTimeParseException e) {
+            LoggerMgr.logError("CBonds: unexpected datetime '" + datetime + "', value date not checked");
             return null;
         }
     }

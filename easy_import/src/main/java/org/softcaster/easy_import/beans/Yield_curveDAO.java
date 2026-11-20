@@ -23,12 +23,12 @@ public class Yield_curveDAO {
     private PreparedStatement selectByIdxStmt = null;
     private PreparedStatement selectStmt = null;
 
-    private final String insertExpr = "INSERT INTO yield_curve(id_yield_curve,code,description,currency,calendar,compounding) VALUES(nextval(('yield_curve_s'::text)::regclass),?,?,?,?,?)";
-    private final String updateExpr = "UPDATE yield_curve SET code=?,description=?,currency=?,calendar=? compounding=? WHERE id_yield_curve=?";
-    private final String removeExpr = "DELETE FROM yield_curve WHERE id_yield_curve_id=?";
+    private final String insertExpr = "INSERT INTO yield_curve(id_yield_curve,code,description,currency,calendar) VALUES(nextval(('yield_curve_s'::text)::regclass),?,?,?,?)";
+    private final String updateExpr = "UPDATE yield_curve SET code=?,description=?,currency=?,calendar=? WHERE id_yield_curve=?";
+    private final String removeExpr = "DELETE FROM yield_curve WHERE id_yield_curve=?";
     private final String selectExpr = "SELECT id_yield_curve FROM yield_curve WHERE code=?";
-    private final String selectByPKeyExpr = "SELECT id_yield_curve,code,description,currency,calendar,compounding FROM yield_curve WHERE id_yield_curve=?";
-    private final String selectByIdxExpr = "SELECT id_yield_curve,code,description,currency,calendar,compounding FROM yield_curve WHERE code=?";
+    private final String selectByPKeyExpr = "SELECT id_yield_curve,code,description,currency,calendar FROM yield_curve WHERE id_yield_curve=?";
+    private final String selectByIdxExpr = "SELECT id_yield_curve,code,description,currency,calendar FROM yield_curve WHERE code=?";
 
     public Yield_curveDAO() {
         ConnectioManager cm = ConnectioManager.getInstance();
@@ -49,7 +49,6 @@ public class Yield_curveDAO {
             insertStmt.setString(2, record.getDescription());
             insertStmt.setInt(3, record.getCurrency());
             insertStmt.setInt(4, record.getCalendar());
-            insertStmt.setInt(5, record.getCompounding());
             insertStmt.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -66,8 +65,7 @@ public class Yield_curveDAO {
             updateStmt.setString(2, record.getDescription());
             updateStmt.setInt(3, record.getCurrency());
             updateStmt.setInt(4, record.getCalendar());
-            updateStmt.setInt(5, record.getCompounding());
-            updateStmt.setInt(6, record.getId_yield_curve());
+            updateStmt.setInt(5, record.getId_yield_curve());
             updateStmt.executeUpdate();
             return true;
         } catch (SQLException ex) {
@@ -123,7 +121,6 @@ public class Yield_curveDAO {
                     record.setDescription(rs.getString("description"));
                     record.setCurrency(rs.getInt("currency"));
                     record.setCalendar(rs.getInt("calendar"));
-                    record.setCompounding(rs.getInt("compounding"));
                 }
             }
             return found;
@@ -147,7 +144,6 @@ public class Yield_curveDAO {
                     record.setDescription(rs.getString("description"));
                     record.setCurrency(rs.getInt("currency"));
                     record.setCalendar(rs.getInt("calendar"));
-                    record.setCompounding(rs.getInt("compounding"));
                 }
             }
             return found;
@@ -162,7 +158,7 @@ public class Yield_curveDAO {
         errorMsg = "";
         try {
             List<Yield_curve> records = new ArrayList<>();
-            String selectByWhereExpr = "SELECT id_yield_curve,code,description,currency,calendar,compounding FROM yield_curve " + whereExpr;
+            String selectByWhereExpr = "SELECT id_yield_curve,code,description,currency,calendar FROM yield_curve " + whereExpr;
             ConnectioManager cm = ConnectioManager.getInstance();
             try (PreparedStatement selectByWhereStmt = cm.createPreparedStatement(selectByWhereExpr)) {
                 if (!params.isEmpty()) {
@@ -200,7 +196,6 @@ public class Yield_curveDAO {
                         record.setDescription(rs.getString("description"));
                         record.setCurrency(rs.getInt("currency"));
                         record.setCalendar(rs.getInt("calendar"));
-                        record.setCompounding(rs.getInt("compounding"));
                         records.add(record);
                     }
                 }

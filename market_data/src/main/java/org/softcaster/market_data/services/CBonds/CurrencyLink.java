@@ -144,11 +144,8 @@ class CurrencyLink {
 
         link = new Link("30Y", id01);
         links.add(link);
-        id01 += 2;
+        // il 40Y (id01 + 2) ripete il valore del 30Y: non e' una quotazione, non si carica
 
-        link = new Link("40Y", id01);
-        links.add(link);
-        
         mapLinks.put("CHF", links);
     }
     

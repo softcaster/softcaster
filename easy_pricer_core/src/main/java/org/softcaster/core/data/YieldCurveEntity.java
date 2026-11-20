@@ -50,11 +50,13 @@ public class YieldCurveEntity implements Serializable {
     @JoinColumn(name = "yield_curve", nullable = false) // FK in child table yield_curve_item
     private List<YieldCurveItem> items = new ArrayList<>();
 
-    @Column(name = "compounding")
-    private Short compounding;
-
     @Column(name = "provider")
     private String provider;
+
+    // chiave con cui si interroga il provider; vuota = code della curva
+    // (per CBonds la valuta: CHF, USD...)
+    @Column(name = "provider_code")
+    private String providerCode;
 
     public Integer getIdYieldCurve() {
         return idYieldCurve;
@@ -145,20 +147,6 @@ public class YieldCurveEntity implements Serializable {
     }
 
     /**
-     * @return the compounding
-     */
-    public Short getCompounding() {
-        return compounding;
-    }
-
-    /**
-     * @param compounding the compounding to set
-     */
-    public void setCompounding(Short compounding) {
-        this.compounding = compounding;
-    }
-
-    /**
      * @return the provider
      */
     public String getProvider() {
@@ -170,6 +158,22 @@ public class YieldCurveEntity implements Serializable {
      */
     public void setProvider(String provider) {
         this.provider = provider;
+    }
+
+    public String getProviderCode() {
+        return providerCode;
+    }
+
+    public void setProviderCode(String providerCode) {
+        this.providerCode = providerCode == null || providerCode.isBlank() ? null : providerCode.trim();
+    }
+
+    /**
+     * Chiave per il refresh dal provider: provider_code se indicato,
+     * altrimenti il codice della curva.
+     */
+    public String getProviderKey() {
+        return providerCode != null && !providerCode.isBlank() ? providerCode : code;
     }
 
     public int[] getBucketYears() {

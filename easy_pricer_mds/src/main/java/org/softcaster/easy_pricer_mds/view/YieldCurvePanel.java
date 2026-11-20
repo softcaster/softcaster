@@ -120,8 +120,10 @@ public class YieldCurvePanel extends FndtAbstactPanel {
         for (YieldCurveBean bean : yieldCurveBeanList) {
             if (bean != null && bean.getYieldCurve() != null && !bean.getYieldCurve().getProvider().isBlank()) {
                 MarketDataProviderService mdsp = mDSFacade.getProviderService();
-                List<MarketQuote> newInput = mdsp.getNewInput(bean.getYieldCurve().getProvider(), bean.getYieldCurve().getCode());
                 MarketDataService mds = mDSFacade.getMarketDataService();
+                // chiave per il provider (provider_code o codice della curva), tassi alla data ufficiale
+                List<MarketQuote> newInput = mdsp.getNewInput(bean.getYieldCurve().getProvider(),
+                        bean.getYieldCurve().getProviderKey(), mds.getOfficialDate());
                 mds.updateYieldCurve(bean.getYieldCurve().getCode(),newInput);
             }
         }

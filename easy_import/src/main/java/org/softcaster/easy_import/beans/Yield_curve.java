@@ -10,7 +10,6 @@ public class Yield_curve implements IRecord {
     private String description = "";
     private Integer currency = 0;
     private Integer calendar = 0;
-    private Integer compounding = 0;
 
     public Integer getId_yield_curve() {
         return id_yield_curve;
@@ -52,18 +51,5 @@ public class Yield_curve implements IRecord {
         this.calendar = calendar;
     }
 
-    /**
-     * @return the compounding
-     */
-    public Integer getCompounding() {
-        return compounding;
-    }
-
-    /**
-     * @param compounding the compounding to set
-     */
-    public void setCompounding(Integer compounding) {
-        this.compounding = compounding;
-    }
 
 }

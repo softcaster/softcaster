@@ -36,6 +36,16 @@ public class MarketDataProviderService {
     }
 
     public List<MarketQuote> getNewInput(String provider, String curveId) {
+        return getNewInput(provider, curveId, null);
+    }
+
+    /**
+     * Nodi della curva dal provider.
+     *
+     * @param curveId       chiave della curva per il provider (provider_code o codice)
+     * @param referenceDate data dei tassi (es. data ufficiale); null = la piu' recente
+     */
+    public List<MarketQuote> getNewInput(String provider, String curveId, java.time.LocalDate referenceDate) {
 
         if (provider == null || provider.isBlank()) {
             return null;
@@ -55,7 +65,7 @@ public class MarketDataProviderService {
         }
 
         List<MarketQuote> newInput = null;
-        List<Node> nodes = mdm.getRates(curveId);
+        List<Node> nodes = referenceDate == null ? mdm.getRates(curveId) : mdm.getRates(curveId, referenceDate);
         if (nodes != null && !nodes.isEmpty()) {
             newInput = new ArrayList<>();
             MarketQuote marketQuote;

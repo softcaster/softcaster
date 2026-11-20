@@ -12,7 +12,6 @@ import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.YieldCurveEntity;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.YieldCurveBean;
-import org.softcaster.engine.enums.Compounding;
 import org.softcaster.market_data.core.MarketDataProviderService;
 
 /**
@@ -67,6 +66,8 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
         cbCurrency = new javax.swing.JComboBox<>();
         cbCalendar = new javax.swing.JComboBox<>();
         cbProvider = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
+        txtProviderCode = new javax.swing.JTextField();
         btnPanel = new javax.swing.JPanel();
         brnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -167,6 +168,27 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         detailPanel.add(cbProvider, gridBagConstraints);
 
+        jLabel6.setText("Provider code");
+        jLabel6.setToolTipText("Key used to download the rates from the provider (e.g. CHF for CBonds). Empty = curve code");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        detailPanel.add(jLabel6, gridBagConstraints);
+
+        txtProviderCode.setToolTipText("Key used to download the rates from the provider (e.g. CHF for CBonds). Empty = curve code");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        detailPanel.add(txtProviderCode, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -217,7 +239,7 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
 
         getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
-        setBounds(0, 0, 580, 206);
+        setBounds(0, 0, 580, 260);
     }// </editor-fold>//GEN-END:initComponents
 
     private void brnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_brnSaveActionPerformed
@@ -264,9 +286,11 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTextField txtCode;
     private javax.swing.JTextField txtDescription;
+    private javax.swing.JTextField txtProviderCode;
     // End of variables declaration//GEN-END:variables
 
     private boolean validateIntegrity() {
@@ -282,9 +306,11 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
                 bean.getYieldCurve().setCurrency((Currency) cbCurrency.getSelectedItem());
                 bean.getYieldCurve().setCalendar((Calendar) cbCalendar.getSelectedItem());
                 bean.getYieldCurve().setProvider((String) cbProvider.getSelectedItem());
-                bean.getYieldCurve().setCompounding((short) Compounding.CONTINUOUS.getId());
+                bean.getYieldCurve().setProviderCode(txtProviderCode.getText());
             } else {
-
+                // curva esistente: il codice resta, i dati del provider si possono cambiare
+                bean.getYieldCurve().setProvider((String) cbProvider.getSelectedItem());
+                bean.getYieldCurve().setProviderCode(txtProviderCode.getText());
             }
             mDSFacade.getYieldCurveDAO().saveOrUpdate(bean.getYieldCurve());
             return true;
@@ -309,6 +335,7 @@ public class YieldCurveMasterDataDlg extends javax.swing.JDialog {
             cbCurrency.setSelectedItem(bean.getYieldCurve().getCurrency());
             cbCalendar.setSelectedItem(bean.getYieldCurve().getCalendar());
             cbProvider.setSelectedItem(bean.getYieldCurve().getProvider());
+            txtProviderCode.setText(bean.getYieldCurve().getProviderCode() == null ? "" : bean.getYieldCurve().getProviderCode());
         } else {
             txtCode.setText("");
             txtDescription.setText("");

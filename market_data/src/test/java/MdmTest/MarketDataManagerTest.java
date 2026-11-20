@@ -230,7 +230,8 @@ public class MarketDataManagerTest implements CommandLineRunner {
     private void testCBonds() {
         MarketDataManager mdm = factory.getInstance("CBonds");
         if (mdm != null) {
-            List<Node> rates = mdm.getRatesByCurrency("CHF", LocalDate.now());
+            // ultimo giorno lavorativo (getRates senza data), o una data precisa con getRates("CHF", data)
+            List<Node> rates = mdm.getRates("CHF");
             if (rates != null && !rates.isEmpty()) {
                 for (Node node : rates) {
                     System.out.println(node.symbol() + ";"

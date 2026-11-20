@@ -2756,8 +2756,8 @@ CREATE TABLE public.yield_curve (
     description character varying(225) DEFAULT ''::character varying NOT NULL,
     currency integer NOT NULL,
     calendar integer NOT NULL,
-    compounding smallint DEFAULT 1 NOT NULL,
-    provider character varying(50) DEFAULT ''::character varying NOT NULL
+    provider character varying(50) DEFAULT ''::character varying NOT NULL,
+    provider_code character varying(25)
 );
 
 
