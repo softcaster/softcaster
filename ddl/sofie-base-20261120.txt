@@ -2,7 +2,7 @@ Base di test sofie-base-20261120.backup (pg_dump formato custom)
 
 Stato
 - nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
-- calendario: official_date = 2026-11-19, next_business_date vuota, OPEN
+- calendario: official_date = last_official_date = 2026-11-19, next_business_date vuota, OPEN
 - opzioni OTC: tabelle otc_option_master_data, otc_fx_option_master_data,
   otc_cmd_option_master_data; asset class OFX (20) e OCM (21) con script OPTION
 - chiusura: 12 step, compreso MATURITY
