@@ -25,12 +25,14 @@ public class AcDcBcyLinkDAO {
     private final AcDcBcyLinkRepository repository;
     private final YieldCurveEntityDAO yieldCurveEntityDAO;
     private final SpreadCurveEntityDAO spreadCurveEntityDAO;
+    private final IssuerCurveLinkRepository issuerLinkRepository;
 
     public AcDcBcyLinkDAO(AcDcBcyLinkRepository repository, YieldCurveEntityDAO yieldCurveEntityDAO,
-            SpreadCurveEntityDAO spreadCurveEntityDAO) {
+            SpreadCurveEntityDAO spreadCurveEntityDAO, IssuerCurveLinkRepository issuerLinkRepository) {
         this.repository = Objects.requireNonNull(repository);
         this.yieldCurveEntityDAO = Objects.requireNonNull(yieldCurveEntityDAO);
         this.spreadCurveEntityDAO = Objects.requireNonNull(spreadCurveEntityDAO);
+        this.issuerLinkRepository = Objects.requireNonNull(issuerLinkRepository);
     }
 
     // ------------------------------------------------------------------------
@@ -50,6 +52,30 @@ public class AcDcBcyLinkDAO {
         return find(assetClass, currency, role).map(link -> link.isSpreadCurve()
                 ? spreadCurveEntityDAO.findByIdWithBase(link.getSpreadCurve()).getCode()
                 : yieldCurveEntityDAO.findByIdYieldCurve(link.getCurveId()).getCode());
+    }
+
+    /**
+     * Curva di un'anagrafica per ruolo: per un titolo prima la curva del suo
+     * emittente nella valuta del titolo (issuer_curve_link: BTP ->
+     * ITA_SPREADED), poi quella di asset class e valuta (ac_dc_bcy_link: XRB/EUR
+     * -> ECBYC, che vale per i Bund e gli emittenti senza collegamento).
+     * Vuoto se nessuna delle due e' configurata.
+     */
+    @Transactional(readOnly = true)
+    public Optional<String> findCurveCode(MasterData masterData, CurveRole role) {
+        MasterData md = (MasterData) org.hibernate.Hibernate.unproxy(masterData);
+        Integer currency = md.getCurrency().getIdCurrency();
+        if (md instanceof SecurityMasterData smd && smd.getIssuer() != null) {
+            Optional<String> byIssuer = issuerLinkRepository
+                    .findByIssuerAndCurrencyAndCurveRole(smd.getIssuer().getIdIssuer(), currency, role)
+                    .map(link -> link.isSpreadCurve()
+                    ? spreadCurveEntityDAO.findByIdWithBase(link.getSpreadCurve()).getCode()
+                    : yieldCurveEntityDAO.findByIdYieldCurve(link.getYieldCurve()).getCode());
+            if (byIssuer.isPresent()) {
+                return byIssuer;
+            }
+        }
+        return findCurveCode(md.getAssetClass().getIdAssetClass(), currency, role);
     }
 
     /**

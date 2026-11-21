@@ -1607,6 +1607,33 @@ CREATE TABLE public.issuer (
 
 
 --
+-- Name: issuer_curve_link; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.issuer_curve_link (
+    issuer_curve_link_id integer NOT NULL,
+    issuer integer NOT NULL,
+    currency integer NOT NULL,
+    curve_role integer NOT NULL,
+    yield_curve integer,
+    spread_curve integer,
+    CONSTRAINT ck_issuer_curve_link_one_curve CHECK ((num_nonnulls(yield_curve, spread_curve) = 1))
+);
+
+
+--
+-- Name: issuer_curve_link_s; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.issuer_curve_link_s
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
 -- Name: issuer_s; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3573,6 +3600,14 @@ ALTER TABLE ONLY public.guarantee_type
 
 
 --
+-- Name: issuer_curve_link pk_issuer_curve_link; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.issuer_curve_link
+    ADD CONSTRAINT pk_issuer_curve_link PRIMARY KEY (issuer_curve_link_id);
+
+
+--
 -- Name: knock_in_effect pk_knock_in_effect; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4178,6 +4213,14 @@ ALTER TABLE ONLY public.granular_curve_point
 
 ALTER TABLE ONLY public.guarantee_type
     ADD CONSTRAINT uq_guarantee_type_code UNIQUE (code);
+
+
+--
+-- Name: issuer_curve_link uq_issuer_curve_link_natural_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.issuer_curve_link
+    ADD CONSTRAINT uq_issuer_curve_link_natural_key UNIQUE (issuer, currency, curve_role);
 
 
 --
@@ -5708,6 +5751,46 @@ ALTER TABLE ONLY public.instrument_quote_hist
 
 ALTER TABLE ONLY public.security_master_data
     ADD CONSTRAINT fk_issuer FOREIGN KEY (issuer) REFERENCES public.issuer(id_issuer);
+
+
+--
+-- Name: issuer_curve_link fk_issuer_curve_link_currency; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.issuer_curve_link
+    ADD CONSTRAINT fk_issuer_curve_link_currency FOREIGN KEY (currency) REFERENCES public.currency(id_currency);
+
+
+--
+-- Name: issuer_curve_link fk_issuer_curve_link_curve_role; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.issuer_curve_link
+    ADD CONSTRAINT fk_issuer_curve_link_curve_role FOREIGN KEY (curve_role) REFERENCES public.curve_role(curve_role_id);
+
+
+--
+-- Name: issuer_curve_link fk_issuer_curve_link_issuer; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.issuer_curve_link
+    ADD CONSTRAINT fk_issuer_curve_link_issuer FOREIGN KEY (issuer) REFERENCES public.issuer(id_issuer);
+
+
+--
+-- Name: issuer_curve_link fk_issuer_curve_link_spread_curve; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.issuer_curve_link
+    ADD CONSTRAINT fk_issuer_curve_link_spread_curve FOREIGN KEY (spread_curve) REFERENCES public.spread_curve(id_spread_curve);
+
+
+--
+-- Name: issuer_curve_link fk_issuer_curve_link_yield_curve; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.issuer_curve_link
+    ADD CONSTRAINT fk_issuer_curve_link_yield_curve FOREIGN KEY (yield_curve) REFERENCES public.yield_curve(id_yield_curve);
 
 
 --

@@ -1,0 +1,35 @@
+Base di test sofie-base-20261121.backup (pg_dump formato custom)
+
+Stato
+- nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
+- calendario: official_date = last_official_date = 2026-11-19, next_business_date vuota, OPEN
+- opzioni OTC: tabelle otc_option_master_data, otc_fx_option_master_data,
+  otc_cmd_option_master_data; asset class OFX (20) e OCM (21) con script OPTION
+- chiusura: 12 step, compreso MATURITY
+- curva ESTR_OIS: provider CBonds (prima BlueGammaOis), provider_code EUR, 32 nodi
+  1W-60Y al 19/11/2026 (refresh Cbonds; 15M, 18M, 21M non sono nodi);
+  EURUSD e EURCHF la usano come curva EUR (bcy_irc, prima TERMESTR)
+- curva SARON_OIS (CHF, provider CBonds, provider_code CHF): 27 nodi al 19/11/2026 (refresh Cbonds),
+  7D-11M money market, 1Y-30Y OIS; EURCHF usa SARON_OIS come curva CHF (ccy_irc)
+- curva SOFR_OIS (USD, provider CBonds, provider_code USD): 21 nodi al 19/11/2026,
+  1W-3M money market e 3Y-50Y OIS; fill_curve TERMSOFR completa 6M e 1Y
+  (YieldCurveBuilder), il 2Y si interpola. EURUSD (ccy_irc) e CMA/OCM USD (DISCOUNT) usano SOFR_OIS
+- yield_curve.fill_curve: curva di supporto per le scadenze brevi mancanti
+- yield_curve.provider_code: chiave per il provider (vuota = code della curva);
+  yield_curve.compounding eliminata (le curve lavorano in ACT/365 continuo)
+- curve per emittente (issuer_curve_link, prevale su ac_dc_bcy_link per i titoli):
+  REP ITA/EUR ITA_SPREADED, USDT/USD SOFR_OIS
+- curve DISCOUNT (ac_dc_bcy_link): XRB/EUR ECBYC, BFU/EUR TERMESTR, FRM e XRM/EUR ESTR_OIS,
+  CMA e OCM/USD SOFR_OIS
+- superficie di volatilita' EURUSD-VOL (max_age_days 365):
+  corrente (volatility_point) 153 punti al 2026-11-17 dal Summary View CME,
+  ancora senza tenor/delta (importati prima di quelle colonne: il primo import
+  per tenor li sostituisce); storico (volatility_point_hist) 3 punti al 2026-10-29
+- quotazioni, curve, anagrafiche quotate e piano dei conti come in sofie al 2026-11-17
+
+Schema e dati di sistema coincidono con sofie_schema.sql, sofie_lookup.sql e
+sofie_config.sql del 2026-11-21. Sostituisce sofie-base-20261120 (ESTR_OIS da BlueGamma, gamba EUR delle
+coppie su TERMESTR).
+
+Ripristino: ddl\restore_sofie_base.ps1 (usa l'ultimo sofie-base-*.backup)
+Una migrazione successiva va applicata dopo il ripristino, oppure va rifatto il backup.

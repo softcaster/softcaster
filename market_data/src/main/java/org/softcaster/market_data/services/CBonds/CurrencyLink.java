@@ -20,6 +20,7 @@ class CurrencyLink {
     public CurrencyLink() {
         addChfOis();
         addUsdOis();
+        addEurOis();
     }    
     
     /**
@@ -89,5 +90,49 @@ class CurrencyLink {
         links.add(new Link("40Y", 218525));
         links.add(new Link("50Y", 218527));
         mapLinks.put("USD", links);
+    }
+
+    /**
+     * OIS EUR (Annual Money vs ESTR): curva ESTR_OIS (provider_code EUR). 40Y, 50Y
+     * e 60Y sono quotazioni distinte, si caricano.
+     */
+    private void addEurOis() {
+        List<Link> links = new ArrayList<>();
+        links.add(new Link("1W", 217575));
+        links.add(new Link("2W", 217577));
+        links.add(new Link("3W", 217579));
+        links.add(new Link("1M", 217581));
+        links.add(new Link("2M", 217583));
+        links.add(new Link("3M", 217585));
+        links.add(new Link("4M", 217587));
+        links.add(new Link("5M", 217589));
+        links.add(new Link("6M", 217591));
+        links.add(new Link("7M", 217593));
+        links.add(new Link("8M", 217595));
+        links.add(new Link("9M", 217597));
+        links.add(new Link("10M", 217599));
+        links.add(new Link("11M", 217601));
+        links.add(new Link("1Y", 217603));
+        links.add(new Link("15M", 217605));
+        links.add(new Link("18M", 217607));
+        links.add(new Link("21M", 217609));
+        links.add(new Link("2Y", 217611));
+        links.add(new Link("3Y", 217613));
+        links.add(new Link("4Y", 217615));
+        links.add(new Link("5Y", 217617));
+        links.add(new Link("6Y", 217619));
+        links.add(new Link("7Y", 217621));
+        links.add(new Link("8Y", 217623));
+        links.add(new Link("9Y", 217625));
+        links.add(new Link("10Y", 217627));
+        links.add(new Link("12Y", 217629));
+        links.add(new Link("15Y", 217631));
+        links.add(new Link("20Y", 217633));
+        links.add(new Link("25Y", 217635));
+        links.add(new Link("30Y", 217637));
+        links.add(new Link("40Y", 217639));
+        links.add(new Link("50Y", 217641));
+        links.add(new Link("60Y", 217643));
+        mapLinks.put("EUR", links);
     }
 }
