@@ -41,6 +41,7 @@ import org.softcaster.master_data_mgr.views.IssuerPanel;
 import org.softcaster.master_data_mgr.views.MarketQuoteDefinitionPanel;
 import org.softcaster.master_data_mgr.views.MmFuturePanel;
 import org.softcaster.master_data_mgr.views.OptionPanel;
+import org.softcaster.master_data_mgr.views.OptionProductPanel;
 import org.softcaster.master_data_mgr.views.PortfolioPanel;
 import org.softcaster.master_data_mgr.views.PositionPanel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -163,6 +164,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case ISSUER -> {
                             cl.show(mainPanel, AppCard.ISSUER_CARD.name());
                             currentCard = AppCard.ISSUER_CARD;
+                        }
+                        case OPTION_PRODUCT -> {
+                            cl.show(mainPanel, AppCard.OPTION_PRODUCT_CARD.name());
+                            currentCard = AppCard.OPTION_PRODUCT_CARD;
                         }
                         case FX_FUTURE_OPTION -> {
                             cl.show(mainPanel, AppCard.FX_FUTURE_OPTION_CARD.name());
@@ -483,6 +488,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         cardMap.put(AppCard.EXT_DELIVERY_FUTURE_CARD, extDeliveryFuturePanel);
 
         // opzioni: un pannello per ramo (su future / su strumento secco) e famiglia (asset class della testata)
+        JPanel optionProductPanel = new OptionProductPanel(masterDataFacade);
+        cardMap.put(AppCard.OPTION_PRODUCT_CARD, optionProductPanel);
+
         JPanel fxFutureOptionPanel = new OptionPanel(masterDataFacade, "Fx Future Option Master Data",
                 OptionPanel.Branch.FUTURE, List.of("FFO"));
         cardMap.put(AppCard.FX_FUTURE_OPTION_CARD, fxFutureOptionPanel);
@@ -516,6 +524,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(issuerPanel, AppCard.ISSUER_CARD.name());
         mainPanel.add(cmdFuturePanel, AppCard.CMD_FUTURE_CARD.name());
         mainPanel.add(extDeliveryFuturePanel, AppCard.EXT_DELIVERY_FUTURE_CARD.name());
+        mainPanel.add(optionProductPanel, AppCard.OPTION_PRODUCT_CARD.name());
         mainPanel.add(fxFutureOptionPanel, AppCard.FX_FUTURE_OPTION_CARD.name());
         mainPanel.add(bondFutureOptionPanel, AppCard.BOND_FUTURE_OPTION_CARD.name());
         mainPanel.add(fxOptionPanel, AppCard.FX_OPTION_CARD.name());

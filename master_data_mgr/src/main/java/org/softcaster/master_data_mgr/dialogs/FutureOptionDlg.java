@@ -7,8 +7,6 @@ package org.softcaster.master_data_mgr.dialogs;
 import java.awt.Component;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,19 +40,16 @@ import org.softcaster.master_data_mgr.models.beans.OptionBean;
  * (tab Product). Codice e ISIN della serie seguono la convenzione CME
  * (cmeSeriesCode) e non sono modificabili.
  *
- * Come per i future, il codice della testata individua la testata: se esiste
- * se ne caricano e aggiornano i dati, altrimenti viene creata. Il sottostante
- * della serie e' una scadenza del future della testata (Underlying Future)
- * oppure, senza future, uno strumento secco che diventa il sottostante fisso
- * della testata.
+ * Come per i future, la testata si sceglie dalla combo Product e i suoi dati
+ * sono in sola lettura: si creano e modificano nel pannello Option Products
+ * (OptionProductDlg). Il sottostante della serie e' una scadenza del future
+ * della testata (Underlying Future).
  */
 public class FutureOptionDlg extends javax.swing.JDialog {
 
 
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
-    // in inserimento anche l'ora a una cifra (9:00)
-    private static final DateTimeFormatter TIME_INPUT_FORMAT = DateTimeFormatter.ofPattern("H:mm");
 
     private OptionBean bean = null;
     private MasterDataFacade masterDataFacade = null;
@@ -119,7 +114,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        txtProductCode = new javax.swing.JTextField();
+        cbProduct = new javax.swing.JComboBox<>();
         txtProductDescription = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
@@ -167,7 +162,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         jLabel1.setText("Code");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -177,7 +172,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         jLabel2.setText("Description");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -187,7 +182,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -195,7 +190,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         fieldPanel.add(txtCode, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -205,7 +200,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         jLabel3.setText("Option Type");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -215,7 +210,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         jLabel4.setText("Strike");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -225,7 +220,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         jLabel5.setText("Expiry Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -239,7 +234,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -254,7 +249,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -269,7 +264,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -279,7 +274,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         jLabel7.setText("ISIN");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -289,7 +284,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         jLabel8.setText("Issue Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -298,7 +293,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -312,7 +307,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -322,7 +317,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         jLabel6.setText("Underlying");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -332,7 +327,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -341,7 +336,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         fieldPanel.add(cbUnderlying, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         fieldPanel.add(filler1, gridBagConstraints);
@@ -350,7 +345,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         productPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
         productPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel9.setText("Product Code");
+        jLabel9.setText("Product");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -358,7 +353,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        productPanel.add(jLabel9, gridBagConstraints);
+        fieldPanel.add(jLabel9, gridBagConstraints);
 
         jLabel10.setText("Product Description");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -370,9 +365,9 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         productPanel.add(jLabel10, gridBagConstraints);
 
-        txtProductCode.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                txtProductCodeFocusLost(evt);
+        cbProduct.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbProductActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -382,7 +377,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        productPanel.add(txtProductCode, gridBagConstraints);
+        fieldPanel.add(cbProduct, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -803,14 +798,13 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         DialogHelper.textFieldDateFocusLost(txtIssueDate);
     }//GEN-LAST:event_txtIssueDateFocusLost
 
-    private void txtProductCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtProductCodeFocusLost
-        // testata esistente: se ne caricano i dati (solo in inserimento)
-        if (isInsert) {
-            masterDataFacade.getOptionProductDAO().findByCode(txtProductCode.getText().trim(), FutureOptionProduct.class)
-                    .ifPresent(this::showProduct);
+    private void cbProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbProductActionPerformed
+        // testata scelta: se ne mostrano i dati (in sola lettura)
+        if (!loading && cbProduct.getSelectedItem() != null) {
+            showProduct((FutureOptionProduct) cbProduct.getSelectedItem());
+            refreshCode();
         }
-        refreshCode();
-    }//GEN-LAST:event_txtProductCodeFocusLost
+    }//GEN-LAST:event_cbProductActionPerformed
 
     private void cbFutureProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFutureProductActionPerformed
         if (!loading) {
@@ -878,7 +872,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
     private javax.swing.Box.Filler filler1;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JTextField txtProductCode;
+    private javax.swing.JComboBox<FutureOptionProduct> cbProduct;
     private javax.swing.JTextField txtProductDescription;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -936,11 +930,29 @@ public class FutureOptionDlg extends javax.swing.JDialog {
             }
         });
 
+        // testate della famiglia del pannello, gestite dal pannello Option Products
+        cbProduct.setModel(new DefaultComboBoxModel<>(masterDataFacade.getOptionProductDAO().findAll(FutureOptionProduct.class)
+                .stream()
+                .filter(p -> p.getAssetClass() != null && assetClasses.contains(p.getAssetClass().getCode()))
+                .toArray(FutureOptionProduct[]::new)));
+        cbProduct.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+                FutureOptionProduct p = (FutureOptionProduct) value;
+                return super.getListCellRendererComponent(list, p == null ? "" : p.getCode() + " - " + p.getDescription(),
+                        index, isSelected, cellHasFocus);
+            }
+        });
+        setProductReadOnly();
+
         if (bean != null) {
             isInsert = false;
             FutureOptionMasterData omd = (FutureOptionMasterData) bean.getOptionMasterData();
+            selectProduct(omd.getProduct());
             showProduct(omd.getProduct());
-            txtProductCode.setEditable(false);
+            // la serie non cambia testata: codice e ISIN ne dipendono
+            cbProduct.setEnabled(false);
             txtCode.setText(omd.getCode());
             txtDescription.setText(omd.getDescription());
             cbOptionType.setSelectedItem(omd.getOptionType());
@@ -949,11 +961,10 @@ public class FutureOptionDlg extends javax.swing.JDialog {
             txtIssueDate.setText(new Date(omd.getIssueDate()).toString());
             txtIsin.setText(omd.getIsin());
             selectUnderlying(omd.getUnderlying());
+        } else if (cbProduct.getItemCount() > 0) {
+            showProduct((FutureOptionProduct) cbProduct.getSelectedItem());
         } else {
-            txtMultiplier.setText(Converter.fromDouble(1.));
-            txtBusinessDays.setText("2");
-            setUpFutureProductCombo();
-            setUpUnderlyingCombo();
+            cbProduct.setToolTipText("No option product for " + String.join(", ", assetClasses) + ": create it in Option Products");
         }
         loading = false;
         // codice e ISIN calcolati da testata, scadenza, tipo e strike
@@ -961,15 +972,38 @@ public class FutureOptionDlg extends javax.swing.JDialog {
         txtIsin.setEditable(false);
         refreshCode();
 
-        // Aggiungo i campi alla lista di validazione (codice e ISIN calcolati)
-        fieldsToValidate = Arrays.asList(txtStrike, txtExpiryDate, txtIssueDate, txtProductCode,
-                txtContractValue, txtTickSize, txtMultiplier, txtBusinessDays);
+        // Aggiungo i campi alla lista di validazione (codice e ISIN calcolati, testata dalla combo)
+        fieldsToValidate = Arrays.asList(txtStrike, txtExpiryDate, txtIssueDate);
     }
+
+    /**
+     * I dati della testata si modificano solo dal pannello Option Products:
+     * qui sono in sola lettura, come nelle finestre delle scadenze dei future.
+     */
+    private void setProductReadOnly() {
+        for (javax.swing.JTextField f : List.of(txtProductDescription, txtContractValue, txtTickSize, txtMultiplier,
+                txtInitMargin, txtMaintMargin, txtBusinessDays, txtExpiryTime, txtTimeZone)) {
+            f.setEditable(false);
+        }
+        for (javax.swing.JComboBox<?> c : List.of(cbAssetClass, cbCurrency, cbFutureProduct, cbExerciseStyle,
+                cbPremiumStyle, cbSettlementType)) {
+            c.setEnabled(false);
+        }
+    }
+
+    private void selectProduct(FutureOptionProduct p) {
+        for (int i = 0; i < cbProduct.getItemCount(); i++) {
+            if (cbProduct.getItemAt(i).getIdOptionProduct().equals(p.getIdOptionProduct())) {
+                cbProduct.setSelectedIndex(i);
+                return;
+            }
+        }
+    }
+
     /**
      * Dati della testata nel tab Product.
      */
     private void showProduct(FutureOptionProduct p) {
-        txtProductCode.setText(p.getCode());
         txtProductDescription.setText(p.getDescription());
         selectByCode(cbAssetClass, p.getAssetClass() == null ? null : p.getAssetClass().getCode());
         cbCurrency.setSelectedItem(p.getCurrency());
@@ -1016,7 +1050,8 @@ public class FutureOptionDlg extends javax.swing.JDialog {
      */
     private Optional<String> seriesCode() {
         try {
-            String productCode = txtProductCode.getText().trim();
+            FutureOptionProduct product = (FutureOptionProduct) cbProduct.getSelectedItem();
+            String productCode = product == null ? "" : product.getCode();
             if (productCode.isEmpty() || txtExpiryDate.getText().isBlank() || txtStrike.getText().isBlank()) {
                 return Optional.empty();
             }
@@ -1120,59 +1155,23 @@ public class FutureOptionDlg extends javax.swing.JDialog {
      */
     private String saveBean() {
         try {
-            AssetClass assetClass = (AssetClass) cbAssetClass.getSelectedItem();
+            // testata scelta dalla combo: si gestisce nel pannello Option Products
+            FutureOptionProduct product = (FutureOptionProduct) cbProduct.getSelectedItem();
             FutureMasterData underlying = (FutureMasterData) cbUnderlying.getSelectedItem();
-            FutureProduct futureProduct = (FutureProduct) cbFutureProduct.getSelectedItem();
-            if (assetClass == null) {
-                return "Asset class mancante: inserire in asset_class la famiglia di opzioni su future ("
-                        + String.join(", ", assetClasses) + ")";
+            if (product == null) {
+                return "Missing product: create it in Option Products";
             }
-            if (futureProduct == null) {
-                return "Future sottostante mancante";
+            if (product.getFutureProduct() == null) {
+                return "Product " + product.getCode() + " has no underlying future";
             }
             if (underlying == null) {
-                return "Sottostante mancante";
+                return "Missing underlying";
             }
             LocalDate expiry = new Date(txtExpiryDate.getText()).sqlDate().toLocalDate();
             LocalDate issue = new Date(txtIssueDate.getText()).sqlDate().toLocalDate();
             if (issue.isAfter(expiry)) {
-                return "La data di emissione e' successiva alla scadenza";
+                return "The issue date is after the expiry";
             }
-            LocalTime expiryTime = txtExpiryTime.getText().isBlank() ? null : LocalTime.parse(txtExpiryTime.getText().trim(), TIME_INPUT_FORMAT);
-            String zone = txtTimeZone.getText().trim();
-            if (!zone.isEmpty()) {
-                ZoneId.of(zone); // fuso IANA valido (America/New_York, Europe/Rome)
-            }
-
-            // -- testata: trovata per codice o creata
-            String productCode = txtProductCode.getText().trim();
-            if (masterDataFacade.getOptionProductDAO().findByCode(productCode).isPresent()
-                    && masterDataFacade.getOptionProductDAO().findByCode(productCode, FutureOptionProduct.class).isEmpty()) {
-                return "La testata " + productCode + " esiste gia' come opzione su strumento secco";
-            }
-            FutureOptionProduct product = masterDataFacade.getOptionProductDAO()
-                    .findByCode(productCode, FutureOptionProduct.class).orElseGet(FutureOptionProduct::new);
-            product.setCode(productCode);
-            product.setDescription(txtProductDescription.getText().isBlank() ? productCode : txtProductDescription.getText());
-            if (product.getExchangeContractCode() == null || product.getExchangeContractCode().isBlank()) {
-                product.setExchangeContractCode(productCode);
-            }
-            product.setAssetClass(assetClass);
-            product.setCurrency((Currency) cbCurrency.getSelectedItem());
-            product.setExerciseStyle((ExerciseStyle) cbExerciseStyle.getSelectedItem());
-            product.setPremiumStyle((PremiumStyle) cbPremiumStyle.getSelectedItem());
-            product.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
-            product.setContractValue(Converter.toDouble(txtContractValue.getText(), false));
-            product.setTickSize(Converter.toDouble(txtTickSize.getText(), false));
-            product.setMultiplier(Converter.toDouble(txtMultiplier.getText(), false));
-            product.setInitialMargin(txtInitMargin.getText().isBlank() ? null : Converter.toDouble(txtInitMargin.getText(), false));
-            product.setMaintenanceMargin(txtMaintMargin.getText().isBlank() ? null : Converter.toDouble(txtMaintMargin.getText(), false));
-            product.setBusinessDays(Integer.valueOf(txtBusinessDays.getText().trim()));
-            product.setExpiryTime(expiryTime);
-            product.setExpiryTimeZone(zone.isEmpty() ? null : zone);
-            product.setFutureProduct(futureProduct);
-            product = masterDataFacade.getOptionProductDAO().saveOrUpdate(product);
-
             // -- serie
             FutureOptionMasterData omd = isInsert ? FutureOptionMasterData.of(product)
                     : (FutureOptionMasterData) bean.getOptionMasterData();
@@ -1188,7 +1187,7 @@ public class FutureOptionDlg extends javax.swing.JDialog {
             String code = cmeSeriesCode(product.getCode(), expiry, type, strike);
             MasterData sameCode = masterDataFacade.getMasterDataDAO().findByCode(code);
             if (sameCode != null && (isInsert || !sameCode.getIdMasterData().equals(omd.getIdMasterData()))) {
-                return "Codice " + code + " gia' presente in anagrafica";
+                return "Code " + code + " already exists in master data";
             }
             omd.setCode(code);
             omd.setIsin(code);

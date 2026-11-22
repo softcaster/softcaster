@@ -127,7 +127,7 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Bond Future");
+        setTitle("Power Future");
         getContentPane().setLayout(new java.awt.BorderLayout(10, 10));
 
         mainPanel.setLayout(new java.awt.GridBagLayout());

@@ -43,6 +43,7 @@ public class TreeModel {
 
         // opzioni: un ramo per le opzioni su future e uno per quelle su strumento secco
         DefaultMutableTreeNode options = new DefaultMutableTreeNode("Options");
+        options.add(new DefaultMutableTreeNode(new MasterDataNode("Option Products", AppTreeItem.OPTION_PRODUCT)));
         DefaultMutableTreeNode futureOptions = new DefaultMutableTreeNode("Future Options");
         futureOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Future Options", AppTreeItem.FX_FUTURE_OPTION)));
         futureOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Future Options", AppTreeItem.BOND_FUTURE_OPTION)));

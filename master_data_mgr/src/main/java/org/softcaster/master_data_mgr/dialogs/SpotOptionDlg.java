@@ -8,8 +8,6 @@ import java.awt.Component;
 import java.text.ParseException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,14 +37,14 @@ import org.softcaster.master_data_mgr.models.beans.OptionBean;
  * (tab Product): opzioni Eurex sul cambio, opzioni OTC.
  *
  * Codice e ISIN sono liberi (nessuna convenzione di borsa). Il sottostante e'
- * del tipo della famiglia (FXO: coppia di cambi, BDO: titolo); con "Fixed on
- * product" diventa il sottostante fisso della testata, per tutte le serie.
+ * del tipo della famiglia (FXO: coppia di cambi, BDO: titolo). La testata si
+ * sceglie dalla combo Product e i suoi dati sono in sola lettura: si creano e
+ * modificano nel pannello Option Products (OptionProductDlg), compreso il
+ * sottostante fisso per tutte le serie ("Fixed on product").
  */
 public class SpotOptionDlg extends javax.swing.JDialog {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
-    // in inserimento anche l'ora a una cifra (9:00)
-    private static final DateTimeFormatter TIME_INPUT_FORMAT = DateTimeFormatter.ofPattern("H:mm");
 
     private OptionBean bean = null;
     private MasterDataFacade masterDataFacade = null;
@@ -113,7 +111,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        txtProductCode = new javax.swing.JTextField();
+        cbProduct = new javax.swing.JComboBox<>();
         txtProductDescription = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
@@ -161,7 +159,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         jLabel1.setText("Code");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -171,7 +169,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         jLabel2.setText("Description");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -181,7 +179,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -189,7 +187,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         fieldPanel.add(txtCode, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -199,7 +197,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         jLabel3.setText("Option Type");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -209,7 +207,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         jLabel4.setText("Strike");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -219,7 +217,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         jLabel5.setText("Expiry Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -228,7 +226,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -242,7 +240,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -257,7 +255,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -267,7 +265,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         jLabel7.setText("ISIN");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -277,7 +275,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         jLabel8.setText("Issue Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -287,7 +285,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         jLabel25.setText("Delivery Date");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -296,7 +294,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -310,7 +308,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -325,7 +323,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -335,7 +333,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         jLabel6.setText("Underlying");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -345,7 +343,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -354,7 +352,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         fieldPanel.add(cbUnderlying, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         fieldPanel.add(filler1, gridBagConstraints);
@@ -363,7 +361,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         productPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 1, 1, 1));
         productPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel9.setText("Product Code");
+        jLabel9.setText("Product");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -371,7 +369,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        productPanel.add(jLabel9, gridBagConstraints);
+        fieldPanel.add(jLabel9, gridBagConstraints);
 
         jLabel10.setText("Product Description");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -383,9 +381,9 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         productPanel.add(jLabel10, gridBagConstraints);
 
-        txtProductCode.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                txtProductCodeFocusLost(evt);
+        cbProduct.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbProductActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -395,7 +393,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        productPanel.add(txtProductCode, gridBagConstraints);
+        fieldPanel.add(cbProduct, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -809,14 +807,12 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         DialogHelper.textFieldDateFocusLost(txtDeliveryDate);
     }//GEN-LAST:event_txtDeliveryDateFocusLost
 
-    private void txtProductCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtProductCodeFocusLost
-        // testata esistente: se ne caricano i dati (solo in inserimento)
-        if (isInsert) {
-            masterDataFacade.getOptionProductDAO().findByCode(txtProductCode.getText().trim(), SpotOptionProduct.class)
-                    .ifPresent(this::showProduct);
+    private void cbProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbProductActionPerformed
+        // testata scelta: se ne mostrano i dati (in sola lettura)
+        if (!loading && cbProduct.getSelectedItem() != null) {
+            showProduct((SpotOptionProduct) cbProduct.getSelectedItem());
         }
-    }//GEN-LAST:event_txtProductCodeFocusLost
-
+    }//GEN-LAST:event_cbProductActionPerformed
     private void cbAssetClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAssetClassActionPerformed
         if (!loading) {
             setUpUnderlyingCombo();
@@ -878,7 +874,7 @@ public class SpotOptionDlg extends javax.swing.JDialog {
     private javax.swing.Box.Filler filler1;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JTextField txtProductCode;
+    private javax.swing.JComboBox<SpotOptionProduct> cbProduct;
     private javax.swing.JTextField txtProductDescription;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -927,11 +923,29 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         cbAssetClass.setRenderer(new CodeRenderer());
         cbUnderlying.setRenderer(new CodeRenderer());
 
+        // testate della famiglia del pannello, gestite dal pannello Option Products
+        cbProduct.setModel(new DefaultComboBoxModel<>(masterDataFacade.getOptionProductDAO().findAll(SpotOptionProduct.class)
+                .stream()
+                .filter(p -> p.getAssetClass() != null && assetClasses.contains(p.getAssetClass().getCode()))
+                .toArray(SpotOptionProduct[]::new)));
+        cbProduct.setRenderer(new javax.swing.DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+                SpotOptionProduct p = (SpotOptionProduct) value;
+                return super.getListCellRendererComponent(list, p == null ? "" : p.getCode() + " - " + p.getDescription(),
+                        index, isSelected, cellHasFocus);
+            }
+        });
+        setProductReadOnly();
+
         if (bean != null) {
             isInsert = false;
             SpotOptionMasterData omd = (SpotOptionMasterData) bean.getOptionMasterData();
+            selectProduct(omd.getProduct());
             showProduct(omd.getProduct());
-            txtProductCode.setEditable(false);
+            // la serie non cambia testata
+            cbProduct.setEnabled(false);
             txtCode.setText(omd.getCode());
             txtDescription.setText(omd.getDescription());
             cbOptionType.setSelectedItem(omd.getOptionType());
@@ -941,25 +955,49 @@ public class SpotOptionDlg extends javax.swing.JDialog {
             txtDeliveryDate.setText(omd.getDeliveryDate() == null ? "" : new Date(omd.getDeliveryDate()).toString());
             txtIsin.setText(omd.getIsin() == null ? "" : omd.getIsin());
             selectUnderlying(omd.getUnderlying());
+        } else if (cbProduct.getItemCount() > 0) {
+            showProduct((SpotOptionProduct) cbProduct.getSelectedItem());
         } else {
-            txtMultiplier.setText(Converter.fromDouble(1.));
-            txtBusinessDays.setText("2");
+            // nessuna testata: i sottostanti della famiglia del pannello, il salvataggio chiedera' la testata
             setUpUnderlyingCombo();
+            cbProduct.setToolTipText("No option product for " + String.join(", ", assetClasses) + ": create it in Option Products");
         }
         loading = false;
 
-        // Aggiungo i campi alla lista di validazione (ISIN e consegna facoltativi)
-        fieldsToValidate = Arrays.asList(txtCode, txtStrike, txtExpiryDate, txtIssueDate, txtProductCode,
-                txtContractValue, txtTickSize, txtMultiplier, txtBusinessDays);
+        // Aggiungo i campi alla lista di validazione (ISIN e consegna facoltativi, testata dalla combo)
+        fieldsToValidate = Arrays.asList(txtCode, txtStrike, txtExpiryDate, txtIssueDate);
     }
 
+    /**
+     * I dati della testata si modificano solo dal pannello Option Products:
+     * qui sono in sola lettura. Il sottostante fisso della testata, se c'e',
+     * vale anche per la serie.
+     */
+    private void setProductReadOnly() {
+        for (javax.swing.JTextField f : List.of(txtProductDescription, txtContractValue, txtTickSize, txtMultiplier,
+                txtInitMargin, txtMaintMargin, txtBusinessDays, txtExpiryTime, txtTimeZone)) {
+            f.setEditable(false);
+        }
+        for (javax.swing.JComponent c : List.of(cbAssetClass, cbCurrency, cbExerciseStyle, cbPremiumStyle,
+                cbSettlementType, chkFixedUnderlying)) {
+            c.setEnabled(false);
+        }
+    }
+
+    private void selectProduct(SpotOptionProduct p) {
+        for (int i = 0; i < cbProduct.getItemCount(); i++) {
+            if (cbProduct.getItemAt(i).getIdOptionProduct().equals(p.getIdOptionProduct())) {
+                cbProduct.setSelectedIndex(i);
+                return;
+            }
+        }
+    }
     /**
      * Dati della testata nel tab Product.
      */
     private void showProduct(SpotOptionProduct p) {
         boolean wasLoading = loading;
         loading = true;
-        txtProductCode.setText(p.getCode());
         txtProductDescription.setText(p.getDescription());
         selectByCode(cbAssetClass, p.getAssetClass() == null ? null : p.getAssetClass().getCode());
         cbCurrency.setSelectedItem(p.getCurrency());
@@ -979,6 +1017,8 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         if (p.getUnderlying() != null) {
             selectUnderlying(p.getUnderlying());
         }
+        // sottostante fisso della testata: la serie non lo sceglie
+        cbUnderlying.setEnabled(p.getUnderlying() == null || isInsert);
         loading = wasLoading;
     }
 
@@ -1067,71 +1107,34 @@ public class SpotOptionDlg extends javax.swing.JDialog {
      */
     private String saveBean() {
         try {
-            AssetClass assetClass = (AssetClass) cbAssetClass.getSelectedItem();
+            // testata scelta dalla combo: si gestisce nel pannello Option Products
+            SpotOptionProduct product = (SpotOptionProduct) cbProduct.getSelectedItem();
             MasterData underlying = (MasterData) cbUnderlying.getSelectedItem();
-            if (assetClass == null) {
-                return "Asset class mancante: inserire in asset_class la famiglia di opzioni ("
-                        + String.join(", ", assetClasses) + ")";
+            if (product == null) {
+                return "Missing product: create it in Option Products";
             }
             if (underlying == null) {
-                return "Sottostante mancante";
-            }
-            LocalDate expiry = new Date(txtExpiryDate.getText()).sqlDate().toLocalDate();
+                return "Missing underlying";
+            }            LocalDate expiry = new Date(txtExpiryDate.getText()).sqlDate().toLocalDate();
             LocalDate issue = new Date(txtIssueDate.getText()).sqlDate().toLocalDate();
             LocalDate delivery = txtDeliveryDate.getText().isBlank() ? null : new Date(txtDeliveryDate.getText()).sqlDate().toLocalDate();
             if (issue.isAfter(expiry)) {
-                return "La data di emissione e' successiva alla scadenza";
+                return "The issue date is after the expiry";
             }
             if (delivery != null && delivery.isBefore(expiry)) {
-                return "La data di consegna e' precedente alla scadenza";
+                return "The delivery date is before the expiry";
             }
-            LocalTime expiryTime = txtExpiryTime.getText().isBlank() ? null : LocalTime.parse(txtExpiryTime.getText().trim(), TIME_INPUT_FORMAT);
-            String zone = txtTimeZone.getText().trim();
-            if (!zone.isEmpty()) {
-                ZoneId.of(zone); // fuso IANA valido (America/New_York, Europe/Berlin)
-            }
-
-            // -- testata: trovata per codice o creata
-            String productCode = txtProductCode.getText().trim();
-            if (masterDataFacade.getOptionProductDAO().findByCode(productCode).isPresent()
-                    && masterDataFacade.getOptionProductDAO().findByCode(productCode, SpotOptionProduct.class).isEmpty()) {
-                return "La testata " + productCode + " esiste gia' come opzione su future";
-            }
-            SpotOptionProduct product = masterDataFacade.getOptionProductDAO()
-                    .findByCode(productCode, SpotOptionProduct.class).orElseGet(SpotOptionProduct::new);
             MasterData fixed = product.getUnderlying();
             if (fixed != null && !fixed.getIdMasterData().equals(underlying.getIdMasterData())) {
-                return "La testata " + productCode + " ha come sottostante fisso " + fixed.getCode();
+                return "Product " + product.getCode() + " has the fixed underlying " + fixed.getCode();
             }
-            product.setCode(productCode);
-            product.setDescription(txtProductDescription.getText().isBlank() ? productCode : txtProductDescription.getText());
-            if (product.getExchangeContractCode() == null || product.getExchangeContractCode().isBlank()) {
-                product.setExchangeContractCode(productCode);
-            }
-            product.setAssetClass(assetClass);
-            product.setCurrency((Currency) cbCurrency.getSelectedItem());
-            product.setExerciseStyle((ExerciseStyle) cbExerciseStyle.getSelectedItem());
-            product.setPremiumStyle((PremiumStyle) cbPremiumStyle.getSelectedItem());
-            product.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
-            product.setContractValue(Converter.toDouble(txtContractValue.getText(), false));
-            product.setTickSize(Converter.toDouble(txtTickSize.getText(), false));
-            product.setMultiplier(Converter.toDouble(txtMultiplier.getText(), false));
-            product.setInitialMargin(txtInitMargin.getText().isBlank() ? null : Converter.toDouble(txtInitMargin.getText(), false));
-            product.setMaintenanceMargin(txtMaintMargin.getText().isBlank() ? null : Converter.toDouble(txtMaintMargin.getText(), false));
-            product.setBusinessDays(Integer.valueOf(txtBusinessDays.getText().trim()));
-            product.setExpiryTime(expiryTime);
-            product.setExpiryTimeZone(zone.isEmpty() ? null : zone);
-            // sottostante fisso: vale per tutte le serie della testata
-            product.setUnderlying(chkFixedUnderlying.isSelected() ? underlying : null);
-            product = masterDataFacade.getOptionProductDAO().saveOrUpdate(product);
-
             // -- serie: codice e ISIN liberi
             String code = txtCode.getText().trim();
             SpotOptionMasterData omd = isInsert ? SpotOptionMasterData.of(product)
                     : (SpotOptionMasterData) bean.getOptionMasterData();
             MasterData sameCode = masterDataFacade.getMasterDataDAO().findByCode(code);
             if (sameCode != null && (isInsert || !sameCode.getIdMasterData().equals(omd.getIdMasterData()))) {
-                return "Codice " + code + " gia' presente in anagrafica";
+                return "Code " + code + " already exists in master data";
             }
             OptionType type = (OptionType) cbOptionType.getSelectedItem();
             double strike = Converter.toDouble(txtStrike.getText(), false);
