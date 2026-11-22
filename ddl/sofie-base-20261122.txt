@@ -1,0 +1,24 @@
+Base di test sofie-base-20261122.backup (pg_dump formato custom)
+
+Stato
+- nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
+- calendario: official_date = last_official_date = 2026-11-19, next_business_date vuota, OPEN
+- chiusura: 12 step, compreso MATURITY
+- gerarchia delle posizioni: portfolio_master_data eliminata, i portafogli sono nodi di
+  position_master_data (parent, position_type, is_postable; lookup position_type, enum PositionType)
+    PTUSD01 (4) / POSUSD01 (1)
+    PTCHFO1 (6) / POSCHF01 (2)
+    PTEUR01 (7) / POSEUR01 (3)
+    USDT    (5)  senza posizioni: emittente creato per errore come portafoglio (bug di IssuerPanel)
+  trigger: padre non postable, niente cicli, position_detail e financial_txn solo su posizioni postable
+- anagrafiche nuove rispetto a sofie-base-20261121:
+  US912810TV08 (XRB, UST 4.75% 15/11/2053), cambi USDCHF e CHFUSD (FSP, CHFUSD senza descrizione),
+  future MSFZ6 (FFU, Micro CHF/USD DEC 2026); quotazioni per USDCHF, CHFUSD e MSFZ6
+- curve, superficie di volatilita', opzioni OTC e piano dei conti come in sofie-base-20261121
+
+Schema e dati di sistema coincidono con sofie_schema.sql, sofie_lookup.sql e
+sofie_config.sql del 2026-11-22. Sostituisce sofie-base-20261121 (portafogli in
+portfolio_master_data).
+
+Ripristino: ddl\restore_sofie_base.ps1 (usa l'ultimo sofie-base-*.backup)
+Una migrazione successiva va applicata dopo il ripristino, oppure va rifatto il backup.
