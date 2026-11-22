@@ -9,8 +9,8 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
-import org.softcaster.core.data.PortfolioMasterData;
 import org.softcaster.core.data.PositionMasterData;
+import org.softcaster.engine.enums.PositionType;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.PositionBean;
 
@@ -137,7 +137,7 @@ public class PositionDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         additionalPanel.add(txtDescription, gridBagConstraints);
 
-        jLabel13.setText("Portfolio");
+        jLabel13.setText("Parent");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -245,7 +245,7 @@ public class PositionDlg extends javax.swing.JDialog {
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<Currency> cbCurrency;
-    private javax.swing.JComboBox<PortfolioMasterData> cbPortfolio;
+    private javax.swing.JComboBox<PositionMasterData> cbPortfolio;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
     private javax.swing.JLabel jLabel10;
@@ -267,7 +267,7 @@ public class PositionDlg extends javax.swing.JDialog {
             txtCode.setText(bean.getPositionMasterData().getCode());
             txtDescription.setText(bean.getPositionMasterData().getDescription());
             cbCurrency.setSelectedItem(bean.getPositionMasterData().getCurrency());
-            cbPortfolio.setSelectedItem(bean.getPositionMasterData().getPortfolio());
+            MDDialogHelper.selectPosition(cbPortfolio, bean.getPositionMasterData().getParent());
         }
 
         fieldsToValidate = Arrays.asList(txtCode, txtDescription);
@@ -282,10 +282,9 @@ public class PositionDlg extends javax.swing.JDialog {
     }
     
     private void setUPortfolioCombo() {
-        List<PortfolioMasterData> portfolios = masterDataFacade.getPortfolioMasterDataDAO().findAll();
-
-        // 2. Crea il modello partendo dalla lista
-        DefaultComboBoxModel<PortfolioMasterData> model = new DefaultComboBoxModel<>(portfolios.toArray(PortfolioMasterData[]::new));
+        // padri possibili: i nodi non postable della gerarchia
+        List<PositionMasterData> nodes = masterDataFacade.getPositionMasterDataDAO().findHierarchyNodes();
+        DefaultComboBoxModel<PositionMasterData> model = new DefaultComboBoxModel<>(nodes.toArray(PositionMasterData[]::new));
         cbPortfolio.setModel(model);
     }
 
@@ -309,9 +308,13 @@ public class PositionDlg extends javax.swing.JDialog {
             pmd.setCode(txtCode.getText());
             pmd.setDescription(txtDescription.getText());
             pmd.setCurrency((Currency) cbCurrency.getSelectedItem());
-            pmd.setPortfolio((PortfolioMasterData) cbPortfolio.getSelectedItem());
+            pmd.setPositionType(PositionType.POSITION);
+            pmd.setParent((PositionMasterData) cbPortfolio.getSelectedItem());
             masterDataFacade.getPositionMasterDataDAO().saveOrUpdate(pmd);
             return true;
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Validation Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            return false;
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return false;

@@ -4,45 +4,47 @@
  */
 package org.softcaster.master_data_mgr.models.beans;
 
-import org.softcaster.core.data.PortfolioMasterData;
+import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.master_data_mgr.models.IMasterDataModel;
 
 /**
+ * Nodo non postable della gerarchia delle posizioni (portafoglio, desk, ...).
  *
  * @author ep
  */
 public class PortfolioBean implements IMasterDataModel {
 
-    private final PortfolioMasterData portfolioMasterData;
+    private final PositionMasterData node;
 
-    public PortfolioBean(PortfolioMasterData portfolioMasterData) {
-        this.portfolioMasterData = portfolioMasterData;
+    public PortfolioBean(PositionMasterData node) {
+        this.node = node;
     }
-    
+
     @Override
     public Object getValueAt(int columnIndex) {
         return switch (columnIndex) {
             case 0 ->
-                portfolioMasterData.getCode();
+                node.getCode();
             case 1 ->
-                portfolioMasterData.getDescription();
+                node.getDescription();
             case 2 ->
-                portfolioMasterData.getCurrency().getIsoCode();
-             default ->
+                node.getPositionType().getDescription();
+            case 3 ->
+                node.getParent() == null ? "" : node.getParent().getCode();
+            case 4 ->
+                node.getCurrency().getIsoCode();
+            default ->
                 null;
         };
     }
 
     @Override
     public String[] getColumnNames() {
-        return new String[] {"Code", "Description", "Currency"};
+        return new String[]{"Code", "Description", "Type", "Parent", "Currency"};
     }
 
-    /**
-     * @return the portfolioMasterData
-     */
-    public PortfolioMasterData getPortfolioMasterData() {
-        return portfolioMasterData;
+    public PositionMasterData getNode() {
+        return node;
     }
 
 }

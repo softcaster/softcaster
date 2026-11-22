@@ -174,7 +174,7 @@ public class IssuerPanel extends AbstactMDPanel {
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                 try {
-                    masterDataFacade.getPortfolioMasterDataDAO().delete(bean.getPortfolioMasterData());
+                    masterDataFacade.getPositionMasterDataDAO().delete(bean.getNode());
                     refreshModel(model);
                 } catch (Exception ex) {
                     LoggerMgr.logError(ex.getLocalizedMessage());

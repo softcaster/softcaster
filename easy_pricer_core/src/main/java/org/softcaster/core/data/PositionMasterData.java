@@ -18,7 +18,9 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.softcaster.core.data.converters.BondValuationConverter;
+import org.softcaster.core.data.converters.PositionTypeConverter;
 import org.softcaster.engine.enums.BondValuation;
+import org.softcaster.engine.enums.PositionType;
 
 @Entity
 @Table(name = "position_master_data")
@@ -36,9 +38,19 @@ public class PositionMasterData implements Serializable {
     @JoinColumn(name = "currency", nullable = true)
     private Currency currency;
 
+    // nodo padre nella gerarchia (null per le radici), come gl_accounts.parent
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "portfolio", nullable = true)
-    private PortfolioMasterData portfolio;
+    @JoinColumn(name = "parent", nullable = true)
+    private PositionMasterData parent;
+
+    // livello del nodo; solo POSITION e' postable
+    @Convert(converter = PositionTypeConverter.class)
+    @Column(name = "position_type", nullable = false)
+    private PositionType positionType = PositionType.POSITION;
+
+    // true se il nodo puo' essere valorizzato, cioe' alimentare position_detail
+    @Column(name = "is_postable", nullable = false)
+    private boolean postable = true;
 
     @Column(name = "code")
     private String code;
@@ -150,17 +162,31 @@ public class PositionMasterData implements Serializable {
         return code;
     }
 
-    /**
-     * @return the portfolio
-     */
-    public PortfolioMasterData getPortfolio() {
-        return portfolio;
+    public PositionMasterData getParent() {
+        return parent;
+    }
+
+    public void setParent(PositionMasterData parent) {
+        this.parent = parent;
+    }
+
+    public PositionType getPositionType() {
+        return positionType;
     }
 
     /**
-     * @param portfolio the portfolio to set
+     * Imposta il tipo e allinea is_postable (vincolo ck_position_postable).
      */
-    public void setPortfolio(PortfolioMasterData portfolio) {
-        this.portfolio = portfolio;
+    public void setPositionType(PositionType positionType) {
+        this.positionType = positionType;
+        this.postable = positionType != null && positionType.isPostable();
+    }
+
+    public boolean isPostable() {
+        return postable;
+    }
+
+    public void setPostable(boolean postable) {
+        this.postable = postable;
     }
 }

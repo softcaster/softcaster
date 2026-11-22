@@ -27,7 +27,7 @@ $env:PGPASSWORD = "sofie"
 $configTables = @(
     "calendar", "holiday", "currency", "country", "asset_class", "asset_class_script_mapping",
     "gl_accounts", "gl_account_slots", "account_mapping", "counterparty", "counterparty_role_mapping",
-    "portfolio_master_data", "position_master_data", "descriptors", "system_business_calendar"
+    "position_master_data", "descriptors", "system_business_calendar"
 )
 
 function Invoke-Sql([string]$sql) {

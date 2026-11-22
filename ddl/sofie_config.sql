@@ -1,5 +1,5 @@
 -- ============================================================================
--- Dati di sistema: 15 tabelle
+-- Dati di sistema: 14 tabelle
 -- Generato da ddl/export_schema.ps1: non modificare a mano.
 -- Ordine: sofie_schema.sql, sofie_lookup.sql, sofie_config.sql
 -- ============================================================================
@@ -819,22 +819,16 @@ INSERT INTO public.holiday (id_holiday, calendar, holiday_day, holiday_month, de
 
 
 --
--- Data for Name: portfolio_master_data; Type: TABLE DATA; Schema: public; Owner: -
---
-
-INSERT INTO public.portfolio_master_data (id_portfolio, currency, code, description) VALUES (1, 2, 'PTUSD01', 'Default Portfolio (USD)');
-INSERT INTO public.portfolio_master_data (id_portfolio, currency, code, description) VALUES (2, 2, 'USDT', 'United States Department of the Treasury');
-INSERT INTO public.portfolio_master_data (id_portfolio, currency, code, description) VALUES (3, 4, 'PTCHFO1', 'Default Portfolio (CHF)');
-INSERT INTO public.portfolio_master_data (id_portfolio, currency, code, description) VALUES (4, 1, 'PTEUR01', 'Default Portfolio (EUR)');
-
-
---
 -- Data for Name: position_master_data; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.position_master_data (id_position, portfolio, currency, code, description, fx_rolling, bond_valuation) VALUES (2, 3, 4, 'POSCHF01', 'Default Position (CHF)', false, 1);
-INSERT INTO public.position_master_data (id_position, portfolio, currency, code, description, fx_rolling, bond_valuation) VALUES (1, 1, 2, 'POSUSD01', 'Default Position (USD)', false, 1);
-INSERT INTO public.position_master_data (id_position, portfolio, currency, code, description, fx_rolling, bond_valuation) VALUES (3, 4, 1, 'POSEUR01', 'Default Position (EUR)', false, 1);
+INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (4, 2, 'PTUSD01', 'Default Portfolio (USD)', false, 1, NULL, 4, false);
+INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (5, 2, 'USDT', 'United States Department of the Treasury', false, 1, NULL, 4, false);
+INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (6, 4, 'PTCHFO1', 'Default Portfolio (CHF)', false, 1, NULL, 4, false);
+INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (7, 1, 'PTEUR01', 'Default Portfolio (EUR)', false, 1, NULL, 4, false);
+INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (1, 2, 'POSUSD01', 'Default Position (USD)', false, 1, 4, 6, true);
+INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (2, 4, 'POSCHF01', 'Default Position (CHF)', false, 1, 6, 6, true);
+INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (3, 1, 'POSEUR01', 'Default Position (EUR)', false, 1, 7, 6, true);
 
 
 --
@@ -929,17 +923,10 @@ SELECT pg_catalog.setval('public.holiday_s', 21, true);
 
 
 --
--- Name: portfolio_master_data_s; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public.portfolio_master_data_s', 4, true);
-
-
---
 -- Name: position_master_data_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.position_master_data_s', 3, true);
+SELECT pg_catalog.setval('public.position_master_data_s', 7, true);
 
 
 --

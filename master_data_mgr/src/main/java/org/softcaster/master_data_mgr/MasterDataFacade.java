@@ -22,7 +22,6 @@ import org.softcaster.core.data.MarketQuoteDefinitionDAO;
 import org.softcaster.core.data.MasterDataDAO;
 import org.softcaster.core.data.MmFutureMasterDataDAO;
 import org.softcaster.core.data.OptionProductDAO;
-import org.softcaster.core.data.PortfolioMasterDataDAO;
 import org.softcaster.core.data.PositionMasterDataDAO;
 import org.softcaster.core.data.PowerFutureMasterDataDAO;
 import org.softcaster.core.data.RefRateIndexDAO;
@@ -77,8 +76,6 @@ public class MasterDataFacade {
     private IssuerDAO issuerDAO;
     @Autowired
     private CounterpartyDAO counterpartyDAO;
-    @Autowired
-    private PortfolioMasterDataDAO portfolioMasterDataDAO;
     @Autowired
     private PositionMasterDataDAO positionMasterDataDAO;
 
@@ -198,13 +195,6 @@ public class MasterDataFacade {
      */
     public CountryDAO getCountryDAO() {
         return countryDAO;
-    }
-
-    /**
-     * @return the portfolioMasterDataDAO
-     */
-    public PortfolioMasterDataDAO getPortfolioMasterDataDAO() {
-        return portfolioMasterDataDAO;
     }
 
     /**

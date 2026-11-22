@@ -24,6 +24,67 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: fn_check_position_hierarchy(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.fn_check_position_hierarchy() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    node integer;
+    depth integer := 0;
+BEGIN
+    IF NEW.parent IS NOT NULL THEN
+        IF (SELECT is_postable FROM public.position_master_data WHERE id_position = NEW.parent) THEN
+            RAISE EXCEPTION 'Position %: parent % is postable and cannot have children', NEW.code, NEW.parent;
+        END IF;
+        -- risale l'albero: non deve tornare sul nodo stesso
+        node := NEW.parent;
+        WHILE node IS NOT NULL LOOP
+            IF node = NEW.id_position THEN
+                RAISE EXCEPTION 'Position %: parent % would create a cycle', NEW.code, NEW.parent;
+            END IF;
+            depth := depth + 1;
+            IF depth > 100 THEN
+                RAISE EXCEPTION 'Position %: hierarchy deeper than 100 levels', NEW.code;
+            END IF;
+            SELECT parent INTO node FROM public.position_master_data WHERE id_position = node;
+        END LOOP;
+    END IF;
+
+    IF NEW.is_postable THEN
+        IF EXISTS (SELECT 1 FROM public.position_master_data WHERE parent = NEW.id_position) THEN
+            RAISE EXCEPTION 'Position %: has children and cannot be postable', NEW.code;
+        END IF;
+    ELSE
+        IF EXISTS (SELECT 1 FROM public.position_detail WHERE position_md = NEW.id_position)
+           OR EXISTS (SELECT 1 FROM public.financial_txn WHERE position_md = NEW.id_position) THEN
+            RAISE EXCEPTION 'Position %: has details or transactions and must stay postable', NEW.code;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: fn_check_postable_position(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.fn_check_postable_position() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.position_md IS NOT NULL
+       AND NOT (SELECT is_postable FROM public.position_master_data WHERE id_position = NEW.position_md) THEN
+        RAISE EXCEPTION '%: position % is not postable', TG_TABLE_NAME, NEW.position_md;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: fn_manage_ref_id(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -2060,30 +2121,6 @@ CREATE TABLE public.otc_option_master_data (
 
 
 --
--- Name: portfolio_master_data; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.portfolio_master_data (
-    id_portfolio integer NOT NULL,
-    currency integer NOT NULL,
-    code character varying(25) NOT NULL,
-    description character varying(255) NOT NULL
-);
-
-
---
--- Name: portfolio_master_data_s; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.portfolio_master_data_s
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
 -- Name: position_detail; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2133,12 +2170,16 @@ CREATE SEQUENCE public.position_detail_s
 
 CREATE TABLE public.position_master_data (
     id_position integer NOT NULL,
-    portfolio integer NOT NULL,
     currency integer NOT NULL,
     code character varying(25) NOT NULL,
     description character varying(255) NOT NULL,
     fx_rolling boolean DEFAULT false NOT NULL,
-    bond_valuation integer DEFAULT 1 NOT NULL
+    bond_valuation integer DEFAULT 1 NOT NULL,
+    parent integer,
+    position_type integer DEFAULT 6 NOT NULL,
+    is_postable boolean DEFAULT true NOT NULL,
+    CONSTRAINT ck_position_parent_self CHECK ((parent IS DISTINCT FROM id_position)),
+    CONSTRAINT ck_position_postable CHECK (((position_type = 6) = is_postable))
 );
 
 
@@ -2180,6 +2221,17 @@ CREATE SEQUENCE public.position_txn_links_s
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
+
+
+--
+-- Name: position_type; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.position_type (
+    position_type_id integer NOT NULL,
+    code character varying(25) NOT NULL,
+    description character varying(64) NOT NULL
+);
 
 
 --
@@ -3712,6 +3764,14 @@ ALTER TABLE ONLY public.otc_option_master_data
 
 
 --
+-- Name: position_type pk_position_type; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.position_type
+    ADD CONSTRAINT pk_position_type PRIMARY KEY (position_type_id);
+
+
+--
 -- Name: power_future_master_data pk_power_future_master_data; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3869,14 +3929,6 @@ ALTER TABLE ONLY public.volatility_surface
 
 ALTER TABLE ONLY public.yield_curve_spread
     ADD CONSTRAINT pk_yield_curve_spread PRIMARY KEY (id_yield_curve_spread);
-
-
---
--- Name: portfolio_master_data portfolio_master_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.portfolio_master_data
-    ADD CONSTRAINT portfolio_master_data_pkey PRIMARY KEY (id_portfolio);
 
 
 --
@@ -4285,6 +4337,14 @@ ALTER TABLE ONLY public.market_quote_definition
 
 ALTER TABLE ONLY public.option_product
     ADD CONSTRAINT uq_option_product_code UNIQUE (code);
+
+
+--
+-- Name: position_type uq_position_type_code; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.position_type
+    ADD CONSTRAINT uq_position_type_code UNIQUE (code);
 
 
 --
@@ -4753,13 +4813,6 @@ CREATE UNIQUE INDEX idx_pm_code ON public.projection_method USING btree (code);
 
 
 --
--- Name: idx_portfolio_code; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX idx_portfolio_code ON public.portfolio_master_data USING btree (code);
-
-
---
 -- Name: idx_position_code; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4771,6 +4824,13 @@ CREATE UNIQUE INDEX idx_position_code ON public.position_master_data USING btree
 --
 
 CREATE UNIQUE INDEX idx_position_detail_pmc ON public.position_detail USING btree (position_md, master_data, counterparty);
+
+
+--
+-- Name: idx_position_parent; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_position_parent ON public.position_master_data USING btree (parent);
 
 
 --
@@ -4956,10 +5016,31 @@ CREATE UNIQUE INDEX ux_deliverable_bonds_isin ON public.deliverable_bonds USING 
 
 
 --
+-- Name: financial_txn trg_financial_txn_postable; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER trg_financial_txn_postable BEFORE INSERT OR UPDATE OF position_md ON public.financial_txn FOR EACH ROW EXECUTE FUNCTION public.fn_check_postable_position();
+
+
+--
 -- Name: financial_txn trg_financial_txn_ref_id; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trg_financial_txn_ref_id BEFORE INSERT OR UPDATE ON public.financial_txn FOR EACH ROW EXECUTE FUNCTION public.fn_manage_ref_id();
+
+
+--
+-- Name: position_detail trg_position_detail_postable; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER trg_position_detail_postable BEFORE INSERT OR UPDATE OF position_md ON public.position_detail FOR EACH ROW EXECUTE FUNCTION public.fn_check_postable_position();
+
+
+--
+-- Name: position_master_data trg_position_hierarchy; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER trg_position_hierarchy BEFORE INSERT OR UPDATE OF parent, is_postable, position_type ON public.position_master_data FOR EACH ROW EXECUTE FUNCTION public.fn_check_position_hierarchy();
 
 
 --
@@ -5470,14 +5551,6 @@ ALTER TABLE ONLY public.financial_txn_components
 --
 
 ALTER TABLE ONLY public.master_data
-    ADD CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES public.currency(id_currency);
-
-
---
--- Name: portfolio_master_data fk_currency; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.portfolio_master_data
     ADD CONSTRAINT fk_currency FOREIGN KEY (currency) REFERENCES public.currency(id_currency);
 
 
@@ -6186,14 +6259,6 @@ ALTER TABLE ONLY public.gl_accounts
 
 
 --
--- Name: position_master_data fk_portfolio; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.position_master_data
-    ADD CONSTRAINT fk_portfolio FOREIGN KEY (portfolio) REFERENCES public.portfolio_master_data(id_portfolio);
-
-
---
 -- Name: position_master_data fk_position_bond_valuation; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6215,6 +6280,22 @@ ALTER TABLE ONLY public.financial_txn
 
 ALTER TABLE ONLY public.position_detail
     ADD CONSTRAINT fk_position_md FOREIGN KEY (position_md) REFERENCES public.position_master_data(id_position);
+
+
+--
+-- Name: position_master_data fk_position_parent; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.position_master_data
+    ADD CONSTRAINT fk_position_parent FOREIGN KEY (parent) REFERENCES public.position_master_data(id_position);
+
+
+--
+-- Name: position_master_data fk_position_type; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.position_master_data
+    ADD CONSTRAINT fk_position_type FOREIGN KEY (position_type) REFERENCES public.position_type(position_type_id);
 
 
 --

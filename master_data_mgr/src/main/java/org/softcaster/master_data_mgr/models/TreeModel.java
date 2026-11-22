@@ -62,7 +62,7 @@ public class TreeModel {
         DefaultMutableTreeNode references = new DefaultMutableTreeNode("References");
         references.add(new DefaultMutableTreeNode(new MasterDataNode("Counterparts",AppTreeItem.COUNTERPARTY)));
         references.add(new DefaultMutableTreeNode(new MasterDataNode("Issuers",AppTreeItem.ISSUER)));
-        references.add(new DefaultMutableTreeNode(new MasterDataNode("Portfolios",AppTreeItem.PORTFOLIO)));
+        references.add(new DefaultMutableTreeNode(new MasterDataNode("Position hierarchy",AppTreeItem.PORTFOLIO)));
         references.add(new DefaultMutableTreeNode(new MasterDataNode("Positions",AppTreeItem.POSITION)));
         root.add(references);
 

@@ -81,7 +81,6 @@ def main():
         beanGenerator.writeService('forex_master_data')    
         beanGenerator.writeService('counterparty_type')    
         beanGenerator.writeService('counterparty')    
-        beanGenerator.writeService('portfolio_master_data')    
         beanGenerator.writeService('position_master_data')    
         beanGenerator.writeService('position_detail')    
         beanGenerator.writeService('txn_status')    

@@ -361,24 +361,18 @@ export interface Counterparty {
 }
 
 //----------------------------------------------------------------------
-// PortfolioMasterData
+// PositionMasterData: nodo della gerarchia, solo i postable hanno position_detail
 //----------------------------------------------------------------------
-export interface PortfolioMasterData {
-    idPortfolio: number;
-    currency: Currency;
-    code: string;
-    description: string;
-}
+export type PositionType = 'LEGAL_ENTITY' | 'BUSINESS_UNIT' | 'DESK' | 'PORTFOLIO' | 'GROUP' | 'POSITION';
 
-//----------------------------------------------------------------------
-// PositionMasterData
-//----------------------------------------------------------------------
 export interface PositionMasterData {
     idPosition: number;
     currency: Currency;
     code: string;
     description: string;
-    portfolio: PortfolioMasterData;
+    parent: PositionMasterData | null;
+    positionType: PositionType;
+    postable: boolean;
 }
 
 //----------------------------------------------------------------------

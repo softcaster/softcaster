@@ -9,7 +9,8 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Currency;
-import org.softcaster.core.data.PortfolioMasterData;
+import org.softcaster.core.data.PositionMasterData;
+import org.softcaster.engine.enums.PositionType;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.models.beans.PortfolioBean;
 
@@ -60,13 +61,17 @@ public class PortfolioDlg extends javax.swing.JDialog {
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         txtCode = new javax.swing.JTextField();
         txtDescription = new javax.swing.JTextField();
+        jLabel13 = new javax.swing.JLabel();
+        cbType = new javax.swing.JComboBox<>();
+        jLabel14 = new javax.swing.JLabel();
+        cbParent = new javax.swing.JComboBox<>();
         btnPanel = new javax.swing.JPanel();
         btnSave = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Bond Future");
+        setTitle("Hierarchy Node");
         getContentPane().setLayout(new java.awt.BorderLayout(10, 10));
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
@@ -133,6 +138,42 @@ public class PortfolioDlg extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         additionalPanel.add(txtDescription, gridBagConstraints);
+
+        jLabel13.setText("Type");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(jLabel13, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(cbType, gridBagConstraints);
+
+        jLabel14.setText("Parent");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(jLabel14, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        additionalPanel.add(cbParent, gridBagConstraints);
 
         tabbedPane.addTab("Specification", additionalPanel);
 
@@ -224,11 +265,15 @@ public class PortfolioDlg extends javax.swing.JDialog {
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<Currency> cbCurrency;
+    private javax.swing.JComboBox<PositionMasterData> cbParent;
+    private javax.swing.JComboBox<PositionType> cbType;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JTextField txtCode;
@@ -237,15 +282,50 @@ public class PortfolioDlg extends javax.swing.JDialog {
 
     private void postInit() {
         setUpCurrencyCombo();
+        setUpTypeCombo();
+        setUpParentCombo();
 
         if (bean != null) {
             isInsert = false;
-            txtCode.setText(bean.getPortfolioMasterData().getCode());
-            txtDescription.setText(bean.getPortfolioMasterData().getDescription());
-            cbCurrency.setSelectedItem(bean.getPortfolioMasterData().getCurrency());
+            PositionMasterData node = bean.getNode();
+            txtCode.setText(node.getCode());
+            txtDescription.setText(node.getDescription());
+            cbCurrency.setSelectedItem(node.getCurrency());
+            cbType.setSelectedItem(node.getPositionType());
+            MDDialogHelper.selectPosition(cbParent, node.getParent());
+        } else {
+            cbType.setSelectedItem(PositionType.PORTFOLIO);
+            cbParent.setSelectedItem(null);
         }
 
         fieldsToValidate = Arrays.asList(txtCode, txtDescription);
+    }
+
+    // solo i tipi non postable: le posizioni si gestiscono da PositionDlg
+    private void setUpTypeCombo() {
+        PositionType[] types = Arrays.stream(PositionType.values())
+                .filter(t -> !t.isPostable())
+                .toArray(PositionType[]::new);
+        cbType.setModel(new DefaultComboBoxModel<>(types));
+        cbType.setRenderer(new javax.swing.DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Object text = value instanceof PositionType type ? type.getDescription() : value;
+                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+            }
+        });
+    }
+
+    // padre: nessuno (radice) o un altro nodo non postable, escluso il nodo stesso
+    private void setUpParentCombo() {
+        DefaultComboBoxModel<PositionMasterData> model = new DefaultComboBoxModel<>();
+        model.addElement(null);
+        for (PositionMasterData node : masterDataFacade.getPositionMasterDataDAO().findHierarchyNodes()) {
+            if (bean == null || !node.getIdPosition().equals(bean.getNode().getIdPosition())) {
+                model.addElement(node);
+            }
+        }
+        cbParent.setModel(model);
     }
 
     private void setUpCurrencyCombo() {
@@ -269,15 +349,23 @@ public class PortfolioDlg extends javax.swing.JDialog {
 
         try {
             if (isInsert) {
-                bean = new PortfolioBean(new PortfolioMasterData());
+                bean = new PortfolioBean(new PositionMasterData());
                 fillDefaultFields();
             }
-            PortfolioMasterData pmd = bean.getPortfolioMasterData();
+            PositionMasterData pmd = bean.getNode();
             pmd.setCode(txtCode.getText());
             pmd.setDescription(txtDescription.getText());
             pmd.setCurrency((Currency) cbCurrency.getSelectedItem());
-            masterDataFacade.getPortfolioMasterDataDAO().saveOrUpdate(pmd);
+            pmd.setPositionType((PositionType) cbType.getSelectedItem());
+            pmd.setParent((PositionMasterData) cbParent.getSelectedItem());
+            masterDataFacade.getPositionMasterDataDAO().saveOrUpdate(pmd);
             return true;
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Validation Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            if (isInsert) {
+                bean = null;
+            }
+            return false;
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return false;

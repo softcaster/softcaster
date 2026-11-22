@@ -9,6 +9,7 @@ import java.util.List;
 import org.softcaster.commons.types.Date;
 import org.softcaster.commons.types.DateParser;
 import org.softcaster.commons.utils.Converter;
+import org.softcaster.core.data.PositionMasterData;
 
 /**
  *
@@ -56,5 +57,21 @@ public class MDDialogHelper {
                 return false;
         }
         return true;
+    }
+
+    /**
+     * Seleziona il nodo per id: il valore dell'entity puo' essere un proxy
+     * Hibernate e equals() confronta anche la classe.
+     */
+    public static void selectPosition(javax.swing.JComboBox<PositionMasterData> combo, PositionMasterData node) {
+        Integer id = node == null ? null : node.getIdPosition();
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            PositionMasterData item = combo.getItemAt(i);
+            Integer itemId = item == null ? null : item.getIdPosition();
+            if (java.util.Objects.equals(id, itemId)) {
+                combo.setSelectedIndex(i);
+                return;
+            }
+        }
     }
 }

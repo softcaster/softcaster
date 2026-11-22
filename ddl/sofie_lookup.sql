@@ -1,5 +1,5 @@
 -- ============================================================================
--- Tabelle di lookup: 53
+-- Tabelle di lookup: 54
 -- Generato da ddl/export_schema.ps1: non modificare a mano.
 -- Ordine: sofie_schema.sql, sofie_lookup.sql, sofie_config.sql
 -- ============================================================================
@@ -393,6 +393,18 @@ INSERT INTO public.normal_balances (balance_id, code, description) VALUES (2, 'C
 
 INSERT INTO public.option_type (option_type_id, code, description) VALUES (1, 'CALL', 'Call Option');
 INSERT INTO public.option_type (option_type_id, code, description) VALUES (2, 'PUT', 'Put Option');
+
+
+--
+-- Data for Name: position_type; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.position_type (position_type_id, code, description) VALUES (1, 'LEGAL_ENTITY', 'Legal entity');
+INSERT INTO public.position_type (position_type_id, code, description) VALUES (2, 'BUSINESS_UNIT', 'Business unit');
+INSERT INTO public.position_type (position_type_id, code, description) VALUES (3, 'DESK', 'Desk');
+INSERT INTO public.position_type (position_type_id, code, description) VALUES (4, 'PORTFOLIO', 'Portfolio');
+INSERT INTO public.position_type (position_type_id, code, description) VALUES (5, 'GROUP', 'Group');
+INSERT INTO public.position_type (position_type_id, code, description) VALUES (6, 'POSITION', 'Position');
 
 
 --

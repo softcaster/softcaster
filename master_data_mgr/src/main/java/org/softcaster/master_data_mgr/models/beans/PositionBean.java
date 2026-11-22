@@ -4,7 +4,6 @@
  */
 package org.softcaster.master_data_mgr.models.beans;
 
-import org.softcaster.core.data.PortfolioMasterData;
 import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.master_data_mgr.models.IMasterDataModel;
 
@@ -30,7 +29,7 @@ public class PositionBean implements IMasterDataModel {
             case 2 ->
                 positionMasterData.getCurrency().getIsoCode();
             case 3 ->
-                positionMasterData.getPortfolio().getCode();
+                positionMasterData.getParent() == null ? "" : positionMasterData.getParent().getCode();
             default ->
                 null;
         };
@@ -38,7 +37,7 @@ public class PositionBean implements IMasterDataModel {
 
     @Override
     public String[] getColumnNames() {
-        return new String[]{"Code", "Description", "Currency", "Portfolio"};
+        return new String[]{"Code", "Description", "Currency", "Parent"};
     }
 
     /**

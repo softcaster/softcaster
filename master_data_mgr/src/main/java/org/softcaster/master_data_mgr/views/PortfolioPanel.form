@@ -72,7 +72,7 @@
           <Color blue="32" green="32" red="32" type="rgb"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="text" type="java.lang.String" value="Portfolios Master Data"/>
+        <Property name="text" type="java.lang.String" value="Position Hierarchy"/>
         <Property name="verticalAlignment" type="int" value="1"/>
       </Properties>
       <Constraints>

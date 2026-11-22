@@ -3,7 +3,7 @@ import type {
     Daycount, Frequency, Form, RollConvention, TypeOfInterest, AccrualScheduleType, MarketSegment, AmortizationSchedule,
     Calendar, Holiday, Currency, Country, Issuer, SuperClass, AssetClass, MasterData, LoanMasterData, SecurityMasterData, CashFlowItem,
     CashFlowReset, SettlementType, FutureMasterData, BondFutureMasterData, DeliverableBonds, FxFutureMasterData, MmFutureMasterData,
-    InstrumentQuote, InstrumentQuoteHist, ForexMasterData, CounterpartyType, Counterparty, PortfolioMasterData, PositionMasterData,
+    InstrumentQuote, InstrumentQuoteHist, ForexMasterData, CounterpartyType, Counterparty, PositionMasterData,
     PositionDetail, TxnStatus, FinancialTxn, YieldCurve, YieldCurveItem, CmdFutureMasterData
 } from '../data/schema'
 import type {
@@ -1199,43 +1199,6 @@ export const deleteCounterparty = async (id: number): Promise<Counterparty | nul
         return await apiRequest<Counterparty>('/counterparty/d01/' + id, 'DELETE');
     } catch (error) {
         console.error('Failed to delete counterparty:', error);
-        return null;
-    }
-};
-
-
-export const fetchPortfolioMasterData = async (): Promise<PortfolioMasterData[]> => {
-    try {
-        return await apiRequest<PortfolioMasterData[]>('/portfolio_master_data/r01', 'GET');
-    } catch (error) {
-        console.error('Failed to fetch portfolio_master_data:', error);
-        return [];
-    }
-};
-
-export const fetchPortfolioMasterDataById = async (id: number): Promise<PortfolioMasterData | null> => {
-    try {
-        return await apiRequest<PortfolioMasterData>('/portfolio_master_data/r02/' + id, 'GET');
-    } catch (error) {
-        console.error('Failed to fetch portfolio_master_data:', error);
-        return null;
-    }
-};
-
-export const savePortfolioMasterData = async (portfolio_master_data: PortfolioMasterData): Promise<PortfolioMasterData | null> => {
-    try {
-        return await apiRequest<PortfolioMasterData>('/portfolio_master_data', 'POST', portfolio_master_data);
-    } catch (error) {
-        console.error('Failed to save portfolio_master_data:', error);
-        return null;
-    }
-};
-
-export const deletePortfolioMasterData = async (id: number): Promise<PortfolioMasterData | null> => {
-    try {
-        return await apiRequest<PortfolioMasterData>('/portfolio_master_data/d01/' + id, 'DELETE');
-    } catch (error) {
-        console.error('Failed to delete portfolio_master_data:', error);
         return null;
     }
 };

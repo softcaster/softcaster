@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.core.data.PortfolioMasterData;
+import org.softcaster.core.data.PositionMasterData;
 import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
 import org.softcaster.master_data_mgr.dialogs.PortfolioDlg;
@@ -72,7 +72,7 @@ public class PortfolioPanel extends AbstactMDPanel {
         lblHeader.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         lblHeader.setForeground(new java.awt.Color(50, 50, 50));
         lblHeader.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblHeader.setText("Portfolios Master Data");
+        lblHeader.setText("Position Hierarchy");
         lblHeader.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         add(lblHeader, java.awt.BorderLayout.NORTH);
 
@@ -173,10 +173,11 @@ public class PortfolioPanel extends AbstactMDPanel {
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                 try {
-                    masterDataFacade.getPortfolioMasterDataDAO().delete(bean.getPortfolioMasterData());
+                    masterDataFacade.getPositionMasterDataDAO().delete(bean.getNode());
                     refreshModel(model);
                 } catch (Exception ex) {
                     LoggerMgr.logError(ex.getLocalizedMessage());
+                    JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), JMasterDataMgr.TITLE, JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -184,10 +185,10 @@ public class PortfolioPanel extends AbstactMDPanel {
     
     @Override
     protected void refreshModel(MasterDataTableModel model) {
-        List<PortfolioMasterData> portfolios = masterDataFacade.getPortfolioMasterDataDAO().findAll();
+        List<PositionMasterData> nodes = masterDataFacade.getPositionMasterDataDAO().findHierarchyNodes();
         List<PortfolioBean> portfolioBeanList = new ArrayList<>();
         PortfolioBean bean = null;
-        for (PortfolioMasterData item : portfolios) {
+        for (PositionMasterData item : nodes) {
             bean = new PortfolioBean(item);
             portfolioBeanList.add(bean);
         }
