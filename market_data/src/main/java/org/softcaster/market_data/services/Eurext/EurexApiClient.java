@@ -14,10 +14,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.*;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.market_data.core.Data;
 import org.softcaster.market_data.core.Node;
@@ -30,14 +30,28 @@ public class EurexApiClient {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final HttpClient HTTP = HttpClient.newHttpClient();
 
-    private static final String QUERY_PRICES = """
-            query($product: String) {
-              prices: SettlementPrices(filter: { Product: { eq: $product } }) {
-                date
-                data { ContractID SettlementDate SettlementPrice PriceType ContractType }
+    // Un solo contratto (future o serie di opzione) filtrato per ISIN lato server.
+    // Contracts riporta gia' l'ultimo settlement: SettlementPrices darebbe
+    // qualche giorno di storico per ogni contratto del prodotto.
+    // Senza paginazione l'API richiede sempre Product: { eq: ... }.
+    private static final String QUERY_CONTRACT_PRICE = """
+            query($product: String, $isin: String) {
+              contracts: Contracts(filter: { Product: { eq: $product }, ISIN: { eq: $isin } }) {
+                data { ContractID ISIN SettlementDate SettlementPrice }
               }
-              contracts: Contracts(filter: { Product: { eq: $product } }) {
-                data { ContractID Contract ISIN ExpirationDate }
+            }
+            """;
+
+    // Serie di opzione per scadenza, strike e call/put: l'ISIN identifica la singola serie
+    private static final String QUERY_OPTION_ISIN = """
+            query($product: String, $expiry: Date, $strike: Float, $callPut: String) {
+              contracts: Contracts(filter: {
+                Product: { eq: $product },
+                ExpirationDate: { eq: $expiry },
+                Strike: { eq: $strike },
+                CallPut: { eq: $callPut }
+              }) {
+                data { ISIN VersionNr }
               }
             }
             """;
@@ -51,54 +65,89 @@ public class EurexApiClient {
             }
             """;
 
-    private static final String QUERY_OPT_PRICES = """
-        query($product: String) {
-          prices: SettlementPrices(filter: { Product: { eq: $product } }) {
-            date
-            data { ContractID SettlementDate SettlementPrice PriceType ContractType }
-          }
-          contracts: Contracts(filter: { Product: { eq: $product } }) {
-            data {
-              ContractID
-              Contract
-              ISIN
-              ExpirationDate
-              Strike
-              CallPut
-              VersionNr
-            }
-          }
-        }
-        """;
+    private String product;
 
-    private final String product;
-
-    public EurexApiClient(String product) {
-        this.product = Objects.requireNonNull(product, "product");
+    public EurexApiClient() {
     }
 
-    public Node getFutureQuote(String ticker) {
+    Node getOptionQuote(String isin) {
+        return getQuote(isin);
+    }
+
+    public Node getFutureQuote(String isin) {
+        return getQuote(isin);
+    }
+
+    private Node getQuote(String isin) {
         try {
-            Node node = null;
-            List<ContractData> data = executeQueryIsinPrices();
-            if (data != null && !data.isEmpty()) {
-                for (ContractData d : data) {
-                    if (d.isin().equals(ticker)) {
-                        node = new Node(d.isin(),
-                                null,
-                                null, // DaycountBasis
-                                null, // Compounding
-                                null, // CurveNodeType
-                                new Data(d.price(), d.price()));
-                        break;
-                    }
-                }
+            ContractData d = executeQueryContractPrice(isin);
+            if (d == null) {
+                return null;
             }
-            return node;
+            return new Node(d.isin(),
+                    null,
+                    null, // DaycountBasis
+                    null, // Compounding
+                    null, // CurveNodeType
+                    new Data(d.price(), d.price()));
         } catch (Exception ex) {
             LoggerMgr.logError(ex.getLocalizedMessage());
             return null;
         }
+    }
+
+    /**
+     * Ultimo prezzo di settlement del contratto con l'ISIN dato, null se il
+     * prodotto non ha quell'ISIN o il contratto non ha ancora un settlement.
+     * @param isin
+     * @return 
+     * @throws java.lang.Exception
+     */
+    public ContractData executeQueryContractPrice(String isin) throws Exception {
+        JsonNode data = execute(QUERY_CONTRACT_PRICE, Map.of("product", product, "isin", isin));
+        for (JsonNode c : data.path("contracts").path("data")) {
+            if (c.path("SettlementPrice").isNull() || c.path("SettlementPrice").isMissingNode()) {
+                continue;
+            }
+            return new ContractData(
+                    c.get("ContractID").asInt(),
+                    c.path("ISIN").asText(),
+                    c.path("SettlementDate").asText(),
+                    c.path("SettlementPrice").asDouble());
+        }
+        return null;
+    }
+
+    /**
+     * ISIN della serie di opzione, null se la serie non esiste.
+     *
+     * @param product codice Eurex del prodotto, es. OESX
+     * @param expiry data di scadenza della serie, es. 2026-12-18
+     * @param strike prezzo di esercizio
+     * @param callPut "C" o "P"
+     * @return 
+     * @throws java.lang.Exception
+     */
+    public static String findIsin(String product, LocalDate expiry, double strike, String callPut) throws Exception {
+        Map<String, Object> variables = Map.of(
+                "product", product,
+                "expiry", expiry.toString(),
+                "strike", strike,
+                "callPut", callPut.toUpperCase());
+        JsonNode data = execute(QUERY_OPTION_ISIN, variables);
+
+        // dopo un aggiustamento di capitale possono convivere piu' versioni della
+        // stessa serie: la standard e' quella con VersionNr piu' basso
+        String isin = null;
+        int version = Integer.MAX_VALUE;
+        for (JsonNode c : data.path("contracts").path("data")) {
+            int v = c.path("VersionNr").asInt();
+            if (v < version) {
+                version = v;
+                isin = c.path("ISIN").asText();
+            }
+        }
+        return isin;
     }
 
     public Map<Integer, List<DeliverableBond>> executeQueryDeliverables() throws Exception {
@@ -119,43 +168,6 @@ public class EurexApiClient {
         return basket;
     }
 
-    public List<ContractData> executeQueryIsinPrices() throws Exception {
-        JsonNode data = execute(QUERY_OPT_PRICES, Map.of("product", product));
-
-        Map<Integer, ContractInfo> contracts = new HashMap<>();
-        for (JsonNode c : data.path("contracts").path("data")) {
-            contracts.put(c.get("ContractID").asInt(), new ContractInfo(
-                    c.get("ContractID").asInt(),
-                    c.path("Contract").asText(),
-                    c.path("ISIN").asText(),
-                    c.path("ExpirationDate").asText()));
-        }
-
-        List<SettlementData> prices = new ArrayList<>();
-        for (JsonNode p : data.path("prices").path("data")) {
-            prices.add(new SettlementData(
-                    p.get("ContractID").asInt(),
-                    p.path("SettlementDate").asText(),
-                    p.path("SettlementPrice").asDouble(),
-                    p.path("PriceType").asText(),
-                    p.path("ContractType").asText()));
-        }
-        prices.sort(Comparator.comparing(SettlementData::settlementDate)
-                .thenComparing(s -> contracts.containsKey(s.contractId())
-                ? contracts.get(s.contractId()).expirationDate() : ""));
-
-        List<ContractData> result = new ArrayList<>();
-        for (SettlementData s : prices) {
-            ContractInfo c = contracts.get(s.contractId());
-            result.add(new ContractData(
-                    s.contractId(),
-                    c != null ? c.isin() : "-",
-                    c != null ? c.expirationDate() : "-",
-                    s.price()));
-        }
-        return result;
-    }
-
     private static JsonNode execute(String query, Map<String, Object> variables) throws Exception {
         String body = MAPPER.writeValueAsString(Map.of("query", query, "variables", variables));
 
@@ -173,8 +185,12 @@ public class EurexApiClient {
 
         JsonNode root = MAPPER.readTree(response.body());
         if (root.has("errors")) {
-            throw new RuntimeException("Errore GraphQL: " + root.get("errors"));
+            throw new RuntimeException("GraphQL error: " + root.get("errors"));
         }
         return root.path("data");
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
     }
 }

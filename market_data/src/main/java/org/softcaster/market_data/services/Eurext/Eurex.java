@@ -9,22 +9,32 @@ import java.util.List;
 import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.enums.Market;
 import org.softcaster.market_data.core.MarketDataManager;
+import static org.softcaster.market_data.core.enums.Market.FUTURES;
 
 public class Eurex implements MarketDataManager {
 
     private EurexApiClient client = null;
 
     public Eurex() {
-        client = new EurexApiClient("OESX"/*this.rpm.get(0)*/);
+        client = new EurexApiClient(/*"OESX"*/);
     }
 
     @Override
     public Node getQuote(String ticker, Market market) {
 
-        if (client != null) {
-            return client.getFutureQuote(ticker);
+        // ticker = PRODOTTO@ISIN, es. OESX@DE000F0N5VS5
+        String[] parsedSymbol = ticker.split("@");
+        if (parsedSymbol.length != 2) {
+            return null;
         }
-        else {
+        if (client != null) {
+            client.setProduct(parsedSymbol[0]);
+            return switch (market) {
+                case FUTURES -> client.getFutureQuote(parsedSymbol[1]);
+                case OPTIONS -> client.getOptionQuote(parsedSymbol[1]);
+                default -> null;
+            };
+        } else {
             return null;
         }
     }

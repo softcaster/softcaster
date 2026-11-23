@@ -5,12 +5,14 @@
 package MdmTest;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.MarketDataManagerFactory;
 import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.enums.Market;
+import org.softcaster.market_data.services.Eurext.EurexApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -58,15 +60,30 @@ public class MarketDataManagerTest implements CommandLineRunner {
     }
 
     private void testEurext() {
-        /*
-        RequestParamManager params = new RequestParamManager();
-        params.add("FBTP");
-         */
         MarketDataManager mdm = factory.getInstance("Eurex");
         if (mdm != null) {
-            Node node = mdm.getQuote("DE0009652396", Market.FUTURES);
+            Node node = mdm.getQuote("FCEF@DE000F0H9M55", Market.FUTURES);
             if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
+            }
+            
+            // call 5800 dicembre 2026: ogni serie di opzione ha il suo ISIN
+            node = mdm.getQuote("OESX@DE000F0N5VS5", Market.OPTIONS);
+            if (node != null) {
+                System.out.println(node.symbol() + "\t" + node.data().bid());
+            }
+
+            // ISIN da scadenza, strike e call/put: call 6200 dicembre 2026
+            try {
+                String isin = EurexApiClient.findIsin("OESX", LocalDate.of(2026, 12, 18), 6200, "C");
+                if (isin != null) {
+                    node = mdm.getQuote("OESX@" + isin, Market.OPTIONS);
+                    if (node != null) {
+                        System.out.println(node.symbol() + "\t" + node.data().bid());
+                    }
+                }
+            } catch (Exception ex) {
+                System.out.println("findIsin failed: " + ex.getMessage());
             }
         }
     }
