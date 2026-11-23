@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Deal su una serie di opzioni, per tutte le famiglie: la registrazione e'
- * per asset class, con una sottoclasse per famiglia (FFO, BFO, FXO, BDO).
+ * per asset class, con una sottoclasse per famiglia (FFO, BFO, FXO, BDO, IXO).
  *
  * Posizione come per i future: quantita' = contratti x contract value, prezzo
  * = premio x multiplier (premio per 100 di nominale sulle opzioni su titolo,
@@ -113,5 +113,12 @@ public abstract class OptionTxnProcessor extends AbstractTxnProcessor implements
      */
     @Component("BDO")
     public static class BondOption extends OptionTxnProcessor {
+    }
+
+    /**
+     * Opzioni su indice azionario.
+     */
+    @Component("IXO")
+    public static class IndexOption extends OptionTxnProcessor {
     }
 }

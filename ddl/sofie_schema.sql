@@ -1585,6 +1585,37 @@ CREATE SEQUENCE public.holiday_s
 
 
 --
+-- Name: index_future_master_data; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.index_future_master_data (
+    id_master_data integer NOT NULL,
+    future_product integer NOT NULL
+);
+
+
+--
+-- Name: index_future_product; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.index_future_product (
+    id_future_product integer NOT NULL,
+    underlying integer NOT NULL
+);
+
+
+--
+-- Name: index_master_data; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.index_master_data (
+    id_master_data integer NOT NULL,
+    irc character varying(25) DEFAULT ''::character varying NOT NULL,
+    dividend_yield numeric(28,10) DEFAULT 0 NOT NULL
+);
+
+
+--
 -- Name: instrument_quote; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3649,6 +3680,30 @@ ALTER TABLE ONLY public.granular_curve_point
 
 ALTER TABLE ONLY public.guarantee_type
     ADD CONSTRAINT pk_guarantee_type PRIMARY KEY (guarantee_type_id);
+
+
+--
+-- Name: index_future_master_data pk_index_future_master_data; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.index_future_master_data
+    ADD CONSTRAINT pk_index_future_master_data PRIMARY KEY (id_master_data);
+
+
+--
+-- Name: index_future_product pk_index_future_product; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.index_future_product
+    ADD CONSTRAINT pk_index_future_product PRIMARY KEY (id_future_product);
+
+
+--
+-- Name: index_master_data pk_index_master_data; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.index_master_data
+    ADD CONSTRAINT pk_index_master_data PRIMARY KEY (id_master_data);
 
 
 --
@@ -5808,6 +5863,46 @@ ALTER TABLE ONLY public.granular_curve_definition
 
 ALTER TABLE ONLY public.granular_curve_definition
     ADD CONSTRAINT fk_gcd_shape_profile FOREIGN KEY (shape_profile_id) REFERENCES public.shape_profile_definition(shape_profile_id);
+
+
+--
+-- Name: index_future_master_data fk_index_future_master_data_parent; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.index_future_master_data
+    ADD CONSTRAINT fk_index_future_master_data_parent FOREIGN KEY (id_master_data) REFERENCES public.future_master_data(id_master_data);
+
+
+--
+-- Name: index_future_master_data fk_index_future_master_data_product; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.index_future_master_data
+    ADD CONSTRAINT fk_index_future_master_data_product FOREIGN KEY (future_product) REFERENCES public.index_future_product(id_future_product);
+
+
+--
+-- Name: index_future_product fk_index_future_product_parent; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.index_future_product
+    ADD CONSTRAINT fk_index_future_product_parent FOREIGN KEY (id_future_product) REFERENCES public.future_product(id_future_product);
+
+
+--
+-- Name: index_future_product fk_index_future_product_underlying; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.index_future_product
+    ADD CONSTRAINT fk_index_future_product_underlying FOREIGN KEY (underlying) REFERENCES public.index_master_data(id_master_data);
+
+
+--
+-- Name: index_master_data fk_index_master_data_parent; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.index_master_data
+    ADD CONSTRAINT fk_index_master_data_parent FOREIGN KEY (id_master_data) REFERENCES public.master_data(id_master_data);
 
 
 --

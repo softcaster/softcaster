@@ -31,6 +31,28 @@ public class CnbcApiClient {
     // es richiesta completa cambio
     //https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=EURCHF%3D%7C&output=json
     public double getRate(String symbol) throws JsonProcessingException, ParseException, IOException, InterruptedException {
+        String rateStr = last(symbol).split("%")[0];
+        return Converter.toDouble(rateStr, false);
+    }
+
+    /**
+     * Ultimo livello di un indice: CNBC usa la virgola come separatore delle
+     * migliaia e il punto per i decimali (6,074.47).
+     *
+     * @param symbol simbolo CNBC, es. .STOXX50E
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public double getLevel(String symbol) throws IOException, InterruptedException {
+        String last = last(symbol).replace(",", "").trim();
+        if (last.isEmpty()) {
+            throw new IllegalStateException("No CNBC quote for " + symbol);
+        }
+        return Double.parseDouble(last);
+    }
+
+    private String last(String symbol) throws IOException, InterruptedException {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=" + symbol + "&output=json"))
@@ -42,7 +64,6 @@ public class CnbcApiClient {
         ObjectMapper om = new ObjectMapper();
         QuoteResult quoteResult = om.readValue(response.body(), QuoteResult.class);
         String last = quoteResult.formattedQuoteResult.formattedQuote.get(0).last;
-        String rateStr = last.split("%")[0];
-        return Converter.toDouble(rateStr, false);
+        return last == null ? "" : last;
     }
 }

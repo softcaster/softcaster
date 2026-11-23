@@ -11,7 +11,7 @@ import {
   navigationNodes, ForexView, FxFutureView, CmdFutureView, HomeView, PlaceholderView,
   BondView, XNoteView, BondPView, BondFutureView, BondFuturePView, PositionProspectView,
   AccountingProspectView,FxFuturePView,FltBondView,OptionPView,
-  FxOptionView, FxFutureOptionView, BondOptionView, BondFutureOptionView
+  FxOptionView, FxFutureOptionView, BondOptionView, BondFutureOptionView, IndexOptionView, IndexFutureView
 } from './config/navigation.config';
 import { LoginDialog } from './components/fragments/LoginDialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
@@ -205,6 +205,8 @@ const MainLayout = () => {
               <Route path="/fxfutureoption" element={<FxFutureOptionView />} />
               <Route path="/bondoption" element={<BondOptionView />} />
               <Route path="/bondfutureoption" element={<BondFutureOptionView />} />
+              <Route path="/indexfuture" element={<IndexFutureView />} />
+              <Route path="/indexoption" element={<IndexOptionView />} />
 
               {/* Tutte le altre sezioni caricano il placeholder */}
               <Route path="/user" element={<PlaceholderView />} />

@@ -20,6 +20,8 @@ export const FxOptionView = lazy(() => import('../components/views/OptionTradeVi
 export const FxFutureOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.FxFutureOptionView })));
 export const BondOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.BondOptionView })));
 export const BondFutureOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.BondFutureOptionView })));
+export const IndexOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.IndexOptionView })));
+export const IndexFutureView = lazy(() => import('../components/views/IndexFutureView'));
 export const PositionProspectView = lazy(() => import('../components/views/PositionProspectView'));
 export const AccountingProspectView = lazy(() => import('../components/views/AccountingProspectView'));
 
@@ -61,6 +63,14 @@ export const navigationNodes: TreeNode[] = [
           { key: 'bondfuture-key', label: 'Bond Futures', /*icon: 'pi pi-fw pi-building',*/ data: '/bondfuture' },
           { key: 'bondoption-key', label: 'Bond Options', data: '/bondoption' },
           { key: 'bondfutureoption-key', label: 'Bond Future Options', data: '/bondfutureoption' }
+        ]
+      },
+      {
+        key: 'equity-index',
+        label: 'Equity Index',
+        children: [
+          { key: 'indexfuture-key', label: 'Index Futures', data: '/indexfuture' },
+          { key: 'indexoption-key', label: 'Index Options', data: '/indexoption' }
         ]
       },
       {

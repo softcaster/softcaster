@@ -37,6 +37,8 @@ import org.softcaster.master_data_mgr.views.ForexPanel;
 import org.softcaster.master_data_mgr.views.FxFuturePanel;
 import org.softcaster.master_data_mgr.views.HomePanel;
 import org.softcaster.master_data_mgr.views.FutureProductPanel;
+import org.softcaster.master_data_mgr.views.IndexFuturePanel;
+import org.softcaster.master_data_mgr.views.IndexPanel;
 import org.softcaster.master_data_mgr.views.IssuerPanel;
 import org.softcaster.master_data_mgr.views.MarketQuoteDefinitionPanel;
 import org.softcaster.master_data_mgr.views.MmFuturePanel;
@@ -184,6 +186,18 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                         case BOND_OPTION -> {
                             cl.show(mainPanel, AppCard.BOND_OPTION_CARD.name());
                             currentCard = AppCard.BOND_OPTION_CARD;
+                        }
+                        case INDEX -> {
+                            cl.show(mainPanel, AppCard.INDEX_CARD.name());
+                            currentCard = AppCard.INDEX_CARD;
+                        }
+                        case INDEX_FUTURE -> {
+                            cl.show(mainPanel, AppCard.INDEX_FUTURE_CARD.name());
+                            currentCard = AppCard.INDEX_FUTURE_CARD;
+                        }
+                        case INDEX_OPTION -> {
+                            cl.show(mainPanel, AppCard.INDEX_OPTION_CARD.name());
+                            currentCard = AppCard.INDEX_OPTION_CARD;
                         }
                         case MARKET_QUOTE_DEFINITION -> {
                             cl.show(mainPanel, AppCard.MARKET_QUOTE_DEFINITION_CARD.name());
@@ -507,6 +521,17 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                 OptionPanel.Branch.SPOT, List.of("BDO"));
         cardMap.put(AppCard.BOND_OPTION_CARD, bondOptionPanel);
 
+        // indici azionari: anagrafica, future (FESX) e opzioni (OESX)
+        JPanel indexPanel = new IndexPanel(masterDataFacade);
+        cardMap.put(AppCard.INDEX_CARD, indexPanel);
+
+        JPanel indexFuturePanel = new IndexFuturePanel(masterDataFacade);
+        cardMap.put(AppCard.INDEX_FUTURE_CARD, indexFuturePanel);
+
+        JPanel indexOptionPanel = new OptionPanel(masterDataFacade, "Index Option Master Data",
+                OptionPanel.Branch.SPOT, List.of("IXO"));
+        cardMap.put(AppCard.INDEX_OPTION_CARD, indexOptionPanel);
+
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT.name());
         mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
@@ -529,6 +554,9 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(bondFutureOptionPanel, AppCard.BOND_FUTURE_OPTION_CARD.name());
         mainPanel.add(fxOptionPanel, AppCard.FX_OPTION_CARD.name());
         mainPanel.add(bondOptionPanel, AppCard.BOND_OPTION_CARD.name());
+        mainPanel.add(indexPanel, AppCard.INDEX_CARD.name());
+        mainPanel.add(indexFuturePanel, AppCard.INDEX_FUTURE_CARD.name());
+        mainPanel.add(indexOptionPanel, AppCard.INDEX_OPTION_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

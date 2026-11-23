@@ -14,6 +14,7 @@ import org.softcaster.core.data.FutureOptionMasterData;
 import org.softcaster.core.data.FutureOptionMasterDataDAO;
 import org.softcaster.core.data.FxFutureMasterData;
 import org.softcaster.core.data.FxFutureMasterDataDAO;
+import org.softcaster.core.data.IndexMasterData;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.OptionMasterData;
 import org.softcaster.core.data.OtcCmdOptionMasterData;
@@ -53,6 +54,8 @@ import org.softcaster.engine.enums.RequestType;
  *  - opzione su cambio (FXO)       -> Garman-Kohlhagen su spot e curve della coppia
  *  - opzione su titolo (BDO)       -> Black-76 sul prezzo secco a termine del titolo
  *                                     alla consegna (bond forward con la curva repo)
+ *  - opzione su indice (IXO)       -> Black-76 sul forward dell'indice (spot, curva
+ *                                     e dividend yield dell'indice)
  *  - americane (tutti i rami)      -> albero binomiale CRR sullo stesso input
  *  - OTC su cambio (OFX)           -> come FXO, nozionale e consegna del contratto
  *  - OTC su commodity (OCM)        -> Black-76 sul prezzo del future, premio scontato
@@ -198,7 +201,44 @@ public class OptionCalculator {
         if (underlying instanceof SecurityMasterData bond) {
             return getBondOptionInput(somd, bond, valuationDate, underlyingPrice, curveCode, rate, volatility);
         }
+        if (underlying instanceof IndexMasterData index) {
+            return getIndexOptionInput(somd, index, valuationDate, underlyingPrice, curveCode, rate, volatility);
+        }
         throw new IllegalArgumentException("Underlying " + underlying.getCode() + " not supported for " + omd.getCode());
+    }
+
+    /**
+     * Black-76 / CRR sul forward dell'indice alla scadenza della serie:
+     * F = spot x exp(-q T) / DF(T), con q il dividend yield continuo
+     * dell'indice e DF dalla curva indicata, dal tasso indicato o, di default,
+     * dalla curva dell'indice. Il premio (equity-style) si sconta con la
+     * stessa curva.
+     */
+    private ForwardOptionInput getIndexOptionInput(SpotOptionMasterData omd, IndexMasterData index, LocalDate valuationDate,
+                                                   Double spotPrice, String curveCode, Double rate, double volatility) {
+        OptionContract contract = contract(omd);
+        double spot = price(spotPrice, index);
+
+        DiscountCurve curve;
+        if (curveCode != null && !curveCode.isBlank()) {
+            curve = loadCurve(curveCode, valuationDate);
+        } else if (rate != null) {
+            curve = new FlatCurve(valuationDate, rate);
+        } else if (index.getIrc() != null && !index.getIrc().isBlank()) {
+            curve = loadCurve(index.getIrc(), valuationDate);
+        } else {
+            throw new IllegalArgumentException("Missing discount curve of index " + index.getCode()
+                    + " (irc) and no curve or rate in the request");
+        }
+
+        LocalDate expiry = contract.expiryDate().isAfter(valuationDate) ? contract.expiryDate() : valuationDate;
+        double t = ChronoUnit.DAYS.between(valuationDate, expiry) / 365.0;
+        double q = index.getDividendYield() == null ? 0. : index.getDividendYield();
+        double forward = spot * Math.exp(-q * t) / curve.getDiscountFactor(expiry);
+
+        boolean discounted = premiumStyle(omd).isDiscounted();
+        DiscountCurve premiumCurve = discounted ? curve : new FlatCurve(valuationDate, 0.0);
+        return new ForwardOptionInput(omd.getCode(), valuationDate, forward, premiumCurve, discounted, contract, volatility);
     }
 
     /**

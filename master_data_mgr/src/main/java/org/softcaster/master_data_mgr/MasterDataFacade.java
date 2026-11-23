@@ -78,6 +78,10 @@ public class MasterDataFacade {
     private CounterpartyDAO counterpartyDAO;
     @Autowired
     private PositionMasterDataDAO positionMasterDataDAO;
+    @Autowired
+    private org.softcaster.core.data.IndexMasterDataDAO indexMasterDataDAO;
+    @Autowired
+    private org.softcaster.core.data.IndexFutureMasterDataDAO indexFutureMasterDataDAO;
 
     @Autowired
     private CurrencyDAO currencyDAO;
@@ -216,6 +220,14 @@ public class MasterDataFacade {
      */
     public FxFutureMasterDataDAO getFxFutureMasterDataDAO() {
         return fxFutureMasterDataDAO;
+    }
+
+    public org.softcaster.core.data.IndexMasterDataDAO getIndexMasterDataDAO() {
+        return indexMasterDataDAO;
+    }
+
+    public org.softcaster.core.data.IndexFutureMasterDataDAO getIndexFutureMasterDataDAO() {
+        return indexFutureMasterDataDAO;
     }
 
     /**

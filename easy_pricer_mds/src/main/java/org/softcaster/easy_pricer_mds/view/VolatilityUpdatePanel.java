@@ -18,7 +18,12 @@ import org.softcaster.core.data.VolatilitySurfaceEntity;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.VolatilitySurfaceBean;
 import org.softcaster.easy_pricer_mds.ui.model.VolatilitySurfaceTableModel;
+import org.softcaster.core.data.SpotOptionProduct;
+import org.softcaster.easy_pricer_mds_core.batches.IndexVolatilityImportHelper;
 import org.softcaster.easy_pricer_mds_core.batches.VolatilityImportHelper;
+import org.softcaster.engine.enums.OptionType;
+import org.softcaster.market_data.services.Eurext.EurexApiClient;
+import org.softcaster.market_data.services.Eurext.OptionSeries;
 
 /**
  * Batch delle volatilita': ogni superficie (volatility_surface) si carica dal
@@ -33,6 +38,12 @@ public class VolatilityUpdatePanel extends FndtAbstactPanel {
 
     // premio minimo per ricavare la volatilita' (sotto e' rumore del tick)
     private static final double MIN_PREMIUM = 0.00005;
+    // opzioni su indice Eurex: scadenze fino a 2 anni, premio minimo 0,5 punti
+    // indice (5 tick OESX), strike tra il 60% e il 140% del forward
+    private static final int EUREX_MAX_YEARS = 2;
+    private static final double EUREX_MIN_PREMIUM = 0.5;
+    private static final double EUREX_MIN_MONEYNESS = 0.6;
+    private static final double EUREX_MAX_MONEYNESS = 1.4;
 
     private final List<VolatilitySurfaceBean> volatilitySurfaceBeanList = new ArrayList<>();
     private MDSFacade mDSFacade = null;
@@ -208,12 +219,10 @@ public class VolatilityUpdatePanel extends FndtAbstactPanel {
      */
     @Override
     protected void updateModel(FndtTableModel model) {
+        // la cartella serve solo alle superfici da file (CME); quelle Eurex scaricano dall'API
         String directory = mDSFacade.getCmeDirectory();
-        if (directory == null || directory.isBlank()) {
-            summary = "Volatility import not configured: set CME_VOL_DIRECTORY in conf/params.xml.";
-            return;
-        }
-        StringBuilder sb = new StringBuilder("Volatility import from " + directory + ":");
+        boolean noDirectory = directory == null || directory.isBlank();
+        StringBuilder sb = new StringBuilder("Volatility import" + (noDirectory ? "" : " from " + directory) + ":");
         int imported = 0;
         if (model != null) {
             for (int i = 0; i < model.getRowCount(); i++) {
@@ -223,6 +232,18 @@ public class VolatilityUpdatePanel extends FndtAbstactPanel {
                 }
                 String code = bean.getBean().getCode();
                 try {
+                    // superficie di un indice con opzioni Eurex: prezzi dall'API, nessun file
+                    String eurexProduct = eurexOptionProduct(bean.getBean());
+                    if (eurexProduct != null) {
+                        VolatilityImportHelper.ImportResult r = importEurex(code, eurexProduct);
+                        sb.append("\n- Eurex ").append(eurexProduct).append(": ").append(r.describe());
+                        imported++;
+                        continue;
+                    }
+                    if (noDirectory) {
+                        sb.append("\n- ").append(code).append(": set CME_VOL_DIRECTORY in conf/params.xml");
+                        continue;
+                    }
                     Path file = VolatilityImportHelper.surfaceFile(Path.of(directory), code).orElse(null);
                     if (file == null) {
                         sb.append("\n- ").append(code).append(": no file ").append(code).append(".csv");
@@ -242,6 +263,54 @@ public class VolatilityUpdatePanel extends FndtAbstactPanel {
             sb.append("\n- nothing imported: name each file after its surface code (e.g. EURUSD-VOL.csv)");
         }
         summary = sb.toString();
+    }
+
+    /**
+     * Codice Eurex delle opzioni sull'indice della superficie (testata IXO con
+     * quell'indice come sottostante, es. OESX per SX5E), null se la superficie
+     * non e' su un indice o l'indice non ha opzioni.
+     */
+    private String eurexOptionProduct(VolatilitySurfaceEntity surface) {
+        if (surface.getUnderlying() == null) {
+            return null;
+        }
+        Integer underlyingId = surface.getUnderlying().getIdMasterData();
+        if (mDSFacade.getIndexMasterDataDAO().findByIdMasterData(underlyingId) == null) {
+            return null;
+        }
+        return mDSFacade.getOptionProductDAO().findAll(SpotOptionProduct.class).stream()
+                .filter(p -> p.getUnderlying() != null && underlyingId.equals(p.getUnderlying().getIdMasterData()))
+                .map(p -> p.getExchangeContractCode() != null && !p.getExchangeContractCode().isBlank()
+                        ? p.getExchangeContractCode() : p.getCode())
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Catena Eurex delle scadenze entro EUREX_MAX_YEARS anni e import della
+     * superficie (IndexVolatilityImportHelper): forward dalla parita' put-call,
+     * volatilita' delle sole opzioni fuori dal denaro.
+     */
+    private VolatilityImportHelper.ImportResult importEurex(String code, String product) {
+        LocalDate today = LocalDate.now();
+        List<OptionSeries> series;
+        try {
+            series = EurexApiClient.findSeriesBetween(product, today, today.plusYears(EUREX_MAX_YEARS));
+        } catch (Exception e) {
+            throw new IllegalStateException("Eurex download of " + product + " failed: " + e.getMessage(), e);
+        }
+        List<IndexVolatilityImportHelper.OptionSettlement> settlements = new ArrayList<>();
+        for (OptionSeries s : series) {
+            // versione standard della serie, con un prezzo di settlement
+            if (s.versionNr() != 0 || s.settlementPrice() == null || s.settlementDate() == null
+                    || s.settlementDate().isBlank()) {
+                continue;
+            }
+            settlements.add(new IndexVolatilityImportHelper.OptionSettlement(LocalDate.parse(s.settlementDate()),
+                    LocalDate.parse(s.expirationDate()), s.strike(),
+                    "C".equals(s.callPut()) ? OptionType.CALL : OptionType.PUT, s.settlementPrice()));
+        }
+        return mDSFacade.getIndexVolatilityImportHelper().importSettlements(code, settlements,
+                EUREX_MIN_PREMIUM, EUREX_MIN_MONEYNESS, EUREX_MAX_MONEYNESS);
     }
 
     protected void refreshModelFromDb(FndtTableModel ftm) {

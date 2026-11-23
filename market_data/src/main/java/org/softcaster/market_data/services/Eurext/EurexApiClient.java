@@ -150,6 +150,105 @@ public class EurexApiClient {
         return isin;
     }
 
+    /**
+     * Catena delle opzioni di una scadenza, ordinata per strike e poi call/put.
+     *
+     * @param product codice Eurex del prodotto, es. OESX
+     * @param expiry data di scadenza, es. 2026-12-18
+     * @return tutte le serie della scadenza
+     * @throws java.lang.Exception
+     */
+    public static List<OptionSeries> findSeries(String product, LocalDate expiry) throws Exception {
+        return findSeries(product, expiry, null, null, null);
+    }
+
+    /**
+     * Catena delle opzioni di una scadenza, filtrata lato server. I filtri a
+     * null non vengono applicati. Se una serie ha piu' versioni (aggiustamento
+     * di capitale) le restituisce tutte: quella standard ha VersionNr piu' basso.
+     *
+     * @param product codice Eurex del prodotto, es. OESX
+     * @param expiry data di scadenza, es. 2026-12-18
+     * @param strikeMin strike minimo incluso, null per nessun limite
+     * @param strikeMax strike massimo incluso, null per nessun limite
+     * @param callPut "C" o "P", null per entrambe
+     * @return le serie ordinate per strike e poi call/put
+     * @throws java.lang.Exception
+     */
+    public static List<OptionSeries> findSeries(String product, LocalDate expiry,
+            Double strikeMin, Double strikeMax, String callPut) throws Exception {
+        return findSeries(product, expiry, expiry, strikeMin, strikeMax, callPut);
+    }
+
+    /**
+     * Catene di tutte le scadenze comprese tra due date (incluse), ordinate per
+     * scadenza, strike e call/put. Serve, per esempio, a scaricare in una sola
+     * chiamata i prezzi per una superficie di volatilita'.
+     *
+     * @param product codice Eurex del prodotto, es. OESX
+     * @param from prima scadenza inclusa
+     * @param to ultima scadenza inclusa
+     * @return le serie delle scadenze nell'intervallo
+     * @throws java.lang.Exception
+     */
+    public static List<OptionSeries> findSeriesBetween(String product, LocalDate from, LocalDate to) throws Exception {
+        return findSeries(product, from, to, null, null, null);
+    }
+
+    private static List<OptionSeries> findSeries(String product, LocalDate from, LocalDate to,
+            Double strikeMin, Double strikeMax, String callPut) throws Exception {
+        // il filtro si compone con i soli criteri presenti: un eq/ge a null
+        // non equivale a "nessun filtro"
+        StringBuilder params = new StringBuilder("$product: String, $from: Date, $to: Date");
+        StringBuilder filter = new StringBuilder("Product: { eq: $product }, ExpirationDate: { ge: $from, le: $to }");
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("product", product);
+        variables.put("from", from.toString());
+        variables.put("to", to.toString());
+        if (strikeMin != null) {
+            params.append(", $strikeMin: Float");
+            filter.append(", Strike: { ge: $strikeMin");
+            variables.put("strikeMin", strikeMin);
+        }
+        if (strikeMax != null) {
+            params.append(", $strikeMax: Float");
+            filter.append(strikeMin != null ? ", le: $strikeMax" : ", Strike: { le: $strikeMax");
+            variables.put("strikeMax", strikeMax);
+        }
+        if (strikeMin != null || strikeMax != null) {
+            filter.append(" }");
+        }
+        if (callPut != null) {
+            params.append(", $callPut: String");
+            filter.append(", CallPut: { eq: $callPut }");
+            variables.put("callPut", callPut.toUpperCase());
+        }
+        String query = "query(" + params + ") { contracts: Contracts(filter: { " + filter + " }) {"
+                + " data { ContractID ISIN ExpirationDate Strike CallPut VersionNr"
+                + " SettlementDate SettlementPrice OpenInterest } } }";
+
+        JsonNode data = execute(query, variables);
+        List<OptionSeries> series = new ArrayList<>();
+        for (JsonNode c : data.path("contracts").path("data")) {
+            JsonNode price = c.path("SettlementPrice");
+            series.add(new OptionSeries(
+                    c.path("ISIN").asText(),
+                    c.path("ContractID").asInt(),
+                    c.path("ExpirationDate").asText(),
+                    c.path("Strike").asDouble(),
+                    c.path("CallPut").asText(),
+                    c.path("VersionNr").asInt(),
+                    c.path("SettlementDate").asText(),
+                    price.isNull() || price.isMissingNode() ? null : price.asDouble(),
+                    c.path("OpenInterest").asLong()));
+        }
+        series.sort(Comparator.comparing(OptionSeries::expirationDate)
+                .thenComparingDouble(OptionSeries::strike)
+                .thenComparing(OptionSeries::callPut)
+                .thenComparingInt(OptionSeries::versionNr));
+        return series;
+    }
+
     public Map<Integer, List<DeliverableBond>> executeQueryDeliverables() throws Exception {
         JsonNode data = execute(QUERY_DELIVERABLES, Map.of("product", product));
 

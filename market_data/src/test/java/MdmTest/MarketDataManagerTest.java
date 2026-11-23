@@ -13,6 +13,7 @@ import org.softcaster.market_data.core.MarketDataManagerFactory;
 import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.enums.Market;
 import org.softcaster.market_data.services.Eurext.EurexApiClient;
+import org.softcaster.market_data.services.Eurext.OptionSeries;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -84,6 +85,16 @@ public class MarketDataManagerTest implements CommandLineRunner {
                 }
             } catch (Exception ex) {
                 System.out.println("findIsin failed: " + ex.getMessage());
+            }
+
+            // catena di dicembre 2026, strike 6000-6400 (call e put)
+            try {
+                List<OptionSeries> chain = EurexApiClient.findSeries("OESX", LocalDate.of(2026, 12, 18), 6000.0, 6400.0, null);
+                for (OptionSeries s : chain) {
+                    System.out.println(s.isin() + "\t" + s.strike() + "\t" + s.callPut() + "\t" + s.settlementPrice());
+                }
+            } catch (Exception ex) {
+                System.out.println("findSeries failed: " + ex.getMessage());
             }
         }
     }

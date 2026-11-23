@@ -18,10 +18,13 @@ interface OptionPricingFormProps {
 //  FFO, BFO: opzione su future -> prezzo del future, curva/tasso di sconto del premio
 //  FXO:      opzione su cambio -> spot, curva domestica ed estera (default: quelle della coppia)
 //  BDO:      opzione su titolo -> prezzo secco, curva/tasso repo (anche per lo sconto del premio)
+//  IXO:      opzione su indice -> livello dell'indice, curva/tasso di sconto (default: curva dell'indice);
+//            il forward usa il dividend yield dell'indice in anagrafica
 const underlyingLabel = (assetClass?: string) => {
     switch (assetClass) {
         case 'FXO': return 'Spot Rate';
         case 'BDO': return 'Bond Clean Price';
+        case 'IXO': return 'Index Level';
         default: return 'Future Price';
     }
 };
@@ -104,7 +107,7 @@ export const OptionPForm = ({ masterDataList, yieldCurveList, data, results, onC
                         value={data.referencePrice ?? null}
                         onValueChange={(e) => updateRequest('referencePrice', e.value ?? undefined)}
                         mode="decimal" minFractionDigits={5} placeholder="0.00000"
-                        tooltip="Price of the underlying (future, spot rate or bond clean price). If empty, the server uses the current market quote."
+                        tooltip="Price of the underlying (future, spot rate, bond clean price or index level). If empty, the server uses the current market quote."
                         tooltipOptions={{ position: 'top' }}
                         inputStyle={{ textAlign: 'right' }}
                         className="w-full" />

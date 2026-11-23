@@ -32,6 +32,7 @@ import org.softcaster.easy_pricer_mds.ui.MDSTreeCellRenderer;
 import org.softcaster.easy_pricer_mds.view.BondFutPanel;
 import org.softcaster.easy_pricer_mds.view.BondPanel;
 import org.softcaster.easy_pricer_mds.view.CmdFutPanel;
+import org.softcaster.easy_pricer_mds.view.InstrumentQuotePanel;
 import org.softcaster.easy_pricer_mds.view.CurrPairPanel;
 import org.softcaster.easy_pricer_mds.view.FltBondPanel;
 import org.softcaster.easy_pricer_mds.view.FxFutPanel;
@@ -158,6 +159,18 @@ public class JMarketDataService extends javax.swing.JFrame {
                             case FX_OPTION -> {
                                 cl.show(mainPanel, AppCard.FX_OPTION_CARD.name());
                                 currentCard = AppCard.FX_OPTION_CARD;
+                            }
+                            case INDEX -> {
+                                cl.show(mainPanel, AppCard.INDEX_CARD.name());
+                                currentCard = AppCard.INDEX_CARD;
+                            }
+                            case INDEX_FUTURE -> {
+                                cl.show(mainPanel, AppCard.INDEX_FUTURE_CARD.name());
+                                currentCard = AppCard.INDEX_FUTURE_CARD;
+                            }
+                            case INDEX_OPTION -> {
+                                cl.show(mainPanel, AppCard.INDEX_OPTION_CARD.name());
+                                currentCard = AppCard.INDEX_OPTION_CARD;
                             }
                             case BATCH_ZSPREAD -> {
                                 cl.show(mainPanel, AppCard.BATCH_ZSPREAD_CARD.name());
@@ -433,6 +446,16 @@ public class JMarketDataService extends javax.swing.JFrame {
         cardMap.put(AppCard.BATCH_VOLATILITY_CARD, volatilityPanel);
         JPanel volatilityImportPanel = new VolatilityImportPanel(mDSFacade);
         cardMap.put(AppCard.BATCH_VOL_IMPORT_CARD, volatilityImportPanel);
+        // indici azionari: livello dell'indice (CNBC), future e opzioni (Eurex), stesso pannello parametrico
+        JPanel indexPanel = new InstrumentQuotePanel(mDSFacade, "Equity Index Quotes", "IDX",
+                org.softcaster.market_data.core.enums.Market.EQUITIES);
+        cardMap.put(AppCard.INDEX_CARD, indexPanel);
+        JPanel indexFutPanel = new InstrumentQuotePanel(mDSFacade, "Index Future Quotes", "IXF",
+                org.softcaster.market_data.core.enums.Market.FUTURES);
+        cardMap.put(AppCard.INDEX_FUTURE_CARD, indexFutPanel);
+        JPanel indexOptPanel = new InstrumentQuotePanel(mDSFacade, "Index Option Quotes", "IXO",
+                org.softcaster.market_data.core.enums.Market.OPTIONS);
+        cardMap.put(AppCard.INDEX_OPTION_CARD, indexOptPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
@@ -450,6 +473,9 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(zspreadPanel, AppCard.BATCH_ZSPREAD_CARD.name());
         mainPanel.add(volatilityPanel, AppCard.BATCH_VOLATILITY_CARD.name());
         mainPanel.add(volatilityImportPanel, AppCard.BATCH_VOL_IMPORT_CARD.name());
+        mainPanel.add(indexPanel, AppCard.INDEX_CARD.name());
+        mainPanel.add(indexFutPanel, AppCard.INDEX_FUTURE_CARD.name());
+        mainPanel.add(indexOptPanel, AppCard.INDEX_OPTION_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

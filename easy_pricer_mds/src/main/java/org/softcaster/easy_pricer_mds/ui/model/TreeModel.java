@@ -25,6 +25,7 @@ public class TreeModel {
         securities.add(new DefaultMutableTreeNode(new FndtNode<>("Bonds", AppTreeItem.BOND)));
         securities.add(new DefaultMutableTreeNode(new FndtNode<>("Flt Bonds", AppTreeItem.FLT_BOND)));
         securities.add(new DefaultMutableTreeNode(new FndtNode<>("Equities", AppTreeItem.EQUITY)));
+        securities.add(new DefaultMutableTreeNode(new FndtNode<>("Equity Indices", AppTreeItem.INDEX)));
         instruments.add(securities);
 
         DefaultMutableTreeNode forex = new DefaultMutableTreeNode("Forex");
@@ -37,10 +38,12 @@ public class TreeModel {
         futures.add(new DefaultMutableTreeNode(new FndtNode<>("MM Futures", AppTreeItem.MM_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new FndtNode<>("Fx Futures", AppTreeItem.FX_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new FndtNode<>("Cmd Futures", AppTreeItem.CMD_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new FndtNode<>("Index Futures", AppTreeItem.INDEX_FUTURE)));
         derivatives.add(futures);
 
         DefaultMutableTreeNode options = new DefaultMutableTreeNode("Options");
         options.add(new DefaultMutableTreeNode(new FndtNode<>("Fx Options", AppTreeItem.FX_OPTION)));
+        options.add(new DefaultMutableTreeNode(new FndtNode<>("Index Options", AppTreeItem.INDEX_OPTION)));
         derivatives.add(options);
 
         instruments.add(derivatives);

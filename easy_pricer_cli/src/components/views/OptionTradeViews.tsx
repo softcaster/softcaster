@@ -19,3 +19,4 @@ export const FxOptionView = () => <OptionTradeView assetClass="FXO" />;
 export const FxFutureOptionView = () => <OptionTradeView assetClass="FFO" />;
 export const BondOptionView = () => <OptionTradeView assetClass="BDO" />;
 export const BondFutureOptionView = () => <OptionTradeView assetClass="BFO" />;
+export const IndexOptionView = () => <OptionTradeView assetClass="IXO" />;

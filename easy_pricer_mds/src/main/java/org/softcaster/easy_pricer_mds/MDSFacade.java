@@ -98,6 +98,18 @@ public class MDSFacade {
     private org.softcaster.easy_pricer_mds_core.batches.VolatilityImportHelper volatilityImportHelper;
     @Autowired
     private org.softcaster.core.data.VolatilitySurfaceDAO volatilitySurfaceDAO;
+    @Autowired
+    private org.softcaster.easy_pricer_mds_core.batches.IndexVolatilityImportHelper indexVolatilityImportHelper;
+    @Autowired
+    private org.softcaster.core.data.OptionProductDAO optionProductDAO;
+    @Autowired
+    private org.softcaster.core.data.IndexMasterDataDAO indexMasterDataDAO;
+    @Autowired
+    private org.softcaster.core.data.IndexFutureMasterDataDAO indexFutureMasterDataDAO;
+    @Autowired
+    private org.softcaster.core.data.SpotOptionMasterDataDAO spotOptionMasterDataDAO;
+    @Autowired
+    private org.softcaster.core.data.MasterDataDAO masterDataDAO;
 
     // batch delle volatilita' (conf/params.xml): cartella dei file CSV e superfici da caricare
     public static final String CME_VOL_DIRECTORY = "CME_VOL_DIRECTORY";
@@ -294,6 +306,30 @@ public class MDSFacade {
 
     public org.softcaster.core.data.VolatilitySurfaceDAO getVolatilitySurfaceDAO() {
         return volatilitySurfaceDAO;
+    }
+
+    public org.softcaster.easy_pricer_mds_core.batches.IndexVolatilityImportHelper getIndexVolatilityImportHelper() {
+        return indexVolatilityImportHelper;
+    }
+
+    public org.softcaster.core.data.OptionProductDAO getOptionProductDAO() {
+        return optionProductDAO;
+    }
+
+    public org.softcaster.core.data.IndexMasterDataDAO getIndexMasterDataDAO() {
+        return indexMasterDataDAO;
+    }
+
+    public org.softcaster.core.data.IndexFutureMasterDataDAO getIndexFutureMasterDataDAO() {
+        return indexFutureMasterDataDAO;
+    }
+
+    public org.softcaster.core.data.SpotOptionMasterDataDAO getSpotOptionMasterDataDAO() {
+        return spotOptionMasterDataDAO;
+    }
+
+    public org.softcaster.core.data.MasterDataDAO getMasterDataDAO() {
+        return masterDataDAO;
     }
 
     /**

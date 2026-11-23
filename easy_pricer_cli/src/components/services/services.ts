@@ -1597,9 +1597,13 @@ export const fetchBondFutureMasterDataDto = async (): Promise<GenericMasterDataD
     return fetchMasterDataDto('BFU');
 };
 
-// serie di opzioni di tutte le famiglie: su future (FFO, BFO) e su strumento secco (FXO, BDO);
+export const fetchIndexFutureMasterDataDto = async (): Promise<GenericMasterDataDto[]> => {
+    return fetchMasterDataDto('IXF');
+};
+
+// serie di opzioni di tutte le famiglie: su future (FFO, BFO) e su strumento secco (FXO, BDO, IXO);
 // una famiglia senza serie risponde 404 e fetchMasterDataDto restituisce []
-export const OPTION_ASSET_CLASSES = ['FFO', 'BFO', 'FXO', 'BDO'];
+export const OPTION_ASSET_CLASSES = ['FFO', 'BFO', 'FXO', 'BDO', 'IXO'];
 
 // serie con la famiglia (asset class), che il form usa per i campi di mercato da mostrare
 export type OptionSeriesDto = GenericMasterDataDto & { assetClass: string };

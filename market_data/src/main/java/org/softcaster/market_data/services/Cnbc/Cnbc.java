@@ -57,11 +57,32 @@ public class Cnbc implements MarketDataManager {
         }
     }
     
+    /**
+     * Livello di un indice azionario, simbolo CNBC (es. .STOXX50E per
+     * l'EURO STOXX 50). CNBC lo riporta con il separatore delle migliaia
+     * (6,074.47).
+     */
+    private Node getIndexQuote(String ticker) {
+        try {
+            double level = client.getLevel(ticker);
+            return new Node(ticker,
+                    null,
+                    null, // DaycountBasis
+                    null, // Compounding
+                    null, // CurveNodeType
+                    new Data(level, level));
+        } catch (IOException | InterruptedException | RuntimeException ex) {
+            LoggerMgr.logError(ex.getLocalizedMessage());
+            return null;
+        }
+    }
+
     @Override
     public Node getQuote(String ticker, Market market) {
         return switch (market) {
             case CURRENCIES -> getCurrencyQuote(ticker);
             case BONDS -> getBondQuote(ticker);
+            case EQUITIES -> getIndexQuote(ticker);
             default -> null;
         };
     }
@@ -81,6 +102,7 @@ public class Cnbc implements MarketDataManager {
         List<Market> markets = new ArrayList<>();
         markets.add(Market.CURRENCIES);
         markets.add(Market.RATES);
+        markets.add(Market.EQUITIES);
         return markets;
     }
 

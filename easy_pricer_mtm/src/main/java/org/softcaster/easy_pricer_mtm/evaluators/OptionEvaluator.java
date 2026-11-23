@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * MtM di una serie di opzioni, per tutte le famiglie: la registrazione e' per
- * asset class, con una sottoclasse per famiglia (FFO, BFO, FXO, BDO).
+ * asset class, con una sottoclasse per famiglia (FFO, BFO, FXO, BDO, IXO).
  *
  * Prezzo di mercato = quotazione della serie (premio unitario). Prezzo
  * teorico = OptionCalculator con la volatilita' della superficie del
@@ -174,5 +174,12 @@ public abstract class OptionEvaluator extends AbstractEvaluator implements IPosi
      */
     @Component("BDO")
     public static class BondOption extends OptionEvaluator {
+    }
+
+    /**
+     * Opzioni su indice azionario.
+     */
+    @Component("IXO")
+    public static class IndexOption extends OptionEvaluator {
     }
 }

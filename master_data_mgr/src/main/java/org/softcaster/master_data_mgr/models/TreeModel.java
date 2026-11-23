@@ -24,6 +24,7 @@ public class TreeModel {
         securities.add(new DefaultMutableTreeNode(new MasterDataNode("Bonds", AppTreeItem.BOND)));
         securities.add(new DefaultMutableTreeNode(new MasterDataNode("Floating Bonds", AppTreeItem.FLT_BOND)));
         securities.add(new DefaultMutableTreeNode(new MasterDataNode("Equities", AppTreeItem.EQUITY)));
+        securities.add(new DefaultMutableTreeNode(new MasterDataNode("Equity Indices", AppTreeItem.INDEX)));
         instruments.add(securities);
 
         DefaultMutableTreeNode forex = new DefaultMutableTreeNode("Forex");
@@ -38,6 +39,7 @@ public class TreeModel {
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Mm Futures", AppTreeItem.MM_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Futures", AppTreeItem.FX_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Cmd Futures", AppTreeItem.CMD_FUTURE)));
+        futures.add(new DefaultMutableTreeNode(new MasterDataNode("Index Futures", AppTreeItem.INDEX_FUTURE)));
         futures.add(new DefaultMutableTreeNode(new MasterDataNode("Ext.Delivery Futures", AppTreeItem.EXT_DELIVERY_FUTURE)));
         derivatives.add(futures);
 
@@ -51,6 +53,7 @@ public class TreeModel {
         DefaultMutableTreeNode spotOptions = new DefaultMutableTreeNode("Spot Options");
         spotOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Options", AppTreeItem.FX_OPTION)));
         spotOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Options", AppTreeItem.BOND_OPTION)));
+        spotOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Index Options", AppTreeItem.INDEX_OPTION)));
         options.add(spotOptions);
         derivatives.add(options);
 

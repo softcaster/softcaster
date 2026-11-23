@@ -288,6 +288,9 @@ INSERT INTO public.asset_class (id_asset_class, super_class, code, description) 
 INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (19, 4, 'CMA', 'Commodity Accumulator');
 INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (20, 4, 'OFX', 'OTC Forex Option');
 INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (21, 4, 'OCM', 'OTC Commodity Option');
+INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (22, 1, 'IDX', 'Equity Index');
+INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (23, 4, 'IXF', 'Index Future');
+INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (24, 4, 'IXO', 'Index Option');
 
 
 --
@@ -313,6 +316,8 @@ INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, as
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (17, 19, NULL, 'OPTION');
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (18, 20, NULL, 'OPTION');
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (19, 21, NULL, 'OPTION');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (20, 23, NULL, 'FUT');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (21, 24, NULL, 'OPTION');
 
 
 --
@@ -823,7 +828,6 @@ INSERT INTO public.holiday (id_holiday, calendar, holiday_day, holiday_month, de
 --
 
 INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (4, 2, 'PTUSD01', 'Default Portfolio (USD)', false, 1, NULL, 4, false);
-INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (5, 2, 'USDT', 'United States Department of the Treasury', false, 1, NULL, 4, false);
 INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (6, 4, 'PTCHFO1', 'Default Portfolio (CHF)', false, 1, NULL, 4, false);
 INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (7, 1, 'PTEUR01', 'Default Portfolio (EUR)', false, 1, NULL, 4, false);
 INSERT INTO public.position_master_data (id_position, currency, code, description, fx_rolling, bond_valuation, parent, position_type, is_postable) VALUES (1, 2, 'POSUSD01', 'Default Position (USD)', false, 1, 4, 6, true);
@@ -849,14 +853,14 @@ SELECT pg_catalog.setval('public.account_mapping_s', 120, true);
 -- Name: asset_class_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.asset_class_s', 19, true);
+SELECT pg_catalog.setval('public.asset_class_s', 24, true);
 
 
 --
 -- Name: asset_class_script_mapping_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.asset_class_script_mapping_s', 17, true);
+SELECT pg_catalog.setval('public.asset_class_script_mapping_s', 21, true);
 
 
 --

@@ -31,7 +31,8 @@ public class SpotOptionProduct extends OptionProduct {
      */
     public static final Map<String, Class<? extends MasterData>> UNDERLYING_TYPES = Map.of(
             "FXO", ForexMasterData.class,
-            "BDO", SecurityMasterData.class);
+            "BDO", SecurityMasterData.class,
+            "IXO", IndexMasterData.class);
 
     @ManyToOne(fetch = FetchType.EAGER) // sottostante fisso: letto dalle finestre fuori transazione
     @JoinColumn(name = "underlying")

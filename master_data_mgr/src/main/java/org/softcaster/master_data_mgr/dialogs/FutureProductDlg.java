@@ -16,6 +16,9 @@ import org.softcaster.core.data.BondFutureProduct;
 import org.softcaster.core.data.CmdFutureProduct;
 import org.softcaster.core.data.Currency;
 import org.softcaster.core.data.ForexMasterData;
+import org.softcaster.core.data.IndexFutureProduct;
+import org.softcaster.core.data.IndexMasterData;
+import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.FutureProduct;
 import org.softcaster.core.data.FxFutureProduct;
 import org.softcaster.core.data.MmFutureProduct;
@@ -46,7 +49,15 @@ public class FutureProductDlg extends javax.swing.JDialog {
         FX("Fx", "FFU", 2, 1., FxFutureProduct.class, FxFutureProduct::new),
         MM("Mm", "MFU", 2, 1., MmFutureProduct.class, MmFutureProduct::new),
         CMD("Cmd", "CFU", 0, 1., CmdFutureProduct.class, CmdFutureProduct::new),
-        POWER("Power", "CFU", 0, 1., PowerFutureProduct.class, PowerFutureProduct::new);
+        POWER("Power", "CFU", 0, 1., PowerFutureProduct.class, PowerFutureProduct::new),
+        INDEX("Index", "IXF", 1, 1., IndexFutureProduct.class, IndexFutureProduct::new);
+
+        /**
+         * Il tipo ha un sottostante: coppia di cambi (Fx, Mm) o indice (Index).
+         */
+        boolean hasUnderlying() {
+            return this == FX || this == MM || this == INDEX;
+        }
 
         private final String label;
         private final String assetClass;
@@ -401,7 +412,7 @@ public class FutureProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(jLabel13, gridBagConstraints);
 
-        jLabel14.setText("Currency Pair");
+        jLabel14.setText("Underlying");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
@@ -577,7 +588,7 @@ public class FutureProductDlg extends javax.swing.JDialog {
     private javax.swing.JComboBox<LoadType> cbLoadType;
     private javax.swing.JComboBox<SettlementType> cbSettlementType;
     private javax.swing.JComboBox<ProductKind> cbType;
-    private javax.swing.JComboBox<ForexMasterData> cbUnderlying;
+    private javax.swing.JComboBox<MasterData> cbUnderlying;
     private javax.swing.JPanel fieldPanel;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
@@ -615,7 +626,6 @@ public class FutureProductDlg extends javax.swing.JDialog {
         cbType.setModel(new DefaultComboBoxModel<>(ProductKind.values()));
         cbCurrency.setModel(new DefaultComboBoxModel<>(masterDataFacade.getCurrencyDAO().findAll().toArray(Currency[]::new)));
         cbSettlementType.setModel(new DefaultComboBoxModel<>(SettlementType.values()));
-        cbUnderlying.setModel(new DefaultComboBoxModel<>(masterDataFacade.getForexMasterDataDAO().findAll().toArray(ForexMasterData[]::new)));
         cbLoadType.setModel(new DefaultComboBoxModel<>(LoadType.values()));
 
         if (bean == null) {
@@ -639,9 +649,11 @@ public class FutureProductDlg extends javax.swing.JDialog {
             txtMaintMargin.setText(FutureProductHelper.format(fp.getMaintenanceMargin()));
             txtMultiplier.setText(FutureProductHelper.format(fp.getMultiplier()));
             if (fp instanceof FxFutureProduct fx) {
-                FutureProductHelper.selectById(cbUnderlying, fx.getUnderlying().getIdMasterData(), ForexMasterData::getIdMasterData);
+                FutureProductHelper.selectById(cbUnderlying, fx.getUnderlying().getIdMasterData(), MasterData::getIdMasterData);
             } else if (fp instanceof MmFutureProduct mm) {
-                FutureProductHelper.selectById(cbUnderlying, mm.getUnderlying().getIdMasterData(), ForexMasterData::getIdMasterData);
+                FutureProductHelper.selectById(cbUnderlying, mm.getUnderlying().getIdMasterData(), MasterData::getIdMasterData);
+            } else if (fp instanceof IndexFutureProduct idx) {
+                FutureProductHelper.selectById(cbUnderlying, idx.getUnderlying().getIdMasterData(), MasterData::getIdMasterData);
             }
             if (fp instanceof CmdFutureProduct cmd) {
                 cbCommodityType.setSelectedItem(cmd.getCommodityType());
@@ -668,7 +680,16 @@ public class FutureProductDlg extends javax.swing.JDialog {
      * (Power).
      */
     private void setUpSpecificFields(ProductKind kind) {
-        boolean underlying = kind == ProductKind.FX || kind == ProductKind.MM;
+        boolean underlying = kind != null && kind.hasUnderlying();
+        // sottostanti del tipo: indici per Index, coppie di cambi per Fx e Mm
+        MasterData selectedUnderlying = (MasterData) cbUnderlying.getSelectedItem();
+        List<? extends MasterData> underlyings = kind == ProductKind.INDEX
+                ? masterDataFacade.getIndexMasterDataDAO().findAll()
+                : underlying ? masterDataFacade.getForexMasterDataDAO().findAll() : List.of();
+        cbUnderlying.setModel(new DefaultComboBoxModel<>(underlyings.toArray(MasterData[]::new)));
+        if (selectedUnderlying != null) {
+            FutureProductHelper.selectById(cbUnderlying, selectedUnderlying.getIdMasterData(), MasterData::getIdMasterData);
+        }
         boolean commodity = kind == ProductKind.CMD || kind == ProductKind.POWER;
         boolean load = kind == ProductKind.POWER;
 
@@ -703,8 +724,8 @@ public class FutureProductDlg extends javax.swing.JDialog {
         if (isInsert && masterDataFacade.getFutureProductDAO().findByCode(txtCode.getText().trim()).isPresent()) {
             return "Product " + txtCode.getText().trim() + " already exists.";
         }
-        if ((kind == ProductKind.FX || kind == ProductKind.MM) && cbUnderlying.getSelectedItem() == null) {
-            return "Please select the underlying currency pair.";
+        if (kind.hasUnderlying() && cbUnderlying.getSelectedItem() == null) {
+            return kind == ProductKind.INDEX ? "Please select the underlying index." : "Please select the underlying currency pair.";
         }
         if ((kind == ProductKind.CMD || kind == ProductKind.POWER) && cbCommodityType.getSelectedItem() == null) {
             return "Please select the commodity type.";
@@ -754,6 +775,8 @@ public class FutureProductDlg extends javax.swing.JDialog {
                 fx.setUnderlying((ForexMasterData) cbUnderlying.getSelectedItem());
             } else if (fp instanceof MmFutureProduct mm) {
                 mm.setUnderlying((ForexMasterData) cbUnderlying.getSelectedItem());
+            } else if (fp instanceof IndexFutureProduct idx) {
+                idx.setUnderlying((IndexMasterData) cbUnderlying.getSelectedItem());
             }
             if (fp instanceof CmdFutureProduct cmd) {
                 cmd.setCommodityType((CommodityType) cbCommodityType.getSelectedItem());

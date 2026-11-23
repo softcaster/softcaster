@@ -31,7 +31,8 @@ import org.hibernate.annotations.JdbcTypeCode;
  *     │     ├── security_master_data -> flt_security_master_data
  *     │     └── loan_master_data
  *     ├── future_master_data      scadenze dei future (testata in future_product)
- *     └── forex_master_data
+ *     ├── forex_master_data
+ *     └── index_master_data       indici azionari (sottostante di IXF e IXO)
  */
 @Entity
 @Table(name = "master_data")
