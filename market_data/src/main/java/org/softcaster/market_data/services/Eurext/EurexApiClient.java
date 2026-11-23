@@ -51,6 +51,26 @@ public class EurexApiClient {
             }
             """;
 
+    private static final String QUERY_OPT_PRICES = """
+        query($product: String) {
+          prices: SettlementPrices(filter: { Product: { eq: $product } }) {
+            date
+            data { ContractID SettlementDate SettlementPrice PriceType ContractType }
+          }
+          contracts: Contracts(filter: { Product: { eq: $product } }) {
+            data {
+              ContractID
+              Contract
+              ISIN
+              ExpirationDate
+              Strike
+              CallPut
+              VersionNr
+            }
+          }
+        }
+        """;
+
     private final String product;
 
     public EurexApiClient(String product) {
@@ -100,7 +120,7 @@ public class EurexApiClient {
     }
 
     public List<ContractData> executeQueryIsinPrices() throws Exception {
-        JsonNode data = execute(QUERY_PRICES, Map.of("product", product));
+        JsonNode data = execute(QUERY_OPT_PRICES, Map.of("product", product));
 
         Map<Integer, ContractInfo> contracts = new HashMap<>();
         for (JsonNode c : data.path("contracts").path("data")) {

@@ -5,7 +5,6 @@
 package MdmTest;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.List;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.market_data.core.MarketDataManager;
@@ -44,7 +43,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // testEurext();
+        testEurext();
         // testBorsaItaliana();
         // testTwelvedata();
         // testCmeGroup();
@@ -55,7 +54,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
         // testCnbc();
         // testCsv();
         // testBondBlox();
-        testCBonds();
+        // testCBonds();
     }
 
     private void testEurext() {
@@ -65,7 +64,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
          */
         MarketDataManager mdm = factory.getInstance("Eurex");
         if (mdm != null) {
-            Node node = mdm.getQuote("DE000F2HLQE9", Market.FUTURES);
+            Node node = mdm.getQuote("DE0009652396", Market.FUTURES);
             if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
             }

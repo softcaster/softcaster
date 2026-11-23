@@ -15,7 +15,7 @@ public class Eurex implements MarketDataManager {
     private EurexApiClient client = null;
 
     public Eurex() {
-        client = new EurexApiClient(""/*this.rpm.get(0)*/);
+        client = new EurexApiClient("OESX"/*this.rpm.get(0)*/);
     }
 
     @Override
