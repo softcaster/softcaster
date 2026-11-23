@@ -63,7 +63,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
     private void testEurext() {
         MarketDataManager mdm = factory.getInstance("Eurex");
         if (mdm != null) {
-            Node node = mdm.getQuote("FCEF@DE000F0H9M55", Market.FUTURES);
+            Node node = mdm.getQuote("FESX@DE0009652388", Market.FUTURES);
             if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
             }
@@ -74,6 +74,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
             }
 
+            //EurexApiClient.findFutures("FESX");
             // ISIN da scadenza, strike e call/put: call 6200 dicembre 2026
             try {
                 String isin = EurexApiClient.findIsin("OESX", LocalDate.of(2026, 12, 18), 6200, "C");

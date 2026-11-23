@@ -56,6 +56,15 @@ public class EurexApiClient {
             }
             """;
 
+    // Scadenze di un future: una riga per contratto, gia' con l'ultimo settlement
+    private static final String QUERY_FUTURES = """
+            query($product: String) {
+              contracts: Contracts(filter: { Product: { eq: $product } }) {
+                data { ContractID Contract ISIN ExpirationDate LastTradingDate SettlementDate SettlementPrice OpenInterest }
+              }
+            }
+            """;
+
     private static final String QUERY_DELIVERABLES = """
             query($product: String) {
               deliverables: DeliverableBonds(filter: { Product: { eq: $product } }) {
@@ -247,6 +256,51 @@ public class EurexApiClient {
                 .thenComparing(OptionSeries::callPut)
                 .thenComparingInt(OptionSeries::versionNr));
         return series;
+    }
+
+    /**
+     * Tutte le scadenze di un future, ordinate per scadenza. Ogni scadenza ha
+     * il suo ISIN (DE000F...); l'ISIN del prodotto (es. DE0009652388 per FESX)
+     * non identifica nessun contratto.
+     *
+     * @param product codice Eurex del prodotto, es. FESX
+     * @return le scadenze con ISIN, date e ultimo settlement
+     * @throws java.lang.Exception
+     */
+    public static List<FutureContract> findFutures(String product) throws Exception {
+        JsonNode data = execute(QUERY_FUTURES, Map.of("product", product));
+        List<FutureContract> futures = new ArrayList<>();
+        for (JsonNode c : data.path("contracts").path("data")) {
+            JsonNode price = c.path("SettlementPrice");
+            futures.add(new FutureContract(
+                    c.path("ISIN").asText(),
+                    c.path("ContractID").asInt(),
+                    c.path("Contract").asText(),
+                    c.path("ExpirationDate").asText(),
+                    c.path("LastTradingDate").asText(),
+                    c.path("SettlementDate").asText(),
+                    price.isNull() || price.isMissingNode() ? null : price.asDouble(),
+                    c.path("OpenInterest").asLong()));
+        }
+        futures.sort(Comparator.comparing(FutureContract::expirationDate));
+        return futures;
+    }
+
+    /**
+     * ISIN della scadenza di un future, null se il prodotto non ha una
+     * scadenza in quella data.
+     *
+     * @param product codice Eurex del prodotto, es. FESX
+     * @param expiry data di scadenza, es. 2026-12-18
+     * @return l'ISIN della scadenza
+     * @throws java.lang.Exception
+     */
+    public static String findFutureIsin(String product, LocalDate expiry) throws Exception {
+        String date = expiry.toString();
+        return findFutures(product).stream()
+                .filter(f -> date.equals(f.expirationDate()))
+                .map(FutureContract::isin)
+                .findFirst().orElse(null);
     }
 
     public Map<Integer, List<DeliverableBond>> executeQueryDeliverables() throws Exception {
