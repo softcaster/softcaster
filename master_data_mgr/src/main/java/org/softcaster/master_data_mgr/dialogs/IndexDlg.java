@@ -60,6 +60,15 @@ public class IndexDlg extends javax.swing.JDialog {
     private void initComponents() {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Equity Index");
+
+        // campi numerici: a destra, formattati all'uscita (come BondDlg)
+        txtDividendYield.setHorizontalAlignment(JTextField.RIGHT);
+        txtDividendYield.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                MDDialogHelper.textFieldDoubleFocusLost(txtDividendYield);
+            }
+        });
         getContentPane().setLayout(new BorderLayout(10, 10));
 
         JPanel fields = new JPanel(new GridBagLayout());

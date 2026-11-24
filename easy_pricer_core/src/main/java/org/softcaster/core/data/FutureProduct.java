@@ -16,7 +16,9 @@ import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.sql.Types;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.softcaster.core.data.converters.DaycountConverter;
 import org.softcaster.core.data.converters.SettlementTypeConverter;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.SettlementType;
 
 /**
@@ -60,6 +62,12 @@ public abstract class FutureProduct implements Serializable {
     @Convert(converter = SettlementTypeConverter.class)
     @Column(name = "settlement_type")
     private SettlementType settlementType;
+
+    // fa parte della definizione dei future sui tassi (ACT/360 Euribor, SOFR, SARON;
+    // ACT/365 SONIA); per gli altri e' la convenzione del tempo, ACT/365 come nell'engine
+    @Convert(converter = DaycountConverter.class)
+    @Column(name = "daycount", nullable = false)
+    private DaycountBasis daycount = DaycountBasis.ACT_365;
 
     @JdbcTypeCode(Types.NUMERIC)
     @Column(name = "contract_value")
@@ -141,6 +149,14 @@ public abstract class FutureProduct implements Serializable {
 
     public void setSettlementType(SettlementType settlementType) {
         this.settlementType = settlementType;
+    }
+
+    public DaycountBasis getDaycount() {
+        return daycount;
+    }
+
+    public void setDaycount(DaycountBasis daycount) {
+        this.daycount = daycount;
     }
 
     public Double getContractValue() {

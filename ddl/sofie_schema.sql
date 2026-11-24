@@ -1410,7 +1410,8 @@ CREATE TABLE public.future_product (
     currency integer NOT NULL,
     asset_class integer NOT NULL,
     business_days integer DEFAULT 2 NOT NULL,
-    multiplier numeric(28,10) DEFAULT 1 NOT NULL
+    multiplier numeric(28,10) DEFAULT 1 NOT NULL,
+    daycount integer DEFAULT 3 NOT NULL
 );
 
 
@@ -5815,6 +5816,14 @@ ALTER TABLE ONLY public.future_product
 
 ALTER TABLE ONLY public.future_product
     ADD CONSTRAINT fk_future_product_currency FOREIGN KEY (currency) REFERENCES public.currency(id_currency);
+
+
+--
+-- Name: future_product fk_future_product_daycount; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.future_product
+    ADD CONSTRAINT fk_future_product_daycount FOREIGN KEY (daycount) REFERENCES public.daycount(id_daycount);
 
 
 --

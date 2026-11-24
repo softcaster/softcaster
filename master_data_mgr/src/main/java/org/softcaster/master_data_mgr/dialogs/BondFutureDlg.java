@@ -569,6 +569,8 @@ public class BondFutureDlg extends javax.swing.JDialog {
         txtTickSize.setText(p == null ? "" : FutureProductHelper.format(p.getTickSize()));
         txtInitMargin.setText(p == null ? "" : FutureProductHelper.format(p.getInitialMargin()));
         cbSettlementType.setSelectedItem(p == null ? null : p.getSettlementType());
+        // daycount della testata (ACT/360 per i future sui tassi Euribor, SOFR, SARON)
+        cbDaycount.setSelectedItem(p == null ? null : p.getDaycount());
         FutureProductHelper.selectById(cbCurrency, p == null ? null : p.getCurrency().getIdCurrency(), Currency::getIdCurrency);
     }
 

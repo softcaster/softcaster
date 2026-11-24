@@ -301,6 +301,7 @@ public class OptionProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         productPanel.add(jLabel9, gridBagConstraints);
 
+        txtContractValue.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         txtContractValue.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 txtContractValueFocusLost(evt);
@@ -325,6 +326,7 @@ public class OptionProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         productPanel.add(jLabel10, gridBagConstraints);
 
+        txtTickSize.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         txtTickSize.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 txtTickSizeFocusLost(evt);
@@ -349,6 +351,7 @@ public class OptionProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         productPanel.add(jLabel11, gridBagConstraints);
 
+        txtMultiplier.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         txtMultiplier.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 txtMultiplierFocusLost(evt);
@@ -373,6 +376,7 @@ public class OptionProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         productPanel.add(jLabel12, gridBagConstraints);
 
+        txtInitMargin.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         txtInitMargin.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 txtInitMarginFocusLost(evt);
@@ -397,6 +401,7 @@ public class OptionProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         productPanel.add(jLabel13, gridBagConstraints);
 
+        txtMaintMargin.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         txtMaintMargin.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 txtMaintMarginFocusLost(evt);
@@ -421,6 +426,7 @@ public class OptionProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         productPanel.add(jLabel14, gridBagConstraints);
 
+        txtBusinessDays.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 9;

@@ -95,6 +95,10 @@ public abstract class FutureMasterData extends MasterData {
         return getProduct().getSettlementType();
     }
 
+    public org.softcaster.engine.enums.DaycountBasis getDaycount() {
+        return getProduct().getDaycount();
+    }
+
     public Double getContractValue() {
         return getProduct().getContractValue();
     }

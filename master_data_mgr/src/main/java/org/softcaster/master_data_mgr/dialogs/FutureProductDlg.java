@@ -24,6 +24,7 @@ import org.softcaster.core.data.FxFutureProduct;
 import org.softcaster.core.data.MmFutureProduct;
 import org.softcaster.core.data.PowerFutureProduct;
 import org.softcaster.engine.enums.CommodityType;
+import org.softcaster.engine.enums.DaycountBasis;
 import org.softcaster.engine.enums.LoadType;
 import org.softcaster.engine.enums.SettlementType;
 import org.softcaster.master_data_mgr.MasterDataFacade;
@@ -136,6 +137,8 @@ public class FutureProductDlg extends javax.swing.JDialog {
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         cbSettlementType = new javax.swing.JComboBox<>();
+        jLabel17 = new javax.swing.JLabel();
+        cbDaycount = new javax.swing.JComboBox<>();
         txtBusinessDays = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
@@ -317,6 +320,7 @@ public class FutureProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(cbSettlementType, gridBagConstraints);
 
+        txtBusinessDays.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -346,6 +350,12 @@ public class FutureProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(jLabel10, gridBagConstraints);
 
+        txtContractValue.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtContractValue.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtContractValueFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -355,6 +365,12 @@ public class FutureProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(txtContractValue, gridBagConstraints);
 
+        txtTickSize.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtTickSize.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtTickSizeFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -384,6 +400,12 @@ public class FutureProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(jLabel12, gridBagConstraints);
 
+        txtInitMargin.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtInitMargin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtInitMarginFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
@@ -393,6 +415,12 @@ public class FutureProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(txtInitMargin, gridBagConstraints);
 
+        txtMaintMargin.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtMaintMargin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtMaintMarginFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
@@ -422,6 +450,12 @@ public class FutureProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(jLabel14, gridBagConstraints);
 
+        txtMultiplier.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtMultiplier.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtMultiplierFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 13;
@@ -478,9 +512,27 @@ public class FutureProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         fieldPanel.add(cbLoadType, gridBagConstraints);
 
+        jLabel17.setText("Daycount");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 16;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(jLabel17, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 17;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        fieldPanel.add(cbDaycount, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 18;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         fieldPanel.add(filler3, gridBagConstraints);
@@ -575,9 +627,31 @@ public class FutureProductDlg extends javax.swing.JDialog {
             txtAssetClass.setText(kind.assetClass);
             txtBusinessDays.setText(Integer.toString(kind.businessDays));
             txtMultiplier.setText(Converter.fromDouble(kind.multiplier));
+            // future sui tassi: ACT/360 (Euribor, SOFR, SARON; SONIA e' ACT/365); gli altri ACT/365
+            cbDaycount.setSelectedItem(kind == ProductKind.MM ? DaycountBasis.ACT_360 : DaycountBasis.ACT_365);
         }
         setUpSpecificFields(kind);
     }//GEN-LAST:event_cbTypeActionPerformed
+
+    private void txtContractValueFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtContractValueFocusLost
+        MDDialogHelper.textFieldDoubleFocusLost(txtContractValue);
+    }//GEN-LAST:event_txtContractValueFocusLost
+
+    private void txtTickSizeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTickSizeFocusLost
+        MDDialogHelper.textFieldDoubleFocusLost(txtTickSize);
+    }//GEN-LAST:event_txtTickSizeFocusLost
+
+    private void txtInitMarginFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtInitMarginFocusLost
+        MDDialogHelper.textFieldDoubleFocusLost(txtInitMargin);
+    }//GEN-LAST:event_txtInitMarginFocusLost
+
+    private void txtMaintMarginFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMaintMarginFocusLost
+        MDDialogHelper.textFieldDoubleFocusLost(txtMaintMargin);
+    }//GEN-LAST:event_txtMaintMarginFocusLost
+
+    private void txtMultiplierFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMultiplierFocusLost
+        MDDialogHelper.textFieldDoubleFocusLost(txtMultiplier);
+    }//GEN-LAST:event_txtMultiplierFocusLost
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
@@ -585,6 +659,7 @@ public class FutureProductDlg extends javax.swing.JDialog {
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<CommodityType> cbCommodityType;
     private javax.swing.JComboBox<Currency> cbCurrency;
+    private javax.swing.JComboBox<DaycountBasis> cbDaycount;
     private javax.swing.JComboBox<LoadType> cbLoadType;
     private javax.swing.JComboBox<SettlementType> cbSettlementType;
     private javax.swing.JComboBox<ProductKind> cbType;
@@ -600,6 +675,7 @@ public class FutureProductDlg extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -626,6 +702,8 @@ public class FutureProductDlg extends javax.swing.JDialog {
         cbType.setModel(new DefaultComboBoxModel<>(ProductKind.values()));
         cbCurrency.setModel(new DefaultComboBoxModel<>(masterDataFacade.getCurrencyDAO().findAll().toArray(Currency[]::new)));
         cbSettlementType.setModel(new DefaultComboBoxModel<>(SettlementType.values()));
+        cbDaycount.setModel(new DefaultComboBoxModel<>(DaycountBasis.values()));
+        cbDaycount.setSelectedItem(DaycountBasis.ACT_365);
         cbLoadType.setModel(new DefaultComboBoxModel<>(LoadType.values()));
 
         if (bean == null) {
@@ -642,6 +720,7 @@ public class FutureProductDlg extends javax.swing.JDialog {
             txtAssetClass.setText(fp.getAssetClass().getCode());
             FutureProductHelper.selectById(cbCurrency, fp.getCurrency().getIdCurrency(), Currency::getIdCurrency);
             cbSettlementType.setSelectedItem(fp.getSettlementType());
+            cbDaycount.setSelectedItem(fp.getDaycount());
             txtBusinessDays.setText(fp.getBusinessDays() == null ? "" : fp.getBusinessDays().toString());
             txtContractValue.setText(FutureProductHelper.format(fp.getContractValue()));
             txtTickSize.setText(FutureProductHelper.format(fp.getTickSize()));
@@ -718,8 +797,9 @@ public class FutureProductDlg extends javax.swing.JDialog {
      */
     private String validateIntegrity() {
         ProductKind kind = (ProductKind) cbType.getSelectedItem();
-        if (kind == null || cbCurrency.getSelectedItem() == null || cbSettlementType.getSelectedItem() == null) {
-            return "Please select type, currency and settlement type.";
+        if (kind == null || cbCurrency.getSelectedItem() == null || cbSettlementType.getSelectedItem() == null
+                || cbDaycount.getSelectedItem() == null) {
+            return "Please select type, currency, settlement type and daycount.";
         }
         if (isInsert && masterDataFacade.getFutureProductDAO().findByCode(txtCode.getText().trim()).isPresent()) {
             return "Product " + txtCode.getText().trim() + " already exists.";
@@ -767,6 +847,7 @@ public class FutureProductDlg extends javax.swing.JDialog {
             // il codice di borsa, se non indicato, e' il codice della testata
             fp.setExchangeContractCode(txtExchangeCode.getText().isBlank() ? fp.getCode() : txtExchangeCode.getText().trim());
             fp.setSettlementType((SettlementType) cbSettlementType.getSelectedItem());
+            fp.setDaycount((DaycountBasis) cbDaycount.getSelectedItem());
             fp.setContractValue(parse(txtContractValue));
             fp.setTickSize(parse(txtTickSize));
             fp.setInitialMargin(parse(txtInitMargin));

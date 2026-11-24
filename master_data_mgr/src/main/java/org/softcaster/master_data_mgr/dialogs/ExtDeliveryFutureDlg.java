@@ -867,6 +867,8 @@ public class ExtDeliveryFutureDlg extends javax.swing.JDialog {
         txtInitMargin.setText(p == null ? "" : FutureProductHelper.format(p.getInitialMargin()));
         txtMainMant.setText(p == null ? "" : FutureProductHelper.format(p.getMaintenanceMargin()));
         cbSettlementType.setSelectedItem(p == null ? null : p.getSettlementType());
+        // daycount della testata (ACT/360 per i future sui tassi Euribor, SOFR, SARON)
+        cbDaycount.setSelectedItem(p == null ? null : p.getDaycount());
         cbUnderlying.setSelectedItem(p == null ? null : p.getCommodityType());
         cbLoadType.setSelectedItem(p == null ? null : p.getLoadType());
         FutureProductHelper.selectById(cbCurrency, p == null ? null : p.getCurrency().getIdCurrency(), Currency::getIdCurrency);

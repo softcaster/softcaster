@@ -1,0 +1,28 @@
+Base di test sofie-base-20261124.backup (pg_dump formato custom)
+
+Stato
+- nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
+- calendario: official_date = last_official_date = 2026-11-19, next_business_date vuota, OPEN
+- chiusura: 12 step, compreso MATURITY
+- daycount della testata future (future_product.daycount, lookup daycount): ACT_365 per
+  tutte le testate (ACT_360 di default per i future sui tassi MFU, nessuno presente)
+- testate future: M6E, MFS (FFU), MBTP, UBND, FBTP (BFU), FESX (IXF)
+- nuove rispetto a sofie-base-20261123:
+    testata FBTP Long-Term Euro-BTP Futures (BFU, 100.000, margine iniziale 1.000)
+    scadenza FBTP dicembre 2026: DE000F2HLQE9, ultimo giorno di negoziazione 2026-12-08
+    scadenza FESX dicembre 2026 (id 111): ultimo giorno di negoziazione 2026-12-18,
+      codice e ISIN DE0009652388. ATTENZIONE: e' l'ISIN del prodotto FESX, non della
+      scadenza; quello della scadenza di dicembre 2026 e' DE000F0GDJX7
+      (EurexApiClient.findFutureIsin("FESX", 2026-12-18))
+    nessuna quotazione per le due scadenze
+- indici azionari: SX5E, testate FESX e OESX, superficie SX5E-VOL senza punti, come in
+  sofie-base-20261123
+- curve, superficie EURUSD-VOL, quotazioni, piano dei conti, account mapping e gerarchia
+  delle posizioni come in sofie-base-20261123
+
+Schema e dati di sistema coincidono con sofie_schema.sql, sofie_lookup.sql e
+sofie_config.sql del 2026-11-24. Sostituisce sofie-base-20261123 (senza daycount della
+testata future).
+
+Ripristino: ddl\restore_sofie_base.ps1 (usa l'ultimo sofie-base-*.backup)
+Una migrazione successiva va applicata dopo il ripristino, oppure va rifatto il backup.
