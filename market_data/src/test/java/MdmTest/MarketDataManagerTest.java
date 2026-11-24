@@ -13,6 +13,7 @@ import org.softcaster.market_data.core.MarketDataManagerFactory;
 import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.enums.Market;
 import org.softcaster.market_data.services.Eurext.EurexApiClient;
+import org.softcaster.market_data.services.Eurext.FutureContract;
 import org.softcaster.market_data.services.Eurext.OptionSeries;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -93,6 +94,16 @@ public class MarketDataManagerTest implements CommandLineRunner {
                 List<OptionSeries> chain = EurexApiClient.findSeries("OESX", LocalDate.of(2026, 12, 18), 6000.0, 6400.0, null);
                 for (OptionSeries s : chain) {
                     System.out.println(s.isin() + "\t" + s.strike() + "\t" + s.callPut() + "\t" + s.settlementPrice());
+                }
+            } catch (Exception ex) {
+                System.out.println("findSeries failed: " + ex.getMessage());
+            }
+            
+            // serie future btp
+            try {
+                List<FutureContract> chain = EurexApiClient.findFutures("FBTP");
+                for (FutureContract fc : chain) {
+                    System.out.println(fc.isin() + "\t" + fc.contract() + "\t" + fc.expirationDate());
                 }
             } catch (Exception ex) {
                 System.out.println("findSeries failed: " + ex.getMessage());
