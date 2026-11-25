@@ -912,6 +912,18 @@ CREATE TABLE public.coupon_pm (
 
 
 --
+-- Name: covered_warrant_product; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.covered_warrant_product (
+    id_option_product integer NOT NULL,
+    issuer integer NOT NULL,
+    ratio numeric(28,10) NOT NULL,
+    CONSTRAINT ck_covered_warrant_product_ratio CHECK ((ratio > (0)::numeric))
+);
+
+
+--
 -- Name: currency; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3564,6 +3576,14 @@ ALTER TABLE ONLY public.commodity_delivery_profile
 
 
 --
+-- Name: covered_warrant_product pk_covered_warrant_product; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.covered_warrant_product
+    ADD CONSTRAINT pk_covered_warrant_product PRIMARY KEY (id_option_product);
+
+
+--
 -- Name: eod_run pk_eod_run; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5544,6 +5564,22 @@ ALTER TABLE ONLY public.issuer
 
 ALTER TABLE ONLY public.flt_security_master_data
     ADD CONSTRAINT fk_coupon_pm FOREIGN KEY (coupon_pm) REFERENCES public.coupon_pm(coupon_pm_id);
+
+
+--
+-- Name: covered_warrant_product fk_covered_warrant_product_issuer; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.covered_warrant_product
+    ADD CONSTRAINT fk_covered_warrant_product_issuer FOREIGN KEY (issuer) REFERENCES public.issuer(id_issuer);
+
+
+--
+-- Name: covered_warrant_product fk_covered_warrant_product_parent; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.covered_warrant_product
+    ADD CONSTRAINT fk_covered_warrant_product_parent FOREIGN KEY (id_option_product) REFERENCES public.spot_option_product(id_option_product);
 
 
 --

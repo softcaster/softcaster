@@ -1,0 +1,24 @@
+Base di test sofie-base-20261125.backup (pg_dump formato custom)
+
+Stato
+- nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
+- calendario: official_date = last_official_date = 2026-11-19, next_business_date vuota, OPEN
+- chiusura: 12 step, compreso MATURITY
+- covered warrant (nuovo rispetto a sofie-base-20261124):
+    asset class CWT Covered Warrant (DER, script OPTION)
+    tabella covered_warrant_product (sottotipo di spot_option_product): emittente (issuer)
+      e ratio (unita' di sottostante per warrant, > 0); vuota, nessuna testata ne' serie
+    plain vanilla, per ora solo su indice; posizione in warrant al prezzo del warrant
+      (contract value e multiplier 1), prezzi teorici x ratio
+- emittenti (issuer): solo REP ITA e USDT; paesi (country): IT, US, GB, CH, CA, AU, JP, DE
+  (per emittenti come BNP Paribas o Societe Generale va aggiunta la Francia)
+- scadenza FESX dicembre 2026 (id 111) ancora con codice e ISIN DE0009652388, che e' l'ISIN
+  del prodotto FESX: quello della scadenza e' DE000F0GDJX7
+- testate future, indici, superfici, curve, quotazioni, piano dei conti, account mapping e
+  gerarchia delle posizioni come in sofie-base-20261124
+
+Schema e dati di sistema coincidono con sofie_schema.sql, sofie_lookup.sql e
+sofie_config.sql del 2026-11-25. Sostituisce sofie-base-20261124 (senza covered warrant).
+
+Ripristino: ddl\restore_sofie_base.ps1 (usa l'ultimo sofie-base-*.backup)
+Una migrazione successiva va applicata dopo il ripristino, oppure va rifatto il backup.
