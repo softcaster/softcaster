@@ -7,11 +7,13 @@ package MdmTest;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.softcaster.commons.utils.FileUtil;
 import org.softcaster.market_data.core.MarketDataManager;
 import org.softcaster.market_data.core.MarketDataManagerFactory;
 import org.softcaster.market_data.core.Node;
 import org.softcaster.market_data.core.enums.Market;
+import org.softcaster.market_data.services.Eurext.DeliverableBond;
 import org.softcaster.market_data.services.Eurext.EurexApiClient;
 import org.softcaster.market_data.services.Eurext.FutureContract;
 import org.softcaster.market_data.services.Eurext.OptionSeries;
@@ -68,7 +70,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
             if (node != null) {
                 System.out.println(node.symbol() + "\t" + node.data().bid());
             }
-            
+
             // call 5800 dicembre 2026: ogni serie di opzione ha il suo ISIN
             node = mdm.getQuote("OESX@DE000F0N5VS5", Market.OPTIONS);
             if (node != null) {
@@ -98,13 +100,26 @@ public class MarketDataManagerTest implements CommandLineRunner {
             } catch (Exception ex) {
                 System.out.println("findSeries failed: " + ex.getMessage());
             }
-            
+
             // serie future btp
             try {
                 List<FutureContract> chain = EurexApiClient.findFutures("FBTP");
                 for (FutureContract fc : chain) {
-                    System.out.println(fc.isin() + "\t" + fc.contract() + "\t" + fc.expirationDate());
+                    System.out.println(fc.isin() + "\t" + fc.contractId() + "\t" + fc.contract() + "\t" + fc.expirationDate());
                 }
+            } catch (Exception ex) {
+                System.out.println("findSeries failed: " + ex.getMessage());
+            }
+            // Deliverables future btp
+            try {
+                Map<Integer, List<DeliverableBond>> deliverables = EurexApiClient.findDeliverables("FBTP");
+                deliverables.forEach((contractId, bonds) -> {
+                    System.out.println("Contract ID: " + contractId);
+                    for (DeliverableBond bond : bonds) {
+                        System.out.println("  -> " + bond.bondIsin() + ";" + bond.coupon() + ";"
+                                + bond.maturity() + ";" + bond.conversionFactor());
+                    }
+                });
             } catch (Exception ex) {
                 System.out.println("findSeries failed: " + ex.getMessage());
             }
