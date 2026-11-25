@@ -12,10 +12,9 @@ import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.Issuer;
 import org.softcaster.master_data_mgr.JMasterDataMgr;
 import org.softcaster.master_data_mgr.MasterDataFacade;
-import org.softcaster.master_data_mgr.dialogs.PortfolioDlg;
+import org.softcaster.master_data_mgr.dialogs.IssuerDlg;
 import org.softcaster.master_data_mgr.models.MasterDataTableModel;
 import org.softcaster.master_data_mgr.models.beans.IssuerBean;
-import org.softcaster.master_data_mgr.models.beans.PortfolioBean;
 import org.softcaster.master_data_mgr.ui.ZebraTable;
 
 /**
@@ -124,14 +123,14 @@ public class IssuerPanel extends AbstactMDPanel {
             parentFrame = frame;
         }
         
-        PortfolioDlg dialog = new PortfolioDlg(parentFrame, true, null, masterDataFacade);
-        dialog.setSize(600, 400);
+        IssuerDlg dialog = new IssuerDlg(parentFrame, true, null, masterDataFacade);
+        dialog.setSize(600, 250);
         // Centra la dialog rispetto al pannello
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
 
         // Post chiusura dialog
-        MasterDataTableModel<PortfolioBean> model = (MasterDataTableModel<PortfolioBean>) issuerTable.getModel();
+        MasterDataTableModel<IssuerBean> model = (MasterDataTableModel<IssuerBean>) issuerTable.getModel();
         refreshModel(model);
     }
     
@@ -141,8 +140,8 @@ public class IssuerPanel extends AbstactMDPanel {
         if (rowIndex != -1) {
             // 1. CONVERSIONE FONDAMENTALE
             int modelRow = issuerTable.convertRowIndexToModel(rowIndex);
-            MasterDataTableModel<PortfolioBean> model = (MasterDataTableModel<PortfolioBean>) issuerTable.getModel();
-            PortfolioBean portfolioBean = model.getElementAt(modelRow);
+            MasterDataTableModel<IssuerBean> model = (MasterDataTableModel<IssuerBean>) issuerTable.getModel();
+            IssuerBean issuerBean = model.getElementAt(modelRow);
             java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
             java.awt.Frame parentFrame = null;
             
@@ -150,8 +149,8 @@ public class IssuerPanel extends AbstactMDPanel {
                 parentFrame = frame;
             }
             
-            PortfolioDlg dialog = new PortfolioDlg(parentFrame, true, portfolioBean, masterDataFacade);
-            dialog.setSize(600, 400);
+            IssuerDlg dialog = new IssuerDlg(parentFrame, true, issuerBean, masterDataFacade);
+            dialog.setSize(600, 250);
             // Centra la dialog rispetto al pannello
             dialog.setLocationRelativeTo(this);
             dialog.setVisible(true);
@@ -167,17 +166,20 @@ public class IssuerPanel extends AbstactMDPanel {
         if (rowIndex != -1) {
             // 1. CONVERSIONE FONDAMENTALE
             int modelRow = issuerTable.convertRowIndexToModel(rowIndex);
-            MasterDataTableModel<PortfolioBean> model = (MasterDataTableModel<PortfolioBean>) issuerTable.getModel();
-            PortfolioBean bean = model.getElementAt(modelRow);
+            MasterDataTableModel<IssuerBean> model = (MasterDataTableModel<IssuerBean>) issuerTable.getModel();
+            IssuerBean bean = model.getElementAt(modelRow);
             if (JOptionPane.showConfirmDialog(this,
                     "Are you sure to delete item? " + bean.getValueAt(0), JMasterDataMgr.TITLE,
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                 try {
-                    masterDataFacade.getPositionMasterDataDAO().delete(bean.getNode());
+                    masterDataFacade.getIssuerDAO().delete(bean.getIssuer());
                     refreshModel(model);
                 } catch (Exception ex) {
+                    // tipicamente l'emittente e' ancora usato da titoli o covered warrant
                     LoggerMgr.logError(ex.getLocalizedMessage());
+                    JOptionPane.showMessageDialog(this, "The issuer cannot be deleted: it is used by securities or covered warrants.",
+                            JMasterDataMgr.TITLE, JOptionPane.ERROR_MESSAGE);
                 }
             }
         }

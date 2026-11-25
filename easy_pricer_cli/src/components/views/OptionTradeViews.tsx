@@ -20,3 +20,5 @@ export const FxFutureOptionView = () => <OptionTradeView assetClass="FFO" />;
 export const BondOptionView = () => <OptionTradeView assetClass="BDO" />;
 export const BondFutureOptionView = () => <OptionTradeView assetClass="BFO" />;
 export const IndexOptionView = () => <OptionTradeView assetClass="IXO" />;
+// covered warrant: quantita' in warrant, prezzo per warrant
+export const CoveredWarrantView = () => <OptionTradeView assetClass="CWT" />;

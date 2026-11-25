@@ -124,7 +124,8 @@ public abstract class OptionEvaluator extends AbstractEvaluator implements IPosi
                 return null;
             }
             OptionInput input = optionCalculator.getOptionInput(omd.getCode(), officialDate, null, null, null, null, vol.get());
-            return optionCalculator.valuation(input).price();
+            // nell'unita' quotata della serie (covered warrant: prezzo del warrant)
+            return optionCalculator.quotedPrice(omd, input);
         } catch (RuntimeException e) {
             log.warn("Theoretical price of {} not computed: {}", omd.getCode(), e.getMessage());
             return null;
@@ -145,7 +146,9 @@ public abstract class OptionEvaluator extends AbstractEvaluator implements IPosi
             throw new MtmException("Missing underlying quote for expired option " + omd.getCode());
         }
         double strike = omd.getStrike();
-        return omd.getOptionType() == OptionType.CALL ? Math.max(price - strike, 0.) : Math.max(strike - price, 0.);
+        double intrinsic = omd.getOptionType() == OptionType.CALL ? Math.max(price - strike, 0.) : Math.max(strike - price, 0.);
+        // nell'unita' quotata della serie (covered warrant: per warrant)
+        return intrinsic * omd.getPriceRatio();
     }
 
     /**
@@ -181,5 +184,12 @@ public abstract class OptionEvaluator extends AbstractEvaluator implements IPosi
      */
     @Component("IXO")
     public static class IndexOption extends OptionEvaluator {
+    }
+
+    /**
+     * Covered warrant: prezzi per warrant (OptionMasterData.getPriceRatio).
+     */
+    @Component("CWT")
+    public static class CoveredWarrant extends OptionEvaluator {
     }
 }

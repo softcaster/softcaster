@@ -20,11 +20,13 @@ interface OptionPricingFormProps {
 //  BDO:      opzione su titolo -> prezzo secco, curva/tasso repo (anche per lo sconto del premio)
 //  IXO:      opzione su indice -> livello dell'indice, curva/tasso di sconto (default: curva dell'indice);
 //            il forward usa il dividend yield dell'indice in anagrafica
+//  CWT:      covered warrant su indice -> come IXO; premio, greche e premio di mercato sono per warrant (x ratio)
 const underlyingLabel = (assetClass?: string) => {
     switch (assetClass) {
         case 'FXO': return 'Spot Rate';
         case 'BDO': return 'Bond Clean Price';
-        case 'IXO': return 'Index Level';
+        case 'IXO':
+        case 'CWT': return 'Index Level';
         default: return 'Future Price';
     }
 };

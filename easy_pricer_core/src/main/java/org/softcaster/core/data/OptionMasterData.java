@@ -126,6 +126,23 @@ public abstract class OptionMasterData extends MasterData {
         return getProduct().getContractValue();
     }
 
+    /**
+     * Unita' di sottostante per unita' quotata: 1 per le opzioni di borsa (il
+     * prezzo e' il premio per unita' di sottostante), il multiplo per i
+     * covered warrant (il prezzo e' quello del warrant). Prezzo quotato =
+     * premio per unita' di sottostante x ratio; vale anche per il valore
+     * intrinseco a scadenza.
+     *
+     * @return
+     */
+    public double getPriceRatio() {
+        Object product = org.hibernate.Hibernate.unproxy(getProduct());
+        if (product instanceof CoveredWarrantProduct cw && cw.getRatio() != null && cw.getRatio() > 0) {
+            return cw.getRatio();
+        }
+        return 1.;
+    }
+
     public Double getTickSize() {
         return getProduct().getTickSize();
     }

@@ -199,6 +199,10 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                             cl.show(mainPanel, AppCard.INDEX_OPTION_CARD.name());
                             currentCard = AppCard.INDEX_OPTION_CARD;
                         }
+                        case COVERED_WARRANT -> {
+                            cl.show(mainPanel, AppCard.COVERED_WARRANT_CARD.name());
+                            currentCard = AppCard.COVERED_WARRANT_CARD;
+                        }
                         case MARKET_QUOTE_DEFINITION -> {
                             cl.show(mainPanel, AppCard.MARKET_QUOTE_DEFINITION_CARD.name());
                             currentCard = AppCard.MARKET_QUOTE_DEFINITION_CARD;
@@ -532,6 +536,11 @@ public class JMasterDataMgr extends javax.swing.JFrame {
                 OptionPanel.Branch.SPOT, List.of("IXO"));
         cardMap.put(AppCard.INDEX_OPTION_CARD, indexOptionPanel);
 
+        // covered warrant: serie delle testate CWT (emittente, ratio), su indice
+        JPanel coveredWarrantPanel = new OptionPanel(masterDataFacade, "Covered Warrant Master Data",
+                OptionPanel.Branch.SPOT, List.of("CWT"));
+        cardMap.put(AppCard.COVERED_WARRANT_CARD, coveredWarrantPanel);
+
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT.name());
         mainPanel.add(bondPanel, AppCard.BOND_CARD.name());
@@ -557,6 +566,7 @@ public class JMasterDataMgr extends javax.swing.JFrame {
         mainPanel.add(indexPanel, AppCard.INDEX_CARD.name());
         mainPanel.add(indexFuturePanel, AppCard.INDEX_FUTURE_CARD.name());
         mainPanel.add(indexOptionPanel, AppCard.INDEX_OPTION_CARD.name());
+        mainPanel.add(coveredWarrantPanel, AppCard.COVERED_WARRANT_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

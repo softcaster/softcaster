@@ -32,7 +32,8 @@ public class SpotOptionProduct extends OptionProduct {
     public static final Map<String, Class<? extends MasterData>> UNDERLYING_TYPES = Map.of(
             "FXO", ForexMasterData.class,
             "BDO", SecurityMasterData.class,
-            "IXO", IndexMasterData.class);
+            "IXO", IndexMasterData.class,
+            CoveredWarrantProduct.ASSET_CLASS, IndexMasterData.class);   // covered warrant: per ora solo su indice
 
     @ManyToOne(fetch = FetchType.EAGER) // sottostante fisso: letto dalle finestre fuori transazione
     @JoinColumn(name = "underlying")

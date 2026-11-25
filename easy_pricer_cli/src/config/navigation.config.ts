@@ -22,6 +22,7 @@ export const BondOptionView = lazy(() => import('../components/views/OptionTrade
 export const BondFutureOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.BondFutureOptionView })));
 export const IndexOptionView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.IndexOptionView })));
 export const IndexFutureView = lazy(() => import('../components/views/IndexFutureView'));
+export const CoveredWarrantView = lazy(() => import('../components/views/OptionTradeViews.tsx').then(m => ({ default: m.CoveredWarrantView })));
 export const PositionProspectView = lazy(() => import('../components/views/PositionProspectView'));
 export const AccountingProspectView = lazy(() => import('../components/views/AccountingProspectView'));
 
@@ -70,7 +71,8 @@ export const navigationNodes: TreeNode[] = [
         label: 'Equity Index',
         children: [
           { key: 'indexfuture-key', label: 'Index Futures', data: '/indexfuture' },
-          { key: 'indexoption-key', label: 'Index Options', data: '/indexoption' }
+          { key: 'indexoption-key', label: 'Index Options', data: '/indexoption' },
+          { key: 'coveredwarrant-key', label: 'Covered Warrants', data: '/coveredwarrant' }
         ]
       },
       {
