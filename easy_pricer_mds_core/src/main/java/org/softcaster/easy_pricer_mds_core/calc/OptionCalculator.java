@@ -416,28 +416,47 @@ public class OptionCalculator {
         double firstVol = volatility != null && volatility > 0 ? volatility : 0.20;
         OptionInput input = getOptionInput(request.isin, valuationDate, request.referencePrice,
                 request.domesticRCurve, request.domesticRate, request.foreignRCurve, firstVol);
+        // covered warrant: prezzo per warrant = premio per unita' di sottostante x ratio
+        double ratio = findSeries(request.isin).getPriceRatio();
         if (implied) {
-            input = input.withVolatility(impliedVolatility(input, request.optionPrice));
+            input = input.withVolatility(impliedVolatility(input, request.optionPrice / ratio));
         }
-        return response(input, volatilitySource);
+        return response(input, volatilitySource, ratio);
     }
 
-    private PricingResponse response(OptionInput input, String volatilitySource) {
+    /**
+     * Prezzo teorico nell'unita' quotata della serie: premio per unita' di
+     * sottostante per le opzioni di borsa, prezzo del warrant (x ratio) per i
+     * covered warrant.
+     *
+     * @param omd serie
+     * @param input input del pricer per la serie
+     * @return
+     */
+    public double quotedPrice(OptionMasterData omd, OptionInput input) {
+        return valuation(input).price() * omd.getPriceRatio();
+    }
+
+    /**
+     * Risultati nell'unita' quotata: con ratio diverso da 1 (covered warrant)
+     * premio, valore e greche sono per warrant.
+     */
+    private PricingResponse response(OptionInput input, String volatilitySource, double ratio) {
         OptionResult result = valuation(input);
         PricingResponse response = new PricingResponse();
         response.optionModel = model(input);
-        response.optionPremium = result.price();
-        response.optionValue = result.positionValue();
+        response.optionPremium = result.price() * ratio;
+        response.optionValue = result.positionValue() * ratio;
         response.volatility = input.volatility();
         response.volatilitySource = volatilitySource;
         response.underlyingForward = result.forward();
         response.discountFactor = result.discountFactor();
         response.timeToExpiry = result.timeToExpiry();
-        response.delta = result.greeks().delta();
-        response.gamma = result.greeks().gamma();
-        response.vega = result.greeks().vega();
-        response.theta = result.greeks().theta();
-        response.rho = result.greeks().rho();
+        response.delta = result.greeks().delta() * ratio;
+        response.gamma = result.greeks().gamma() * ratio;
+        response.vega = result.greeks().vega() * ratio;
+        response.theta = result.greeks().theta() * ratio;
+        response.rho = result.greeks().rho() * ratio;
         return response;
     }
 
@@ -532,7 +551,7 @@ public class OptionCalculator {
         if (implied) {
             input = input.withVolatility(impliedVolatility(input, optionPrice));
         }
-        return response(input, volatilitySource);
+        return response(input, volatilitySource, 1.);
     }
 
     // ------------------------------------------------------------------------

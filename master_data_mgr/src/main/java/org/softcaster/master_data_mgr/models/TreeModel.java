@@ -54,6 +54,7 @@ public class TreeModel {
         spotOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Fx Options", AppTreeItem.FX_OPTION)));
         spotOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Bond Options", AppTreeItem.BOND_OPTION)));
         spotOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Index Options", AppTreeItem.INDEX_OPTION)));
+        spotOptions.add(new DefaultMutableTreeNode(new MasterDataNode("Covered Warrants", AppTreeItem.COVERED_WARRANT)));
         options.add(spotOptions);
         derivatives.add(options);
 

@@ -291,6 +291,7 @@ INSERT INTO public.asset_class (id_asset_class, super_class, code, description) 
 INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (22, 1, 'IDX', 'Equity Index');
 INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (23, 4, 'IXF', 'Index Future');
 INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (24, 4, 'IXO', 'Index Option');
+INSERT INTO public.asset_class (id_asset_class, super_class, code, description) VALUES (25, 4, 'CWT', 'Covered Warrant');
 
 
 --
@@ -318,6 +319,7 @@ INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, as
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (19, 21, NULL, 'OPTION');
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (20, 23, NULL, 'FUT');
 INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (21, 24, NULL, 'OPTION');
+INSERT INTO public.asset_class_script_mapping (asset_class_script_mapping_id, asset_class, event_type, script_code) VALUES (22, 25, NULL, 'OPTION');
 
 
 --
@@ -853,14 +855,14 @@ SELECT pg_catalog.setval('public.account_mapping_s', 120, true);
 -- Name: asset_class_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.asset_class_s', 24, true);
+SELECT pg_catalog.setval('public.asset_class_s', 25, true);
 
 
 --
 -- Name: asset_class_script_mapping_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.asset_class_script_mapping_s', 21, true);
+SELECT pg_catalog.setval('public.asset_class_script_mapping_s', 22, true);
 
 
 --

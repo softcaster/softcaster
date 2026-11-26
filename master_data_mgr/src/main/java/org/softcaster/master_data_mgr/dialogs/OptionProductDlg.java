@@ -18,7 +18,9 @@ import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
 import org.softcaster.core.data.AssetClass;
 import org.softcaster.core.data.Currency;
+import org.softcaster.core.data.CoveredWarrantProduct;
 import org.softcaster.core.data.FutureOptionProduct;
+import org.softcaster.core.data.Issuer;
 import org.softcaster.core.data.FutureProduct;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.OptionProduct;
@@ -117,6 +119,10 @@ public class OptionProductDlg extends javax.swing.JDialog {
         cbFutureProduct = new javax.swing.JComboBox<>();
         jLabel18 = new javax.swing.JLabel();
         cbFixedUnderlying = new javax.swing.JComboBox<>();
+        jLabel19 = new javax.swing.JLabel();
+        cbIssuer = new javax.swing.JComboBox<>();
+        jLabel20 = new javax.swing.JLabel();
+        txtRatio = new javax.swing.JTextField();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         btnPanel = new javax.swing.JPanel();
         btnSave = new javax.swing.JButton();
@@ -514,9 +520,52 @@ public class OptionProductDlg extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         productPanel.add(cbFixedUnderlying, gridBagConstraints);
 
+        jLabel19.setText("Issuer");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        productPanel.add(jLabel19, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        productPanel.add(cbIssuer, gridBagConstraints);
+
+        jLabel20.setText("Ratio (underlying per warrant)");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        productPanel.add(jLabel20, gridBagConstraints);
+
+        txtRatio.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        txtRatio.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtRatioFocusLost(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        productPanel.add(txtRatio, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 16;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
@@ -626,6 +675,10 @@ public class OptionProductDlg extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
 
+    private void txtRatioFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtRatioFocusLost
+        MDDialogHelper.textFieldDoubleFocusLost(txtRatio);
+    }//GEN-LAST:event_txtRatioFocusLost
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel productPanel;
@@ -665,6 +718,10 @@ public class OptionProductDlg extends javax.swing.JDialog {
     private javax.swing.JComboBox<FutureProduct> cbFutureProduct;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JComboBox<MasterData> cbFixedUnderlying;
+    private javax.swing.JLabel jLabel19;
+    private javax.swing.JComboBox<Issuer> cbIssuer;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JTextField txtRatio;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.JPanel btnPanel;
@@ -714,11 +771,21 @@ public class OptionProductDlg extends javax.swing.JDialog {
             txtMultiplier.setText(Converter.fromDouble(1.));
             txtBusinessDays.setText("2");
         }
+        cbIssuer.setModel(new DefaultComboBoxModel<>(masterDataFacade.getIssuerDAO().findAll().toArray(Issuer[]::new)));
+        cbIssuer.setSelectedIndex(-1);
         refreshKind();
         if (product instanceof FutureOptionProduct fop) {
             selectById(cbFutureProduct, fop.getFutureProduct() == null ? null : fop.getFutureProduct().getIdFutureProduct());
         } else if (product instanceof SpotOptionProduct sop && sop.getUnderlying() != null) {
             selectMasterData(sop.getUnderlying());
+        }
+        if (product instanceof CoveredWarrantProduct cw) {
+            for (int i = 0; i < cbIssuer.getItemCount(); i++) {
+                if (cw.getIssuer() != null && Objects.equals(cbIssuer.getItemAt(i).getIdIssuer(), cw.getIssuer().getIdIssuer())) {
+                    cbIssuer.setSelectedIndex(i);
+                }
+            }
+            txtRatio.setText(cw.getRatio() == null ? "" : Converter.fromDouble(cw.getRatio()));
         }
         loading = false;
 
@@ -756,6 +823,25 @@ public class OptionProductDlg extends javax.swing.JDialog {
         }
         cbFixedUnderlying.setModel(new DefaultComboBoxModel<>(underlyings.toArray(MasterData[]::new)));
         cbFixedUnderlying.setEnabled(underlyingType != null);
+
+        // covered warrant: emittente e ratio; posizione in warrant al prezzo del
+        // warrant (contract value e multiplier 1), premio pagato subito, contanti
+        boolean cw = coveredWarrantKind();
+        jLabel19.setVisible(cw);
+        cbIssuer.setVisible(cw);
+        jLabel20.setVisible(cw);
+        txtRatio.setVisible(cw);
+        if (cw && product == null) {
+            txtContractValue.setText(Converter.fromDouble(1.));
+            txtMultiplier.setText(Converter.fromDouble(1.));
+            cbPremiumStyle.setSelectedItem(PremiumStyle.EQUITY_STYLE);
+            cbSettlementType.setSelectedItem(SettlementType.CASH);
+            cbExerciseStyle.setSelectedItem(ExerciseStyle.EUROPEAN);
+        }
+    }
+
+    private boolean coveredWarrantKind() {
+        return CoveredWarrantProduct.ASSET_CLASS.equals(selectedAssetClass());
     }
 
     /**
@@ -780,9 +866,25 @@ public class OptionProductDlg extends javax.swing.JDialog {
                 ZoneId.of(zone); // fuso IANA valido (America/New_York, Europe/Rome)
             }
 
+            Double ratio = null;
+            if (coveredWarrantKind()) {
+                if (cbIssuer.getSelectedItem() == null) {
+                    return "Missing issuer of the covered warrants";
+                }
+                ratio = txtRatio.getText().isBlank() ? null : Converter.toDouble(txtRatio.getText(), false);
+                if (ratio == null || ratio <= 0) {
+                    return "The ratio (underlying units per warrant) must be greater than 0";
+                }
+                if (Converter.toDouble(txtContractValue.getText(), false) != 1.
+                        || Converter.toDouble(txtMultiplier.getText(), false) != 1.) {
+                    return "Covered warrants are traded per warrant: contract value and multiplier must be 1 (use the ratio)";
+                }
+            }
+
             OptionProduct p = product;
             if (p == null) {
-                p = futureKind() ? new FutureOptionProduct() : new SpotOptionProduct();
+                p = futureKind() ? new FutureOptionProduct()
+                        : coveredWarrantKind() ? new CoveredWarrantProduct() : new SpotOptionProduct();
                 p.setCode(code);
                 p.setAssetClass(assetClass);
                 p.setCurrency((Currency) cbCurrency.getSelectedItem());
@@ -820,6 +922,10 @@ public class OptionProductDlg extends javax.swing.JDialog {
                     }
                 }
                 sop.setUnderlying(fixed);
+            }
+            if (p instanceof CoveredWarrantProduct cw) {
+                cw.setIssuer((Issuer) cbIssuer.getSelectedItem());
+                cw.setRatio(ratio);
             }
             masterDataFacade.getOptionProductDAO().saveOrUpdate(p);
             return null;

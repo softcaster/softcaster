@@ -240,7 +240,9 @@ public class MaturityService {
         }
         double underlyingPrice = closePrice(underlying);
         boolean call = omd.getOptionType() == OptionType.CALL;
-        double intrinsic = Math.max(call ? underlyingPrice - omd.getStrike() : omd.getStrike() - underlyingPrice, 0.);
+        // nell'unita' quotata della serie: per i covered warrant x ratio (prezzo per warrant)
+        double intrinsic = Math.max(call ? underlyingPrice - omd.getStrike() : omd.getStrike() - underlyingPrice, 0.)
+                * omd.getPriceRatio();
         double contracts = Math.abs(net) / omd.getContractValue();
 
         save(deal(detail, position, omd, date, date, closeSide, contracts, intrinsic, sbc,

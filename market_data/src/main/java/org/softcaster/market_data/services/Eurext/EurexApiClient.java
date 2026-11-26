@@ -108,8 +108,9 @@ public class EurexApiClient {
     /**
      * Ultimo prezzo di settlement del contratto con l'ISIN dato, null se il
      * prodotto non ha quell'ISIN o il contratto non ha ancora un settlement.
+     *
      * @param isin
-     * @return 
+     * @return
      * @throws java.lang.Exception
      */
     public ContractData executeQueryContractPrice(String isin) throws Exception {
@@ -134,7 +135,7 @@ public class EurexApiClient {
      * @param expiry data di scadenza della serie, es. 2026-12-18
      * @param strike prezzo di esercizio
      * @param callPut "C" o "P"
-     * @return 
+     * @return
      * @throws java.lang.Exception
      */
     public static String findIsin(String product, LocalDate expiry, double strike, String callPut) throws Exception {
@@ -174,7 +175,8 @@ public class EurexApiClient {
     /**
      * Catena delle opzioni di una scadenza, filtrata lato server. I filtri a
      * null non vengono applicati. Se una serie ha piu' versioni (aggiustamento
-     * di capitale) le restituisce tutte: quella standard ha VersionNr piu' basso.
+     * di capitale) le restituisce tutte: quella standard ha VersionNr piu'
+     * basso.
      *
      * @param product codice Eurex del prodotto, es. OESX
      * @param expiry data di scadenza, es. 2026-12-18
@@ -287,8 +289,8 @@ public class EurexApiClient {
     }
 
     /**
-     * ISIN della scadenza di un future, null se il prodotto non ha una
-     * scadenza in quella data.
+     * ISIN della scadenza di un future, null se il prodotto non ha una scadenza
+     * in quella data.
      *
      * @param product codice Eurex del prodotto, es. FESX
      * @param expiry data di scadenza, es. 2026-12-18
@@ -304,6 +306,24 @@ public class EurexApiClient {
     }
 
     public Map<Integer, List<DeliverableBond>> executeQueryDeliverables() throws Exception {
+        JsonNode data = execute(QUERY_DELIVERABLES, Map.of("product", product));
+
+        Map<Integer, List<DeliverableBond>> basket = new HashMap<>();
+        for (JsonNode b : data.path("deliverables").path("data")) {
+            DeliverableBond bond = new DeliverableBond(
+                    b.get("ContractID").asInt(),
+                    b.path("BondISIN").asText(),
+                    b.path("BondName").asText(),
+                    b.path("BondCouponRate").asDouble(),
+                    b.path("BondMaturityDate").asText(),
+                    b.path("ConversionFactor").asDouble());
+            basket.computeIfAbsent(bond.contractId(), k -> new ArrayList<>()).add(bond);
+        }
+        basket.values().forEach(l -> l.sort(Comparator.comparing(DeliverableBond::maturity)));
+        return basket;
+    }
+
+    public static Map<Integer, List<DeliverableBond>> findDeliverables(String product) throws Exception {
         JsonNode data = execute(QUERY_DELIVERABLES, Map.of("product", product));
 
         Map<Integer, List<DeliverableBond>> basket = new HashMap<>();

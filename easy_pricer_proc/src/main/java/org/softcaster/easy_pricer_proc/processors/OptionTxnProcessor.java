@@ -121,4 +121,13 @@ public abstract class OptionTxnProcessor extends AbstractTxnProcessor implements
     @Component("IXO")
     public static class IndexOption extends OptionTxnProcessor {
     }
+
+    /**
+     * Covered warrant: numero di warrant al prezzo del warrant (contract value
+     * e multiplier 1), premio pagato subito, nessun margine (la testata non ne
+     * ha). La vendita resta ammessa: la banca puo' essere l'emittente.
+     */
+    @Component("CWT")
+    public static class CoveredWarrant extends OptionTxnProcessor {
+    }
 }
