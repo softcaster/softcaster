@@ -44,6 +44,7 @@ public class TreeModel {
         DefaultMutableTreeNode options = new DefaultMutableTreeNode("Options");
         options.add(new DefaultMutableTreeNode(new FndtNode<>("Fx Options", AppTreeItem.FX_OPTION)));
         options.add(new DefaultMutableTreeNode(new FndtNode<>("Index Options", AppTreeItem.INDEX_OPTION)));
+        options.add(new DefaultMutableTreeNode(new FndtNode<>("Covered Warrants", AppTreeItem.COVERED_WARRANT)));
         derivatives.add(options);
 
         instruments.add(derivatives);

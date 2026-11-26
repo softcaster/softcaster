@@ -633,7 +633,7 @@ public class OptionProductDlg extends javax.swing.JDialog {
     }//GEN-LAST:event_cbAssetClassActionPerformed
 
     private void txtContractValueFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtContractValueFocusLost
-        DialogHelper.textFieldDoubleFocusLost(txtContractValue);
+        MDDialogHelper.textFieldDoubleFocusLost(txtContractValue);
     }//GEN-LAST:event_txtContractValueFocusLost
 
     private void txtTickSizeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtTickSizeFocusLost
@@ -646,15 +646,15 @@ public class OptionProductDlg extends javax.swing.JDialog {
     }//GEN-LAST:event_txtTickSizeFocusLost
 
     private void txtMultiplierFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMultiplierFocusLost
-        DialogHelper.textFieldDoubleFocusLost(txtMultiplier);
+        MDDialogHelper.textFieldDoubleFocusLost(txtMultiplier);
     }//GEN-LAST:event_txtMultiplierFocusLost
 
     private void txtInitMarginFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtInitMarginFocusLost
-        DialogHelper.textFieldDoubleFocusLost(txtInitMargin);
+        MDDialogHelper.textFieldDoubleFocusLost(txtInitMargin);
     }//GEN-LAST:event_txtInitMarginFocusLost
 
     private void txtMaintMarginFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtMaintMarginFocusLost
-        DialogHelper.textFieldDoubleFocusLost(txtMaintMargin);
+        MDDialogHelper.textFieldDoubleFocusLost(txtMaintMargin);
     }//GEN-LAST:event_txtMaintMarginFocusLost
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed

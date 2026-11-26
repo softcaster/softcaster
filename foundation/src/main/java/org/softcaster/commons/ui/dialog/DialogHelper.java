@@ -21,7 +21,7 @@ public class DialogHelper {
         try {
             double price = 0.;
             if (doubleStr != null && !doubleStr.isEmpty()) {
-                price = Converter.toDouble(doubleStr, true);
+                price = Converter.toDouble(doubleStr, false);
             }
             textField.setText(Converter.fromDouble(price));
         } catch (ParseException ex) {

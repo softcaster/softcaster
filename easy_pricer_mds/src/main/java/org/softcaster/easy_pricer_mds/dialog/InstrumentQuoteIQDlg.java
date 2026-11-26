@@ -10,7 +10,6 @@ import javax.swing.DefaultComboBoxModel;
 import org.softcaster.commons.ui.dialog.DialogHelper;
 import org.softcaster.commons.utils.Converter;
 import org.softcaster.commons.utils.LoggerMgr;
-import org.softcaster.core.data.MasterData;
 import org.softcaster.core.data.InstrumentQuote;
 import org.softcaster.core.data.MasterData;
 import org.softcaster.easy_pricer_mds.MDSFacade;

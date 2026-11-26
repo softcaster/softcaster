@@ -172,6 +172,10 @@ public class JMarketDataService extends javax.swing.JFrame {
                                 cl.show(mainPanel, AppCard.INDEX_OPTION_CARD.name());
                                 currentCard = AppCard.INDEX_OPTION_CARD;
                             }
+                            case COVERED_WARRANT -> {
+                                cl.show(mainPanel, AppCard.COVERED_WARRANT_CARD.name());
+                                currentCard = AppCard.COVERED_WARRANT_CARD;
+                            }
                             case BATCH_ZSPREAD -> {
                                 cl.show(mainPanel, AppCard.BATCH_ZSPREAD_CARD.name());
                                 currentCard = AppCard.BATCH_ZSPREAD_CARD;
@@ -456,6 +460,10 @@ public class JMarketDataService extends javax.swing.JFrame {
         JPanel indexOptPanel = new InstrumentQuotePanel(mDSFacade, "Index Option Quotes", "IXO",
                 org.softcaster.market_data.core.enums.Market.OPTIONS);
         cardMap.put(AppCard.INDEX_OPTION_CARD, indexOptPanel);
+        // covered warrant: prezzo per warrant, Borsa Italiana SeDeX (codice = ISIN)
+        JPanel coveredWarrantPanel = new InstrumentQuotePanel(mDSFacade, "Covered Warrant Quotes", "CWT",
+                org.softcaster.market_data.core.enums.Market.OPTIONS);
+        cardMap.put(AppCard.COVERED_WARRANT_CARD, coveredWarrantPanel);
 
         // 2. Aggiunge al mainPanel assegnando un nome (la "Chiave" della Card)
         mainPanel.add(defaultPanel, AppCard.DEFAULT_CARD.name());
@@ -476,6 +484,7 @@ public class JMarketDataService extends javax.swing.JFrame {
         mainPanel.add(indexPanel, AppCard.INDEX_CARD.name());
         mainPanel.add(indexFutPanel, AppCard.INDEX_FUTURE_CARD.name());
         mainPanel.add(indexOptPanel, AppCard.INDEX_OPTION_CARD.name());
+        mainPanel.add(coveredWarrantPanel, AppCard.COVERED_WARRANT_CARD.name());
 
         // 3. Mostra la card iniziale
         CardLayout cl = (CardLayout) mainPanel.getLayout();

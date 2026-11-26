@@ -334,6 +334,7 @@ INSERT INTO public.country (id_country, country_name, official_state_name, alfa_
 INSERT INTO public.country (id_country, country_name, official_state_name, alfa_2_code, alfa_3_code, country_numeric_code, sovereign, subdivision_code_links, internet_cc_tld, currency, calendar) VALUES (7, 'JP', 'Japan', 'JP', 'JPN', 392, 'UN Member State', '', '', 7, 2);
 INSERT INTO public.country (id_country, country_name, official_state_name, alfa_2_code, alfa_3_code, country_numeric_code, sovereign, subdivision_code_links, internet_cc_tld, currency, calendar) VALUES (1, 'ITA', 'Italy', 'IT', 'ITA', 381, 'UN Member State', '', '', 1, 1);
 INSERT INTO public.country (id_country, country_name, official_state_name, alfa_2_code, alfa_3_code, country_numeric_code, sovereign, subdivision_code_links, internet_cc_tld, currency, calendar) VALUES (8, 'DEU', 'Germany', 'DE', 'DEU', 276, 'UN Member State', '', '', 1, 1);
+INSERT INTO public.country (id_country, country_name, official_state_name, alfa_2_code, alfa_3_code, country_numeric_code, sovereign, subdivision_code_links, internet_cc_tld, currency, calendar) VALUES (9, 'FRA', 'French Republic (the)', 'FR', 'FRA', 250, 'UN Member State', '', '', 1, 1);
 
 
 --
@@ -890,7 +891,7 @@ SELECT pg_catalog.setval('public.counterparty_s', 5, true);
 -- Name: country_s; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.country_s', 8, true);
+SELECT pg_catalog.setval('public.country_s', 9, true);
 
 
 --

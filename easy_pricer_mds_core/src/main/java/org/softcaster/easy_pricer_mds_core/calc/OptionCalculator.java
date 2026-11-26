@@ -438,6 +438,87 @@ public class OptionCalculator {
     }
 
     /**
+     * Confronto tra un covered warrant e la serie quotata in borsa con gli
+     * stessi termini (es. call 6000 marzo 2027 su SX5E: warrant BNP e OESX).
+     *
+     * @param warrantCode       codice o ISIN del warrant
+     * @param listedCode        codice o ISIN della serie di borsa
+     * @param date              data di valutazione
+     * @param ratio             multiplo del warrant (1 / parita')
+     * @param forward           forward del sottostante alla scadenza usato per entrambi
+     * @param discountFactor    sconto del premio alla scadenza
+     * @param timeToExpiry      anni ACT/365
+     * @param warrantPrice      prezzo del warrant (EUR per warrant)
+     * @param warrantInPoints   prezzo del warrant in punti indice (/ ratio)
+     * @param listedPrice       premio della serie di borsa (punti indice)
+     * @param warrantVol        volatilita' implicita nel prezzo del warrant
+     * @param listedVol         volatilita' implicita nel premio di borsa
+     * @param volSpread         warrantVol - listedVol
+     * @param fairWarrantPrice  prezzo del warrant alla volatilita' di borsa (EUR per warrant)
+     * @param markup            warrantPrice - fairWarrantPrice (EUR per warrant)
+     * @param markupPct         markup / fairWarrantPrice
+     */
+    public record WarrantComparison(String warrantCode, String listedCode, LocalDate date, double ratio, double forward,
+            double discountFactor, double timeToExpiry, double warrantPrice, double warrantInPoints, double listedPrice,
+            double warrantVol, double listedVol, double volSpread, double fairWarrantPrice, double markup, double markupPct) {
+    }
+
+    /**
+     * Volatilita' implicite di un covered warrant e della serie di borsa
+     * equivalente con gli stessi input (data, curva, forward): la differenza
+     * e' il ricarico dell'emittente, al netto del livello del sottostante.
+     *
+     * Le due serie devono avere stesso sottostante, tipo, strike e scadenza.
+     * Con futurePrice (future della stessa scadenza, es. FESX marzo 2027) il
+     * forward e' quello del future: lo spot dell'indice si ricava da quello,
+     * cosi' dividendi e tassi impliciti sono quelli di mercato e non il
+     * dividend yield in anagrafica. Senza, si usa la quotazione dell'indice.
+     *
+     * @param warrantCode  codice o ISIN del covered warrant
+     * @param warrantPrice prezzo del warrant (EUR per warrant, es. mid bid/ask)
+     * @param listedCode   codice o ISIN della serie di borsa (es. OESX)
+     * @param listedPrice  premio della serie di borsa (punti indice)
+     * @param date         data di valutazione (data dei prezzi)
+     * @param futurePrice  prezzo del future della stessa scadenza, null per la quotazione dell'indice
+     * @return
+     */
+    public WarrantComparison compareWarrant(String warrantCode, double warrantPrice, String listedCode, double listedPrice,
+            LocalDate date, Double futurePrice) {
+        OptionMasterData warrant = findSeries(warrantCode);
+        OptionMasterData listed = findSeries(listedCode);
+        if (!Objects.equals(warrant.getUnderlying().getIdMasterData(), listed.getUnderlying().getIdMasterData())
+                || warrant.getOptionType() != listed.getOptionType()
+                || !Objects.equals(warrant.getStrike(), listed.getStrike())
+                || !Objects.equals(warrant.getExpiryLocalDate(), listed.getExpiryLocalDate())) {
+            throw new IllegalArgumentException("Series " + warrant.getCode() + " and " + listed.getCode()
+                    + " differ in underlying, type, strike or expiry");
+        }
+        if (warrantPrice <= 0 || listedPrice <= 0) {
+            throw new IllegalArgumentException("Warrant and listed prices must be greater than 0");
+        }
+
+        // spot dell'indice che riproduce il forward del future (il forward e' lineare nello spot)
+        Double spot = null;
+        if (futurePrice != null && futurePrice > 0) {
+            double forwardPerUnitSpot = valuation(getOptionInput(listedCode, date, 1.0, null, null, null, 0.2)).forward();
+            spot = futurePrice / forwardPerUnitSpot;
+        }
+        OptionInput listedInput = getOptionInput(listedCode, date, spot, null, null, null, 0.2);
+        OptionInput warrantInput = getOptionInput(warrantCode, date, spot, null, null, null, 0.2);
+
+        double ratio = warrant.getPriceRatio();
+        // premi per unita' di sottostante (la serie di borsa ha ratio 1)
+        double listedVol = impliedVolatility(listedInput, listedPrice / listed.getPriceRatio());
+        double warrantVol = impliedVolatility(warrantInput, warrantPrice / ratio);
+        OptionResult atListedVol = valuation(warrantInput.withVolatility(listedVol));
+        double fair = atListedVol.price() * ratio;
+        double markup = warrantPrice - fair;
+        return new WarrantComparison(warrant.getCode(), listed.getCode(), date, ratio, atListedVol.forward(),
+                atListedVol.discountFactor(), atListedVol.timeToExpiry(), warrantPrice, warrantPrice / ratio, listedPrice,
+                warrantVol, listedVol, warrantVol - listedVol, fair, markup, markup / fair);
+    }
+
+    /**
      * Risultati nell'unita' quotata: con ratio diverso da 1 (covered warrant)
      * premio, valore e greche sono per warrant.
      */
