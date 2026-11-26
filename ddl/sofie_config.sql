@@ -842,7 +842,7 @@ INSERT INTO public.position_master_data (id_position, currency, code, descriptio
 -- Data for Name: system_business_calendar; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_business_calendar (sbc_id, description, calendar, status, official_date, next_business_date, version, updated_at, currency, last_official_date) VALUES (1, 'SO.FI.E Buiness Calendar', 1, 1, '2026-11-19', NULL, 15, '2026-11-08 16:36:02.377716', 1, '2026-11-19');
+INSERT INTO public.system_business_calendar (sbc_id, description, calendar, status, official_date, next_business_date, version, updated_at, currency, last_official_date) VALUES (1, 'SO.FI.E Buiness Calendar', 1, 1, '2026-11-25', NULL, 15, '2026-11-08 16:36:02.377716', 1, '2026-11-25');
 
 
 --

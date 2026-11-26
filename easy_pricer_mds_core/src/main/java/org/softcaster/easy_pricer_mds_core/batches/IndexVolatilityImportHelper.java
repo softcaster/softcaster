@@ -14,6 +14,7 @@ import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.softcaster.core.data.IndexMasterData;
+import org.softcaster.core.data.VolatilityForward;
 import org.softcaster.core.data.VolatilityPoint;
 import org.softcaster.core.data.VolatilitySurfaceDAO;
 import org.softcaster.core.data.VolatilitySurfaceEntity;
@@ -45,11 +46,15 @@ import org.springframework.transaction.support.TransactionTemplate;
  *     denaro (call sopra il forward, put sotto), con premio almeno minPremium
  *     e strike entro [minMoneyness, maxMoneyness] x forward.
  *
- * Con lo spot dell'indice in anagrafica il log riporta per ogni scadenza il
- * dividend yield implicito, q = -ln(F DF / S) / T, da confrontare con quello
- * dell'indice (IndexMasterData.dividendYield) usato per prezzare le serie.
+ * Livello di riferimento dell'indice, salvato con i forward: quello implicito
+ * nei settlement, forward della scadenza piu' vicina (entro 14 giorni) x DF;
+ * la quotazione dell'indice solo se non c'e' una scadenza vicina (puo' essere
+ * di un altro momento). Il log riporta per ogni scadenza il dividend yield
+ * implicito, q = -ln(F DF / S) / T.
  *
- * Salvataggio: una rilevazione completa per strike (VolatilitySurfaceDAO.replacePoints).
+ * Salvataggio: una rilevazione completa per strike (VolatilitySurfaceDAO.replacePoints)
+ * e il forward di ogni scadenza con il livello dell'indice all'import
+ * (replaceForwards): il pricing delle opzioni su indice usa quelli.
  */
 @Service("indexVolatilityImportHelper")
 public class IndexVolatilityImportHelper {
@@ -58,6 +63,8 @@ public class IndexVolatilityImportHelper {
 
     public static final String SOURCE = "EUREX";
     private static final int PARITY_STRIKES = 3;
+    // scadenza abbastanza vicina da dare il livello dell'indice (dividendi trascurabili)
+    private static final int NEAR_EXPIRY_DAYS = 14;
 
     /**
      * Premio di settlement di una serie.
@@ -127,10 +134,11 @@ public class IndexVolatilityImportHelper {
             throw new IllegalArgumentException("Curve " + index.getIrc() + " is dated " + curve.getValuationDate()
                     + ", after the settlement date " + bizDate);
         }
-        double spot = marketDataService.getSpotPrice(index.getIdMasterData(), RequestType.MIDDLE);
+        double quote = marketDataService.getSpotPrice(index.getIdMasterData(), RequestType.MIDDLE);
 
         Map<String, Integer> skipped = new TreeMap<>();
         List<VolatilityPoint> points = new ArrayList<>();
+        List<VolatilityForward> forwards = new ArrayList<>();
         Map<LocalDate, List<OptionSettlement>> byExpiry = new TreeMap<>();
         for (OptionSettlement o : options) {
             if (!o.settlementDate().equals(bizDate)) {
@@ -142,24 +150,38 @@ public class IndexVolatilityImportHelper {
             }
         }
 
+        // 1. forward di mercato di ogni scadenza (dividendi compresi)
+        Map<LocalDate, Double> parityForwards = new TreeMap<>();
         for (Map.Entry<LocalDate, List<OptionSettlement>> e : byExpiry.entrySet()) {
-            LocalDate expiry = e.getKey();
-            double df = curve.getDiscountFactor(expiry);
-            Double forward = parityForward(e.getValue(), df);
+            Double forward = parityForward(e.getValue(), curve.getDiscountFactor(e.getKey()));
             if (forward == null) {
                 skipped.merge("no call/put pair for the forward", e.getValue().size(), Integer::sum);
-                continue;
+            } else {
+                parityForwards.put(e.getKey(), forward);
             }
+        }
+
+        // 2. livello dell'indice coerente con i settlement: quello implicito nella scadenza piu' vicina
+        Double spot = referenceLevel(parityForwards, curve, bizDate, quote);
+        log.info("{}: reference level {} ({})", code, spot == null ? "-" : round(spot),
+                spot == null ? "no near expiry, no index quote" : spot == quote ? "index quote" : "implied by the nearest expiry");
+
+        // 3. forward salvati, volatilita' implicite fuori dal denaro
+        for (Map.Entry<LocalDate, Double> pf : parityForwards.entrySet()) {
+            LocalDate expiry = pf.getKey();
+            double forward = pf.getValue();
+            double df = curve.getDiscountFactor(expiry);
+            forwards.add(new VolatilityForward(surface.getIdVolatilitySurface(), bizDate, expiry, forward, spot, SOURCE));
             double t = ChronoUnit.DAYS.between(bizDate, expiry) / 365.0;
-            if (spot > 0) {
+            if (spot != null) {
                 double q = -Math.log(forward * df / spot) / t;
                 log.info("{} expiry {}: forward {} (spot {}), implied dividend yield {}", code, expiry,
-                        round(forward), spot, String.format(java.util.Locale.ROOT, "%.4f", q));
+                        round(forward), round(spot), String.format(java.util.Locale.ROOT, "%.4f", q));
             } else {
                 log.info("{} expiry {}: forward {}", code, expiry, round(forward));
             }
 
-            for (OptionSettlement o : e.getValue()) {
+            for (OptionSettlement o : byExpiry.get(expiry)) {
                 boolean call = o.type() == OptionType.CALL;
                 if (call ? o.strike() < forward : o.strike() > forward) {
                     skipped.merge("in the money", 1, Integer::sum);
@@ -195,6 +217,8 @@ public class IndexVolatilityImportHelper {
             throw new IllegalArgumentException("No usable option for " + code + ": " + skipped);
         }
         volatilitySurfaceDAO.replacePoints(surface.getIdVolatilitySurface(), bizDate, points);
+        volatilitySurfaceDAO.replaceForwards(surface.getIdVolatilitySurface(), bizDate, forwards);
+        log.info("{}: {} forwards saved as of {}", code, forwards.size(), bizDate);
         return new VolatilityImportHelper.ImportResult(code, bizDate, options.size(), points.size(), skipped);
     }
 
@@ -222,6 +246,23 @@ public class IndexVolatilityImportHelper {
         }
         List<Double> forwards = pairs.stream().map(p -> p.strike() + p.diff() / df).sorted().toList();
         return forwards.get(forwards.size() / 2);
+    }
+
+    /**
+     * Livello dell'indice coerente con i settlement: forward della scadenza
+     * piu' vicina scontato alla data dei settlement, F x DF (entro
+     * NEAR_EXPIRY_DAYS giorni i dividendi sono trascurabili). Altrimenti la
+     * quotazione dell'indice, se c'e'; null se manca anche quella.
+     */
+    static Double referenceLevel(Map<LocalDate, Double> parityForwards, org.softcaster.engine.curve.DiscountCurve curve,
+            LocalDate bizDate, double quote) {
+        for (Map.Entry<LocalDate, Double> e : parityForwards.entrySet()) {
+            if (ChronoUnit.DAYS.between(bizDate, e.getKey()) <= NEAR_EXPIRY_DAYS) {
+                return e.getValue() * curve.getDiscountFactor(e.getKey());
+            }
+            break; // la mappa e' ordinata: la prima scadenza e' la piu' vicina
+        }
+        return quote > 0 ? quote : null;
     }
 
     private static double round(double value) {

@@ -202,22 +202,28 @@ public class OptionCalculator {
             return getBondOptionInput(somd, bond, valuationDate, underlyingPrice, curveCode, rate, volatility);
         }
         if (underlying instanceof IndexMasterData index) {
-            return getIndexOptionInput(somd, index, valuationDate, underlyingPrice, curveCode, rate, volatility);
+            return getIndexOptionInput(somd, index, valuationDate, underlyingPrice, curveCode, rate, volatility, null);
         }
         throw new IllegalArgumentException("Underlying " + underlying.getCode() + " not supported for " + omd.getCode());
     }
 
     /**
-     * Black-76 / CRR sul forward dell'indice alla scadenza della serie:
-     * F = spot x exp(-q T) / DF(T), con q il dividend yield continuo
-     * dell'indice e DF dalla curva indicata, dal tasso indicato o, di default,
-     * dalla curva dell'indice. Il premio (equity-style) si sconta con la
-     * stessa curva.
+     * Black-76 / CRR sul forward dell'indice alla scadenza della serie, nell'ordine:
+     *  1. forward indicato (es. future della stessa scadenza);
+     *  2. forward di mercato rilevato con la superficie (parita' put-call,
+     *     dividendi compresi; VolatilityProvider.forward), riportato al livello
+     *     corrente dell'indice se diverso da quello all'import;
+     *  3. spot x exp(-q T) / DF(T) col dividend yield continuo dell'anagrafica.
+     * DF dalla curva indicata, dal tasso indicato o, di default, dalla curva
+     * dell'indice. Il premio (equity-style) si sconta con la stessa curva.
      */
     private ForwardOptionInput getIndexOptionInput(SpotOptionMasterData omd, IndexMasterData index, LocalDate valuationDate,
-                                                   Double spotPrice, String curveCode, Double rate, double volatility) {
+                                                   Double spotPrice, String curveCode, Double rate, double volatility,
+                                                   Double forwardOverride) {
         OptionContract contract = contract(omd);
-        double spot = price(spotPrice, index);
+        // livello indicato o quotazione corrente (0 se manca: basta il forward rilevato)
+        double spot = spotPrice != null && spotPrice > 0 ? spotPrice
+                : marketDataService.getSpotPrice(index.getIdMasterData(), RequestType.MIDDLE);
 
         DiscountCurve curve;
         if (curveCode != null && !curveCode.isBlank()) {
@@ -232,9 +238,24 @@ public class OptionCalculator {
         }
 
         LocalDate expiry = contract.expiryDate().isAfter(valuationDate) ? contract.expiryDate() : valuationDate;
-        double t = ChronoUnit.DAYS.between(valuationDate, expiry) / 365.0;
-        double q = index.getDividendYield() == null ? 0. : index.getDividendYield();
-        double forward = spot * Math.exp(-q * t) / curve.getDiscountFactor(expiry);
+        double forward;
+        if (forwardOverride != null && forwardOverride > 0) {
+            forward = forwardOverride;
+        } else {
+            Optional<Double> market = expiry.isAfter(valuationDate)
+                    ? volatilityProvider.forward(index.getIdMasterData(), valuationDate, expiry, spot > 0 ? spot : null)
+                    : Optional.empty();
+            if (market.isPresent()) {
+                forward = market.get();
+            } else {
+                if (spot <= 0) {
+                    throw new IllegalArgumentException("Missing price of underlying " + index.getCode());
+                }
+                double t = ChronoUnit.DAYS.between(valuationDate, expiry) / 365.0;
+                double q = index.getDividendYield() == null ? 0. : index.getDividendYield();
+                forward = spot * Math.exp(-q * t) / curve.getDiscountFactor(expiry);
+            }
+        }
 
         boolean discounted = premiumStyle(omd).isDiscounted();
         DiscountCurve premiumCurve = discounted ? curve : new FlatCurve(valuationDate, 0.0);
@@ -468,11 +489,11 @@ public class OptionCalculator {
      * equivalente con gli stessi input (data, curva, forward): la differenza
      * e' il ricarico dell'emittente, al netto del livello del sottostante.
      *
-     * Le due serie devono avere stesso sottostante, tipo, strike e scadenza.
-     * Con futurePrice (future della stessa scadenza, es. FESX marzo 2027) il
-     * forward e' quello del future: lo spot dell'indice si ricava da quello,
-     * cosi' dividendi e tassi impliciti sono quelli di mercato e non il
-     * dividend yield in anagrafica. Senza, si usa la quotazione dell'indice.
+     * Le due serie devono avere stesso sottostante (indice), tipo, strike e
+     * scadenza. Con futurePrice (future della stessa scadenza, es. FESX marzo
+     * 2027, o forward di parita' put-call) il forward e' quello indicato;
+     * senza, quello rilevato con la superficie o, in mancanza, dal dividend
+     * yield dell'anagrafica.
      *
      * @param warrantCode  codice o ISIN del covered warrant
      * @param warrantPrice prezzo del warrant (EUR per warrant, es. mid bid/ask)
@@ -497,14 +518,14 @@ public class OptionCalculator {
             throw new IllegalArgumentException("Warrant and listed prices must be greater than 0");
         }
 
-        // spot dell'indice che riproduce il forward del future (il forward e' lineare nello spot)
-        Double spot = null;
-        if (futurePrice != null && futurePrice > 0) {
-            double forwardPerUnitSpot = valuation(getOptionInput(listedCode, date, 1.0, null, null, null, 0.2)).forward();
-            spot = futurePrice / forwardPerUnitSpot;
+        // stesso forward per le due serie: quello indicato (future o parita' della stessa scadenza),
+        // altrimenti quello rilevato con la superficie o dal dividend yield (getIndexOptionInput)
+        if (!(Hibernate.unproxy(warrant.getUnderlying()) instanceof IndexMasterData index)) {
+            throw new IllegalArgumentException("Comparison available for covered warrants on an index: " + warrant.getCode());
         }
-        OptionInput listedInput = getOptionInput(listedCode, date, spot, null, null, null, 0.2);
-        OptionInput warrantInput = getOptionInput(warrantCode, date, spot, null, null, null, 0.2);
+        Double forward = futurePrice != null && futurePrice > 0 ? futurePrice : null;
+        OptionInput listedInput = getIndexOptionInput((SpotOptionMasterData) listed, index, date, null, null, null, 0.2, forward);
+        OptionInput warrantInput = getIndexOptionInput((SpotOptionMasterData) warrant, index, date, null, null, null, 0.2, forward);
 
         double ratio = warrant.getPriceRatio();
         // premi per unita' di sottostante (la serie di borsa ha ratio 1)

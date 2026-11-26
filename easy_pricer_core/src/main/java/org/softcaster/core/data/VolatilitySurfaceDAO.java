@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Superfici di volatilita' e loro punti.
+ * Superfici di volatilita', loro punti e forward per scadenza
+ * (volatility_forward: tutte le rilevazioni in una tabella).
  *
  * volatility_point contiene solo la superficie corrente (l'ultima
  * rilevazione); le rilevazioni precedenti stanno in volatility_point_hist.
@@ -31,12 +32,41 @@ public class VolatilitySurfaceDAO {
     private final VolatilitySurfaceRepository surfaceRepository;
     private final VolatilityPointRepository pointRepository;
     private final VolatilityPointHistRepository histRepository;
+    private final VolatilityForwardRepository forwardRepository;
 
     public VolatilitySurfaceDAO(VolatilitySurfaceRepository surfaceRepository, VolatilityPointRepository pointRepository,
-            VolatilityPointHistRepository histRepository) {
+            VolatilityPointHistRepository histRepository, VolatilityForwardRepository forwardRepository) {
         this.surfaceRepository = Objects.requireNonNull(surfaceRepository);
         this.pointRepository = Objects.requireNonNull(pointRepository);
         this.histRepository = Objects.requireNonNull(histRepository);
+        this.forwardRepository = Objects.requireNonNull(forwardRepository);
+    }
+
+    /**
+     * Forward per scadenza dell'ultima rilevazione non successiva a date
+     * (vuoto se non ce ne sono), ordinati per scadenza.
+     */
+    @Transactional(readOnly = true)
+    public List<VolatilityForward> findLatestForwards(Integer surfaceId, LocalDate date) {
+        return forwardRepository.findLastReferenceDate(surfaceId, date)
+                .map(last -> forwardRepository.findByReferenceDate(surfaceId, last))
+                .orElse(List.of());
+    }
+
+    /**
+     * Forward di una rilevazione: sostituiscono quelli della stessa data.
+     */
+    @Transactional
+    public void replaceForwards(Integer surfaceId, LocalDate referenceDate, List<VolatilityForward> forwards) {
+        for (VolatilityForward f : forwards) {
+            if (!surfaceId.equals(f.getVolatilitySurface()) || !referenceDate.equals(f.getReferenceDate())) {
+                throw new IllegalArgumentException("Forward of another surface or reference date: "
+                        + f.getVolatilitySurface() + " " + f.getReferenceDate());
+            }
+        }
+        forwardRepository.deleteByReferenceDate(surfaceId, referenceDate);
+        forwardRepository.flush();
+        forwardRepository.saveAll(forwards);
     }
 
     @Transactional(readOnly = true)

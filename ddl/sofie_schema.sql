@@ -2783,6 +2783,34 @@ CREATE SEQUENCE public.type_of_interest_s
 
 
 --
+-- Name: volatility_forward; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.volatility_forward (
+    id_volatility_forward integer NOT NULL,
+    volatility_surface integer NOT NULL,
+    reference_date date NOT NULL,
+    expiry_date date NOT NULL,
+    forward numeric(28,10) NOT NULL,
+    spot numeric(28,10),
+    source character varying(64) DEFAULT ''::character varying NOT NULL,
+    CONSTRAINT ck_volatility_forward_values CHECK (((forward > (0)::numeric) AND ((spot IS NULL) OR (spot > (0)::numeric)) AND (expiry_date > reference_date)))
+);
+
+
+--
+-- Name: volatility_forward_s; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.volatility_forward_s
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
 -- Name: volatility_point; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3976,6 +4004,14 @@ ALTER TABLE ONLY public.txn_origin
 
 
 --
+-- Name: volatility_forward pk_volatility_forward; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volatility_forward
+    ADD CONSTRAINT pk_volatility_forward PRIMARY KEY (id_volatility_forward);
+
+
+--
 -- Name: volatility_point pk_volatility_point; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4501,6 +4537,14 @@ ALTER TABLE ONLY public.spread_curve
 
 ALTER TABLE ONLY public.txn_origin
     ADD CONSTRAINT uq_txn_origin_code UNIQUE (code);
+
+
+--
+-- Name: volatility_forward uq_volatility_forward; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volatility_forward
+    ADD CONSTRAINT uq_volatility_forward UNIQUE (volatility_surface, reference_date, expiry_date);
 
 
 --
@@ -6756,6 +6800,14 @@ ALTER TABLE ONLY public.financial_txn
 
 ALTER TABLE ONLY public.financial_txn
     ADD CONSTRAINT fk_txn_status FOREIGN KEY (txn_status) REFERENCES public.txn_status(id_txn_status);
+
+
+--
+-- Name: volatility_forward fk_volatility_forward_surface; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volatility_forward
+    ADD CONSTRAINT fk_volatility_forward_surface FOREIGN KEY (volatility_surface) REFERENCES public.volatility_surface(id_volatility_surface) ON DELETE CASCADE;
 
 
 --
