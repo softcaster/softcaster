@@ -1,0 +1,29 @@
+Base di test sofie-base-20261127.backup (pg_dump formato custom)
+
+Stato
+- nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
+- calendario, official date e chiusura come in sofie-base-20261126 (official_date 2026-11-25)
+- nuovo rispetto a sofie-base-20261126: tabelle operative senza data
+    yield_curve_spread: solo la calibrazione corrente, senza as_of_date (chiave spread_curve,
+      offset_type, offset_value); la data e' in testata, spread_curve.as_of_date (2026-11-25);
+      le 6 calibrazioni precedenti (dal 2026-10-09 al 2026-11-19, 180 righe) nella nuova
+      yield_curve_spread_hist
+    volatility_point: solo la superficie corrente, senza reference_date; la data e' in testata,
+      volatility_surface.reference_date (SX5E-VOL e EURUSD-VOL al 2026-11-25); le rilevazioni
+      precedenti in volatility_point_hist (EURUSD-VOL 2026-10-29 e 2026-11-17)
+    volatility_forward: solo i forward correnti, senza reference_date (chiave
+      volatility_surface, expiry_date); storico nella nuova volatility_forward_hist (vuota)
+  le date in testata le scrivono solo YieldCurveSpreadDAO e VolatilitySurfaceDAO; una
+  rilevazione piu' recente sposta la corrente nello storico, una precedente va nello storico
+- invariati: SX5E-VOL (2181 punti, 25 forward), EURUSD-VOL (153 punti), Francia, BNP,
+  covered warrant BNPCW-SX5E / NLBNPIT3V7A9, quotazioni e curve
+- scadenza FESX dicembre 2026 (id 111) ancora con codice e ISIN DE0009652388, che e' l'ISIN
+  del prodotto FESX: quello della scadenza e' DE000F0GDJX7
+- quotazione FBTP@DE000F2HLQE9 a 0
+
+Schema e dati di sistema coincidono con sofie_schema.sql, sofie_lookup.sql e
+sofie_config.sql del 2026-11-27. Sostituisce sofie-base-20261126 (con le date nelle tabelle
+operative): il codice da questa versione in poi richiede questa base.
+
+Ripristino: ddl\restore_sofie_base.ps1 (usa l'ultimo sofie-base-*.backup)
+Una migrazione successiva va applicata dopo il ripristino, oppure va rifatto il backup.

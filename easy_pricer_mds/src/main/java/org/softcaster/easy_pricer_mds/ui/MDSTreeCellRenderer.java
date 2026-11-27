@@ -13,7 +13,11 @@ import org.softcaster.commons.ui.model.FndtNode;
 import org.softcaster.easy_pricer_mds.AppTreeItem;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.BOND_FUTURE;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.CMD_FUTURE;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.COVERED_WARRANT;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.FX_FUTURE;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.FX_OPTION;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.INDEX_FUTURE;
+import static org.softcaster.easy_pricer_mds.AppTreeItem.INDEX_OPTION;
 import static org.softcaster.easy_pricer_mds.AppTreeItem.MM_FUTURE;
 
 /**
@@ -26,6 +30,7 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
     ImageIcon forexIcon = new ImageIcon(getClass().getResource("/images/angular/euro_16dp.png"));
     ImageIcon futureIcon = new ImageIcon(getClass().getResource("/images/angular/loyalty_16dp.png"));
     ImageIcon batchIcon = new ImageIcon(getClass().getResource("/images/angular/calendar_today_16dp.png"));
+    ImageIcon optionIcon = new ImageIcon(getClass().getResource("/images/angular/subheader_16dp.png"));
 
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -48,8 +53,10 @@ public class MDSTreeCellRenderer extends DefaultTreeCellRenderer {
                         setIcon(securityIcon);
                     case YC_UPDATE, YC_DEFINE, SC_UPDATE, SC_DEFINE ->
                         setIcon(forexIcon);
-                    case BOND_FUTURE, MM_FUTURE, FX_FUTURE, CMD_FUTURE, INDEX_FUTURE, INDEX_OPTION, COVERED_WARRANT ->
+                    case BOND_FUTURE, MM_FUTURE, FX_FUTURE, CMD_FUTURE, INDEX_FUTURE ->
                         setIcon(futureIcon);
+                    case INDEX_OPTION, FX_OPTION, COVERED_WARRANT ->
+                        setIcon(optionIcon);
                     case BATCH_ZSPREAD, BATCH_VOLATILITY, BATCH_VOL_IMPORT ->
                         setIcon(batchIcon);
                     default -> {

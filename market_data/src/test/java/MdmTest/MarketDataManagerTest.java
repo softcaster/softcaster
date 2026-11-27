@@ -80,7 +80,7 @@ public class MarketDataManagerTest implements CommandLineRunner {
             //EurexApiClient.findFutures("FESX");
             // ISIN da scadenza, strike e call/put: call 6200 dicembre 2026
             try {
-                String isin = EurexApiClient.findIsin("OESX", LocalDate.of(2026, 12, 18), 6200, "C");
+                String isin = EurexApiClient.findIsin("OESX", LocalDate.of(2027, 3, 19), 6000, "C");
                 if (isin != null) {
                     node = mdm.getQuote("OESX@" + isin, Market.OPTIONS);
                     if (node != null) {

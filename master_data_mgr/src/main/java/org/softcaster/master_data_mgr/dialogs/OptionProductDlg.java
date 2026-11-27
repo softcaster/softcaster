@@ -53,7 +53,6 @@ public class OptionProductDlg extends javax.swing.JDialog {
     private final OptionProduct product;
     private final MasterDataFacade masterDataFacade;
     private List<javax.swing.JTextField> fieldsToValidate;
-    private List<MasterData> allMasterData;
     // true mentre si caricano le combo: i loro listener non devono ricalcolare
     private boolean loading = true;
 
@@ -730,9 +729,6 @@ public class OptionProductDlg extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
     private void postInit() {
-        allMasterData = new ArrayList<>(masterDataFacade.getMasterDataDAO().findAll());
-        allMasterData.sort(Comparator.comparing(MasterData::getCode));
-
         cbExerciseStyle.setModel(new DefaultComboBoxModel<>(ExerciseStyle.values()));
         cbPremiumStyle.setModel(new DefaultComboBoxModel<>(PremiumStyle.values()));
         cbSettlementType.setModel(new DefaultComboBoxModel<>(SettlementType.values()));
@@ -819,7 +815,8 @@ public class OptionProductDlg extends javax.swing.JDialog {
         List<MasterData> underlyings = new ArrayList<>();
         underlyings.add(null);   // nessun sottostante fisso
         if (underlyingType != null) {
-            allMasterData.stream().filter(md -> underlyingType.isInstance(Hibernate.unproxy(md))).forEach(underlyings::add);
+            masterDataFacade.getMasterDataDAO().findAllOfType(underlyingType).stream()
+                    .sorted(Comparator.comparing(MasterData::getCode)).forEach(underlyings::add);
         }
         cbFixedUnderlying.setModel(new DefaultComboBoxModel<>(underlyings.toArray(MasterData[]::new)));
         cbFixedUnderlying.setEnabled(underlyingType != null);

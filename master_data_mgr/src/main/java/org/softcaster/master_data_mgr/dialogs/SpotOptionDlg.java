@@ -1036,9 +1036,13 @@ public class SpotOptionDlg extends javax.swing.JDialog {
         Class<? extends MasterData> type = SpotOptionProduct.UNDERLYING_TYPES.get(selectedAssetClass());
         MasterData selected = (MasterData) cbUnderlying.getSelectedItem();
         MasterData current = bean == null ? null : bean.getOptionMasterData().getUnderlying();
+        // anagrafiche del tipo lette come tali: in allMasterData possono essere proxy di MasterData
+        java.util.Set<Integer> ofType = type == null ? java.util.Set.of()
+                : masterDataFacade.getMasterDataDAO().findAllOfType(type).stream()
+                        .map(MasterData::getIdMasterData).collect(java.util.stream.Collectors.toSet());
         List<MasterData> candidates = allMasterData.stream()
                 .filter(md -> current != null && md.getIdMasterData().equals(current.getIdMasterData())
-                || type != null && !isExpired(md) && type.isInstance(md))
+                || ofType.contains(md.getIdMasterData()) && !isExpired(md))
                 .toList();
         cbUnderlying.setModel(new DefaultComboBoxModel<>(candidates.toArray(MasterData[]::new)));
         if (selected != null) {
