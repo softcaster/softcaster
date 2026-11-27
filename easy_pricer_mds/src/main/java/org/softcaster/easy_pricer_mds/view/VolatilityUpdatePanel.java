@@ -18,6 +18,8 @@ import org.softcaster.core.data.VolatilitySurfaceEntity;
 import org.softcaster.easy_pricer_mds.MDSFacade;
 import org.softcaster.easy_pricer_mds.bean.VolatilitySurfaceBean;
 import org.softcaster.easy_pricer_mds.ui.model.VolatilitySurfaceTableModel;
+import org.softcaster.core.data.CoveredWarrantProduct;
+import org.softcaster.core.data.IndexMasterData;
 import org.softcaster.core.data.SpotOptionProduct;
 import org.softcaster.easy_pricer_mds_core.batches.IndexVolatilityImportHelper;
 import org.softcaster.easy_pricer_mds_core.batches.VolatilityImportHelper;
@@ -275,10 +277,13 @@ public class VolatilityUpdatePanel extends FndtAbstactPanel {
             return null;
         }
         Integer underlyingId = surface.getUnderlying().getIdMasterData();
-        if (mDSFacade.getIndexMasterDataDAO().findByIdMasterData(underlyingId) == null) {
+        // DAO generico: con IndexMasterDataDAO un sottostante di altro tipo (coppia) darebbe ClassCastException
+        if (!(mDSFacade.getMasterDataDAO().findByIdMasterData(underlyingId) instanceof IndexMasterData)) {
             return null;
         }
+        // opzioni di borsa sull'indice (OESX): i covered warrant hanno lo stesso sottostante ma non sono su Eurex
         return mDSFacade.getOptionProductDAO().findAll(SpotOptionProduct.class).stream()
+                .filter(p -> !(p instanceof CoveredWarrantProduct))
                 .filter(p -> p.getUnderlying() != null && underlyingId.equals(p.getUnderlying().getIdMasterData()))
                 .map(p -> p.getExchangeContractCode() != null && !p.getExchangeContractCode().isBlank()
                         ? p.getExchangeContractCode() : p.getCode())

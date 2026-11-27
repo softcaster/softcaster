@@ -26,6 +26,9 @@ public class BorsaItalianaApiClient {
     private final String refererTemplate = "https://grafici.borsaitaliana.it/summary-chart/%s-%s?lang=it";
     private final String bearerToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiItMSIsImV4cCI6NDkwNTU4MzU3MiwiaWF0IjoxNzUxOTgzNTcyLCJhdXRob3JpdGllcyI6W119.d7Eh_LOGqA44BH58HIiPrPIz1SLskVOPj4BRsae05cI";
 
+    // mercato SeDeX di Borsa Italiana (covered warrant e certificati)
+    private static final String SEDEX = "SEDX";
+
     public BorsaItalianaApiClient() {
         client = HttpClient.newHttpClient();
     }
@@ -82,6 +85,9 @@ public class BorsaItalianaApiClient {
             }
             case FUTURES ->
                 endpointUrl = String.format(endpointTemplate, symbol, "DMIL");
+            // covered warrant e certificati del SeDeX (es. NLBNPIT3V7A9)
+            case OPTIONS ->
+                endpointUrl = String.format(endpointTemplate, symbol, SEDEX);
             default -> {
             }
         }
@@ -96,6 +102,8 @@ public class BorsaItalianaApiClient {
                 referer = String.format(refererTemplate, symbol, "MOTX");
             case FUTURES ->
                 referer = String.format(refererTemplate, symbol, "XDMI");
+            case OPTIONS ->
+                referer = String.format(refererTemplate, symbol, SEDEX);
             default -> {
             }
         }

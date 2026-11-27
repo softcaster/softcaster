@@ -43,6 +43,8 @@ public class BorsaItaliana implements MarketDataManager {
         List<Market> markets = new ArrayList<>();
         markets.add(Market.BONDS);
         markets.add(Market.FUTURES);
+        // covered warrant sul SeDeX (mercato SEDX), per ISIN
+        markets.add(Market.OPTIONS);
         return markets;
     }
 }

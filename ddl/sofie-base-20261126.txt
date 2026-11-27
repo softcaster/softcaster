@@ -1,0 +1,32 @@
+Base di test sofie-base-20261126.backup (pg_dump formato custom)
+
+Stato
+- nessun deal, posizione, evento, registrazione o chiusura (clean_txn.sql)
+- calendario: official_date = last_official_date = 2026-11-25 (portata avanti a mano dal 19/11,
+  senza transazioni), next_business_date vuota, OPEN
+- chiusura: 12 step, compreso MATURITY
+- nuovo rispetto a sofie-base-20261125:
+    tabella volatility_forward: forward per scadenza della superficie con il livello di
+      riferimento dell'indice (implicito nella scadenza piu' vicina)
+    SX5E-VOL al 2026-11-25: 2181 punti e 25 forward da Eurex OESX (marzo 2027 5945,37,
+      riferimento 5903,80); max_age_days 5: oltre il 30/11 la superficie va reimportata
+    EURUSD-VOL: 153 punti al 2026-11-25 (file EURUSD-VOL.csv), le rilevazioni precedenti
+      nello storico (volatility_point_hist)
+    paese FR (Francia, id 9, EUR, calendario EUR)
+    emittente BNP (BNP Paribas S.A., Francia)
+    testata covered warrant BNPCW-SX5E (CWT, sottostante SX5E, ratio 0,001, T+5, tick 0,0001)
+    serie NLBNPIT3V7A9: BNP Plain Warrant Call SX5E 6000, scadenza 19/03/2027,
+      quotazione BorsaItaliana 0,3020 / 0,3030
+    quotazione SX5E (CNBC .STOXX50E) 6014,74; curve aggiornate (yield_curve_item)
+- scadenza FESX dicembre 2026 (id 111) ancora con codice e ISIN DE0009652388, che e' l'ISIN
+  del prodotto FESX: quello della scadenza e' DE000F0GDJX7
+- quotazione FBTP@DE000F2HLQE9 a 0
+- testate future, indici, piano dei conti, account mapping, quotazioni storiche e gerarchia
+  delle posizioni come in sofie-base-20261125
+
+Schema e dati di sistema coincidono con sofie_schema.sql, sofie_lookup.sql e
+sofie_config.sql del 2026-11-26. Sostituisce sofie-base-20261125 (senza volatility_forward,
+Francia, BNP e covered warrant).
+
+Ripristino: ddl\restore_sofie_base.ps1 (usa l'ultimo sofie-base-*.backup)
+Una migrazione successiva va applicata dopo il ripristino, oppure va rifatto il backup.
