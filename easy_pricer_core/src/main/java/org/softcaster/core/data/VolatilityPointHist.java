@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 
 /**
  * Punto di una rilevazione passata (volatility_point_hist): ci finisce la
@@ -25,18 +26,27 @@ public class VolatilityPointHist extends AbstractVolatilityPoint {
     @Column(name = "id_volatility_point_hist")
     private Integer idVolatilityPointHist;
 
+    @Column(name = "reference_date", nullable = false)
+    private LocalDate referenceDate;
+
     protected VolatilityPointHist() {
     }
 
-    private VolatilityPointHist(AbstractVolatilityPoint p) {
+    private VolatilityPointHist(AbstractVolatilityPoint p, LocalDate referenceDate) {
         super(p);
+        this.referenceDate = referenceDate;
     }
 
-    public static VolatilityPointHist of(AbstractVolatilityPoint p) {
-        return new VolatilityPointHist(p);
+    public static VolatilityPointHist of(AbstractVolatilityPoint p, LocalDate referenceDate) {
+        return new VolatilityPointHist(p, referenceDate);
     }
 
     public Integer getIdVolatilityPointHist() {
         return idVolatilityPointHist;
+    }
+
+    @Override
+    public LocalDate getReferenceDate() {
+        return referenceDate;
     }
 }

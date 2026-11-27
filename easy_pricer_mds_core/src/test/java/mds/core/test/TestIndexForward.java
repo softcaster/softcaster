@@ -2,7 +2,7 @@ package mds.core.test;
 
 import java.time.LocalDate;
 import java.util.List;
-import org.softcaster.core.data.VolatilityForward;
+import org.softcaster.core.data.AbstractVolatilityForward;
 import org.softcaster.core.data.VolatilitySurfaceDAO;
 import org.softcaster.core.data.VolatilitySurfaceEntity;
 import org.softcaster.easy_pricer_mds_core.calc.OptionCalculator;
@@ -54,7 +54,7 @@ public class TestIndexForward implements CommandLineRunner {
         marketDataService.reloadCurves();
         VolatilitySurfaceEntity surface = volatilitySurfaceDAO.findByCode("SX5E-VOL").orElseThrow();
         Integer sx5e = surface.getUnderlying().getIdMasterData();
-        List<VolatilityForward> forwards = volatilitySurfaceDAO.findLatestForwards(surface.getIdVolatilitySurface(),
+        List<? extends AbstractVolatilityForward> forwards = volatilitySurfaceDAO.findLatestForwards(surface.getIdVolatilitySurface(),
                 LocalDate.of(9999, 12, 31));
         LocalDate date = forwards.get(0).getReferenceDate();
         System.out.println("FWD " + forwards.size() + " forwards as of " + date + ", spot at import " + forwards.get(0).getSpot());

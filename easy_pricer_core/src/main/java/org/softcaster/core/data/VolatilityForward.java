@@ -7,22 +7,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import java.io.Serializable;
-import java.sql.Types;
+import jakarta.persistence.Transient;
 import java.time.LocalDate;
-import org.hibernate.annotations.JdbcTypeCode;
 
 /**
- * Forward del sottostante a una scadenza, rilevato con la superficie di
- * volatilita' (stessa data di rilevazione): per le superfici su indice e' il
- * forward di parita' put-call delle opzioni di borsa, dividendi compresi.
- * spot = livello del sottostante all'import, se disponibile: serve a riportare
- * il forward a un livello diverso (F x spot corrente / spot).
+ * Forward corrente della superficie (volatility_forward, senza data): la data
+ * e' quella della superficie corrente in testata
+ * (volatility_surface.reference_date), riportata in lettura da
+ * VolatilitySurfaceDAO. Le rilevazioni precedenti stanno in
+ * volatility_forward_hist.
  */
 @Entity
 @Table(name = "volatility_forward")
 @SuppressWarnings("PersistenceUnitPresent")
-public class VolatilityForward implements Serializable {
+public class VolatilityForward extends AbstractVolatilityForward {
 
     private static final long serialVersionUID = 1L;
 
@@ -32,64 +30,32 @@ public class VolatilityForward implements Serializable {
     @Column(name = "id_volatility_forward")
     private Integer idVolatilityForward;
 
-    @Column(name = "volatility_surface", nullable = false)
-    private Integer volatilitySurface;
-
-    @Column(name = "reference_date", nullable = false)
+    // data della testata, non e' una colonna
+    @Transient
     private LocalDate referenceDate;
-
-    @Column(name = "expiry_date", nullable = false)
-    private LocalDate expiryDate;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "forward", nullable = false)
-    private Double forward;
-
-    @JdbcTypeCode(Types.NUMERIC)
-    @Column(name = "spot")
-    private Double spot;
-
-    @Column(name = "source", nullable = false)
-    private String source = "";
 
     public VolatilityForward() {
     }
 
     public VolatilityForward(Integer volatilitySurface, LocalDate referenceDate, LocalDate expiryDate, Double forward,
             Double spot, String source) {
-        this.volatilitySurface = volatilitySurface;
+        super(volatilitySurface, expiryDate, forward, spot, source);
         this.referenceDate = referenceDate;
-        this.expiryDate = expiryDate;
-        this.forward = forward;
-        this.spot = spot;
-        this.source = source == null ? "" : source;
     }
 
     public Integer getIdVolatilityForward() {
         return idVolatilityForward;
     }
 
-    public Integer getVolatilitySurface() {
-        return volatilitySurface;
-    }
-
+    @Override
     public LocalDate getReferenceDate() {
         return referenceDate;
     }
 
-    public LocalDate getExpiryDate() {
-        return expiryDate;
-    }
-
-    public Double getForward() {
-        return forward;
-    }
-
-    public Double getSpot() {
-        return spot;
-    }
-
-    public String getSource() {
-        return source;
+    /**
+     * Data della testata, riportata in lettura (VolatilitySurfaceDAO).
+     */
+    void setReferenceDate(LocalDate referenceDate) {
+        this.referenceDate = referenceDate;
     }
 }

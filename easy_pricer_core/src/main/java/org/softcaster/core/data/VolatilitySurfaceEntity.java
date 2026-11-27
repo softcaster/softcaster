@@ -45,6 +45,21 @@ public class VolatilitySurfaceEntity implements Serializable {
     @Column(name = "max_age_days", nullable = false)
     private Integer maxAgeDays = 5;
 
+    /**
+     * Data di rilevazione della superficie corrente (volatility_point e
+     * volatility_forward): la scrive solo VolatilitySurfaceDAO, il salvataggio
+     * della testata non la tocca.
+     */
+    @Column(name = "reference_date", insertable = false, updatable = false)
+    private java.time.LocalDate referenceDate;
+
+    /**
+     * @return data della superficie corrente, null se senza punti
+     */
+    public java.time.LocalDate getReferenceDate() {
+        return referenceDate;
+    }
+
     public Integer getMaxAgeDays() {
         return maxAgeDays;
     }

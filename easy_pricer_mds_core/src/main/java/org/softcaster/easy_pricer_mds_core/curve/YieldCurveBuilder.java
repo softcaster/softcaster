@@ -18,7 +18,7 @@ import org.softcaster.core.data.SpreadCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveEntity;
 import org.softcaster.core.data.YieldCurveEntityDAO;
 import org.softcaster.core.data.YieldCurveItem;
-import org.softcaster.core.data.YieldCurveSpread;
+import org.softcaster.core.data.AbstractYieldCurveSpread;
 import org.softcaster.core.data.YieldCurveSpreadDAO;
 import org.softcaster.engine.curve.CurveBootstrapper;
 import org.softcaster.engine.curve.CurveNode;
@@ -70,7 +70,7 @@ public class YieldCurveBuilder {
                     + ", expected " + officialDate);
         }
 
-        List<YieldCurveSpread> rows = yieldCurveSpreadDAO.findLatest(sc.getIdSpreadCurve(), officialDate);
+        List<? extends AbstractYieldCurveSpread> rows = yieldCurveSpreadDAO.findLatest(sc.getIdSpreadCurve(), officialDate);
         if (rows.isEmpty()) {
             throw new IllegalStateException("No z-spreads for " + code + " on or before " + officialDate);
         }
@@ -83,7 +83,7 @@ public class YieldCurveBuilder {
         }
 
         Map<Offset, Double> buckets = new LinkedHashMap<>();
-        for (YieldCurveSpread r : rows) {
+        for (AbstractYieldCurveSpread r : rows) {
             if (!baseCode.equals(r.getBaseCurveCode())) {
                 throw new IllegalStateException("Z-spreads for " + code + " were calibrated on "
                         + r.getBaseCurveCode() + ", but the configured base curve is " + baseCode);
@@ -96,7 +96,7 @@ public class YieldCurveBuilder {
     }
 
     public SpreadedCurve buildSpreadCurve(SpreadCurveEntity dbCurve, LocalDate officialDate) {
-        List<YieldCurveSpread> rows = yieldCurveSpreadDAO.findLatest(dbCurve.getIdSpreadCurve(), officialDate);
+        List<? extends AbstractYieldCurveSpread> rows = yieldCurveSpreadDAO.findLatest(dbCurve.getIdSpreadCurve(), officialDate);
         if (rows.isEmpty()) {
             throw new IllegalStateException("Curve " + dbCurve.getCode() + " requires z-spreads but none found on or before " + officialDate);
         }
@@ -106,7 +106,7 @@ public class YieldCurveBuilder {
         }
 
         Map<Offset, Double> buckets = new LinkedHashMap<>();
-        for (YieldCurveSpread r : rows) {
+        for (AbstractYieldCurveSpread r : rows) {
             buckets.put(new Offset(r.getOffsetValue(), OffsetType.YEARS), r.getzSpread());
         }
 

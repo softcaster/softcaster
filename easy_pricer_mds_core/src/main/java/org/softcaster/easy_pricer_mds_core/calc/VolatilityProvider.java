@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.softcaster.core.data.AbstractVolatilityPoint;
-import org.softcaster.core.data.VolatilityForward;
+import org.softcaster.core.data.AbstractVolatilityForward;
 import org.softcaster.core.data.VolatilitySurfaceDAO;
 import org.softcaster.core.data.VolatilitySurfaceEntity;
 import org.softcaster.engine.volatility.GridVolatilitySurface;
@@ -98,7 +98,7 @@ public class VolatilityProvider {
         if (entity.isEmpty()) {
             return Optional.empty();
         }
-        List<VolatilityForward> forwards = volatilitySurfaceDAO.findLatestForwards(entity.get().getIdVolatilitySurface(), valuationDate);
+        List<? extends AbstractVolatilityForward> forwards = volatilitySurfaceDAO.findLatestForwards(entity.get().getIdVolatilitySurface(), valuationDate);
         if (forwards.isEmpty()) {
             return Optional.empty();
         }
@@ -109,7 +109,7 @@ public class VolatilityProvider {
             throw new IllegalStateException("Forwards of volatility surface " + entity.get().getCode() + " are stale: as of "
                     + asOf + " (" + ageDays + " days, max " + maxAge + ")");
         }
-        Double spotRef = forwards.stream().map(VolatilityForward::getSpot).filter(s -> s != null && s > 0)
+        Double spotRef = forwards.stream().map(AbstractVolatilityForward::getSpot).filter(s -> s != null && s > 0)
                 .findFirst().orElse(null);
 
         Double forward = interpolate(forwards, asOf, expiry, spotRef);
@@ -122,10 +122,10 @@ public class VolatilityProvider {
         return Optional.of(forward);
     }
 
-    private static Double interpolate(List<VolatilityForward> forwards, LocalDate asOf, LocalDate expiry, Double spotRef) {
-        VolatilityForward before = null;
-        VolatilityForward after = null;
-        for (VolatilityForward f : forwards) {
+    private static Double interpolate(List<? extends AbstractVolatilityForward> forwards, LocalDate asOf, LocalDate expiry, Double spotRef) {
+        AbstractVolatilityForward before = null;
+        AbstractVolatilityForward after = null;
+        for (AbstractVolatilityForward f : forwards) {
             if (f.getExpiryDate().equals(expiry)) {
                 return f.getForward();
             }

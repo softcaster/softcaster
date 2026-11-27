@@ -210,13 +210,11 @@ public class SpreadCurveCalibrator {
             buckets[j] = new SpreadBuckets.Bucket(years[j], fitted[j] / 1e4, support[j].nBonds());   // bp -> decimal
         }
 
-        // 4. persist: replace today's calibration atomically (same transaction)
-        yieldCurveSpreadDAO.deleteByCurveAndDate(sc.getIdSpreadCurve(), officialDate);
+        // 4. persist: today's calibration becomes the current one (the previous one goes to history)
         List<YieldCurveSpread> rows = new ArrayList<>();
         for (SpreadBuckets.Bucket b : buckets) {
             YieldCurveSpread r = new YieldCurveSpread();
             r.setSpreadCurveId(sc.getIdSpreadCurve());
-            r.setAsOfDate(officialDate);
             r.setBaseCurveCode(baseCode);
             r.setOffsetType((short) OffsetType.YEARS.getId());                                      // ADAPT: IdentifiableEnum API
             r.setOffsetValue((short) b.years());
@@ -224,7 +222,7 @@ public class SpreadCurveCalibrator {
             r.setnBonds(b.nBonds());                                                                // 0 = bucket between bonds, smoothed
             rows.add(r);
         }
-        yieldCurveSpreadDAO.saveAll(rows);
+        yieldCurveSpreadDAO.replaceCalibration(sc.getIdSpreadCurve(), officialDate, rows);
 
         String message = "Spread calibration " + spreadCurveCode + " on " + officialDate + ": "
                 + points.size() + " bonds, " + rows.size() + " buckets (" + supported + " supported by >= "
@@ -340,13 +338,11 @@ public class SpreadCurveCalibrator {
             buckets[j] = new SpreadBuckets.Bucket(years[j], fitted[j] / 1e4, support[j].nBonds());   // bp -> decimal
         }
 
-        // 4. persist: replace today's calibration atomically (same transaction)
-        yieldCurveSpreadDAO.deleteByCurveAndDate(sc.getIdSpreadCurve(), officialDate);
+        // 4. persist: today's calibration becomes the current one (the previous one goes to history)
         List<YieldCurveSpread> rows = new ArrayList<>();
         for (SpreadBuckets.Bucket b : buckets) {
             YieldCurveSpread r = new YieldCurveSpread();
             r.setSpreadCurveId(sc.getIdSpreadCurve());
-            r.setAsOfDate(officialDate);
             r.setBaseCurveCode(baseCode);
             r.setOffsetType((short) OffsetType.YEARS.getId());                                      // ADAPT: IdentifiableEnum API
             r.setOffsetValue((short) b.years());
@@ -354,7 +350,7 @@ public class SpreadCurveCalibrator {
             r.setnBonds(b.nBonds());                                                                // 0 = bucket between bonds, smoothed
             rows.add(r);
         }
-        yieldCurveSpreadDAO.saveAll(rows);
+        yieldCurveSpreadDAO.replaceCalibration(sc.getIdSpreadCurve(), officialDate, rows);
 
         String message
                 = "Spread calibration " + spreadCurveCode + " on " + officialDate + ": "

@@ -7,12 +7,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.LocalDate;
 
 /**
  * Punto della superficie corrente: volatility_point contiene solo l'ultima
- * rilevazione di ogni superficie, le precedenti stanno in
- * volatility_point_hist (VolatilitySurfaceDAO).
+ * rilevazione di ogni superficie, senza data; la data e' in testata
+ * (volatility_surface.reference_date) e referenceDate la riporta in lettura
+ * (VolatilitySurfaceDAO). Le rilevazioni precedenti stanno in
+ * volatility_point_hist.
  */
 @Entity
 @Table(name = "volatility_point")
@@ -25,6 +28,10 @@ public class VolatilityPoint extends AbstractVolatilityPoint {
     @Column(name = "id_volatility_point")
     private Integer idVolatilityPoint;
 
+    // data della testata, non e' una colonna
+    @Transient
+    private LocalDate referenceDate;
+
     public VolatilityPoint() {
     }
 
@@ -33,7 +40,7 @@ public class VolatilityPoint extends AbstractVolatilityPoint {
      */
     public VolatilityPoint(Integer volatilitySurface, LocalDate referenceDate, LocalDate expiryDate,
             Double strike, Double volatility, String source) {
-        super(volatilitySurface, referenceDate, expiryDate, strike, volatility, source, null, null);
+        this(volatilitySurface, referenceDate, expiryDate, strike, volatility, source, null, null);
     }
 
     /**
@@ -41,17 +48,23 @@ public class VolatilityPoint extends AbstractVolatilityPoint {
      */
     public VolatilityPoint(Integer volatilitySurface, LocalDate referenceDate, LocalDate expiryDate,
             Double strike, Double volatility, String source, String tenor, Double delta) {
-        super(volatilitySurface, referenceDate, expiryDate, strike, volatility, source, tenor, delta);
+        super(volatilitySurface, expiryDate, strike, volatility, source, tenor, delta);
+        this.referenceDate = referenceDate;
     }
 
     public Integer getIdVolatilityPoint() {
         return idVolatilityPoint;
     }
 
+    @Override
+    public LocalDate getReferenceDate() {
+        return referenceDate;
+    }
+
     /**
-     * La superficie corrente passa a una rilevazione piu' recente (VolatilitySurfaceDAO).
+     * Data della testata, riportata in lettura (VolatilitySurfaceDAO).
      */
-    void moveTo(LocalDate referenceDate) {
-        setReferenceDate(referenceDate);
+    void setReferenceDate(LocalDate referenceDate) {
+        this.referenceDate = referenceDate;
     }
 }

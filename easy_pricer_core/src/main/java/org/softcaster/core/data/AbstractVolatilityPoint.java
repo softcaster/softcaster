@@ -8,9 +8,10 @@ import java.time.LocalDate;
 import org.hibernate.annotations.JdbcTypeCode;
 
 /**
- * Volatilita' implicita rilevata a una data per una scadenza e uno strike
- * (strike null = at the money). Colonne comuni alla superficie corrente
- * (VolatilityPoint) e allo storico (VolatilityPointHist).
+ * Volatilita' implicita rilevata per una scadenza e uno strike (strike null =
+ * at the money). Colonne comuni alla superficie corrente (VolatilityPoint,
+ * senza data: la data e' in testata, volatility_surface.reference_date) e
+ * allo storico (VolatilityPointHist, con la data).
  *
  * tenor e delta: punto quotato per delta (griglie CME per tenor), con
  * scadenza e strike ricavati all'import; delta forward della call (la put
@@ -21,9 +22,6 @@ public abstract class AbstractVolatilityPoint implements Serializable {
 
     @Column(name = "volatility_surface", nullable = false)
     private Integer volatilitySurface;
-
-    @Column(name = "reference_date", nullable = false)
-    private LocalDate referenceDate;
 
     @Column(name = "expiry_date", nullable = false)
     private LocalDate expiryDate;
@@ -49,13 +47,12 @@ public abstract class AbstractVolatilityPoint implements Serializable {
     protected AbstractVolatilityPoint() {
     }
 
-    protected AbstractVolatilityPoint(Integer volatilitySurface, LocalDate referenceDate, LocalDate expiryDate,
+    protected AbstractVolatilityPoint(Integer volatilitySurface, LocalDate expiryDate,
             Double strike, Double volatility, String source, String tenor, Double delta) {
         if ((tenor == null) != (delta == null)) {
             throw new IllegalArgumentException("Tenor and delta must be given together");
         }
         this.volatilitySurface = volatilitySurface;
-        this.referenceDate = referenceDate;
         this.expiryDate = expiryDate;
         this.strike = strike;
         this.volatility = volatility;
@@ -65,22 +62,19 @@ public abstract class AbstractVolatilityPoint implements Serializable {
     }
 
     /**
-     * Stessi valori di un altro punto (corrente o storico).
+     * Stessi valori di un altro punto (corrente o storico), data esclusa.
      */
     protected AbstractVolatilityPoint(AbstractVolatilityPoint p) {
-        this(p.volatilitySurface, p.referenceDate, p.expiryDate, p.strike, p.volatility, p.source, p.tenor, p.delta);
+        this(p.volatilitySurface, p.expiryDate, p.strike, p.volatility, p.source, p.tenor, p.delta);
     }
+
+    /**
+     * Data di rilevazione del punto.
+     */
+    public abstract LocalDate getReferenceDate();
 
     public Integer getVolatilitySurface() {
         return volatilitySurface;
-    }
-
-    public LocalDate getReferenceDate() {
-        return referenceDate;
-    }
-
-    protected void setReferenceDate(LocalDate referenceDate) {
-        this.referenceDate = referenceDate;
     }
 
     public LocalDate getExpiryDate() {

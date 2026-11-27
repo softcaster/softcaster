@@ -68,6 +68,18 @@ public class SpreadCurveEntity implements Serializable {
     @Column(name = "min_valid_buckets", nullable = false)
     private Integer minValidBuckets = 3;
 
+    // data della calibrazione corrente (yield_curve_spread): la scrive solo
+    // YieldCurveSpreadDAO, il salvataggio della testata non la tocca
+    @Column(name = "as_of_date", insertable = false, updatable = false)
+    private java.time.LocalDate asOfDate;
+
+    /**
+     * @return data della calibrazione corrente, null se mai calibrata
+     */
+    public java.time.LocalDate getAsOfDate() {
+        return asOfDate;
+    }
+
     /**
      * @return the idSpreadCurve
      */
