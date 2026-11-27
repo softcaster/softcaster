@@ -2624,7 +2624,8 @@ CREATE TABLE public.spread_curve (
     max_age_days integer DEFAULT 5 NOT NULL,
     min_bonds integer DEFAULT 3 NOT NULL,
     min_valid_buckets integer DEFAULT 3 NOT NULL,
-    calibration_profile integer DEFAULT 1 NOT NULL
+    calibration_profile integer DEFAULT 1 NOT NULL,
+    as_of_date date
 );
 
 
@@ -2789,13 +2790,40 @@ CREATE SEQUENCE public.type_of_interest_s
 CREATE TABLE public.volatility_forward (
     id_volatility_forward integer NOT NULL,
     volatility_surface integer NOT NULL,
+    expiry_date date NOT NULL,
+    forward numeric(28,10) NOT NULL,
+    spot numeric(28,10),
+    source character varying(64) DEFAULT ''::character varying NOT NULL,
+    CONSTRAINT ck_volatility_forward_values CHECK (((forward > (0)::numeric) AND ((spot IS NULL) OR (spot > (0)::numeric))))
+);
+
+
+--
+-- Name: volatility_forward_hist; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.volatility_forward_hist (
+    id_volatility_forward_hist integer NOT NULL,
+    volatility_surface integer NOT NULL,
     reference_date date NOT NULL,
     expiry_date date NOT NULL,
     forward numeric(28,10) NOT NULL,
     spot numeric(28,10),
     source character varying(64) DEFAULT ''::character varying NOT NULL,
-    CONSTRAINT ck_volatility_forward_values CHECK (((forward > (0)::numeric) AND ((spot IS NULL) OR (spot > (0)::numeric)) AND (expiry_date > reference_date)))
+    CONSTRAINT ck_volatility_forward_hist_values CHECK (((forward > (0)::numeric) AND ((spot IS NULL) OR (spot > (0)::numeric)) AND (expiry_date > reference_date)))
 );
+
+
+--
+-- Name: volatility_forward_hist_s; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.volatility_forward_hist_s
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -2817,7 +2845,6 @@ CREATE SEQUENCE public.volatility_forward_s
 CREATE TABLE public.volatility_point (
     id_volatility_point integer NOT NULL,
     volatility_surface integer NOT NULL,
-    reference_date date NOT NULL,
     expiry_date date NOT NULL,
     strike numeric(28,10),
     volatility numeric(28,10) NOT NULL,
@@ -2825,7 +2852,7 @@ CREATE TABLE public.volatility_point (
     tenor character varying(4),
     delta numeric(28,10),
     CONSTRAINT ck_volatility_point_tenor CHECK ((((tenor IS NULL) = (delta IS NULL)) AND ((delta IS NULL) OR ((delta > (0)::numeric) AND (delta < (1)::numeric))) AND ((tenor IS NULL) OR ((tenor)::text ~ '^[0-9]{1,2}[DWMY]$'::text)))),
-    CONSTRAINT ck_volatility_point_values CHECK (((volatility > (0)::numeric) AND (volatility < (5)::numeric) AND ((strike IS NULL) OR (strike > (0)::numeric)) AND (expiry_date > reference_date)))
+    CONSTRAINT ck_volatility_point_values CHECK (((volatility > (0)::numeric) AND (volatility < (5)::numeric) AND ((strike IS NULL) OR (strike > (0)::numeric))))
 );
 
 
@@ -2881,7 +2908,8 @@ CREATE TABLE public.volatility_surface (
     code character varying(25) NOT NULL,
     description character varying(255) DEFAULT ''::character varying NOT NULL,
     underlying integer NOT NULL,
-    max_age_days integer DEFAULT 5 NOT NULL
+    max_age_days integer DEFAULT 5 NOT NULL,
+    reference_date date
 );
 
 
@@ -2963,7 +2991,6 @@ CREATE SEQUENCE public.yield_curve_s
 CREATE TABLE public.yield_curve_spread (
     id_yield_curve_spread integer NOT NULL,
     spread_curve integer NOT NULL,
-    as_of_date date NOT NULL,
     base_curve_code character varying(50) NOT NULL,
     offset_type smallint NOT NULL,
     offset_value smallint NOT NULL,
@@ -2973,6 +3000,37 @@ CREATE TABLE public.yield_curve_spread (
     calibrated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT ck_ycs_offset_value CHECK ((offset_value > 0))
 );
+
+
+--
+-- Name: yield_curve_spread_hist; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.yield_curve_spread_hist (
+    id_yield_curve_spread_hist integer NOT NULL,
+    spread_curve integer NOT NULL,
+    as_of_date date NOT NULL,
+    base_curve_code character varying(50) NOT NULL,
+    offset_type smallint NOT NULL,
+    offset_value smallint NOT NULL,
+    z_spread numeric(28,10) NOT NULL,
+    n_bonds integer,
+    dispersion numeric(28,10),
+    calibrated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_ycs_hist_offset_value CHECK ((offset_value > 0))
+);
+
+
+--
+-- Name: yield_curve_spread_hist_s; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.yield_curve_spread_hist_s
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -4012,6 +4070,14 @@ ALTER TABLE ONLY public.volatility_forward
 
 
 --
+-- Name: volatility_forward_hist pk_volatility_forward_hist; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volatility_forward_hist
+    ADD CONSTRAINT pk_volatility_forward_hist PRIMARY KEY (id_volatility_forward_hist);
+
+
+--
 -- Name: volatility_point pk_volatility_point; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4041,6 +4107,14 @@ ALTER TABLE ONLY public.volatility_surface
 
 ALTER TABLE ONLY public.yield_curve_spread
     ADD CONSTRAINT pk_yield_curve_spread PRIMARY KEY (id_yield_curve_spread);
+
+
+--
+-- Name: yield_curve_spread_hist pk_yield_curve_spread_hist; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.yield_curve_spread_hist
+    ADD CONSTRAINT pk_yield_curve_spread_hist PRIMARY KEY (id_yield_curve_spread_hist);
 
 
 --
@@ -4544,7 +4618,15 @@ ALTER TABLE ONLY public.txn_origin
 --
 
 ALTER TABLE ONLY public.volatility_forward
-    ADD CONSTRAINT uq_volatility_forward UNIQUE (volatility_surface, reference_date, expiry_date);
+    ADD CONSTRAINT uq_volatility_forward UNIQUE (volatility_surface, expiry_date);
+
+
+--
+-- Name: volatility_forward_hist uq_volatility_forward_hist; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volatility_forward_hist
+    ADD CONSTRAINT uq_volatility_forward_hist UNIQUE (volatility_surface, reference_date, expiry_date);
 
 
 --
@@ -4552,7 +4634,7 @@ ALTER TABLE ONLY public.volatility_forward
 --
 
 ALTER TABLE ONLY public.volatility_point
-    ADD CONSTRAINT uq_volatility_point UNIQUE NULLS NOT DISTINCT (volatility_surface, reference_date, expiry_date, strike);
+    ADD CONSTRAINT uq_volatility_point UNIQUE NULLS NOT DISTINCT (volatility_surface, expiry_date, strike);
 
 
 --
@@ -4584,7 +4666,15 @@ ALTER TABLE ONLY public.volatility_surface
 --
 
 ALTER TABLE ONLY public.yield_curve_spread
-    ADD CONSTRAINT uq_ycs_bucket UNIQUE (spread_curve, as_of_date, offset_type, offset_value);
+    ADD CONSTRAINT uq_ycs_bucket UNIQUE (spread_curve, offset_type, offset_value);
+
+
+--
+-- Name: yield_curve_spread_hist uq_ycs_hist_bucket; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.yield_curve_spread_hist
+    ADD CONSTRAINT uq_ycs_hist_bucket UNIQUE (spread_curve, as_of_date, offset_type, offset_value);
 
 
 --
@@ -5031,17 +5121,17 @@ CREATE UNIQUE INDEX idx_type_of_interest_code ON public.type_of_interest USING b
 
 
 --
--- Name: idx_volatility_point_date; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_volatility_point_date ON public.volatility_point USING btree (volatility_surface, reference_date);
-
-
---
 -- Name: idx_volatility_point_hist_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_volatility_point_hist_date ON public.volatility_point_hist USING btree (volatility_surface, reference_date);
+
+
+--
+-- Name: idx_volatility_point_surface; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_volatility_point_surface ON public.volatility_point USING btree (volatility_surface);
 
 
 --
@@ -5070,13 +5160,6 @@ CREATE INDEX ix_otc_cmd_option_master_data_underlying ON public.otc_cmd_option_m
 --
 
 CREATE INDEX ix_otc_fx_option_master_data_underlying ON public.otc_fx_option_master_data USING btree (underlying);
-
-
---
--- Name: ix_ycs_curve_date; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX ix_ycs_curve_date ON public.yield_curve_spread USING btree (spread_curve, as_of_date);
 
 
 --
@@ -6803,6 +6886,14 @@ ALTER TABLE ONLY public.financial_txn
 
 
 --
+-- Name: volatility_forward_hist fk_volatility_forward_hist_surface; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volatility_forward_hist
+    ADD CONSTRAINT fk_volatility_forward_hist_surface FOREIGN KEY (volatility_surface) REFERENCES public.volatility_surface(id_volatility_surface) ON DELETE CASCADE;
+
+
+--
 -- Name: volatility_forward fk_volatility_forward_surface; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6832,6 +6923,14 @@ ALTER TABLE ONLY public.volatility_point
 
 ALTER TABLE ONLY public.volatility_surface
     ADD CONSTRAINT fk_volatility_surface_underlying FOREIGN KEY (underlying) REFERENCES public.master_data(id_master_data);
+
+
+--
+-- Name: yield_curve_spread_hist fk_ycs_hist_spread_curve; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.yield_curve_spread_hist
+    ADD CONSTRAINT fk_ycs_hist_spread_curve FOREIGN KEY (spread_curve) REFERENCES public.spread_curve(id_spread_curve);
 
 
 --
